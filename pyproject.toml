@@ -1,0 +1,18 @@
+[project]
+name = "trident"
+version = "0.1.0"
+description = "TRIDENT: Tabular Representation Inference with Dedicated Embeddings for Null Tokens"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "torch>=2.0.0",
+    "pandas>=2.0.0",
+    "scikit-learn>=1.0.0",
+    "numpy>=1.20.0",
+    "matplotlib>=3.5.0",
+    "tqdm>=4.60.0",
+    "optuna>=3.0.0",
+]
+
+[tool.uv]
+package = false

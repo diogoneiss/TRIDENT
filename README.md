@@ -68,8 +68,14 @@ The framework introduces specialized components for heterogeneous tabular data a
 git clone <repository-url>
 cd TRIDENT
 
-# Install dependencies
-pip install torch pandas scikit-learn numpy matplotlib tqdm optuna
+# Install uv (if not already installed)
+# On Windows:
+# powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+# On macOS/Linux:
+# curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Synchronize the virtual environment and dependencies
+uv sync
 ```
 
 ### Data Preparation
@@ -80,7 +86,7 @@ pip install torch pandas scikit-learn numpy matplotlib tqdm optuna
 
 ```bash
 cd datasets
-python generate_splits.py
+uv run generate_splits.py
 ```
 
 This creates:
@@ -93,13 +99,13 @@ This creates:
 
 ```bash
 # Standard training
-python main.py --dataset_name vehicle_00nan
+uv run main.py --dataset_name vehicle_00nan
 
 # With visualization and model saving
-python main.py --dataset_name vehicle_00nan --plot_losses --save_model
+uv run main.py --dataset_name vehicle_00nan --plot_losses --save_model
 
 # Hyperparameter optimization
-python main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrain_best
+uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrain_best
 ```
 
 ## Command Line Arguments
@@ -225,30 +231,30 @@ The framework reports standard classification metrics, including:
 
 ```bash
 # Train on a clean dataset
-python main.py --dataset_name spambase_00nan
+uv run main.py --dataset_name spambase_00nan
 
 # Train on a dataset with 20% missing values
-python main.py --dataset_name spambase_20nan --plot_losses
+uv run main.py --dataset_name spambase_20nan --plot_losses
 ```
 
 ### Hyperparameter Optimization
 
 ```bash
 # Quick optimization (50 trials)
-python main.py --dataset_name credit-g_00nan --use_optuna --n_trials 50
+uv run main.py --dataset_name credit-g_00nan --use_optuna --n_trials 50
 
 # Thorough optimization with retraining
-python main.py --dataset_name vehicle_40nan --use_optuna --n_trials 200 --retrain_best
+uv run main.py --dataset_name vehicle_40nan --use_optuna --n_trials 200 --retrain_best
 ```
 
 ### Custom Configuration
 
 ```bash
 # Use a custom target column
-python main.py --dataset_name custom_data --label_column target
+uv run main.py --dataset_name custom_data --label_column target
 
 # Save results to a specific directory
-python main.py --dataset_name biodeg_00nan --output_dir ./experiments/biodeg
+uv run main.py --dataset_name biodeg_00nan --output_dir ./experiments/biodeg
 ```
 
 ## Supported Datasets

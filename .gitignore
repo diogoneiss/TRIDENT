@@ -1,0 +1,18 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Python cache / compile files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE configurations
+.vscode/
+.idea/
+
+# Project-specific outputs
+results/
+datasets/processed_datasets/
