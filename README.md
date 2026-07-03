@@ -104,6 +104,9 @@ uv run main.py --dataset_name vehicle_00nan
 # With visualization and model saving
 uv run main.py --dataset_name vehicle_00nan --plot_losses --save_model
 
+# Running with 5-fold cross-validation
+uv run main.py --dataset_name vehicle_00nan --cv_folds 5
+
 # Hyperparameter optimization
 uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrain_best
 ```
@@ -121,6 +124,7 @@ uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrai
 
 - `--plot_losses`: Generate training loss visualizations
 - `--save_model`: Save trained model checkpoints
+- `--cv_folds`: Number of folds for cross-validation (default: `None`, uses pre-defined split)
 
 ### Optuna Optimization
 
@@ -224,6 +228,12 @@ The framework reports standard classification metrics, including:
 - **Precision** (micro and macro)
 - **Recall** (micro and macro)
 - **Confusion Matrix** for detailed error analysis in binary tasks
+
+#### Cross-Validation Summarization
+When cross-validation is enabled (`--cv_folds <K>`), individual metrics are computed for each fold:
+- The generated `metrics.csv` files (saved under both the run results directory and the root `metrics/` folder) contain only the raw per-fold metrics (one row per fold) to facilitate programmatic loading and parsing.
+- A summary containing the `mean` and standard deviation (`mean ± std`) is computed and printed as a confidence interval table directly to the console at the end of the run.
+- You can also programmatically compute these summary stats using the `compute_cv_summary(df_or_path)` function in `train.py`.
 
 ## Example Workflows
 

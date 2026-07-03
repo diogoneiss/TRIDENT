@@ -36,6 +36,8 @@ def main():
                         help='Generate loss plots during training')
     training_group.add_argument('--save_model', action='store_true',
                         help='Save the final trained model')
+    training_group.add_argument('--cv_folds', type=int, default=None,
+                        help='Number of folds for cross-validation (default: None, uses pre-defined split)')
     
     # Optuna specific parameters
     optuna_group = parser.add_argument_group('Optuna parameters')
