@@ -12,6 +12,7 @@ import logging
 from functools import partial
 import shutil
 import mlflow
+from contextlib import nullcontext
 
 from src.mlflow_utils import setup_mlflow, get_or_create_experiment, build_run_tags
 
@@ -25,6 +26,32 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+
+class _DisabledMlflow:
+    """Drop-in no-op used when an Optuna invocation disables tracking."""
+
+    class _Run:
+        class info:
+            run_id = "disabled"
+
+    def start_run(self, *args, **kwargs):
+        return nullcontext(self._Run())
+
+    def log_params(self, *args, **kwargs):
+        return None
+
+    def log_param(self, *args, **kwargs):
+        return None
+
+    def log_metric(self, *args, **kwargs):
+        return None
+
+    def log_metrics(self, *args, **kwargs):
+        return None
+
+    def set_tag(self, *args, **kwargs):
+        return None
 
 
 def define_search_space(trial):
@@ -83,6 +110,8 @@ class ObjectiveFunctionWrapper:
         # Use a temporary directory for trials - we will only save the best one
         temp_dir = Path(self.output_dir) / self.dataset_name / "temp_trials"
         args.output_dir = str(temp_dir)
+        args.metrics_dir = getattr(self, "metrics_dir", "metrics")
+        args.disable_mlflow = getattr(self, "disable_mlflow", False)
         
         args.plot_losses = False
         args.save_model = False
@@ -169,9 +198,14 @@ def run_hyperparameter_optimization(args):
     logger.info(f"Starting hyperparameter optimization for {args.dataset_name}")
     logger.info(f"Number of trials: {args.n_trials}")
     
-    # Configure MLflow
-    setup_mlflow()  # Honours MLFLOW_TRACKING_URI env var, falls back to sqlite:///mlflow.db
-    experiment_id = get_or_create_experiment(args.dataset_name)
+    # Configure MLflow unless the runtime has explicitly disabled every API call.
+    global mlflow
+    if getattr(args, "disable_mlflow", False):
+        mlflow = _DisabledMlflow()
+        experiment_id = "disabled"
+    else:
+        setup_mlflow()  # Honours MLFLOW_TRACKING_URI env var, falls back to sqlite:///mlflow.db
+        experiment_id = get_or_create_experiment(args.dataset_name)
 
     # Create directory structure for Optuna results
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -185,6 +219,8 @@ def run_hyperparameter_optimization(args):
         output_dir=args.output_dir,
         optuna_dir=optuna_dir
     )
+    objective.metrics_dir = getattr(args, "metrics_dir", "metrics")
+    objective.disable_mlflow = getattr(args, "disable_mlflow", False)
     
     # Create an Optuna study
     storage_name = f"sqlite:///{optuna_dir}/optuna_study.db"
@@ -275,6 +311,8 @@ def run_hyperparameter_optimization(args):
         final_dir = optuna_dir / "best_model"
         final_dir.mkdir(exist_ok=True)
         final_args.output_dir = str(final_dir)
+        final_args.metrics_dir = getattr(args, "metrics_dir", "metrics")
+        final_args.disable_mlflow = getattr(args, "disable_mlflow", False)
         
         # Include plots when retraining
         final_args.plot_losses = True
@@ -323,4 +361,4 @@ if __name__ == "__main__":
                         help='Retrain the model with the best parameters after optimization')
     
     args = parser.parse_args()
-    run_hyperparameter_optimization(args) 
+    run_hyperparameter_optimization(args)

@@ -1,0 +1,47 @@
+{
+  "environment": {
+    "python": "3.10",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "torch": "2.5.1+cu121",
+    "device": "cuda",
+    "seed": 42,
+    "cv_folds": 2,
+    "runs": 3
+  },
+  "hyperparameters": {
+    "DIM": 16,
+    "HIDDEN_DIM": 8,
+    "HEADS": 4,
+    "LAYERS": 1,
+    "DIM_FEED": 16,
+    "DROPOUT": 0.1,
+    "EPOCHS_PRE": 2,
+    "BATCH": 64,
+    "LR_PRE": 0.00034,
+    "WEIGHT_DECAY_PRE": 0.005,
+    "PROB_MASCARA": 0.5,
+    "EPOCH_FINE": 2,
+    "LR_FINE": 0.001,
+    "WEIGHT_DECAY_FINE": 0.0019,
+    "LABELS": 4
+  },
+  "folds": [
+    {
+      "accuracy": 0.2576832151300236,
+      "f1_micro": 0.2576832151300236,
+      "f1_macro": 0.10244360902255639
+    },
+    {
+      "accuracy": 0.2033096926713948,
+      "f1_micro": 0.2033096926713948,
+      "f1_macro": 0.12803077058719803
+    }
+  ],
+  "mean": {
+    "accuracy": 0.23049645390070922,
+    "f1_micro": 0.23049645390070922,
+    "f1_macro": 0.11523718980487721
+  },
+  "observed_max_deviation": 0.0,
+  "tolerance": 0.01
+}

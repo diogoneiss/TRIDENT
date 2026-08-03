@@ -43,7 +43,7 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
     frame[spec.label_column] = label_encoder.fit_transform(frame[spec.label_column])
     print("=== Label Mapping ===")
     for index, label in enumerate(label_encoder.classes_):
-        print(f"{index} → {label}")
+        print(f"{index} -> {label}")
     print("====================")
 
     feature_columns = frame.columns.tolist()

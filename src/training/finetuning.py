@@ -13,7 +13,7 @@ from tqdm import tqdm
 from src.models import TridentModel
 from src.utils import preprocess_table
 
-from .types import FoldResult, FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
+from .types import FinetuningOutcome, FoldResult, FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
 def build_fold_result(
@@ -109,6 +109,8 @@ def train_and_evaluate_classifier(
     )
     best_validation_loss = float("inf")
     best_model_state = None
+    train_losses: list[float] = []
+    validation_losses: list[float] = []
 
     print("\n=== Starting Fine-Tuning (Classification) ===")
     for epoch in tqdm(range(hyperparameters.finetuning_epochs), desc="Fine-tuning epochs"):
@@ -131,6 +133,7 @@ def train_and_evaluate_classifier(
             train_loss_sum += loss.item()
             train_batch_count += 1
         average_train_loss = train_loss_sum / train_batch_count
+        train_losses.append(average_train_loss)
 
         model.eval()
         with torch.no_grad():
@@ -139,6 +142,7 @@ def train_and_evaluate_classifier(
             )
             validation_predictions = torch.argmax(validation_logits, dim=1)
         validation_loss_value = validation_loss.item()
+        validation_losses.append(validation_loss_value)
         validation_expected = validation_labels.cpu().numpy()
         validation_predicted = validation_predictions.cpu().numpy()
         tracker.log_metrics(
@@ -178,4 +182,9 @@ def train_and_evaluate_classifier(
             "test/loss": float(test_loss.item()),
         }
     )
-    return result
+    return FinetuningOutcome(
+        model=model,
+        result=result,
+        train_losses=train_losses,
+        validation_losses=validation_losses,
+    )

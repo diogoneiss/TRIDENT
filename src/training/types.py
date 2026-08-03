@@ -105,6 +105,14 @@ class FoldResult:
 
 
 @dataclass(frozen=True)
+class FinetuningOutcome:
+    model: Any
+    result: FoldResult
+    train_losses: Sequence[float]
+    validation_losses: Sequence[float]
+
+
+@dataclass(frozen=True)
 class TrainingResult:
     fold_results: Sequence[FoldResult]
     mean_metrics: dict[str, float]

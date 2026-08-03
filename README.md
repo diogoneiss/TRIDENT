@@ -119,6 +119,8 @@ uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrai
 - `--label_column`: Target column name (default: `class`)
 - `--seed`: Random seed for reproducibility (default: `42`)
 - `--output_dir`: Results directory (default: `results`)
+- `--metrics_dir`: Project-level raw-fold metrics directory (default: `metrics`)
+- `--disable_mlflow`: Disable all MLflow setup, runs, logs, and artifacts
 
 ### Training Options
 
