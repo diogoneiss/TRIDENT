@@ -29,10 +29,16 @@ def build_fold_result(
         "accuracy": accuracy_score(expected_labels, predicted_labels),
         "f1_micro": f1_score(expected_labels, predicted_labels, average="micro"),
         "f1_macro": f1_score(expected_labels, predicted_labels, average="macro"),
-        "precision_micro": precision_score(expected_labels, predicted_labels, average="micro"),
-        "precision_macro": precision_score(expected_labels, predicted_labels, average="macro"),
-        "recall_micro": recall_score(expected_labels, predicted_labels, average="micro"),
-        "recall_macro": recall_score(expected_labels, predicted_labels, average="macro"),
+        "precision_micro": precision_score(
+            expected_labels, predicted_labels, average="micro", zero_division=0
+        ),
+        "precision_macro": precision_score(
+            expected_labels, predicted_labels, average="macro", zero_division=0
+        ),
+        "recall_micro": recall_score(expected_labels, predicted_labels, average="micro", zero_division=0
+        ),
+        "recall_macro": recall_score(expected_labels, predicted_labels, average="macro", zero_division=0
+        ),
     }
     labels = (
         dataset_label_classes

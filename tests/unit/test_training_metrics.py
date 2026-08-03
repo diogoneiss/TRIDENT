@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import warnings
 
 from src.training.finetuning import build_fold_result
 from src.training.summary import compute_cv_summary
@@ -40,6 +41,22 @@ def test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold()
     assert result.metrics["confusion_matrix_fp"] == 0
     assert result.metrics["confusion_matrix_fn"] == 0
     assert result.metrics["confusion_matrix_tp"] == 0
+
+
+def test_build_fold_result_uses_zero_precision_without_warning_for_unpredicted_class() -> None:
+    with warnings.catch_warnings(record=True) as recorded_warnings:
+        warnings.simplefilter("always")
+        result = build_fold_result(
+            1,
+            "vehicle_00nan",
+            np.array([0, 1]),
+            np.array([0, 0]),
+            0.2,
+            dataset_label_classes=np.array([0, 1]),
+        )
+
+    assert result.metrics["precision_macro"] == 0.25
+    assert not recorded_warnings
 
 
 def test_compute_cv_summary_retains_legacy_mean_std_format() -> None:
