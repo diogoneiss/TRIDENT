@@ -40,7 +40,10 @@ def build_fold_result(
         else np.unique(np.concatenate([expected_labels, predicted_labels]))
     )
     if len(labels) == 2:
-        matrix = confusion_matrix(expected_labels, predicted_labels)
+        encoded_labels = (
+            np.arange(len(dataset_label_classes)) if dataset_label_classes is not None else None
+        )
+        matrix = confusion_matrix(expected_labels, predicted_labels, labels=encoded_labels)
         metrics.update(
             {
                 "confusion_matrix_tn": matrix[0, 0],
