@@ -14,6 +14,7 @@ dependencies = [
     "optuna>=3.0.0",
     "mlflow>=3.14.0",
     "pandas-stubs~=2.3.3",
+    "pyarrow<24",
 ]
 
 [tool.uv]

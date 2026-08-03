@@ -109,6 +109,12 @@ uv run main.py --dataset_name vehicle_00nan --cv_folds 5
 
 # Hyperparameter optimization
 uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrain_best
+
+# Keep project-level metrics outside the default metrics/ directory
+uv run main.py --dataset_name vehicle_00nan --metrics_dir ./experiments/vehicle/metrics
+
+# Run without MLflow tracking (useful for isolated experiments and tests)
+uv run main.py --dataset_name vehicle_00nan --disable_mlflow
 ```
 
 ## Command Line Arguments
@@ -120,7 +126,7 @@ uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrai
 - `--seed`: Random seed for reproducibility (default: `42`)
 - `--output_dir`: Results directory (default: `results`)
 - `--metrics_dir`: Project-level raw-fold metrics directory (default: `metrics`)
-- `--disable_mlflow`: Disable all MLflow setup, runs, logs, and artifacts
+- `--disable_mlflow`: Disable all MLflow setup, runs, logs, and artifacts (enabled by default)
 
 ### Training Options
 
@@ -133,6 +139,23 @@ uv run main.py --dataset_name vehicle_00nan --use_optuna --n_trials 100 --retrai
 - `--use_optuna`: Enable hyperparameter optimization
 - `--n_trials`: Number of optimization trials (default: `50`)
 - `--retrain_best`: Retrain using the best parameters found during search
+
+## Tests
+
+Use the project wrapper with Python 3.10:
+
+```bash
+# Fast unit tests
+uv run --python 3.10 pytest -m "not integration"
+
+# Short end-to-end regression test: two folds of vehicle_00nan
+uv run --python 3.10 pytest -m integration
+
+# Entire suite
+uv run --python 3.10 pytest
+```
+
+The integration test disables MLflow and writes all run artifacts to temporary directories. Its checked-in baseline validates per-fold and mean accuracy, micro F1, and macro F1 against a small two-epoch pre-training/fine-tuning run.
 
 ## Configuration System
 
