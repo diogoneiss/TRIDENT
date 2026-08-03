@@ -1,6 +1,7 @@
 """Classifier fine-tuning and fold metric calculation."""
 
 import copy
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -21,6 +22,7 @@ def build_fold_result(
     expected_labels: np.ndarray,
     predicted_labels: np.ndarray,
     test_loss: float,
+    dataset_label_classes: Sequence[object] | None = None,
 ) -> FoldResult:
     """Build the legacy per-fold classification metric set."""
     metrics: dict[str, float | int | str] = {
@@ -32,7 +34,11 @@ def build_fold_result(
         "recall_micro": recall_score(expected_labels, predicted_labels, average="micro"),
         "recall_macro": recall_score(expected_labels, predicted_labels, average="macro"),
     }
-    labels = np.unique(np.concatenate([expected_labels, predicted_labels]))
+    labels = (
+        dataset_label_classes
+        if dataset_label_classes is not None
+        else np.unique(np.concatenate([expected_labels, predicted_labels]))
+    )
     if len(labels) == 2:
         matrix = confusion_matrix(expected_labels, predicted_labels)
         metrics.update(
@@ -161,6 +167,7 @@ def train_and_evaluate_classifier(
         expected_labels=test_labels.cpu().numpy(),
         predicted_labels=test_predictions.cpu().numpy(),
         test_loss=float(test_loss.item()),
+        dataset_label_classes=dataset.label_classes,
     )
     tracker.log_metrics(
         {

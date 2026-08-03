@@ -13,6 +13,19 @@ def test_build_fold_result_retains_classification_metrics() -> None:
     assert result.metrics["f1_macro"] == 1.0
 
 
+def test_build_fold_result_omits_binary_confusion_fields_for_multiclass_dataset() -> None:
+    result = build_fold_result(
+        1,
+        "vehicle_00nan",
+        np.array([0, 1]),
+        np.array([0, 1]),
+        0.2,
+        dataset_label_classes=np.array([0, 1, 2]),
+    )
+
+    assert "confusion_matrix_tn" not in result.metrics
+
+
 def test_compute_cv_summary_retains_legacy_mean_std_format() -> None:
     summary = compute_cv_summary(
         pd.DataFrame(

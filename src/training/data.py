@@ -72,7 +72,10 @@ def build_folds(
         splits_path = frame.attrs.get("splits_path")
         if splits_path is None:
             raise ValueError("Predefined splits require frame.attrs['splits_path'].")
-        with Path(splits_path).open() as stream:
+        splits_path = Path(splits_path)
+        if not splits_path.exists():
+            raise ValueError(f"Splits file not found: {splits_path}")
+        with splits_path.open() as stream:
             splits = json.load(stream)
         return [
             FoldSplit(
