@@ -11,6 +11,9 @@ import datetime
 import logging
 from functools import partial
 import shutil
+import mlflow
+
+from src.mlflow_utils import setup_mlflow, get_or_create_experiment, build_run_tags
 
 # Import components from train.py
 from train import main as train_main
@@ -61,6 +64,9 @@ class ObjectiveFunctionWrapper:
         self.best_params = None
         self.best_trial_number = None
         self.best_metrics = None
+        # MLflow parent run ID — set by run_hyperparameter_optimization before calling study.optimize
+        self.mlflow_parent_run_id: str | None = None
+        self.mlflow_experiment_id: str | None = None
         
     def __call__(self, trial):
         # Define hyperparameters for this trial
@@ -86,31 +92,58 @@ class ObjectiveFunctionWrapper:
         # Create temporary directory
         os.makedirs(args.output_dir, exist_ok=True)
         
-        try:
-            # Run the training with these hyperparameters
-            metrics = train_main(args, return_metrics=True)
-            
-            # Get the validation and test scores
-            f1_macro = metrics['f1_macro']
-            
-            # Report intermediate values
-            trial.report(f1_macro, step=0)
-            
-            # Check if this is the best score so far
-            if f1_macro > self.best_score:
-                self.best_score = f1_macro
-                self.best_params = params
-                self.best_trial_number = trial.number
-                self.best_metrics = metrics
+        # Open a nested MLflow child run for this trial (if parent run is active)
+        trial_run_name = f"optuna_trial_{trial.number}"
+        trial_tags = {
+            "trial_number": str(trial.number),
+            "dataset": self.dataset_name,
+            "run_type": "optuna_trial",
+        }
+
+        with mlflow.start_run(
+            experiment_id=self.mlflow_experiment_id,
+            run_name=trial_run_name,
+            tags=trial_tags,
+            nested=True,
+        ):
+            # Log trial hyperparameters
+            mlflow.log_params(params)
+            mlflow.log_param("trial_number", trial.number)
+
+            try:
+                # Run the training with these hyperparameters
+                metrics = train_main(args, return_metrics=True)
                 
-                # Save the best parameters found so far to datasets/hiperparams
-                self.save_best_params()
+                # Get the validation and test scores
+                f1_macro = metrics['f1_macro']
                 
-            return f1_macro
-            
-        except Exception as e:
-            logger.error(f"Trial {trial.number} failed with error: {str(e)}")
-            return 0.0  # Return worst possible score on failure
+                # Log the trial result to MLflow
+                mlflow.log_metric("f1_macro", f1_macro)
+                mlflow.set_tag("trial_status", "success")
+                
+                # Report intermediate values
+                trial.report(f1_macro, step=0)
+                
+                # Check if this is the best score so far
+                if f1_macro > self.best_score:
+                    self.best_score = f1_macro
+                    self.best_params = params
+                    self.best_trial_number = trial.number
+                    self.best_metrics = metrics
+                    mlflow.set_tag("is_best_so_far", "true")
+                    
+                    # Save the best parameters found so far to datasets/hiperparams
+                    self.save_best_params()
+                else:
+                    mlflow.set_tag("is_best_so_far", "false")
+                    
+                return f1_macro
+                
+            except Exception as e:
+                logger.error(f"Trial {trial.number} failed with error: {str(e)}")
+                mlflow.set_tag("trial_status", "failed")
+                mlflow.set_tag("error", str(e)[:250])  # tag truncated to 250 chars
+                return 0.0  # Return worst possible score on failure
         
     def save_best_params(self):
         """
@@ -136,6 +169,10 @@ def run_hyperparameter_optimization(args):
     logger.info(f"Starting hyperparameter optimization for {args.dataset_name}")
     logger.info(f"Number of trials: {args.n_trials}")
     
+    # Configure MLflow
+    setup_mlflow()  # Honours MLFLOW_TRACKING_URI env var, falls back to sqlite:///mlflow.db
+    experiment_id = get_or_create_experiment(args.dataset_name)
+
     # Create directory structure for Optuna results
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     optuna_dir = Path(args.output_dir) / args.dataset_name / f"optuna_{timestamp}"
@@ -159,8 +196,43 @@ def run_hyperparameter_optimization(args):
         load_if_exists=True
     )
     
-    # Run the optimization
-    study.optimize(objective, n_trials=args.n_trials)
+    # Open the MLflow parent run for this Optuna study
+    parent_run_name = f"optuna_{args.dataset_name}_{timestamp}"
+    parent_tags = build_run_tags(
+        dataset_name=args.dataset_name,
+        run_type="optuna_study",
+        seed=args.seed,
+    )
+    parent_tags["n_trials"] = str(args.n_trials)
+
+    with mlflow.start_run(
+        experiment_id=experiment_id,
+        run_name=parent_run_name,
+        tags=parent_tags,
+    ) as parent_run:
+        mlflow.log_params({
+            "n_trials": args.n_trials,
+            "dataset_name": args.dataset_name,
+            "seed": args.seed,
+            "optuna_storage": storage_name,
+        })
+
+        # Give the objective access to the parent run so it can open child runs
+        objective.mlflow_parent_run_id = parent_run.info.run_id
+        objective.mlflow_experiment_id = experiment_id
+
+        # Run the optimization
+        study.optimize(objective, n_trials=args.n_trials)
+
+        # Log best trial summary to the parent run
+        mlflow.log_metrics({
+            "best_f1_macro": study.best_value,
+            "best_trial_number": float(study.best_trial.number),
+        })
+        mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
+        mlflow.set_tag("best_trial_number", str(study.best_trial.number))
+
+        # ---- end of parent MLflow run ----
     
     # Report best parameters
     logger.info("\n\n" + "="*50)
