@@ -75,6 +75,14 @@ class FakeTracker:
         self.finalized_dataset = dataset
         self.finalized_artifact_paths = artifact_paths
         self.finalization_calls += 1
+        self.log_prepared_dataset(dataset)
+        for path, artifact_path in (
+            (artifact_paths.raw_fold_metrics_csv, "metrics"),
+            (artifact_paths.summary_json, "metrics"),
+            (artifact_paths.manifest_json, "tracking"),
+            (artifact_paths.provenance_json, "data"),
+        ):
+            self.log_artifact(str(path), artifact_path)
 
     def log_single_split_record(self, record: FoldTrackingRecord) -> None:
         assert self.active
@@ -256,6 +264,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         0.5,
     ]
     assert fake_tracker.finalized_dataset is dataset
+    assert fake_tracker.lineage_datasets[0] is dataset
     assert fake_tracker.finalized_summary is not None
     assert fake_tracker.finalized_summary.metrics["accuracy"].mean == 0.55
     assert fake_tracker.finalized_summary.metrics["f1_macro"].mean == 0.45
@@ -275,6 +284,15 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
             fake_tracker.finalized_artifact_paths.provenance_json,
         )
     )
+    results_dir = fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv.parents[1]
+    assert set(fake_tracker.logged_artifacts) == {
+        (results_dir / "hyperparameters.json", "parameters"),
+        (results_dir / "metrics.csv", "metrics"),
+        (fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv, "metrics"),
+        (fake_tracker.finalized_artifact_paths.summary_json, "metrics"),
+        (fake_tracker.finalized_artifact_paths.manifest_json, "tracking"),
+        (fake_tracker.finalized_artifact_paths.provenance_json, "data"),
+    }
     assert result.fold_results[0].fold == 1
     assert result.fold_results[1].fold == 2
     assert result.mean_metrics == {"accuracy": 0.55, "f1_macro": 0.45}
