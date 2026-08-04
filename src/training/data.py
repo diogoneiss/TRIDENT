@@ -61,6 +61,8 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
         categorical_columns=categorical_columns,
         numerical_columns=numerical_columns,
         label_classes=label_encoder.classes_,
+        source_path=dataset_path,
+        splits_path=splits_path,
     )
 
 

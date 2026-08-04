@@ -1,14 +1,23 @@
 """Filesystem artifacts emitted by a training runtime."""
 
 import json
+from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Sequence
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import torch
 
-from .types import FoldResult, Hyperparameters
+from .types import (
+    CrossValidationSummary,
+    FoldResult,
+    Hyperparameters,
+    PreparedDataset,
+    TrackingArtifactPaths,
+)
 
 
 class ArtifactWriter:
@@ -54,6 +63,82 @@ class ArtifactWriter:
         print(f"Metrics also saved to: {root_path}")
         return frame
 
+    def write_cv_tracking_artifacts(
+        self,
+        fold_results: Sequence[FoldResult],
+        summary: CrossValidationSummary,
+        dataset: PreparedDataset,
+        seed: int,
+        cv_folds: int,
+    ) -> TrackingArtifactPaths:
+        """Write the parent-run CSV, summary, diagnostic manifest, and lineage."""
+        paths = TrackingArtifactPaths(
+            raw_fold_metrics_csv=self.results_dir / "metrics" / "raw_fold_metrics.csv",
+            summary_json=self.results_dir / "metrics" / "cv_summary.json",
+            manifest_json=self.results_dir / "tracking" / "diagnostic_manifest.json",
+            provenance_json=self.results_dir / "data" / "provenance.json",
+        )
+        for path in (paths.raw_fold_metrics_csv, paths.summary_json, paths.manifest_json, paths.provenance_json):
+            path.parent.mkdir(parents=True, exist_ok=True)
+
+        rows = [
+            {"fold": result.fold, "dataset": result.dataset_name, **result.metrics}
+            for result in fold_results
+        ]
+        pd.DataFrame(rows).to_csv(paths.raw_fold_metrics_csv, index=False)
+
+        summary_payload = {
+            "interval": "two-sided 95% Student-t",
+            "interval_interpretation": (
+                "Internal CV uncertainty; not an independent-test generalization guarantee."
+            ),
+            "formula": "mean ± t(0.975, n - 1) * sample_std / sqrt(n)",
+            "metrics": summary.metrics,
+            "loss_bands": summary.loss_bands,
+        }
+        _write_json(paths.summary_json, summary_payload)
+
+        f1_macro_ranking = {
+            str(result.fold): result.metrics["f1_macro"]
+            for result in fold_results
+            if "f1_macro" in result.metrics
+        }
+        manifest_payload = {
+            "diagnostic_roles": {str(fold): role for fold, role in summary.diagnostic_roles.items()},
+            "f1_macro_ranking": f1_macro_ranking,
+            "selected_folds": [
+                {
+                    "fold": fold,
+                    "role": role,
+                    "f1_macro": f1_macro_ranking.get(str(fold)),
+                }
+                for fold, role in summary.diagnostic_roles.items()
+            ],
+            "retained_artifact_paths": {},
+        }
+        _write_json(paths.manifest_json, manifest_payload)
+
+        provenance_payload = {
+            "source_path": dataset.source_path,
+            "splits_path": dataset.splits_path,
+            "dataset_name": dataset.frame.attrs.get("dataset_name", self.dataset_name),
+            "prepared_schema": {
+                "label_column": dataset.label_column,
+                "categorical_columns": dataset.categorical_columns,
+                "numerical_columns": dataset.numerical_columns,
+                "label_classes": dataset.label_classes,
+            },
+            "preparation": {
+                "label_encoding": "LabelEncoder",
+                "numerical_scaling": "StandardScaler",
+            },
+            "split_strategy": "cross_validation",
+            "cv_folds": cv_folds,
+            "seed": seed,
+        }
+        _write_json(paths.provenance_json, provenance_payload)
+        return paths
+
     def write_loss_plot(self, name: str, train_losses: list[float], validation_losses: list[float]) -> Path:
         plots_dir = self.results_dir / "plots"
         plots_dir.mkdir(parents=True, exist_ok=True)
@@ -74,3 +159,23 @@ class ArtifactWriter:
         torch.save(model, path)
         print(f"Final model saved to: {path}")
         return path
+
+
+def _write_json(path: Path, payload: object) -> None:
+    path.write_text(json.dumps(_to_builtin(payload), indent=2))
+
+
+def _to_builtin(value: Any) -> Any:
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if is_dataclass(value):
+        return _to_builtin(asdict(value))
+    if isinstance(value, dict):
+        return {str(key): _to_builtin(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_to_builtin(item) for item in value]
+    return value

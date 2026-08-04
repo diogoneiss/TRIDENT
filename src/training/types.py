@@ -88,6 +88,8 @@ class PreparedDataset:
     categorical_columns: Sequence[str]
     numerical_columns: Sequence[str]
     label_classes: Sequence[Any]
+    source_path: Path
+    splits_path: Path
 
 
 @dataclass(frozen=True)
@@ -148,6 +150,14 @@ class CrossValidationSummary:
     metrics: Mapping[str, MetricSummary]
     loss_bands: Mapping[str, Sequence[LossBand]]
     diagnostic_roles: Mapping[int, str]
+
+
+@dataclass(frozen=True)
+class TrackingArtifactPaths:
+    raw_fold_metrics_csv: Path
+    summary_json: Path
+    manifest_json: Path
+    provenance_json: Path
 
 
 @dataclass(frozen=True)
