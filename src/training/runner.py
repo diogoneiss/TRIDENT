@@ -8,7 +8,7 @@ from .artifacts import ArtifactWriter
 from .data import build_folds, prepare_dataset
 from .finetuning import train_and_evaluate_classifier
 from .pretraining import train_pretrainer
-from .summary import compute_cv_summary
+from .summary import compute_cv_summary, summarize_cross_validation
 from .tracking import create_tracker
 from .types import FoldResult, TrainingRequest, TrainingResult
 
@@ -40,22 +40,30 @@ def run_training(request: TrainingRequest) -> TrainingResult:
     artifacts = ArtifactWriter(request.runtime.output_dir, request.runtime.metrics_dir, request.dataset.dataset_name)
     tracker = create_tracker(request.runtime.tracking_enabled)
     results: list[FoldResult] = []
+    records = []
 
     with tracker.parent_run(
         dataset_name=request.dataset.dataset_name,
         seed=request.seed,
         cv_folds=request.cv_folds,
         hyperparameters=_mlflow_hyperparameters(request),
-    ):
+    ) as active_tracker:
         for ordinal, fold in enumerate(folds, start=1):
             if request.cv_folds is not None:
                 print(f"\n==================== Running Fold {ordinal}/{request.cv_folds} ====================")
-            with tracker.fold_run(
+            with active_tracker.fold_run(
                 fold=ordinal, cv_folds=request.cv_folds, dataset_name=request.dataset.dataset_name
-            ):
-                pretraining = train_pretrainer(dataset, fold, request.hyperparameters, device, tracker)
+            ) as fold_tracker:
+                pretraining = train_pretrainer(
+                    dataset, fold, request.hyperparameters, device, fold_tracker
+                )
                 finetuning = train_and_evaluate_classifier(
-                    dataset, fold, pretraining, request.hyperparameters, device, tracker
+                    dataset,
+                    fold,
+                    pretraining,
+                    request.hyperparameters,
+                    device,
+                    fold_tracker,
                 )
                 if request.plot_losses:
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""
@@ -69,20 +77,48 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         list(finetuning.train_losses),
                         list(finetuning.validation_losses),
                     )
-                    tracker.log_artifact(str(pretraining_plot), artifact_path="plots")
-                    tracker.log_artifact(str(finetuning_plot), artifact_path="plots")
+                    fold_tracker.log_artifact(str(pretraining_plot), artifact_path="plots")
+                    fold_tracker.log_artifact(str(finetuning_plot), artifact_path="plots")
                 if request.save_model:
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""
                     model_path = artifacts.save_model(f"final_model{suffix}.pt", finetuning.model)
-                    tracker.log_artifact(str(model_path), artifact_path="models")
-                results.append(FoldResult(
+                    fold_tracker.log_artifact(str(model_path), artifact_path="models")
+                result = FoldResult(
                     fold=ordinal if request.cv_folds is not None else "single_split",
                     dataset_name=request.dataset.dataset_name,
                     metrics=finetuning.result.metrics,
-                ))
+                )
+                results.append(result)
+                records.append(fold_tracker.to_record(result))
 
-    artifacts.write_hyperparameters(request.hyperparameters)
-    frame = artifacts.write_metrics(results)
+        hyperparameters_path = artifacts.write_hyperparameters(request.hyperparameters)
+        frame = artifacts.write_metrics(results)
+        active_tracker.log_artifact(
+            str(hyperparameters_path), artifact_path="parameters"
+        )
+        active_tracker.log_artifact(
+            str(artifacts.results_dir / "metrics.csv"), artifact_path="metrics"
+        )
+        if request.cv_folds is not None:
+            tracking_summary = summarize_cross_validation(records)
+            artifact_paths = artifacts.write_cv_tracking_artifacts(
+                results,
+                tracking_summary,
+                dataset,
+                request.seed,
+                request.cv_folds,
+            )
+            active_tracker.finalize_cross_validation(
+                records, tracking_summary, dataset, artifact_paths
+            )
+        else:
+            provenance_path = artifacts.write_tracking_provenance(
+                dataset, request.seed, request.cv_folds
+            )
+            active_tracker.log_prepared_dataset(dataset)
+            active_tracker.log_artifact(str(provenance_path), artifact_path="data")
+            active_tracker.log_single_split_record(records[0])
+
     if request.cv_folds is not None and len(results) > 1:
         summary = compute_cv_summary(frame)
         print("\n=== Cross-Validation Results Summary ===")

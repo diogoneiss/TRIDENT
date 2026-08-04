@@ -76,9 +76,13 @@ class ArtifactWriter:
             raw_fold_metrics_csv=self.results_dir / "metrics" / "raw_fold_metrics.csv",
             summary_json=self.results_dir / "metrics" / "cv_summary.json",
             manifest_json=self.results_dir / "tracking" / "diagnostic_manifest.json",
-            provenance_json=self.results_dir / "data" / "provenance.json",
+            provenance_json=self.write_tracking_provenance(dataset, seed, cv_folds),
         )
-        for path in (paths.raw_fold_metrics_csv, paths.summary_json, paths.manifest_json, paths.provenance_json):
+        for path in (
+            paths.raw_fold_metrics_csv,
+            paths.summary_json,
+            paths.manifest_json,
+        ):
             path.parent.mkdir(parents=True, exist_ok=True)
 
         rows = [
@@ -118,7 +122,18 @@ class ArtifactWriter:
         }
         _write_json(paths.manifest_json, manifest_payload)
 
-        provenance_payload = {
+        return paths
+
+    def write_tracking_provenance(
+        self,
+        dataset: PreparedDataset,
+        seed: int,
+        cv_folds: int | None,
+    ) -> Path:
+        """Write prepared-dataset lineage for a parent training run."""
+        path = self.results_dir / "data" / "provenance.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        payload = {
             "source_path": dataset.source_path,
             "splits_path": dataset.splits_path,
             "dataset_name": dataset.frame.attrs.get("dataset_name", self.dataset_name),
@@ -132,12 +147,14 @@ class ArtifactWriter:
                 "label_encoding": "LabelEncoder",
                 "numerical_scaling": "StandardScaler",
             },
-            "split_strategy": "cross_validation",
+            "split_strategy": (
+                "cross_validation" if cv_folds is not None else "single_split"
+            ),
             "cv_folds": cv_folds,
             "seed": seed,
         }
-        _write_json(paths.provenance_json, provenance_payload)
-        return paths
+        _write_json(path, payload)
+        return path
 
     def write_loss_plot(self, name: str, train_losses: list[float], validation_losses: list[float]) -> Path:
         plots_dir = self.results_dir / "plots"
