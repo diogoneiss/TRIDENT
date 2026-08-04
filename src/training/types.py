@@ -105,6 +105,52 @@ class FoldResult:
 
 
 @dataclass(frozen=True)
+class LoggedMetric:
+    key: str
+    value: float
+    step: int | None
+
+
+@dataclass(frozen=True)
+class LoggedArtifact:
+    path: Path
+    artifact_path: str | None
+
+
+@dataclass(frozen=True)
+class FoldTrackingRecord:
+    result: FoldResult
+    metric_events: Sequence[LoggedMetric]
+    artifacts: Sequence[LoggedArtifact]
+
+
+@dataclass(frozen=True)
+class MetricSummary:
+    mean: float
+    ci95_lower: float
+    ci95_upper: float
+    std: float
+    minimum: float
+    maximum: float
+    fold_count: int
+
+
+@dataclass(frozen=True)
+class LossBand:
+    step: int
+    mean: float
+    ci95_lower: float
+    ci95_upper: float
+
+
+@dataclass(frozen=True)
+class CrossValidationSummary:
+    metrics: Mapping[str, MetricSummary]
+    loss_bands: Mapping[str, Sequence[LossBand]]
+    diagnostic_roles: Mapping[int, str]
+
+
+@dataclass(frozen=True)
 class FinetuningOutcome:
     model: Any
     result: FoldResult
