@@ -5,6 +5,7 @@ from pathlib import Path
 
 import mlflow
 import pandas as pd
+import pytest
 
 from src.training.tracking import BufferedFoldTracker
 from src.training.types import (
@@ -135,7 +136,12 @@ def _stub_training_runtime(monkeypatch, tmp_path, cv_folds: int | None):
             1: {"accuracy": 0.5, "f1_macro": 0.4},
             2: {"accuracy": 0.6, "f1_macro": 0.5},
         }[fold]
-        tracker.log_metrics({f"test/{name}": value for name, value in metrics.items()})
+        tracker.log_metrics(
+            {
+                **{f"test/{name}": value for name, value in metrics.items()},
+                "test/loss": {1: 0.4, 2: 0.2}[fold],
+            }
+        )
         return FinetuningOutcome(
             object(),
             FoldResult("single_split", "vehicle_00nan", metrics),
@@ -268,6 +274,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
     assert fake_tracker.finalized_summary is not None
     assert fake_tracker.finalized_summary.metrics["accuracy"].mean == 0.55
     assert fake_tracker.finalized_summary.metrics["f1_macro"].mean == 0.45
+    assert fake_tracker.finalized_summary.metrics["loss"].mean == pytest.approx(0.3)
     assert fake_tracker.finalized_summary.loss_bands["pretrain/train_loss"][0].mean == 2.5
     assert fake_tracker.finalized_summary.loss_bands["finetune/val_loss"][0].mean == 5.5
     assert fake_tracker.finalized_summary.diagnostic_roles == {
@@ -285,6 +292,10 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         )
     )
     results_dir = fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv.parents[1]
+    raw_fold_metrics = pd.read_csv(fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv)
+    assert raw_fold_metrics["loss"].tolist() == [0.4, 0.2]
+    summary_payload = json.loads(fake_tracker.finalized_artifact_paths.summary_json.read_text())
+    assert summary_payload["metrics"]["loss"]["mean"] == pytest.approx(0.3)
     assert set(fake_tracker.logged_artifacts) == {
         (results_dir / "hyperparameters.json", "parameters"),
         (results_dir / "metrics.csv", "metrics"),
@@ -295,6 +306,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
     }
     assert result.fold_results[0].fold == 1
     assert result.fold_results[1].fold == 2
+    assert all("loss" not in fold_result.metrics for fold_result in result.fold_results)
     assert result.mean_metrics == {"accuracy": 0.55, "f1_macro": 0.45}
     assert fake_tracker.active is False
 

@@ -5,7 +5,16 @@ import numpy as np
 import pandas as pd
 
 from src.training.artifacts import ArtifactWriter
-from src.training.types import CrossValidationSummary, FoldResult, LossBand, MetricSummary, PreparedDataset
+from src.training.types import (
+    CrossValidationSummary,
+    FoldResult,
+    FoldTrackingRecord,
+    LoggedArtifact,
+    LoggedMetric,
+    LossBand,
+    MetricSummary,
+    PreparedDataset,
+)
 
 
 def _dataset() -> PreparedDataset:
@@ -33,7 +42,16 @@ def _summary() -> CrossValidationSummary:
                 minimum=np.float64(0.4),
                 maximum=np.float64(0.8),
                 fold_count=np.int64(2),
-            )
+            ),
+            "loss": MetricSummary(
+                mean=np.float64(0.3),
+                ci95_lower=np.float64(-0.97),
+                ci95_upper=np.float64(1.57),
+                std=np.float64(0.14),
+                minimum=np.float64(0.2),
+                maximum=np.float64(0.4),
+                fold_count=np.int64(2),
+            ),
         },
         loss_bands={
             "finetune/val_loss": (
@@ -44,14 +62,31 @@ def _summary() -> CrossValidationSummary:
     )
 
 
+def _record(
+    fold: int,
+    f1_macro: float,
+    test_loss: float,
+    artifacts: tuple[LoggedArtifact, ...] = (),
+) -> FoldTrackingRecord:
+    return FoldTrackingRecord(
+        result=FoldResult(
+            fold,
+            "vehicle_00nan",
+            {"accuracy": np.float64(0.5 + f1_macro / 2), "f1_macro": np.float64(f1_macro)},
+        ),
+        metric_events=(LoggedMetric("test/loss", test_loss, None),),
+        artifacts=artifacts,
+    )
+
+
 def test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values(tmp_path) -> None:
     writer = ArtifactWriter(tmp_path / "results", tmp_path / "project_metrics", "vehicle_00nan")
-    fold_results = [
-        FoldResult(1, "vehicle_00nan", {"accuracy": np.float64(0.5), "f1_macro": np.float64(0.4)}),
-        FoldResult(2, "vehicle_00nan", {"accuracy": np.float64(1.0), "f1_macro": np.float64(0.8)}),
+    records = [
+        _record(1, f1_macro=0.4, test_loss=0.2),
+        _record(2, f1_macro=0.8, test_loss=0.4),
     ]
 
-    paths = writer.write_cv_tracking_artifacts(fold_results, _summary(), _dataset(), seed=42, cv_folds=2)
+    paths = writer.write_cv_tracking_artifacts(records, _summary(), _dataset(), seed=42, cv_folds=2)
 
     assert paths.raw_fold_metrics_csv.exists()
     assert paths.raw_fold_metrics_csv.relative_to(writer.results_dir) == Path("metrics/raw_fold_metrics.csv")
@@ -62,7 +97,11 @@ def test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_va
     summary = json.loads(paths.summary_json.read_text())
     assert summary["interval"] == "two-sided 95% Student-t"
     assert summary["metrics"]["f1_macro"]["fold_count"] == 2
+    assert summary["metrics"]["loss"]["mean"] == 0.3
     assert summary["loss_bands"]["finetune/val_loss"][0]["step"] == 0
+
+    raw_fold_metrics = pd.read_csv(paths.raw_fold_metrics_csv)
+    assert raw_fold_metrics["loss"].tolist() == [0.2, 0.4]
 
     provenance = json.loads(paths.provenance_json.read_text())
     assert provenance["source_path"].endswith("vehicle_00nan.csv")
@@ -74,3 +113,55 @@ def test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_va
     manifest = json.loads(paths.manifest_json.read_text())
     assert manifest["diagnostic_roles"] == {"1": "worst_fold", "2": "best_fold"}
     assert manifest["f1_macro_ranking"] == {"1": 0.4, "2": 0.8}
+
+
+def test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations(
+    tmp_path,
+) -> None:
+    writer = ArtifactWriter(tmp_path / "results", tmp_path / "project_metrics", "vehicle_00nan")
+    worst_plot = writer.results_dir / "plots" / "pretrain_losses_fold_1.png"
+    best_plot = writer.results_dir / "plots" / "finetune_losses_fold_3.png"
+    best_model = writer.results_dir / "final_model_fold_3.pt"
+    skipped_model = writer.results_dir / "final_model_fold_2.pt"
+    for artifact_path in (worst_plot, best_plot, best_model, skipped_model):
+        artifact_path.parent.mkdir(parents=True, exist_ok=True)
+        artifact_path.write_bytes(b"retained diagnostic artifact")
+    records = [
+        _record(
+            1,
+            f1_macro=0.4,
+            test_loss=0.5,
+            artifacts=(LoggedArtifact(worst_plot, "plots"),),
+        ),
+        _record(
+            2,
+            f1_macro=0.6,
+            test_loss=0.3,
+            artifacts=(LoggedArtifact(skipped_model, "models"),),
+        ),
+        _record(
+            3,
+            f1_macro=0.8,
+            test_loss=0.2,
+            artifacts=(
+                LoggedArtifact(best_plot, "plots"),
+                LoggedArtifact(best_model, "models"),
+            ),
+        ),
+    ]
+    summary = CrossValidationSummary(
+        metrics=_summary().metrics,
+        loss_bands=_summary().loss_bands,
+        diagnostic_roles={1: "worst_fold", 3: "best_fold"},
+    )
+
+    paths = writer.write_cv_tracking_artifacts(records, summary, _dataset(), seed=42, cv_folds=3)
+
+    manifest = json.loads(paths.manifest_json.read_text())
+    assert manifest["retained_artifact_paths"] == {
+        "1": [{"source_path": str(worst_plot), "artifact_path": "plots"}],
+        "3": [
+            {"source_path": str(best_plot), "artifact_path": "plots"},
+            {"source_path": str(best_model), "artifact_path": "models"},
+        ],
+    }

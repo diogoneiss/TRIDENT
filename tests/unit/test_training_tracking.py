@@ -37,6 +37,13 @@ _PARENT_METRIC_KEYS = {
     "cv/test/f1_macro/min",
     "cv/test/f1_macro/max",
     "cv/test/f1_macro/fold_count",
+    "cv/test/loss/mean",
+    "cv/test/loss/ci95_lower",
+    "cv/test/loss/ci95_upper",
+    "cv/test/loss/std",
+    "cv/test/loss/min",
+    "cv/test/loss/max",
+    "cv/test/loss/fold_count",
     "cv/pretrain/train_loss/mean",
     "cv/pretrain/train_loss/ci95_lower",
     "cv/pretrain/train_loss/ci95_upper",
@@ -143,7 +150,11 @@ def _buffered_record(
             step=7,
         )
         fold_tracker.log_metrics(
-            {"test/accuracy": 0.5 + f1_macro / 2, "test/f1_macro": f1_macro}
+            {
+                "test/accuracy": 0.5 + f1_macro / 2,
+                "test/f1_macro": f1_macro,
+                "test/loss": 0.5 - f1_macro / 2,
+            }
         )
         artifact = tmp_path / f"fold_{fold}.txt"
         artifact.write_text(f"fold {fold}")
@@ -206,6 +217,7 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     assert set(parent.data.metrics) == _PARENT_METRIC_KEYS
     assert parent.data.metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
     assert parent.data.metrics["cv/test/f1_macro/fold_count"] == 3.0
+    assert parent.data.metrics["cv/test/loss/mean"] == pytest.approx(0.2)
     assert parent.data.metrics["cv/finetune/val_loss/mean"] == pytest.approx(6.0)
     for metric_name in _LOSS_HISTORY_KEYS:
         loss_history = client.get_metric_history(parent.info.run_id, metric_name)
@@ -235,6 +247,7 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
         "finetune/val_loss": (7, 5.0),
         "test/accuracy": (0, 0.7),
         "test/f1_macro": (0, 0.4),
+        "test/loss": (0, 0.3),
     }
     assert set(child_by_fold["1"].data.metrics) == set(expected_worst_history)
     for metric_name, (expected_step, expected_value) in expected_worst_history.items():

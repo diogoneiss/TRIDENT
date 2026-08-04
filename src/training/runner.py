@@ -102,7 +102,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         if request.cv_folds is not None:
             tracking_summary = summarize_cross_validation(records)
             artifact_paths = artifacts.write_cv_tracking_artifacts(
-                results,
+                records,
                 tracking_summary,
                 dataset,
                 request.seed,

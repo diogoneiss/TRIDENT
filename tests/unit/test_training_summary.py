@@ -22,6 +22,7 @@ def _record(fold: int, f1_macro: float) -> FoldTrackingRecord:
             LoggedMetric("pretrain/val_loss", 2.0 + fold, 0),
             LoggedMetric("finetune/train_loss", 3.0 + fold, 0),
             LoggedMetric("finetune/val_loss", 4.0 + fold, 0),
+            LoggedMetric("test/loss", 0.1 * fold, None),
         ),
         artifacts=(),
     )
@@ -38,6 +39,7 @@ def test_summarize_cross_validation_logs_statistics_and_loss_bands() -> None:
     assert stats.maximum == pytest.approx(0.8)
     assert stats.ci95_lower == pytest.approx(-1.94124094723494)
     assert stats.ci95_upper == pytest.approx(3.14124094723494)
+    assert summary.metrics["loss"].mean == pytest.approx(0.15)
     assert summary.diagnostic_roles == {1: "worst_fold", 2: "best_fold"}
     loss_band = summary.loss_bands["finetune/val_loss"][0]
     assert loss_band.mean == pytest.approx(5.5)
@@ -51,10 +53,16 @@ def test_summarize_cross_validation_uses_one_role_for_a_tie() -> None:
     assert summary.diagnostic_roles == {1: "best_and_worst"}
 
 
-def test_summarize_cross_validation_uses_rank_order_for_a_partial_tie() -> None:
+def test_summarize_cross_validation_uses_lowest_fold_for_a_minimum_tie() -> None:
     summary = summarize_cross_validation([_record(1, 0.2), _record(2, 0.2), _record(3, 0.8)])
 
-    assert summary.diagnostic_roles == {2: "worst_fold", 3: "best_fold"}
+    assert summary.diagnostic_roles == {1: "worst_fold", 3: "best_fold"}
+
+
+def test_summarize_cross_validation_uses_lowest_fold_for_a_maximum_tie() -> None:
+    summary = summarize_cross_validation([_record(1, 0.2), _record(2, 0.8), _record(3, 0.8)])
+
+    assert summary.diagnostic_roles == {1: "worst_fold", 2: "best_fold"}
 
 
 def test_summarize_cross_validation_rejects_fewer_than_two_folds() -> None:
@@ -87,6 +95,7 @@ def test_summarize_cross_validation_rejects_mismatched_loss_epochs() -> None:
             LoggedMetric("pretrain/val_loss", 4.0, 0),
             LoggedMetric("finetune/train_loss", 5.0, 0),
             LoggedMetric("finetune/val_loss", 6.0, 1),
+            LoggedMetric("test/loss", 0.2, None),
         ),
     )
 

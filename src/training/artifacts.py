@@ -11,9 +11,11 @@ import numpy as np
 import pandas as pd
 import torch
 
+from .summary import final_metrics_for_tracking
 from .types import (
     CrossValidationSummary,
     FoldResult,
+    FoldTrackingRecord,
     Hyperparameters,
     PreparedDataset,
     TrackingArtifactPaths,
@@ -65,7 +67,7 @@ class ArtifactWriter:
 
     def write_cv_tracking_artifacts(
         self,
-        fold_results: Sequence[FoldResult],
+        records: Sequence[FoldTrackingRecord],
         summary: CrossValidationSummary,
         dataset: PreparedDataset,
         seed: int,
@@ -86,8 +88,12 @@ class ArtifactWriter:
             path.parent.mkdir(parents=True, exist_ok=True)
 
         rows = [
-            {"fold": result.fold, "dataset": result.dataset_name, **result.metrics}
-            for result in fold_results
+            {
+                "fold": record.result.fold,
+                "dataset": record.result.dataset_name,
+                **final_metrics_for_tracking(record),
+            }
+            for record in records
         ]
         pd.DataFrame(rows).to_csv(paths.raw_fold_metrics_csv, index=False)
 
@@ -104,9 +110,10 @@ class ArtifactWriter:
 
         f1_macro_ranking = {
             str(result.fold): result.metrics["f1_macro"]
-            for result in fold_results
+            for result in (record.result for record in records)
             if "f1_macro" in result.metrics
         }
+        records_by_fold = {record.result.fold: record for record in records}
         manifest_payload = {
             "diagnostic_roles": {str(fold): role for fold, role in summary.diagnostic_roles.items()},
             "f1_macro_ranking": f1_macro_ranking,
@@ -118,7 +125,16 @@ class ArtifactWriter:
                 }
                 for fold, role in summary.diagnostic_roles.items()
             ],
-            "retained_artifact_paths": {},
+            "retained_artifact_paths": {
+                str(fold): [
+                    {
+                        "source_path": artifact.path,
+                        "artifact_path": artifact.artifact_path,
+                    }
+                    for artifact in records_by_fold[fold].artifacts
+                ]
+                for fold in summary.diagnostic_roles
+            },
         }
         _write_json(paths.manifest_json, manifest_payload)
 

@@ -31,9 +31,10 @@ def summarize_cross_validation(records: Sequence[FoldTrackingRecord]) -> CrossVa
     if len(records) < 2:
         raise ValueError("Cross-validation summary requires at least two folds.")
 
-    metric_keys = _validate_final_metrics(records)
+    final_metrics = tuple(final_metrics_for_tracking(record) for record in records)
+    metric_keys = _validate_final_metrics(records, final_metrics)
     metrics = {
-        key: _summarize_metric([float(record.result.metrics[key]) for record in records])
+        key: _summarize_metric([float(metrics[key]) for metrics in final_metrics])
         for key in metric_keys
     }
     loss_bands = _summarize_loss_bands(records)
@@ -44,30 +45,45 @@ def summarize_cross_validation(records: Sequence[FoldTrackingRecord]) -> CrossVa
     )
 
 
-def _validate_final_metrics(records: Sequence[FoldTrackingRecord]) -> tuple[str, ...]:
-    metric_keys = tuple(records[0].result.metrics)
+def final_metrics_for_tracking(record: FoldTrackingRecord) -> dict[str, float | int | str]:
+    """Return a fold's legacy metrics plus its tracked step-less test loss."""
+    metrics = dict(record.result.metrics)
+    test_loss_events = [
+        event
+        for event in record.metric_events
+        if event.key == "test/loss" and event.step is None
+    ]
+    if len(test_loss_events) > 1:
+        raise ValueError("Each fold must include at most one step-less test/loss event.")
+    if test_loss_events:
+        metrics["loss"] = test_loss_events[0].value
+    return metrics
+
+
+def _validate_final_metrics(
+    records: Sequence[FoldTrackingRecord],
+    final_metrics: Sequence[Mapping[str, float | int | str]],
+) -> tuple[str, ...]:
+    metric_keys = tuple(final_metrics[0])
     if not metric_keys:
         raise ValueError("Cross-validation folds must include final metrics.")
     if "f1_macro" not in metric_keys:
         raise ValueError("Cross-validation folds must include the f1_macro metric.")
 
     expected_keys = set(metric_keys)
-    for record in records:
+    for record, metrics in zip(records, final_metrics):
         if not isinstance(record.result.fold, int) or isinstance(record.result.fold, bool):
             raise ValueError("Cross-validation fold identifiers must be integers.")
-        if set(record.result.metrics) != expected_keys:
+        if set(metrics) != expected_keys:
             raise ValueError("All folds must have the same final metric keys.")
-        for key, value in record.result.metrics.items():
+        for key, value in metrics.items():
             if not _is_finite_number(value):
                 raise ValueError(f"Final metric {key!r} must be finite and numeric.")
     return metric_keys
 
 
 def _summarize_metric(values: Sequence[float]) -> MetricSummary:
-    value_array = np.asarray(values, dtype=float)
-    mean = float(np.mean(value_array))
-    standard_deviation = float(np.std(value_array, ddof=1))
-    margin = float(t.ppf(0.975, df=len(value_array) - 1) * standard_deviation / sqrt(len(value_array)))
+    value_array, mean, standard_deviation, margin = _student_t_interval(values)
     return MetricSummary(
         mean=mean,
         ci95_lower=mean - margin,
@@ -116,27 +132,36 @@ def _loss_events_by_key(metric_events: Sequence[LoggedMetric]) -> dict[str, dict
 
 
 def _loss_band(step: int, values: Sequence[float]) -> LossBand:
-    value_array = np.asarray(values, dtype=float)
-    mean = float(np.mean(value_array))
-    standard_deviation = float(np.std(value_array, ddof=1))
-    margin = float(t.ppf(0.975, df=len(value_array) - 1) * standard_deviation / sqrt(len(value_array)))
+    _, mean, _, margin = _student_t_interval(values)
     return LossBand(step=step, mean=mean, ci95_lower=mean - margin, ci95_upper=mean + margin)
 
 
-def _diagnostic_roles(records: Sequence[FoldTrackingRecord]) -> Mapping[int, str]:
-    ranked = sorted(
-        records,
-        key=lambda record: (float(record.result.metrics["f1_macro"]), -record.result.fold),
+def _student_t_interval(
+    values: Sequence[float],
+) -> tuple[np.ndarray, float, float, float]:
+    value_array = np.asarray(values, dtype=float)
+    mean = float(np.mean(value_array))
+    standard_deviation = float(np.std(value_array, ddof=1))
+    margin = float(
+        t.ppf(0.975, df=len(value_array) - 1)
+        * standard_deviation
+        / sqrt(len(value_array))
     )
-    worst_score = float(ranked[0].result.metrics["f1_macro"])
-    best_score = float(ranked[-1].result.metrics["f1_macro"])
-    if best_score == worst_score:
-        return {
-            min(record.result.fold for record in records): "best_and_worst",
-        }
-    worst_fold = ranked[0].result.fold
-    best_fold = ranked[-1].result.fold
-    return {worst_fold: "worst_fold", best_fold: "best_fold"}
+    return value_array, mean, standard_deviation, margin
+
+
+def _diagnostic_roles(records: Sequence[FoldTrackingRecord]) -> Mapping[int, str]:
+    worst = min(
+        records,
+        key=lambda record: (float(record.result.metrics["f1_macro"]), record.result.fold),
+    )
+    best = min(
+        records,
+        key=lambda record: (-float(record.result.metrics["f1_macro"]), record.result.fold),
+    )
+    if best.result.fold == worst.result.fold:
+        return {best.result.fold: "best_and_worst"}
+    return {worst.result.fold: "worst_fold", best.result.fold: "best_fold"}
 
 
 def _is_finite_number(value: object) -> bool:
