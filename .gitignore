@@ -16,3 +16,7 @@ __pycache__/
 # Project-specific outputs
 results/
 datasets/processed_datasets/
+
+# MLflow tracking (SQLite backend + artifact store)
+mlflow.db
+mlruns/
