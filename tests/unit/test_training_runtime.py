@@ -16,10 +16,12 @@ def test_disabled_tracker_never_calls_mlflow_apis(monkeypatch) -> None:
     tracker = create_tracker(enabled=False)
     with tracker.parent_run(
         dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
-    ):
-        with tracker.fold_run(fold=1, cv_folds=2, dataset_name="vehicle_00nan"):
-            tracker.log_metrics({"test/accuracy": 1.0})
-            tracker.log_artifact("unused")
+    ) as active_tracker:
+        with active_tracker.fold_run(
+            fold=1, cv_folds=2, dataset_name="vehicle_00nan"
+        ) as fold_tracker:
+            fold_tracker.log_metrics({"test/accuracy": 1.0})
+            fold_tracker.log_artifact("unused")
 
 
 def test_train_main_preserves_legacy_cross_validation_return_shape(monkeypatch) -> None:

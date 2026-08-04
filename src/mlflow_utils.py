@@ -20,6 +20,7 @@ Usage example (in train.py):
 """
 
 import os
+import re
 import mlflow
 
 # ---------------------------------------------------------------------------
@@ -30,6 +31,12 @@ DEFAULT_TRACKING_URI = "sqlite:///mlflow.db"
 
 # Top-level experiment prefix so all TRIDENT experiments are grouped together
 EXPERIMENT_PREFIX = "TRIDENT"
+
+
+def parse_missingness_percent(dataset_name: str) -> str:
+    """Return the normalized percentage encoded by a ``_<n>nan`` suffix."""
+    match = re.search(r"_(\d+)nan$", dataset_name)
+    return str(int(match.group(1))) if match is not None else "unknown"
 
 
 # ---------------------------------------------------------------------------
