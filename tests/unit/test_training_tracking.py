@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Iterator
 
@@ -21,6 +22,51 @@ pytestmark = [
 ]
 
 
+_PARENT_METRIC_KEYS = {
+    "cv/test/accuracy/mean",
+    "cv/test/accuracy/ci95_lower",
+    "cv/test/accuracy/ci95_upper",
+    "cv/test/accuracy/std",
+    "cv/test/accuracy/min",
+    "cv/test/accuracy/max",
+    "cv/test/accuracy/fold_count",
+    "cv/test/f1_macro/mean",
+    "cv/test/f1_macro/ci95_lower",
+    "cv/test/f1_macro/ci95_upper",
+    "cv/test/f1_macro/std",
+    "cv/test/f1_macro/min",
+    "cv/test/f1_macro/max",
+    "cv/test/f1_macro/fold_count",
+    "cv/pretrain/train_loss/mean",
+    "cv/pretrain/train_loss/ci95_lower",
+    "cv/pretrain/train_loss/ci95_upper",
+    "cv/pretrain/val_loss/mean",
+    "cv/pretrain/val_loss/ci95_lower",
+    "cv/pretrain/val_loss/ci95_upper",
+    "cv/finetune/train_loss/mean",
+    "cv/finetune/train_loss/ci95_lower",
+    "cv/finetune/train_loss/ci95_upper",
+    "cv/finetune/val_loss/mean",
+    "cv/finetune/val_loss/ci95_lower",
+    "cv/finetune/val_loss/ci95_upper",
+}
+
+_LOSS_HISTORY_KEYS = {
+    "cv/pretrain/train_loss/mean",
+    "cv/pretrain/train_loss/ci95_lower",
+    "cv/pretrain/train_loss/ci95_upper",
+    "cv/pretrain/val_loss/mean",
+    "cv/pretrain/val_loss/ci95_lower",
+    "cv/pretrain/val_loss/ci95_upper",
+    "cv/finetune/train_loss/mean",
+    "cv/finetune/train_loss/ci95_lower",
+    "cv/finetune/train_loss/ci95_upper",
+    "cv/finetune/val_loss/mean",
+    "cv/finetune/val_loss/ci95_lower",
+    "cv/finetune/val_loss/ci95_upper",
+}
+
+
 @pytest.fixture
 def mlflow_backend(tmp_path, monkeypatch) -> Iterator[str]:
     previous_tracking_uri = mlflow.get_tracking_uri()
@@ -37,7 +83,14 @@ def mlflow_backend(tmp_path, monkeypatch) -> Iterator[str]:
 def _dataset(tmp_path: Path) -> PreparedDataset:
     frame = pd.DataFrame({"feature": [0.0, 1.0], "class": [0, 1]})
     frame.attrs["dataset_name"] = "vehicle_00nan"
-    source_path = tmp_path / "vehicle_00nan.csv"
+    source_path = (
+        tmp_path
+        / "datasets"
+        / "processed_datasets"
+        / "vehicle"
+        / "vehicle_00nan.csv"
+    )
+    source_path.parent.mkdir(parents=True, exist_ok=True)
     frame.to_csv(source_path, index=False)
     splits_path = tmp_path / "vehicle_split.json"
     splits_path.write_text("{}")
@@ -150,15 +203,20 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     assert parent.data.tags["dataset_variant"] == "vehicle_00nan"
     assert parent.data.tags["missingness_percent"] == "0"
     assert parent.data.tags["evaluation_mode"] == "cross_validation"
+    assert set(parent.data.metrics) == _PARENT_METRIC_KEYS
     assert parent.data.metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
     assert parent.data.metrics["cv/test/f1_macro/fold_count"] == 3.0
     assert parent.data.metrics["cv/finetune/val_loss/mean"] == pytest.approx(6.0)
-    loss_history = client.get_metric_history(
-        parent.info.run_id, "cv/finetune/val_loss/mean"
-    )
-    assert [(metric.step, metric.value) for metric in loss_history] == [(7, 6.0)]
+    for metric_name in _LOSS_HISTORY_KEYS:
+        loss_history = client.get_metric_history(parent.info.run_id, metric_name)
+        assert [metric.step for metric in loss_history] == [7]
     assert len(parent.inputs.dataset_inputs) == 1
-    assert parent.inputs.dataset_inputs[0].dataset.name == "vehicle_00nan"
+    dataset_input = parent.inputs.dataset_inputs[0]
+    assert dataset_input.dataset.name == "vehicle_00nan"
+    assert json.loads(dataset_input.dataset.source) == {"uri": str(dataset.source_path)}
+    assert {tag.key: tag.value for tag in dataset_input.tags} == {
+        "mlflow.data.context": "training"
+    }
 
     assert len(children) == 2
     assert {child.data.tags["run_role"] for child in children} == {
@@ -170,6 +228,22 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     child_by_fold = {child.data.tags["fold"]: child for child in children}
     assert child_by_fold["1"].data.metrics["test/f1_macro"] == pytest.approx(0.4)
     assert child_by_fold["3"].data.metrics["test/f1_macro"] == pytest.approx(0.8)
+    expected_worst_history = {
+        "pretrain/train_loss": (7, 2.0),
+        "pretrain/val_loss": (7, 3.0),
+        "finetune/train_loss": (7, 4.0),
+        "finetune/val_loss": (7, 5.0),
+        "test/accuracy": (0, 0.7),
+        "test/f1_macro": (0, 0.4),
+    }
+    assert set(child_by_fold["1"].data.metrics) == set(expected_worst_history)
+    for metric_name, (expected_step, expected_value) in expected_worst_history.items():
+        raw_history = client.get_metric_history(
+            child_by_fold["1"].info.run_id, metric_name
+        )
+        assert [(metric.step, metric.value) for metric in raw_history] == [
+            (expected_step, pytest.approx(expected_value))
+        ]
     assert _artifact_files(client, child_by_fold["1"].info.run_id) == {
         "diagnostics/fold_1.txt"
     }
@@ -282,25 +356,51 @@ def test_finalize_cross_validation_logs_parent_artifacts_at_stable_paths(
 
 
 def test_disabled_tracker_buffers_records_without_creating_mlflow_runs(
-    tmp_path, mlflow_backend
+    tmp_path, mlflow_backend, monkeypatch
 ) -> None:
-    tracker = create_tracker(enabled=False)
+    def fail_if_called(api_name: str):
+        def fail(*args, **kwargs):
+            raise AssertionError(
+                f"MLflow API {api_name} must not be called when tracking is disabled"
+            )
 
-    with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
-    ) as active_tracker:
-        records = [
-            _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),
-            _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.8),
-        ]
-        active_tracker.log_prepared_dataset(_dataset(tmp_path))
-        active_tracker.finalize_cross_validation(
-            records,
-            summarize_cross_validation(records),
-            _dataset(tmp_path),
-            _artifact_paths(tmp_path),
-        )
-        active_tracker.log_single_split_record(records[0])
+        return fail
+
+    mlflow_apis = (
+        (mlflow, "autolog"),
+        (mlflow, "set_tracking_uri"),
+        (mlflow, "get_experiment_by_name"),
+        (mlflow, "create_experiment"),
+        (mlflow, "start_run"),
+        (mlflow, "end_run"),
+        (mlflow, "log_params"),
+        (mlflow, "log_param"),
+        (mlflow, "log_metrics"),
+        (mlflow, "log_metric"),
+        (mlflow, "log_artifact"),
+        (mlflow, "log_input"),
+        (mlflow.data, "from_pandas"),
+    )
+    with monkeypatch.context() as mlflow_spies:
+        for api_owner, api_name in mlflow_apis:
+            mlflow_spies.setattr(api_owner, api_name, fail_if_called(api_name))
+
+        tracker = create_tracker(enabled=False)
+        with tracker.parent_run(
+            dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
+        ) as active_tracker:
+            records = [
+                _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),
+                _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.8),
+            ]
+            active_tracker.log_prepared_dataset(_dataset(tmp_path))
+            active_tracker.finalize_cross_validation(
+                records,
+                summarize_cross_validation(records),
+                _dataset(tmp_path),
+                _artifact_paths(tmp_path),
+            )
+            active_tracker.log_single_split_record(records[0])
 
     assert records[0].metric_events[0].key == "pretrain/train_loss"
     assert records[0].artifacts[0].path.name == "fold_1.txt"
