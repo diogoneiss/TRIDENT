@@ -130,18 +130,12 @@ def _diagnostic_roles(records: Sequence[FoldTrackingRecord]) -> Mapping[int, str
     )
     worst_score = float(ranked[0].result.metrics["f1_macro"])
     best_score = float(ranked[-1].result.metrics["f1_macro"])
-    worst_fold = min(
-        record.result.fold
-        for record in records
-        if float(record.result.metrics["f1_macro"]) == worst_score
-    )
-    best_fold = min(
-        record.result.fold
-        for record in records
-        if float(record.result.metrics["f1_macro"]) == best_score
-    )
-    if best_fold == worst_fold:
-        return {best_fold: "best_and_worst"}
+    if best_score == worst_score:
+        return {
+            min(record.result.fold for record in records): "best_and_worst",
+        }
+    worst_fold = ranked[0].result.fold
+    best_fold = ranked[-1].result.fold
     return {worst_fold: "worst_fold", best_fold: "best_fold"}
 
 

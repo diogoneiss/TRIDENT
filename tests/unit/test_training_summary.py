@@ -36,15 +36,25 @@ def test_summarize_cross_validation_logs_statistics_and_loss_bands() -> None:
     assert stats.fold_count == 2
     assert stats.minimum == pytest.approx(0.4)
     assert stats.maximum == pytest.approx(0.8)
-    assert stats.ci95_lower < stats.mean < stats.ci95_upper
+    assert stats.ci95_lower == pytest.approx(-1.94124094723494)
+    assert stats.ci95_upper == pytest.approx(3.14124094723494)
     assert summary.diagnostic_roles == {1: "worst_fold", 2: "best_fold"}
-    assert summary.loss_bands["finetune/val_loss"][0].mean == pytest.approx(5.5)
+    loss_band = summary.loss_bands["finetune/val_loss"][0]
+    assert loss_band.mean == pytest.approx(5.5)
+    assert loss_band.ci95_lower == pytest.approx(-0.85310236808735)
+    assert loss_band.ci95_upper == pytest.approx(11.85310236808735)
 
 
 def test_summarize_cross_validation_uses_one_role_for_a_tie() -> None:
     summary = summarize_cross_validation([_record(1, 0.5), _record(2, 0.5)])
 
     assert summary.diagnostic_roles == {1: "best_and_worst"}
+
+
+def test_summarize_cross_validation_uses_rank_order_for_a_partial_tie() -> None:
+    summary = summarize_cross_validation([_record(1, 0.2), _record(2, 0.2), _record(3, 0.8)])
+
+    assert summary.diagnostic_roles == {2: "worst_fold", 3: "best_fold"}
 
 
 def test_summarize_cross_validation_rejects_fewer_than_two_folds() -> None:
