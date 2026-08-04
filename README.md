@@ -260,6 +260,18 @@ When cross-validation is enabled (`--cv_folds <K>`), individual metrics are comp
 - A summary containing the `mean` and standard deviation (`mean ± std`) is computed and printed as a confidence interval table directly to the console at the end of the run.
 - You can also programmatically compute these summary stats using the `compute_cv_summary(df_or_path)` function in `train.py`.
 
+#### MLflow Cross-Validation Comparisons
+
+Each training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing executions. For a cross-validation run, compare `cv/test/f1_macro/mean` with `cv/test/f1_macro/ci95_lower`, `cv/test/f1_macro/ci95_upper`, and `cv/test/f1_macro/std`; the same `mean`, `ci95_lower`, `ci95_upper`, `std`, `min`, `max`, and `fold_count` fields are logged under `cv/test/<metric>/...` for every numeric final fold metric.
+
+The 95% bounds are internal CV uncertainty, not an independent-test guarantee: the folds share training data. Parent loss charts use the readable mean/lower/upper bands `cv/pretrain/train_loss/{mean,ci95_lower,ci95_upper}`, `cv/pretrain/val_loss/{mean,ci95_lower,ci95_upper}`, `cv/finetune/train_loss/{mean,ci95_lower,ci95_upper}`, and `cv/finetune/val_loss/{mean,ci95_lower,ci95_upper}`.
+
+Open `best_fold`/`worst_fold` children only for diagnosis. They retain raw fold histories and optional plot/model artifacts; a tied best/worst selection produces one `best_and_worst` child. The parent remains the comparison record and retains `metrics/raw_fold_metrics.csv`, `metrics/cv_summary.json`, `tracking/diagnostic_manifest.json`, and `data/provenance.json`. It also records the prepared dataset as MLflow input lineage, including its processed CSV source, schema, label encoding/scaling, split strategy, fold count, and seed.
+
+A predefined single split is one top-level `parent` run with its raw histories, final metrics, lineage, and optional artifacts logged directly there. It creates no nested `single_split` run and no CV summary. With `--disable_mlflow`, tracking remains inert and no MLflow calls are made.
+
+The tracking layout is specified in [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md). Deployable logged-model lifecycle work is intentionally deferred to [Ticket 0002](docs/tickets/0002-mlflow-logged-model-lifecycle.md).
+
 ## Example Workflows
 
 ### Basic Training
