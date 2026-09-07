@@ -40,9 +40,57 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
     )
 
 
+def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
+    """Post-parse validation for mutually exclusive and dependent flags."""
+    run_all = getattr(args, "all", False)
+    dataset_name = getattr(args, "dataset_name", None)
+
+    # Must specify exactly one of --all or --dataset_name.
+    if not run_all and not dataset_name:
+        raise SystemExit("error: one of --all or --dataset_name is required")
+
+    # --limit and --nan_level only make sense with --all.
+    if not run_all:
+        if getattr(args, "limit", None) is not None:
+            raise SystemExit("error: --limit can only be used with --all")
+        if getattr(args, "nan_level", 0) != 0:
+            raise SystemExit("error: --nan_level can only be used with --all")
+
+    # --all is incompatible with --use_optuna.
+    if run_all and getattr(args, "use_optuna", False):
+        raise SystemExit("error: --all and --use_optuna are mutually exclusive")
+
+    return args
+
+
 def build_training_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="TRIDENT: Training and evaluation of the model")
-    parser.add_argument("--dataset_name", type=str, required=True)
+
+    # Dataset selection: --all and --dataset_name are mutually exclusive.
+    dataset_group = parser.add_mutually_exclusive_group()
+    dataset_group.add_argument("--dataset_name", type=str, default=None)
+    dataset_group.add_argument(
+        "--all",
+        action="store_true",
+        default=False,
+        help="Run training on all available datasets.",
+    )
+
+    # Companion flags for --all mode.
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="When used with --all, run only the first N datasets (alphabetical).",
+    )
+    parser.add_argument(
+        "--nan_level",
+        type=int,
+        default=0,
+        choices=[0, 20, 40, 60, 80],
+        help="When used with --all, select the missingness level (default: 0).",
+    )
+
     parser.add_argument("--label_column", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default="results")
     parser.add_argument("--metrics_dir", type=str, default="metrics")

@@ -2,7 +2,7 @@
 
 import argparse
 
-from .config import build_training_parser, resolve_training_request
+from .config import build_training_parser, resolve_training_request, validate_parsed_args
 from .runner import run_training
 
 
@@ -19,4 +19,6 @@ def run_from_namespace(args: argparse.Namespace, return_metrics: bool = False) -
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    return build_training_parser().parse_args(argv)
+    args = build_training_parser().parse_args(argv)
+    validate_parsed_args(args)
+    return args

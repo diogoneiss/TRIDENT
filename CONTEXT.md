@@ -52,3 +52,28 @@ The parent-run metrics derived from all folds: mean, internal CV bounds, sample
 standard deviation, observed minimum and maximum, and fold count. Loss series
 include only mean and internal CV bounds at each epoch.
 _Avoid_: aggregate run, average fold
+
+**Component-ablation benchmark**:
+A reproducible experimental protocol that estimates each selected TRIDENT
+component's contribution while holding the dataset, data split, seed schedule,
+training budget, and reporting rules fixed. It is not a comparison with
+external methods.
+_Avoid_: model leaderboard, baseline benchmark
+
+**Full-factorial ablation**:
+The eight configurations formed by independently enabling or disabling the
+three selected TRIDENT mechanisms. It estimates main effects and interactions;
+it is not a leave-one-out comparison.
+_Avoid_: one-factor-at-a-time ablation
+
+**Paired single-seed CV protocol**:
+All ablation configurations use one shared seed and the same five
+cross-validation folds for a data condition. Fold-level comparisons are paired,
+but conclusions do not quantify initialization or resampling variability.
+_Avoid_: multi-seed robustness study
+
+**Primary endpoint**:
+Macro F1 is the pre-specified measure used to assess ablation effects.
+Accuracy, micro F1, precision, recall, and confusion-derived measures are
+secondary diagnostics and do not independently determine the study conclusion.
+_Avoid_: primary score, co-primary metric

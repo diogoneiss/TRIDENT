@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
-
+#TODO store those defaults elsewhere
 @dataclass(frozen=True)
 class Hyperparameters:
     dimension: int = 128
@@ -13,12 +13,15 @@ class Hyperparameters:
     layers: int = 2
     feedforward_dimension: int = 32
     dropout: float = 0.2
-    pretraining_epochs: int = 40
+    # pretraining_epochs: int = 40
+    pretraining_epochs: int = 300
+    # finetuning_epochs: int = 40
+    finetuning_epochs: int = 150
+
     batch_size: int = 256
     pretraining_learning_rate: float = 0.00034
     pretraining_weight_decay: float = 0.005
     mask_probability: float = 0.5
-    finetuning_epochs: int = 40
     finetuning_learning_rate: float = 0.001
     finetuning_weight_decay: float = 0.0019
     labels: int = 4

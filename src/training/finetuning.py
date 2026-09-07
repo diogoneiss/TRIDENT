@@ -124,12 +124,13 @@ def train_and_evaluate_classifier(
         indices = torch.randperm(len(processed_train))
         train_loss_sum = 0.0
         train_batch_count = 0
-        for start in tqdm(
-            range(0, len(processed_train), hyperparameters.batch_size),
-            desc=f"FineTune Epoch {epoch + 1}/{hyperparameters.finetuning_epochs}",
-            unit="batch",
-            leave=False,
-        ):
+        # for start in tqdm(
+        #     range(0, len(processed_train), hyperparameters.batch_size),
+        #     desc=f"FineTune Epoch {epoch + 1}/{hyperparameters.finetuning_epochs}",
+        #     unit="batch",
+        #     leave=False,
+        # ):
+        for start in range(0, len(processed_train), hyperparameters.batch_size):
             batch_indices = indices[start : start + hyperparameters.batch_size]
             logits, loss = model(processed_train.iloc[batch_indices], labels=train_labels[batch_indices])
             optimizer.zero_grad()

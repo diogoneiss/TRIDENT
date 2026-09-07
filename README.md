@@ -117,11 +117,40 @@ uv run main.py --dataset_name vehicle_00nan --metrics_dir ./experiments/vehicle/
 uv run main.py --dataset_name vehicle_00nan --disable_mlflow
 ```
 
+### Batch Training (All Datasets)
+
+```bash
+# Run all available datasets with default settings (0% missingness)
+uv run main.py --all
+
+# Run all datasets with 3-fold cross-validation
+uv run main.py --all --cv_folds 3
+
+# Run only the first 3 datasets (alphabetical order)
+uv run main.py --all --limit 3 --cv_folds 3
+
+# Run all datasets at 40% missingness level
+uv run main.py --all --nan_level 40
+
+# Combine limit, nan_level, and other flags
+uv run main.py --all --limit 5 --nan_level 20 --cv_folds 5 --disable_mlflow
+```
+
+The `--all` flag discovers datasets from `datasets/processed_datasets/` at runtime, runs them sequentially, and prints a summary table at the end showing each dataset's status, F1 macro score, and runtime. Failed datasets are logged and skipped without aborting the remaining runs.
+
 ## Command Line Arguments
+
+### Dataset Selection
+
+Exactly one of `--dataset_name` or `--all` is required.
+
+- `--dataset_name`: Dataset name without the `.csv` extension (mutually exclusive with `--all`)
+- `--all`: Run training on all available datasets sequentially (mutually exclusive with `--dataset_name` and `--use_optuna`)
+- `--limit`: When used with `--all`, run only the first N datasets in alphabetical order
+- `--nan_level`: When used with `--all`, select the missingness level — one of `0`, `20`, `40`, `60`, `80` (default: `0`)
 
 ### Main Parameters
 
-- `--dataset_name`: Dataset name without the `.csv` extension (**required**)
 - `--label_column`: Target column name (default: `class`)
 - `--seed`: Random seed for reproducibility (default: `42`)
 - `--output_dir`: Results directory (default: `results`)
@@ -136,7 +165,7 @@ uv run main.py --dataset_name vehicle_00nan --disable_mlflow
 
 ### Optuna Optimization
 
-- `--use_optuna`: Enable hyperparameter optimization
+- `--use_optuna`: Enable hyperparameter optimization (mutually exclusive with `--all`)
 - `--n_trials`: Number of optimization trials (default: `50`)
 - `--retrain_best`: Retrain using the best parameters found during search
 
@@ -282,6 +311,16 @@ uv run main.py --dataset_name spambase_00nan
 
 # Train on a dataset with 20% missing values
 uv run main.py --dataset_name spambase_20nan --plot_losses
+```
+
+### Batch Training
+
+```bash
+# Run all datasets with 3-fold cross-validation, no MLflow
+uv run main.py --all --cv_folds 3 --disable_mlflow
+
+# Run first 3 datasets at 60% missingness
+uv run main.py --all --limit 3 --nan_level 60 --cv_folds 5
 ```
 
 ### Hyperparameter Optimization

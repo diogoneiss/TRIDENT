@@ -69,12 +69,14 @@ def train_pretrainer(
         indices = torch.randperm(len(masked_train_frame))
         train_loss_sum = 0.0
         train_steps = 0
-        for start in tqdm(
-            range(0, len(masked_train_frame), hyperparameters.batch_size),
-            desc="Batch",
-            unit="batch",
-            leave=False,
-        ):
+        # for start in tqdm(
+        #     range(0, len(masked_train_frame), hyperparameters.batch_size),
+        #     desc="Batch",
+        #     unit="batch",
+        #     leave=False,
+        # ):
+        for start in range(0, len(masked_train_frame), hyperparameters.batch_size):
+
             batch_indices = indices[start : start + hyperparameters.batch_size]
             masked_batch = masked_train_frame.iloc[batch_indices].reset_index(drop=True)
             original_batch = train_frame.iloc[batch_indices].reset_index(drop=True)
