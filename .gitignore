@@ -12,10 +12,12 @@ __pycache__/
 # IDE configurations
 .vscode/
 .idea/
+.claude/
 
 # Project-specific outputs
 results/
 datasets/processed_datasets/
+metrics/
 
 # MLflow tracking (SQLite backend + artifact store)
 mlflow.db
