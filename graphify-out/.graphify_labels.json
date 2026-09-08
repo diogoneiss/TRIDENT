@@ -1,1 +1,17 @@
-{"0": "Model & Training Core", "1": "MLflow Fold Tracking", "2": "CLI Entry & Hyperparameter Search", "3": "Training Config & Data Pipeline", "4": "Curated CV Docs & Glossary", "5": "Cross-Validation Summary Stats", "6": "Training Refactor Design Docs", "7": "MLflow Tracking Tests", "8": "Artifact Writing & Persistence", "9": "Transformer Encoder Layers", "10": "Dataset Split Generation", "11": "Fold Metrics Computation", "12": "Disabled MLflow Stub (Optuna)", "13": "Training Package Init", "14": "Trident Package Root", "15": "MLflow Server Startup"}
+{
+  "0": "finetuning.py",
+  "1": "FoldTrackingRecord",
+  "2": "runner.py",
+  "3": "types.py",
+  "4": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
+  "5": "summarize_cross_validation",
+  "6": "TRIDENT README",
+  "7": "test_training_tracking.py",
+  "8": "TRIDENT Architecture",
+  "10": "generate_splits.py",
+  "11": "build_fold_result",
+  "12": "_DisabledMlflow",
+  "13": "__init__.py",
+  "14": "trident",
+  "15": "start_mlflow.ps1"
+}

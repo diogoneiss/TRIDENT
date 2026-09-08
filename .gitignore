@@ -20,3 +20,32 @@ datasets/processed_datasets/
 # MLflow tracking (SQLite backend + artifact store)
 mlflow.db
 mlruns/
+
+# Graphify: machine-local state, regenerated automatically per machine/checkout.
+# These are NOT reproducible content - they record which local interpreter/path
+# ran graphify, so committing them makes every clone/CI run start from a stale,
+# possibly nonexistent path (see graphify-out/.graphify_python, .graphify_root).
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+
+# Graphify: query/extraction caches. Purely derived, keyed by graphify version and
+# file hashes; last_query_stamp changes on every single `graphify query`, so tracking
+# this directory makes the working tree "dirty" after normal, read-only use.
+graphify-out/cache/
+
+# Graphify: signature sidecar for .graphify_labels.json, recomputed from graph content.
+graphify-out/.graphify_labels.json.sig
+
+# Graphify: intermediate build files, normally deleted by the build's own Step 9
+# cleanup - only linger if a `graphify update`/init run is interrupted mid-build.
+graphify-out/.graphify_uncached.txt
+graphify-out/.graphify_cached.json
+graphify-out/.graphify_semantic_new.json
+graphify-out/.graphify_old.json
+graphify-out/.graphify_extract.json
+graphify-out/.graphify_detect.json
+graphify-out/.graphify_analysis.json
+
+# Graphify: dated backup snapshots of the full output dir (auto-created before
+# rebuilds), each a multi-hundred-KB duplicate of graph.json/GRAPH_REPORT.md/etc.
+graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/

@@ -36,6 +36,8 @@ The framework introduces specialized components for heterogeneous tabular data a
 
 ## Architecture
 
+For a layer-by-layer walkthrough (tensor shapes, data pipeline, mermaid diagrams for both the theoretical model and the PyTorch implementation), see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). This section stays a high-level summary.
+
 ### Core Components
 
 - **TabularEmbedder**: Converts mixed tabular data into unified embeddings
@@ -54,7 +56,7 @@ The framework introduces specialized components for heterogeneous tabular data a
   - Dynamic masking based on missing-value density
   - MSE loss for embedding reconstruction
 
-- **TridentClassifier**: Supervised classification model
+- **TridentModel**: Supervised classification model
   - Reuses pre-trained encoder representations
   - Multi-layer classification head with dropout
   - Support for class-weighted loss functions
@@ -250,7 +252,7 @@ TRIDENT/
 ├── src/
 │   ├── embedder.py            # TabularEmbedder implementation
 │   ├── transformer.py         # TabularTransformerEncoder
-│   ├── models.py              # TridentPretrainer and TridentClassifier
+│   ├── models.py              # TridentPretrainer and TridentModel
 │   └── utils.py               # Utility functions and preprocessing
 └── datasets/
     ├── datasets_raw/          # Original CSV files

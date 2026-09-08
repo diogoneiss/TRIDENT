@@ -210,10 +210,10 @@
     "semantic_hash": "f9997222fc3ccaee58dcbc56b0ebde24"
   },
   "README.md": {
-    "mtime": 1785845549.1744854,
-    "seen": 1788830054.7408123,
-    "ast_hash": "7cf5570f4f3f313397a5704f47fa5490",
-    "semantic_hash": "7cf5570f4f3f313397a5704f47fa5490"
+    "mtime": 1788836169.2247078,
+    "seen": 1788836180.7513564,
+    "ast_hash": "281c5817e2912d41dbeb1a135929a5a3",
+    "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
     "mtime": 1782783124.3995712,
@@ -286,5 +286,23 @@
     "seen": 1788830054.7408123,
     "ast_hash": "724d1b926dc0a440250b74b9756eaeff",
     "semantic_hash": "724d1b926dc0a440250b74b9756eaeff"
+  },
+  ".claude/settings.json": {
+    "mtime": 1788834539.8721905,
+    "seen": 1788836180.7513564,
+    "ast_hash": "34fdeac30fc994b98bc2316a67ac21cc",
+    "semantic_hash": ""
+  },
+  "CLAUDE.md": {
+    "mtime": 1788834564.5470912,
+    "seen": 1788836180.7513564,
+    "ast_hash": "b6facb2fd2d77d0b422b13abebacb7f0",
+    "semantic_hash": ""
+  },
+  "docs/ARCHITECTURE.md": {
+    "mtime": 1788836162.3457735,
+    "seen": 1788836180.7513564,
+    "ast_hash": "503074be0b8f48f8c90d5707f684de4d",
+    "semantic_hash": ""
   }
 }
