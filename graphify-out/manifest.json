@@ -1,0 +1,290 @@
+{
+  "datasets/generate_splits.py": {
+    "mtime": 1782783124.4325697,
+    "seen": 1788830054.7408123,
+    "ast_hash": "06c9dce79f25154b5ef5652961aea611",
+    "semantic_hash": "06c9dce79f25154b5ef5652961aea611"
+  },
+  "main.py": {
+    "mtime": 1785844547.364866,
+    "seen": 1788830054.7408123,
+    "ast_hash": "e38944359f975fad4b01fecf3833b99e",
+    "semantic_hash": "e38944359f975fad4b01fecf3833b99e"
+  },
+  "opt.py": {
+    "mtime": 1785727618.286302,
+    "seen": 1788830054.7408123,
+    "ast_hash": "4b3680325fdd90234438146ea16a03f6",
+    "semantic_hash": "4b3680325fdd90234438146ea16a03f6"
+  },
+  "pyproject.toml": {
+    "mtime": 1785810331.2433085,
+    "seen": 1788830054.7408123,
+    "ast_hash": "8706a5e0c3438bcae242336f5e9ad951",
+    "semantic_hash": "8706a5e0c3438bcae242336f5e9ad951"
+  },
+  "src/embedder.py": {
+    "mtime": 1782783124.4345703,
+    "seen": 1788830054.7408123,
+    "ast_hash": "d0c80feec454016885da13c6a749716a",
+    "semantic_hash": "d0c80feec454016885da13c6a749716a"
+  },
+  "src/mlflow_utils.py": {
+    "mtime": 1785811818.7714617,
+    "seen": 1788830054.7408123,
+    "ast_hash": "3044b9dd7b0ef40e36d8074e8b8af4dc",
+    "semantic_hash": "3044b9dd7b0ef40e36d8074e8b8af4dc"
+  },
+  "src/models.py": {
+    "mtime": 1782783124.4345703,
+    "seen": 1788830054.7408123,
+    "ast_hash": "22ffecf8cc27e817eda00e1e1549a871",
+    "semantic_hash": "22ffecf8cc27e817eda00e1e1549a871"
+  },
+  "src/training/__init__.py": {
+    "mtime": 1785722332.2853637,
+    "seen": 1788830054.7408123,
+    "ast_hash": "53e248c9aaab05ea361d7ffe5fef7498",
+    "semantic_hash": "53e248c9aaab05ea361d7ffe5fef7498"
+  },
+  "src/training/artifacts.py": {
+    "mtime": 1785838642.3845212,
+    "seen": 1788830054.7408123,
+    "ast_hash": "ee8a9e9f1a7fdcc07f822fbad4d8caaa",
+    "semantic_hash": "ee8a9e9f1a7fdcc07f822fbad4d8caaa"
+  },
+  "src/training/cli.py": {
+    "mtime": 1785844525.8876505,
+    "seen": 1788830054.7408123,
+    "ast_hash": "a3c0ceb7175a131645e12b7d002a9b7f",
+    "semantic_hash": "a3c0ceb7175a131645e12b7d002a9b7f"
+  },
+  "src/training/config.py": {
+    "mtime": 1785844511.7259564,
+    "seen": 1788830054.7408123,
+    "ast_hash": "98bd046ba8911b489c0c63aa51df21db",
+    "semantic_hash": "98bd046ba8911b489c0c63aa51df21db"
+  },
+  "src/training/data.py": {
+    "mtime": 1785811100.9307883,
+    "seen": 1788830054.7408123,
+    "ast_hash": "4eea232a5b3103ffbb4b91fb131d6205",
+    "semantic_hash": "4eea232a5b3103ffbb4b91fb131d6205"
+  },
+  "src/training/discovery.py": {
+    "mtime": 1785844488.1776018,
+    "seen": 1788830054.7408123,
+    "ast_hash": "8d50840f2787462bfba38a34bafb7d87",
+    "semantic_hash": "8d50840f2787462bfba38a34bafb7d87"
+  },
+  "src/training/finetuning.py": {
+    "mtime": 1785848703.7157807,
+    "seen": 1788830054.7408123,
+    "ast_hash": "ce14b901ebb782e07f77ce3c5130d87a",
+    "semantic_hash": "ce14b901ebb782e07f77ce3c5130d87a"
+  },
+  "src/training/pretraining.py": {
+    "mtime": 1785848776.2866242,
+    "seen": 1788830054.7408123,
+    "ast_hash": "25ee2083c9c55cecc8537f60fa7a92df",
+    "semantic_hash": "25ee2083c9c55cecc8537f60fa7a92df"
+  },
+  "src/training/runner.py": {
+    "mtime": 1785838643.5496163,
+    "seen": 1788830054.7408123,
+    "ast_hash": "063fcfb837397d8240faa2595e2cee83",
+    "semantic_hash": "063fcfb837397d8240faa2595e2cee83"
+  },
+  "src/training/summary.py": {
+    "mtime": 1785838641.3091383,
+    "seen": 1788830054.7408123,
+    "ast_hash": "97157439b760f85b4ca864e0a9572d19",
+    "semantic_hash": "97157439b760f85b4ca864e0a9572d19"
+  },
+  "src/training/tracking.py": {
+    "mtime": 1785812866.0379548,
+    "seen": 1788830054.7408123,
+    "ast_hash": "cbaf9b6ccffbe0015660d5a5f329e36a",
+    "semantic_hash": "cbaf9b6ccffbe0015660d5a5f329e36a"
+  },
+  "src/training/types.py": {
+    "mtime": 1785848634.4665575,
+    "seen": 1788830054.7408123,
+    "ast_hash": "80adb25108fc6fcbf33dc0a4dc42fe48",
+    "semantic_hash": "80adb25108fc6fcbf33dc0a4dc42fe48"
+  },
+  "src/transformer.py": {
+    "mtime": 1782783124.4345703,
+    "seen": 1788830054.7408123,
+    "ast_hash": "3f14341d65f1c443198022aae419d65e",
+    "semantic_hash": "3f14341d65f1c443198022aae419d65e"
+  },
+  "src/utils.py": {
+    "mtime": 1782783124.4355736,
+    "seen": 1788830054.7408123,
+    "ast_hash": "7c93dc48032ea841995f841d0a98e375",
+    "semantic_hash": "7c93dc48032ea841995f841d0a98e375"
+  },
+  "start_mlflow.ps1": {
+    "mtime": 1783047855.794899,
+    "seen": 1788830054.7408123,
+    "ast_hash": "87f5c59b278d02dd97c6c5658793a7d4",
+    "semantic_hash": "87f5c59b278d02dd97c6c5658793a7d4"
+  },
+  "tests/fixtures/vehicle_00nan_regression.json": {
+    "mtime": 1785727407.3946948,
+    "seen": 1788830054.7408123,
+    "ast_hash": "c560a31c46b2b3f8ef55145244d83222",
+    "semantic_hash": "c560a31c46b2b3f8ef55145244d83222"
+  },
+  "tests/integration/test_vehicle_regression.py": {
+    "mtime": 1785726739.8684258,
+    "seen": 1788830054.7408123,
+    "ast_hash": "48aae04636df9e5525cb4ffb5ab44ffb",
+    "semantic_hash": "48aae04636df9e5525cb4ffb5ab44ffb"
+  },
+  "tests/unit/test_training_artifacts.py": {
+    "mtime": 1785838744.206694,
+    "seen": 1788830054.7408123,
+    "ast_hash": "9905b702c2bfb79b6030a59e9330127f",
+    "semantic_hash": "9905b702c2bfb79b6030a59e9330127f"
+  },
+  "tests/unit/test_training_config.py": {
+    "mtime": 1785722275.2633169,
+    "seen": 1788830054.7408123,
+    "ast_hash": "d7ec9f88e6b66e21e61e9fbbf2e93969",
+    "semantic_hash": "d7ec9f88e6b66e21e61e9fbbf2e93969"
+  },
+  "tests/unit/test_training_data.py": {
+    "mtime": 1785811211.0295768,
+    "seen": 1788830054.7408123,
+    "ast_hash": "11de1ce4d1f16e46e9173fc690e706c4",
+    "semantic_hash": "11de1ce4d1f16e46e9173fc690e706c4"
+  },
+  "tests/unit/test_training_metrics.py": {
+    "mtime": 1785731401.7771592,
+    "seen": 1788830054.7408123,
+    "ast_hash": "9a2d7ea7dcab9ef0dda7c07917a5bd28",
+    "semantic_hash": "9a2d7ea7dcab9ef0dda7c07917a5bd28"
+  },
+  "tests/unit/test_training_runtime.py": {
+    "mtime": 1785838682.1121173,
+    "seen": 1788830054.7408123,
+    "ast_hash": "390a2d69fb781d23df2dbabffa27d8e3",
+    "semantic_hash": "390a2d69fb781d23df2dbabffa27d8e3"
+  },
+  "tests/unit/test_training_summary.py": {
+    "mtime": 1785838676.457419,
+    "seen": 1788830054.7408123,
+    "ast_hash": "5608cd7334d73f6ecf71c63ef2362e72",
+    "semantic_hash": "5608cd7334d73f6ecf71c63ef2362e72"
+  },
+  "tests/unit/test_training_tracking.py": {
+    "mtime": 1785838538.5125732,
+    "seen": 1788830054.7408123,
+    "ast_hash": "9501b5ab35d37d6d9f53033b27a28aa0",
+    "semantic_hash": "9501b5ab35d37d6d9f53033b27a28aa0"
+  },
+  "train.py": {
+    "mtime": 1785726014.3721483,
+    "seen": 1788830054.7408123,
+    "ast_hash": "9bc80a6cf772ac1ccdb1cc97b7d91cde",
+    "semantic_hash": "9bc80a6cf772ac1ccdb1cc97b7d91cde"
+  },
+  ".superpowers/sdd/2026-08-02-training-refactor/task-3-report.md": {
+    "mtime": 1785727793.351813,
+    "seen": 1788830054.7408123,
+    "ast_hash": "c60c9709883a04e8ed59c16974dce4f0",
+    "semantic_hash": "c60c9709883a04e8ed59c16974dce4f0"
+  },
+  "AGENTS.md": {
+    "mtime": 1785731539.2353141,
+    "seen": 1788830054.7408123,
+    "ast_hash": "c7756a0ce67db6681103fa924c13cc93",
+    "semantic_hash": "c7756a0ce67db6681103fa924c13cc93"
+  },
+  "CONTEXT.md": {
+    "mtime": 1786134024.6925006,
+    "seen": 1788830054.7408123,
+    "ast_hash": "f9997222fc3ccaee58dcbc56b0ebde24",
+    "semantic_hash": "f9997222fc3ccaee58dcbc56b0ebde24"
+  },
+  "README.md": {
+    "mtime": 1785845549.1744854,
+    "seen": 1788830054.7408123,
+    "ast_hash": "7cf5570f4f3f313397a5704f47fa5490",
+    "semantic_hash": "7cf5570f4f3f313397a5704f47fa5490"
+  },
+  "datasets/categorical_columns/credit-g.txt": {
+    "mtime": 1782783124.3995712,
+    "seen": 1788830054.7408123,
+    "ast_hash": "3cb1b350defa2a2f28abd670b9d20cf7",
+    "semantic_hash": "3cb1b350defa2a2f28abd670b9d20cf7"
+  },
+  "datasets/categorical_columns/electricity.txt": {
+    "mtime": 1782783124.4005709,
+    "seen": 1788830054.7408123,
+    "ast_hash": "628b7db04235f228d40adc671413a8c8",
+    "semantic_hash": "628b7db04235f228d40adc671413a8c8"
+  },
+  "datasets/categorical_columns/kr-vs-kp.txt": {
+    "mtime": 1782783124.4005709,
+    "seen": 1788830054.7408123,
+    "ast_hash": "8c9f6dac7adf714cef40f1d6000ceeca",
+    "semantic_hash": "8c9f6dac7adf714cef40f1d6000ceeca"
+  },
+  "docs/adr/0001-training-package-with-compatibility-facade.md": {
+    "mtime": 1785720938.5604231,
+    "seen": 1788830054.7408123,
+    "ast_hash": "cc3007401963d472e161b86a34789f6f",
+    "semantic_hash": "cc3007401963d472e161b86a34789f6f"
+  },
+  "docs/adr/0002-curated-cross-validation-mlflow-runs.md": {
+    "mtime": 1785801147.120573,
+    "seen": 1788830054.7408123,
+    "ast_hash": "0456948629e73e5022bf00479c5bff70",
+    "semantic_hash": "0456948629e73e5022bf00479c5bff70"
+  },
+  "docs/plan-all-cli-flag.md": {
+    "mtime": 1785844425.5289528,
+    "seen": 1788830054.7408123,
+    "ast_hash": "f1c097528a3ac992810e6c45b80d93b9",
+    "semantic_hash": "f1c097528a3ac992810e6c45b80d93b9"
+  },
+  "docs/superpowers/plans/2026-08-02-training-refactor.md": {
+    "mtime": 1785721249.0234115,
+    "seen": 1788830054.7408123,
+    "ast_hash": "841963d5dbb1648e93746ba6a63ee399",
+    "semantic_hash": "841963d5dbb1648e93746ba6a63ee399"
+  },
+  "docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md": {
+    "mtime": 1785813317.4299061,
+    "seen": 1788830054.7408123,
+    "ast_hash": "b41f59542ad71de3583ba04fca820008",
+    "semantic_hash": "b41f59542ad71de3583ba04fca820008"
+  },
+  "docs/superpowers/specs/2026-08-02-training-refactor-design.md": {
+    "mtime": 1785720933.9311528,
+    "seen": 1788830054.7408123,
+    "ast_hash": "f0736253b7e2deeb752f7045276cb5ad",
+    "semantic_hash": "f0736253b7e2deeb752f7045276cb5ad"
+  },
+  "docs/superpowers/specs/2026-08-03-curated-mlflow-cross-validation-design.md": {
+    "mtime": 1785801338.1423488,
+    "seen": 1788830054.7408123,
+    "ast_hash": "f54f6efd642fe683d4b3aaf05800ec8b",
+    "semantic_hash": "f54f6efd642fe683d4b3aaf05800ec8b"
+  },
+  "docs/tickets/0001-training-refactor.md": {
+    "mtime": 1785727408.7139146,
+    "seen": 1788830054.7408123,
+    "ast_hash": "f444a42132c72548ac29a402344a2ea2",
+    "semantic_hash": "f444a42132c72548ac29a402344a2ea2"
+  },
+  "docs/tickets/0002-mlflow-logged-model-lifecycle.md": {
+    "mtime": 1785801182.7392933,
+    "seen": 1788830054.7408123,
+    "ast_hash": "724d1b926dc0a440250b74b9756eaeff",
+    "semantic_hash": "724d1b926dc0a440250b74b9756eaeff"
+  }
+}

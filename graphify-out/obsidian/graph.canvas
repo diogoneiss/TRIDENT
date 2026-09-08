@@ -1,0 +1,4669 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "Model & Training Core",
+      "x": 0,
+      "y": 0,
+      "width": 1760,
+      "height": 820,
+      "color": "1"
+    },
+    {
+      "id": "n_src_embedder_tabularembedder_init",
+      "type": "file",
+      "file": "dot-__init__().md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentmodel_init",
+      "type": "file",
+      "file": "dot-__init__()_1.md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentpretrainer_init",
+      "type": "file",
+      "file": "dot-__init__()_2.md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_embedder_tabularembedder_forward",
+      "type": "file",
+      "file": "dot-forward().md",
+      "x": 620,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentmodel_forward",
+      "type": "file",
+      "file": "dot-forward()_1.md",
+      "x": 820,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentpretrainer_forward",
+      "type": "file",
+      "file": "dot-forward()_2.md",
+      "x": 1020,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_tabulartransformerencoder_forward",
+      "type": "file",
+      "file": "dot-forward()_3.md",
+      "x": 1220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_trainingtracker_log_metrics",
+      "type": "file",
+      "file": "dot-log_metrics().md",
+      "x": 1420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_embedder_rationale_10",
+      "type": "file",
+      "file": "Class that encapsulates the creation of embeddings for tabular data -\u2026.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_rationale_1",
+      "type": "file",
+      "file": "Classifier fine-tuning and fold metric calculation..md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_rationale_93",
+      "type": "file",
+      "file": "Complete transformer encoder for tabular data.md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_py_dataframe",
+      "type": "file",
+      "file": "DataFrame.md",
+      "x": 620,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_rationale_139",
+      "type": "file",
+      "file": "Example function that 1) Splits trainval (e.g., 9010) 2) Generates masked DF\u2026.md",
+      "x": 820,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_rationale_72",
+      "type": "file",
+      "file": "Fine-tune and evaluate the classifier using the legacy optimization loop..md",
+      "x": 1020,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_finetuningoutcome",
+      "type": "file",
+      "file": "FinetuningOutcome.md",
+      "x": 1220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_foldsplit",
+      "type": "file",
+      "file": "FoldSplit.md",
+      "x": 1420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_embedder_rationale_93",
+      "type": "file",
+      "file": "For each row in the DataFrame, generates the resulting embedding 1) Transforms\u2026.md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_rationale_11",
+      "type": "file",
+      "file": "Given a masked DataFrame, asks the Transformer to reconstruct, only at MASK\u2026.md",
+      "x": 220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_hyperparameters",
+      "type": "file",
+      "file": "Hyperparameters.md",
+      "x": 420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_rationale_1",
+      "type": "file",
+      "file": "Immutable values exchanged between the training workflow stages..md",
+      "x": 620,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_rationale_193",
+      "type": "file",
+      "file": "Log metrics at an optional training step..md",
+      "x": 820,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_pretraining_rationale_1",
+      "type": "file",
+      "file": "Masked reconstruction pre-training stage..md",
+      "x": 1020,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_rationale_68",
+      "type": "file",
+      "file": "Parameters ---------- embedder  TabularEmbedder Responsible for generating\u2026.md",
+      "x": 1220,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_prepareddataset",
+      "type": "file",
+      "file": "PreparedDataset.md",
+      "x": 1420,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_rationale_20",
+      "type": "file",
+      "file": "Preprocesses the table to replace null values with the `NULL` token, applies\u2026.md",
+      "x": 20,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_pretrainingoutcome",
+      "type": "file",
+      "file": "PretrainingOutcome.md",
+      "x": 220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_protocol",
+      "type": "file",
+      "file": "Protocol.md",
+      "x": 420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_rationale_81",
+      "type": "file",
+      "file": "Separates real numerical values from special tokens `MASK` and `NULL`.\u2026.md",
+      "x": 620,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_embedder_tabularembedder",
+      "type": "file",
+      "file": "TabularEmbedder.md",
+      "x": 820,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_tabulartransformerencoder",
+      "type": "file",
+      "file": "TabularTransformerEncoder.md",
+      "x": 1020,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_pretraining_rationale_23",
+      "type": "file",
+      "file": "Train the masked reconstruction model using the legacy optimization loop..md",
+      "x": 1220,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_trainingtracker",
+      "type": "file",
+      "file": "TrainingTracker.md",
+      "x": 1420,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentmodel",
+      "type": "file",
+      "file": "TridentModel.md",
+      "x": 20,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_tridentpretrainer",
+      "type": "file",
+      "file": "TridentPretrainer.md",
+      "x": 220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_rationale_61",
+      "type": "file",
+      "file": "Unified model for the classification task 1) Generates tabular embeddings\u2026.md",
+      "x": 420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "type": "file",
+      "file": "_stub_training_runtime().md",
+      "x": 620,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_create_pretrain_datasets",
+      "type": "file",
+      "file": "create_pretrain_datasets().md",
+      "x": 820,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_py_device",
+      "type": "file",
+      "file": "device.md",
+      "x": 1020,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_pretraining_py_device",
+      "type": "file",
+      "file": "device_1.md",
+      "x": 1220,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models_rationale_99",
+      "type": "file",
+      "file": "df  pd.DataFrame Input DataFrame (possibly maskednull, but in fine-tuning\u2026.md",
+      "x": 1420,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_embedder",
+      "type": "file",
+      "file": "embedder.py.md",
+      "x": 20,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning",
+      "type": "file",
+      "file": "finetuning.py.md",
+      "x": 220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_models",
+      "type": "file",
+      "file": "models.py.md",
+      "x": 420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_preprocess_table",
+      "type": "file",
+      "file": "preprocess_table().md",
+      "x": 620,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_pretraining",
+      "type": "file",
+      "file": "pretraining.py.md",
+      "x": 820,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_split_numeric_and_special",
+      "type": "file",
+      "file": "split_numeric_and_special().md",
+      "x": 1020,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_test_runner_replays_single_split_into_parent_without_cv_artifacts_or_children",
+      "type": "file",
+      "file": "test_runner_replays_single_split_into_parent_without_cv_artifacts_or_children().md",
+      "x": 1220,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_test_runner_uses_fold_buffers_and_finalizes_cross_validation_once",
+      "type": "file",
+      "file": "test_runner_uses_fold_buffers_and_finalizes_cross_validation_once().md",
+      "x": 1420,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime",
+      "type": "file",
+      "file": "test_training_runtime.py.md",
+      "x": 20,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_train_and_evaluate_classifier",
+      "type": "file",
+      "file": "train_and_evaluate_classifier().md",
+      "x": 220,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_pretraining_train_pretrainer",
+      "type": "file",
+      "file": "train_pretrainer().md",
+      "x": 420,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer",
+      "type": "file",
+      "file": "transformer.py.md",
+      "x": 620,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types",
+      "type": "file",
+      "file": "types.py.md",
+      "x": 820,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils",
+      "type": "file",
+      "file": "utils.py.md",
+      "x": 1020,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "MLflow Fold Tracking",
+      "x": 1840,
+      "y": 0,
+      "width": 1760,
+      "height": 820,
+      "color": "2"
+    },
+    {
+      "id": "n_src_training_tracking_bufferedfoldtracker_init",
+      "type": "file",
+      "file": "dot-__init__()_3.md",
+      "x": 1860,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_init",
+      "type": "file",
+      "file": "dot-__init__()_4.md",
+      "x": 2060,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_init",
+      "type": "file",
+      "file": "dot-__init__()_5.md",
+      "x": 2260,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_diagnostic_children",
+      "type": "file",
+      "file": "dot-_log_diagnostic_children().md",
+      "x": 2460,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_parent_summary",
+      "type": "file",
+      "file": "dot-_log_parent_summary().md",
+      "x": 2660,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_replay_record",
+      "type": "file",
+      "file": "dot-_replay_record().md",
+      "x": 2860,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "type": "file",
+      "file": "dot-finalize_cross_validation().md",
+      "x": 3060,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "type": "file",
+      "file": "dot-finalize_cross_validation()_1.md",
+      "x": 3260,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "type": "file",
+      "file": "dot-finalize_cross_validation()_2.md",
+      "x": 1860,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_fold_run",
+      "type": "file",
+      "file": "dot-fold_run().md",
+      "x": 2060,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_fold_run",
+      "type": "file",
+      "file": "dot-fold_run()_1.md",
+      "x": 2260,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_fold_run",
+      "type": "file",
+      "file": "dot-fold_run()_2.md",
+      "x": 2460,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_bufferedfoldtracker_log_artifact",
+      "type": "file",
+      "file": "dot-log_artifact().md",
+      "x": 2660,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_log_artifact",
+      "type": "file",
+      "file": "dot-log_artifact()_1.md",
+      "x": 2860,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_artifact",
+      "type": "file",
+      "file": "dot-log_artifact()_2.md",
+      "x": 3060,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_log_artifact",
+      "type": "file",
+      "file": "dot-log_artifact()_3.md",
+      "x": 3260,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_bufferedfoldtracker_log_metrics",
+      "type": "file",
+      "file": "dot-log_metrics()_1.md",
+      "x": 1860,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_log_metrics",
+      "type": "file",
+      "file": "dot-log_metrics()_2.md",
+      "x": 2060,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_metrics",
+      "type": "file",
+      "file": "dot-log_metrics()_3.md",
+      "x": 2260,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_log_prepared_dataset",
+      "type": "file",
+      "file": "dot-log_prepared_dataset().md",
+      "x": 2460,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_prepared_dataset",
+      "type": "file",
+      "file": "dot-log_prepared_dataset()_1.md",
+      "x": 2660,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
+      "type": "file",
+      "file": "dot-log_prepared_dataset()_2.md",
+      "x": 2860,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_log_single_split_record",
+      "type": "file",
+      "file": "dot-log_single_split_record().md",
+      "x": 3060,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_log_single_split_record",
+      "type": "file",
+      "file": "dot-log_single_split_record()_1.md",
+      "x": 3260,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "type": "file",
+      "file": "dot-log_single_split_record()_2.md",
+      "x": 1860,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker_parent_run",
+      "type": "file",
+      "file": "dot-parent_run().md",
+      "x": 2060,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker_parent_run",
+      "type": "file",
+      "file": "dot-parent_run()_1.md",
+      "x": 2260,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_bufferedfoldtracker_to_record",
+      "type": "file",
+      "file": "dot-to_record().md",
+      "x": 2460,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_rationale_48",
+      "type": "file",
+      "file": "A tracker whose methods deliberately avoid importing MLflow side effects..md",
+      "x": 2660,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_bufferedfoldtracker",
+      "type": "file",
+      "file": "BufferedFoldTracker.md",
+      "x": 2860,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_173",
+      "type": "file",
+      "file": "Build tags for a per-fold child run. Parameters ---------- fold_idx Zero-based\u2026.md",
+      "x": 3060,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_rationale_29",
+      "type": "file",
+      "file": "Collect one fold's MLflow events until its diagnostic role is known..md",
+      "x": 3260,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_crossvalidationsummary",
+      "type": "file",
+      "file": "CrossValidationSummary.md",
+      "x": 1860,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_disabledtracker",
+      "type": "file",
+      "file": "DisabledTracker.md",
+      "x": 2060,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_faketracker",
+      "type": "file",
+      "file": "FakeTracker.md",
+      "x": 2260,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_foldtrackingrecord",
+      "type": "file",
+      "file": "FoldTrackingRecord.md",
+      "x": 2460,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_rationale_81",
+      "type": "file",
+      "file": "Log one comparison parent and only selected diagnostic fold runs..md",
+      "x": 2660,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_loggedartifact",
+      "type": "file",
+      "file": "LoggedArtifact.md",
+      "x": 2860,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_loggedmetric",
+      "type": "file",
+      "file": "LoggedMetric.md",
+      "x": 3060,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_rationale_1",
+      "type": "file",
+      "file": "MLflow adapters for the training runtime..md",
+      "x": 3260,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_metricsummary",
+      "type": "file",
+      "file": "MetricSummary.md",
+      "x": 1860,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker",
+      "type": "file",
+      "file": "MlflowTracker.md",
+      "x": 2060,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_trackingartifactpaths",
+      "type": "file",
+      "file": "TrackingArtifactPaths.md",
+      "x": 2260,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts_dataset",
+      "type": "file",
+      "file": "_dataset().md",
+      "x": 2460,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts_record",
+      "type": "file",
+      "file": "_record().md",
+      "x": 2660,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts_summary",
+      "type": "file",
+      "file": "_summary().md",
+      "x": 2860,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_build_fold_tags",
+      "type": "file",
+      "file": "build_fold_tags().md",
+      "x": 3060,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "type": "file",
+      "file": "test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations().md",
+      "x": 3260,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts",
+      "type": "file",
+      "file": "test_training_artifacts.py.md",
+      "x": 1860,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_artifacts_test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values",
+      "type": "file",
+      "file": "test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values().md",
+      "x": 2060,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking",
+      "type": "file",
+      "file": "tracking.py.md",
+      "x": 2260,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "CLI Entry & Hyperparameter Search",
+      "x": 3680,
+      "y": 0,
+      "width": 1540,
+      "height": 820,
+      "color": "3"
+    },
+    {
+      "id": "n_opt_objectivefunctionwrapper_call",
+      "type": "file",
+      "file": "dot-__call__().md",
+      "x": 3700,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_objectivefunctionwrapper_init",
+      "type": "file",
+      "file": "dot-__init__()_6.md",
+      "x": 3900,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_mlflowtracker_parent_run",
+      "type": "file",
+      "file": "dot-parent_run()_2.md",
+      "x": 4100,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_objectivefunctionwrapper_save_best_params",
+      "type": "file",
+      "file": "dot-save_best_params().md",
+      "x": 4300,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_138",
+      "type": "file",
+      "file": "Build a flat dict of MLflow tags for a training run. Parameters ----------\u2026.md",
+      "x": 4500,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_107",
+      "type": "file",
+      "file": "Build a flat dict of all TRIDENT hyperparameters suitable for\u2026.md",
+      "x": 4700,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_rationale_2",
+      "type": "file",
+      "file": "Command-line entry point for TRIDENT..md",
+      "x": 4900,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli_rationale_1",
+      "type": "file",
+      "file": "Compatibility entry points for command-line and programmatic training..md",
+      "x": 3700,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_47",
+      "type": "file",
+      "file": "Configure the MLflow tracking URI. Priority order 1. ``tracking_uri`` argument\u2026.md",
+      "x": 3900,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_rationale_58",
+      "type": "file",
+      "file": "Define the hyperparameter search space for Optuna.md",
+      "x": 4100,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_train_rationale_1",
+      "type": "file",
+      "file": "Legacy public facade for TRIDENT training..md",
+      "x": 4300,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli_py_namespace",
+      "type": "file",
+      "file": "Namespace.md",
+      "x": 4500,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_objectivefunctionwrapper",
+      "type": "file",
+      "file": "ObjectiveFunctionWrapper.md",
+      "x": 4700,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_train_rationale_9",
+      "type": "file",
+      "file": "Retain the historical ``train.main`` programmatic entry point..md",
+      "x": 4900,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_rationale_15",
+      "type": "file",
+      "file": "Return a human-readable duration string..md",
+      "x": 3700,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_discovery_rationale_11",
+      "type": "file",
+      "file": "Return sorted dataset names from datasetsprocessed_datasets. Each\u2026.md",
+      "x": 3900,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_68",
+      "type": "file",
+      "file": "Return the experiment_id for the given dataset, creating it if absent.\u2026.md",
+      "x": 4100,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_37",
+      "type": "file",
+      "file": "Return the normalized percentage encoded by a ``_nnan`` suffix..md",
+      "x": 4300,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli_rationale_10",
+      "type": "file",
+      "file": "Run a legacy namespace and retain the flat Optuna return contract..md",
+      "x": 4500,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_rationale_195",
+      "type": "file",
+      "file": "Run hyperparameter optimization with Optuna.md",
+      "x": 4700,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_rationale_26",
+      "type": "file",
+      "file": "Run training sequentially on every discovered dataset..md",
+      "x": 4900,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_discovery_rationale_1",
+      "type": "file",
+      "file": "Runtime discovery of available datasets in datasetsprocessed_datasets..md",
+      "x": 3700,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_rationale_178",
+      "type": "file",
+      "file": "Save the best parameters found so far to the correct location.md",
+      "x": 3900,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_rationale_81",
+      "type": "file",
+      "file": "Wrapper class for the Optuna objective function to maintain state.md",
+      "x": 4100,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_format_duration",
+      "type": "file",
+      "file": "_format_duration().md",
+      "x": 4300,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_build_hyperparams_dict",
+      "type": "file",
+      "file": "build_hyperparams_dict().md",
+      "x": 4500,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_build_run_tags",
+      "type": "file",
+      "file": "build_run_tags().md",
+      "x": 4700,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli",
+      "type": "file",
+      "file": "cli.py.md",
+      "x": 4900,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_define_search_space",
+      "type": "file",
+      "file": "define_search_space().md",
+      "x": 3700,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_discovery_discover_datasets",
+      "type": "file",
+      "file": "discover_datasets().md",
+      "x": 3900,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_discovery",
+      "type": "file",
+      "file": "discovery.py.md",
+      "x": 4100,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_get_or_create_experiment",
+      "type": "file",
+      "file": "get_or_create_experiment().md",
+      "x": 4300,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_main",
+      "type": "file",
+      "file": "main()_1.md",
+      "x": 4500,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_train_main",
+      "type": "file",
+      "file": "main()_2.md",
+      "x": 4700,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main",
+      "type": "file",
+      "file": "main.py.md",
+      "x": 4900,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils",
+      "type": "file",
+      "file": "mlflow_utils.py.md",
+      "x": 3700,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt",
+      "type": "file",
+      "file": "opt.py.md",
+      "x": 3900,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli_parse_args",
+      "type": "file",
+      "file": "parse_args().md",
+      "x": 4100,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_parse_missingness_percent",
+      "type": "file",
+      "file": "parse_missingness_percent().md",
+      "x": 4300,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_main_run_all",
+      "type": "file",
+      "file": "run_all().md",
+      "x": 4500,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_cli_run_from_namespace",
+      "type": "file",
+      "file": "run_from_namespace().md",
+      "x": 4700,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_run_hyperparameter_optimization",
+      "type": "file",
+      "file": "run_hyperparameter_optimization().md",
+      "x": 4900,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_setup_mlflow",
+      "type": "file",
+      "file": "setup_mlflow().md",
+      "x": 3700,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_mlflow_utils_rationale_1",
+      "type": "file",
+      "file": "srcmlflow_utils.py ------------------- Centralised MLflow utilities for\u2026.md",
+      "x": 3900,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_train",
+      "type": "file",
+      "file": "train.py.md",
+      "x": 4100,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "Training Config & Data Pipeline",
+      "x": 5300,
+      "y": 0,
+      "width": 1540,
+      "height": 820,
+      "color": "4"
+    },
+    {
+      "id": "n_src_training_types_hyperparameters_from_mapping",
+      "type": "file",
+      "file": "dot-from_mapping().md",
+      "x": 5320,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_datasetspec_from_name",
+      "type": "file",
+      "file": "dot-from_name().md",
+      "x": 5520,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_integration_test_vehicle_regression_rationale_17",
+      "type": "file",
+      "file": "A deterministic short CPUCUDA run remains within recorded tolerances..md",
+      "x": 5720,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_py_any",
+      "type": "file",
+      "file": "Any_1.md",
+      "x": 5920,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_argumentparser",
+      "type": "file",
+      "file": "ArgumentParser.md",
+      "x": 6120,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_rationale_72",
+      "type": "file",
+      "file": "Construct the legacy predefined or cross-validation fold splits..md",
+      "x": 6320,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_py_dataframe",
+      "type": "file",
+      "file": "DataFrame_3.md",
+      "x": 6520,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_rationale_1",
+      "type": "file",
+      "file": "Dataset preparation and fold construction for the training workflow..md",
+      "x": 5320,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_datasetspec",
+      "type": "file",
+      "file": "DatasetSpec.md",
+      "x": 5520,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_rationale_16",
+      "type": "file",
+      "file": "Load, encode, and scale a dataset before constructing its folds..md",
+      "x": 5720,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_py_namespace",
+      "type": "file",
+      "file": "Namespace_1.md",
+      "x": 5920,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_integration_test_vehicle_regression_rationale_1",
+      "type": "file",
+      "file": "Opt-in regression baseline for a short typed vehicle training run..md",
+      "x": 6120,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_rationale_44",
+      "type": "file",
+      "file": "Post-parse validation for mutually exclusive and dependent flags..md",
+      "x": 6320,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_runner_rationale_34",
+      "type": "file",
+      "file": "Run all folds and return raw folds plus the legacy aggregate metrics..md",
+      "x": 6520,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_runtimeoptions",
+      "type": "file",
+      "file": "RuntimeOptions.md",
+      "x": 5320,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_rationale_10",
+      "type": "file",
+      "file": "Sets the global seed to ensure reproducibility.md",
+      "x": 5520,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_rationale_204",
+      "type": "file",
+      "file": "The compatibility facade returns Optuna's flat mean-metrics mapping..md",
+      "x": 5720,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_trainingrequest",
+      "type": "file",
+      "file": "TrainingRequest.md",
+      "x": 5920,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_trainingresult",
+      "type": "file",
+      "file": "TrainingResult.md",
+      "x": 6120,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_rationale_1",
+      "type": "file",
+      "file": "Translation from legacy argparse namespaces to typed training requests..md",
+      "x": 6320,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_runner_rationale_1",
+      "type": "file",
+      "file": "Typed orchestration for TRIDENT training..md",
+      "x": 6520,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_runner_mlflow_hyperparameters",
+      "type": "file",
+      "file": "_mlflow_hyperparameters().md",
+      "x": 5320,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_build_folds",
+      "type": "file",
+      "file": "build_folds().md",
+      "x": 5520,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_build_training_parser",
+      "type": "file",
+      "file": "build_training_parser().md",
+      "x": 5720,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config",
+      "type": "file",
+      "file": "config.py.md",
+      "x": 5920,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data",
+      "type": "file",
+      "file": "data.py.md",
+      "x": 6120,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_integration",
+      "type": "file",
+      "file": "integration.md",
+      "x": 6320,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_load_hyperparameters",
+      "type": "file",
+      "file": "load_hyperparameters().md",
+      "x": 6520,
+      "y": 320,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_data_prepare_dataset",
+      "type": "file",
+      "file": "prepare_dataset().md",
+      "x": 5320,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_resolve_training_request",
+      "type": "file",
+      "file": "resolve_training_request().md",
+      "x": 5520,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_runner_run_training",
+      "type": "file",
+      "file": "run_training().md",
+      "x": 5720,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_runner",
+      "type": "file",
+      "file": "runner.py.md",
+      "x": 5920,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_utils_set_global_seed",
+      "type": "file",
+      "file": "set_global_seed().md",
+      "x": 6120,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_data_test_build_folds_creates_two_disjoint_test_splits",
+      "type": "file",
+      "file": "test_build_folds_creates_two_disjoint_test_splits().md",
+      "x": 6320,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_data_test_build_folds_raises_legacy_error_when_predefined_split_is_missing",
+      "type": "file",
+      "file": "test_build_folds_raises_legacy_error_when_predefined_split_is_missing().md",
+      "x": 6520,
+      "y": 400,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_config_test_legacy_namespace_accepts_hyperparameter_override",
+      "type": "file",
+      "file": "test_legacy_namespace_accepts_hyperparameter_override().md",
+      "x": 5320,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_config_test_legacy_namespace_uses_legacy_runtime_defaults",
+      "type": "file",
+      "file": "test_legacy_namespace_uses_legacy_runtime_defaults().md",
+      "x": 5520,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_config_test_parser_exposes_runtime_options",
+      "type": "file",
+      "file": "test_parser_exposes_runtime_options().md",
+      "x": 5720,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_test_train_main_preserves_legacy_cross_validation_return_shape",
+      "type": "file",
+      "file": "test_train_main_preserves_legacy_cross_validation_return_shape().md",
+      "x": 5920,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_config",
+      "type": "file",
+      "file": "test_training_config.py.md",
+      "x": 6120,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_data",
+      "type": "file",
+      "file": "test_training_data.py.md",
+      "x": 6320,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_integration_test_vehicle_regression",
+      "type": "file",
+      "file": "test_vehicle_regression.py.md",
+      "x": 6520,
+      "y": 480,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_integration_test_vehicle_regression_test_vehicle_typed_runner_matches_regression_fixture",
+      "type": "file",
+      "file": "test_vehicle_typed_runner_matches_regression_fixture().md",
+      "x": 5320,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_config_validate_parsed_args",
+      "type": "file",
+      "file": "validate_parsed_args().md",
+      "x": 5520,
+      "y": 560,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Curated CV Docs & Glossary",
+      "x": 0,
+      "y": 900,
+      "width": 1320,
+      "height": 720,
+      "color": "5"
+    },
+    {
+      "id": "n_docs_adr_0002_curated_cross_validation_mlflow_runs",
+      "type": "file",
+      "file": "ADR 0002 Curated Cross-Validation MLflow Runs.md",
+      "x": 20,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_cv_summary",
+      "type": "file",
+      "file": "CV Summary.md",
+      "x": 220,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_component_ablation_benchmark",
+      "type": "file",
+      "file": "Component-Ablation Benchmark.md",
+      "x": 420,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_03_curated_mlflow_cross_validation_crossvalidationsummary",
+      "type": "file",
+      "file": "CrossValidationSummary_1.md",
+      "x": 620,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_adr_0002_curated_cross_validation_mlflow_runs_curated_diagnostic_child_runs_pattern",
+      "type": "file",
+      "file": "Curated Diagnostic Child Runs Pattern.md",
+      "x": 820,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_specs_2026_08_03_curated_mlflow_cross_validation_design",
+      "type": "file",
+      "file": "Curated MLflow Cross-Validation Design Spec.md",
+      "x": 1020,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_03_curated_mlflow_cross_validation",
+      "type": "file",
+      "file": "Curated MLflow Cross-Validation Implementation Plan.md",
+      "x": 20,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_dataset_provenance",
+      "type": "file",
+      "file": "Dataset Provenance.md",
+      "x": 220,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_diagnostic_fold_run",
+      "type": "file",
+      "file": "Diagnostic Fold Run.md",
+      "x": 420,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_experiment_family",
+      "type": "file",
+      "file": "Experiment Family.md",
+      "x": 620,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_fold_ranking_metric",
+      "type": "file",
+      "file": "Fold-Ranking Metric.md",
+      "x": 820,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_full_factorial_ablation",
+      "type": "file",
+      "file": "Full-Factorial Ablation.md",
+      "x": 1020,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_internal_cv_interval",
+      "type": "file",
+      "file": "Internal CV Interval.md",
+      "x": 20,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_loss_band",
+      "type": "file",
+      "file": "Loss Band.md",
+      "x": 220,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_03_curated_mlflow_cross_validation_mlflowtracker",
+      "type": "file",
+      "file": "MlflowTracker Adapter.md",
+      "x": 420,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_paired_single_seed_cv_protocol",
+      "type": "file",
+      "file": "Paired Single-Seed CV Protocol.md",
+      "x": 620,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_primary_endpoint",
+      "type": "file",
+      "file": "Primary Endpoint.md",
+      "x": 820,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context_single_split_run",
+      "type": "file",
+      "file": "Single-Split Run.md",
+      "x": 1020,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_context",
+      "type": "file",
+      "file": "TRIDENT Experiment Tracking Context (CONTEXT.md).md",
+      "x": 20,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme",
+      "type": "file",
+      "file": "TRIDENT README.md",
+      "x": 220,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_trident_paper",
+      "type": "file",
+      "file": "TRIDENT Tabular Representation Inference with Dedicated Embeddings for Null Tokens (Paper).md",
+      "x": 420,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_tabularembedder",
+      "type": "file",
+      "file": "TabularEmbedder_1.md",
+      "x": 620,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_tabulartransformerencoder",
+      "type": "file",
+      "file": "TabularTransformerEncoder_1.md",
+      "x": 820,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_tickets_0002_mlflow_logged_model_lifecycle",
+      "type": "file",
+      "file": "Ticket 0002 MLflow Logged-Model Lifecycle.md",
+      "x": 1020,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_tridentclassifier",
+      "type": "file",
+      "file": "TridentClassifier.md",
+      "x": 20,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_tridentpretrainer",
+      "type": "file",
+      "file": "TridentPretrainer_1.md",
+      "x": 220,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_readme_compute_cv_summary",
+      "type": "file",
+      "file": "compute_cv_summary()_1.md",
+      "x": 420,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_categorical_columns_credit_g",
+      "type": "file",
+      "file": "credit-g Categorical Columns.md",
+      "x": 620,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_categorical_columns_electricity",
+      "type": "file",
+      "file": "electricity Categorical Columns.md",
+      "x": 820,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_categorical_columns_kr_vs_kp",
+      "type": "file",
+      "file": "kr-vs-kp Categorical Columns.md",
+      "x": 1020,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_03_curated_mlflow_cross_validation_summarize_cross_validation",
+      "type": "file",
+      "file": "summarize_cross_validation()_1.md",
+      "x": 20,
+      "y": 1380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Cross-Validation Summary Stats",
+      "x": 1840,
+      "y": 900,
+      "width": 1100,
+      "height": 620,
+      "color": "6"
+    },
+    {
+      "id": "n_src_training_summary_rationale_30",
+      "type": "file",
+      "file": "Aggregate completed CV folds into comparable final and loss statistics..md",
+      "x": 1860,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_foldresult",
+      "type": "file",
+      "file": "FoldResult.md",
+      "x": 2060,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_types_lossband",
+      "type": "file",
+      "file": "LossBand.md",
+      "x": 2260,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_rationale_1",
+      "type": "file",
+      "file": "Metric aggregation helpers..md",
+      "x": 2460,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_diagnostic_roles",
+      "type": "file",
+      "file": "_diagnostic_roles().md",
+      "x": 2660,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_is_finite_number",
+      "type": "file",
+      "file": "_is_finite_number().md",
+      "x": 1860,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_loss_band",
+      "type": "file",
+      "file": "_loss_band().md",
+      "x": 2060,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_loss_events_by_key",
+      "type": "file",
+      "file": "_loss_events_by_key().md",
+      "x": 2260,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_record",
+      "type": "file",
+      "file": "_record()_1.md",
+      "x": 2460,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_student_t_interval",
+      "type": "file",
+      "file": "_student_t_interval().md",
+      "x": 2660,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_summarize_loss_bands",
+      "type": "file",
+      "file": "_summarize_loss_bands().md",
+      "x": 1860,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_summarize_metric",
+      "type": "file",
+      "file": "_summarize_metric().md",
+      "x": 2060,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_validate_final_metrics",
+      "type": "file",
+      "file": "_validate_final_metrics().md",
+      "x": 2260,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_py_ndarray",
+      "type": "file",
+      "file": "ndarray_1.md",
+      "x": 2460,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_summarize_cross_validation",
+      "type": "file",
+      "file": "summarize_cross_validation().md",
+      "x": 2660,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary",
+      "type": "file",
+      "file": "summary.py.md",
+      "x": 1860,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_logs_statistics_and_loss_bands",
+      "type": "file",
+      "file": "test_summarize_cross_validation_logs_statistics_and_loss_bands().md",
+      "x": 2060,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_fewer_than_two_folds",
+      "type": "file",
+      "file": "test_summarize_cross_validation_rejects_fewer_than_two_folds().md",
+      "x": 2260,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_mismatched_loss_epochs",
+      "type": "file",
+      "file": "test_summarize_cross_validation_rejects_mismatched_loss_epochs().md",
+      "x": 2460,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_missing_final_metric",
+      "type": "file",
+      "file": "test_summarize_cross_validation_rejects_missing_final_metric().md",
+      "x": 2660,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_non_finite_final_metric",
+      "type": "file",
+      "file": "test_summarize_cross_validation_rejects_non_finite_final_metric().md",
+      "x": 1860,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_uses_lowest_fold_for_a_maximum_tie",
+      "type": "file",
+      "file": "test_summarize_cross_validation_uses_lowest_fold_for_a_maximum_tie().md",
+      "x": 2060,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_uses_lowest_fold_for_a_minimum_tie",
+      "type": "file",
+      "file": "test_summarize_cross_validation_uses_lowest_fold_for_a_minimum_tie().md",
+      "x": 2260,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary_test_summarize_cross_validation_uses_one_role_for_a_tie",
+      "type": "file",
+      "file": "test_summarize_cross_validation_uses_one_role_for_a_tie().md",
+      "x": 2460,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_summary",
+      "type": "file",
+      "file": "test_training_summary.py.md",
+      "x": 2660,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Training Refactor Design Docs",
+      "x": 3680,
+      "y": 900,
+      "width": 1100,
+      "height": 620,
+      "color": "1"
+    },
+    {
+      "id": "n_docs_adr_0001_training_package_with_compatibility_facade",
+      "type": "file",
+      "file": "ADR 0001 Training Package with Compatibility Facade.md",
+      "x": 3700,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_adr_0001_training_package_with_compatibility_facade_compatibility_facade_pattern",
+      "type": "file",
+      "file": "Compatibility Facade Pattern.md",
+      "x": 3900,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_foldresult",
+      "type": "file",
+      "file": "FoldResult_1.md",
+      "x": 4100,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_plan_all_cli_flag",
+      "type": "file",
+      "file": "Plan Add --all CLI Flag for Batch Dataset Training.md",
+      "x": 4300,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_prepareddataset",
+      "type": "file",
+      "file": "PreparedDataset_1.md",
+      "x": 4500,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_pyarrow_pin_constraint",
+      "type": "file",
+      "file": "PyArrow 24 Pin Constraint.md",
+      "x": 3700,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_runtimeoptions",
+      "type": "file",
+      "file": "RuntimeOptions_1.md",
+      "x": 3900,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents",
+      "type": "file",
+      "file": "TRIDENT Agent Guide (AGENTS.md).md",
+      "x": 4100,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n__superpowers_sdd_2026_08_02_training_refactor_task_3_report",
+      "type": "file",
+      "file": "Task 3 Report Runtime Adapters and Regression Baseline.md",
+      "x": 4300,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_tickets_0001_training_refactor",
+      "type": "file",
+      "file": "Ticket 0001 Training Refactor and Regression Baseline.md",
+      "x": 4500,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_specs_2026_08_02_training_refactor_design",
+      "type": "file",
+      "file": "Training Refactor Design Spec.md",
+      "x": 3700,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor",
+      "type": "file",
+      "file": "Training Refactor Implementation Plan.md",
+      "x": 3900,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_trainingrequest",
+      "type": "file",
+      "file": "TrainingRequest_1.md",
+      "x": 4100,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_trainingtracker",
+      "type": "file",
+      "file": "TrainingTracker Protocol.md",
+      "x": 4300,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_create_tracker",
+      "type": "file",
+      "file": "create_tracker()_1.md",
+      "x": 4500,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_plan_all_cli_flag_discover_datasets",
+      "type": "file",
+      "file": "discover_datasets()_1.md",
+      "x": 3700,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_resolve_training_request",
+      "type": "file",
+      "file": "resolve_training_request()_1.md",
+      "x": 3900,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_plan_all_cli_flag_run_all",
+      "type": "file",
+      "file": "run_all(args).md",
+      "x": 4100,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_run_from_namespace",
+      "type": "file",
+      "file": "run_from_namespace()_1.md",
+      "x": 4300,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_superpowers_plans_2026_08_02_training_refactor_run_training",
+      "type": "file",
+      "file": "run_training()_1.md",
+      "x": 4500,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_src_training_package",
+      "type": "file",
+      "file": "srctraining Package.md",
+      "x": 3700,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_train_main_facade",
+      "type": "file",
+      "file": "train.main(args, return_metrics=False) Compatibility Facade.md",
+      "x": 3900,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_docs_plan_all_cli_flag_validate_parsed_args",
+      "type": "file",
+      "file": "validate_parsed_args()_1.md",
+      "x": 4100,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_agents_vehicle_00nan_regression_fixture",
+      "type": "file",
+      "file": "vehicle_00nan Regression Fixture.md",
+      "x": 4300,
+      "y": 1300,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "MLflow Tracking Tests",
+      "x": 5300,
+      "y": 900,
+      "width": 1100,
+      "height": 520,
+      "color": "2"
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_rationale_182",
+      "type": "file",
+      "file": "Disabled tracking must keep every MLflow API completely untouched..md",
+      "x": 5320,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_mlflowclient",
+      "type": "file",
+      "file": "MlflowClient.md",
+      "x": 5520,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_py_path",
+      "type": "file",
+      "file": "Path_1.md",
+      "x": 5720,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_rationale_227",
+      "type": "file",
+      "file": "Return an MLflow-backed tracker only when tracking has been requested..md",
+      "x": 5920,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_artifact_files",
+      "type": "file",
+      "file": "_artifact_files().md",
+      "x": 6120,
+      "y": 980,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_artifact_paths",
+      "type": "file",
+      "file": "_artifact_paths().md",
+      "x": 5320,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_buffered_record",
+      "type": "file",
+      "file": "_buffered_record().md",
+      "x": 5520,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_dataset",
+      "type": "file",
+      "file": "_dataset()_1.md",
+      "x": 5720,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_experiment_runs",
+      "type": "file",
+      "file": "_experiment_runs().md",
+      "x": 5920,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_tracking_create_tracker",
+      "type": "file",
+      "file": "create_tracker().md",
+      "x": 6120,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_fixture",
+      "type": "file",
+      "file": "fixture.md",
+      "x": 5320,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_mlflow_backend",
+      "type": "file",
+      "file": "mlflow_backend().md",
+      "x": 5520,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_test_disabled_tracker_buffers_records_without_creating_mlflow_runs",
+      "type": "file",
+      "file": "test_disabled_tracker_buffers_records_without_creating_mlflow_runs().md",
+      "x": 5720,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_runtime_test_disabled_tracker_never_calls_mlflow_apis",
+      "type": "file",
+      "file": "test_disabled_tracker_never_calls_mlflow_apis().md",
+      "x": 5920,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_test_finalize_cross_validation_logs_parent_artifacts_at_stable_paths",
+      "type": "file",
+      "file": "test_finalize_cross_validation_logs_parent_artifacts_at_stable_paths().md",
+      "x": 6120,
+      "y": 1140,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_children",
+      "type": "file",
+      "file": "test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_children().md",
+      "x": 5320,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_test_finalize_cross_validation_replays_one_diagnostic_child_for_a_tie",
+      "type": "file",
+      "file": "test_finalize_cross_validation_replays_one_diagnostic_child_for_a_tie().md",
+      "x": 5520,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking_test_log_single_split_record_replays_into_parent_without_a_child",
+      "type": "file",
+      "file": "test_log_single_split_record_replays_into_parent_without_a_child().md",
+      "x": 5720,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_tracking",
+      "type": "file",
+      "file": "test_training_tracking.py.md",
+      "x": 5920,
+      "y": 1220,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g8",
+      "type": "group",
+      "label": "Artifact Writing & Persistence",
+      "x": 0,
+      "y": 1700,
+      "width": 1100,
+      "height": 520,
+      "color": "3"
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_init",
+      "type": "file",
+      "file": "dot-__init__()_7.md",
+      "x": 20,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_save_model",
+      "type": "file",
+      "file": "dot-save_model().md",
+      "x": 220,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "type": "file",
+      "file": "dot-write_cv_tracking_artifacts().md",
+      "x": 420,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_write_hyperparameters",
+      "type": "file",
+      "file": "dot-write_hyperparameters().md",
+      "x": 620,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_write_loss_plot",
+      "type": "file",
+      "file": "dot-write_loss_plot().md",
+      "x": 820,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_write_metrics",
+      "type": "file",
+      "file": "dot-write_metrics().md",
+      "x": 20,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter_write_tracking_provenance",
+      "type": "file",
+      "file": "dot-write_tracking_provenance().md",
+      "x": 220,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_py_any",
+      "type": "file",
+      "file": "Any_2.md",
+      "x": 420,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_artifactwriter",
+      "type": "file",
+      "file": "ArtifactWriter.md",
+      "x": 620,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_py_dataframe",
+      "type": "file",
+      "file": "DataFrame_4.md",
+      "x": 820,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_rationale_1",
+      "type": "file",
+      "file": "Filesystem artifacts emitted by a training runtime..md",
+      "x": 20,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_py_path",
+      "type": "file",
+      "file": "Path_2.md",
+      "x": 220,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_rationale_49",
+      "type": "file",
+      "file": "Return a fold's legacy metrics plus its tracked step-less test loss..md",
+      "x": 420,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_rationale_149",
+      "type": "file",
+      "file": "Write prepared-dataset lineage for a parent training run..md",
+      "x": 620,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_rationale_76",
+      "type": "file",
+      "file": "Write the parent-run CSV, summary, diagnostic manifest, and lineage..md",
+      "x": 820,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_to_builtin",
+      "type": "file",
+      "file": "_to_builtin().md",
+      "x": 20,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts_write_json",
+      "type": "file",
+      "file": "_write_json().md",
+      "x": 220,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_artifacts",
+      "type": "file",
+      "file": "artifacts.py.md",
+      "x": 420,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_final_metrics_for_tracking",
+      "type": "file",
+      "file": "final_metrics_for_tracking().md",
+      "x": 620,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g9",
+      "type": "group",
+      "label": "Transformer Encoder Layers",
+      "x": 1840,
+      "y": 1700,
+      "width": 880,
+      "height": 520,
+      "color": "4"
+    },
+    {
+      "id": "n_src_transformer_encoderlayer_init",
+      "type": "file",
+      "file": "dot-__init__()_8.md",
+      "x": 1860,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_feedforwardnetwork_init",
+      "type": "file",
+      "file": "dot-__init__()_9.md",
+      "x": 2060,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_multiheadattention_init",
+      "type": "file",
+      "file": "dot-__init__()_10.md",
+      "x": 2260,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_tabulartransformerencoder_init",
+      "type": "file",
+      "file": "dot-__init__()_11.md",
+      "x": 2460,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_encoderlayer_forward",
+      "type": "file",
+      "file": "dot-forward()_4.md",
+      "x": 1860,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_feedforwardnetwork_forward",
+      "type": "file",
+      "file": "dot-forward()_5.md",
+      "x": 2060,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_multiheadattention_forward",
+      "type": "file",
+      "file": "dot-forward()_6.md",
+      "x": 2260,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_encoderlayer",
+      "type": "file",
+      "file": "EncoderLayer.md",
+      "x": 2460,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_feedforwardnetwork",
+      "type": "file",
+      "file": "FeedForwardNetwork.md",
+      "x": 1860,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_rationale_5",
+      "type": "file",
+      "file": "Initializes the weight of a layer using Xavier uniform for weights and zeros\u2026.md",
+      "x": 2060,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_rationale_35",
+      "type": "file",
+      "file": "Multi-head attention layer for transformers.md",
+      "x": 2260,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_multiheadattention",
+      "type": "file",
+      "file": "MultiHeadAttention.md",
+      "x": 2460,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_rationale_14",
+      "type": "file",
+      "file": "Simple feed-forward network with two linear layers and ReLU activation.md",
+      "x": 1860,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_rationale_70",
+      "type": "file",
+      "file": "Transformer encoder layer with self-attention and feed-forward.md",
+      "x": 2060,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_transformer_initialize_weight",
+      "type": "file",
+      "file": "initialize_weight().md",
+      "x": 2260,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g10",
+      "type": "group",
+      "label": "Dataset Split Generation",
+      "x": 3680,
+      "y": 1700,
+      "width": 880,
+      "height": 520,
+      "color": "5"
+    },
+    {
+      "id": "n_datasets_generate_splits_py_any",
+      "type": "file",
+      "file": "Any.md",
+      "x": 3700,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_rationale_54",
+      "type": "file",
+      "file": "Converts numpyobject keys to JSON-serializable values..md",
+      "x": 3900,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_rationale_130",
+      "type": "file",
+      "file": "Create the split dictionary with indices and class proportions..md",
+      "x": 4100,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_py_dataframe",
+      "type": "file",
+      "file": "DataFrame_1.md",
+      "x": 4300,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_rationale_27",
+      "type": "file",
+      "file": "Injects NaNs into pct (%) of rows for each feature..md",
+      "x": 3700,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_rationale_113",
+      "type": "file",
+      "file": "Perform a non-stratified split when stratification is not possible..md",
+      "x": 3900,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_create_split_dict",
+      "type": "file",
+      "file": "_create_split_dict().md",
+      "x": 4100,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_json_key",
+      "type": "file",
+      "file": "_json_key().md",
+      "x": 4300,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_non_stratified_split",
+      "type": "file",
+      "file": "_non_stratified_split().md",
+      "x": 3700,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits",
+      "type": "file",
+      "file": "generate_splits.py.md",
+      "x": 3900,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_inject_nans",
+      "type": "file",
+      "file": "inject_nans().md",
+      "x": 4100,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_main",
+      "type": "file",
+      "file": "main().md",
+      "x": 4300,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_datasets_generate_splits_stratified_split_indices",
+      "type": "file",
+      "file": "stratified_split_indices().md",
+      "x": 3700,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g11",
+      "type": "group",
+      "label": "Fold Metrics Computation",
+      "x": 5300,
+      "y": 1700,
+      "width": 880,
+      "height": 520,
+      "color": "6"
+    },
+    {
+      "id": "n_src_training_finetuning_rationale_27",
+      "type": "file",
+      "file": "Build the legacy per-fold classification metric set..md",
+      "x": 5320,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_py_dataframe",
+      "type": "file",
+      "file": "DataFrame_2.md",
+      "x": 5520,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_py_path",
+      "type": "file",
+      "file": "Path.md",
+      "x": 5720,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_rationale_174",
+      "type": "file",
+      "file": "Return the legacy mean, sample standard deviation, and display string..md",
+      "x": 5920,
+      "y": 1780,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_build_fold_result",
+      "type": "file",
+      "file": "build_fold_result().md",
+      "x": 5320,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_summary_compute_cv_summary",
+      "type": "file",
+      "file": "compute_cv_summary().md",
+      "x": 5520,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_finetuning_py_ndarray",
+      "type": "file",
+      "file": "ndarray.md",
+      "x": 5720,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics_test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold",
+      "type": "file",
+      "file": "test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold().md",
+      "x": 5920,
+      "y": 1860,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics_test_build_fold_result_omits_binary_confusion_fields_for_multiclass_dataset",
+      "type": "file",
+      "file": "test_build_fold_result_omits_binary_confusion_fields_for_multiclass_dataset().md",
+      "x": 5320,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics_test_build_fold_result_retains_classification_metrics",
+      "type": "file",
+      "file": "test_build_fold_result_retains_classification_metrics().md",
+      "x": 5520,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics_test_build_fold_result_uses_zero_precision_without_warning_for_unpredicted_class",
+      "type": "file",
+      "file": "test_build_fold_result_uses_zero_precision_without_warning_for_unpredicted_class().md",
+      "x": 5720,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics_test_compute_cv_summary_retains_legacy_mean_std_format",
+      "type": "file",
+      "file": "test_compute_cv_summary_retains_legacy_mean_std_format().md",
+      "x": 5920,
+      "y": 1940,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_tests_unit_test_training_metrics",
+      "type": "file",
+      "file": "test_training_metrics.py.md",
+      "x": 5320,
+      "y": 2020,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g12",
+      "type": "group",
+      "label": "Disabled MLflow Stub (Optuna)",
+      "x": 0,
+      "y": 2300,
+      "width": 880,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_opt_disabledmlflow_log_metric",
+      "type": "file",
+      "file": "dot-log_metric().md",
+      "x": 20,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow_log_metrics",
+      "type": "file",
+      "file": "dot-log_metrics()_4.md",
+      "x": 220,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow_log_param",
+      "type": "file",
+      "file": "dot-log_param().md",
+      "x": 420,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow_log_params",
+      "type": "file",
+      "file": "dot-log_params().md",
+      "x": 620,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow_set_tag",
+      "type": "file",
+      "file": "dot-set_tag().md",
+      "x": 20,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow_start_run",
+      "type": "file",
+      "file": "dot-start_run().md",
+      "x": 220,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_rationale_32",
+      "type": "file",
+      "file": "Drop-in no-op used when an Optuna invocation disables tracking..md",
+      "x": 420,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_disabledmlflow",
+      "type": "file",
+      "file": "_DisabledMlflow.md",
+      "x": 620,
+      "y": 2460,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_run",
+      "type": "file",
+      "file": "_Run.md",
+      "x": 20,
+      "y": 2540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_opt_info",
+      "type": "file",
+      "file": "info.md",
+      "x": 220,
+      "y": 2540,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g13",
+      "type": "group",
+      "label": "Training Package Init",
+      "x": 1840,
+      "y": 2300,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_src_training_init_rationale_1",
+      "type": "file",
+      "file": "Typed configuration and training workflow modules for TRIDENT..md",
+      "x": 1860,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_src_training_init",
+      "type": "file",
+      "file": "__init__.py.md",
+      "x": 2060,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g14",
+      "type": "group",
+      "label": "Trident Package Root",
+      "x": 3680,
+      "y": 2300,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_pkg_trident",
+      "type": "file",
+      "file": "trident.md",
+      "x": 3700,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g15",
+      "type": "group",
+      "label": "MLflow Server Startup",
+      "x": 5300,
+      "y": 2300,
+      "width": 600,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_start_mlflow",
+      "type": "file",
+      "file": "start_mlflow.ps1.md",
+      "x": 5320,
+      "y": 2380,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_src_embedder_tabularembedder_src_training_pretraining_train_pretrainer",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_training_pretraining_train_pretrainer",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_models",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_models",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_training_pretraining",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_models_tridentpretrainer_init",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_models_tridentpretrainer_init",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_embedder",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_embedder",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_embedder_tabularembedder_init",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_embedder_tabularembedder_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_embedder_tabularembedder_forward",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_embedder_tabularembedder_forward",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_embedder_tabularembedder_src_embedder_rationale_10",
+      "fromNode": "n_src_embedder_tabularembedder",
+      "toNode": "n_src_embedder_rationale_10",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_training_finetuning_train_and_evaluate_classifier",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_training_finetuning_train_and_evaluate_classifier",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_training_finetuning",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_models",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_models",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_models_tridentmodel_init",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_models_tridentmodel_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_models_tridentmodel_forward",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_models_tridentmodel_forward",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentmodel_src_models_rationale_61",
+      "fromNode": "n_src_models_tridentmodel",
+      "toNode": "n_src_models_rationale_61",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_training_pretraining_train_pretrainer",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_training_pretraining_train_pretrainer",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_training_pretraining",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_models",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_models",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_models_tridentpretrainer_init",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_models_tridentpretrainer_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_models_tridentpretrainer_forward",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_models_tridentpretrainer_forward",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_models_tridentpretrainer_src_models_rationale_11",
+      "fromNode": "n_src_models_tridentpretrainer",
+      "toNode": "n_src_models_rationale_11",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_finetuningoutcome_src_training_finetuning_train_and_evaluate_classifier",
+      "fromNode": "n_src_training_types_finetuningoutcome",
+      "toNode": "n_src_training_finetuning_train_and_evaluate_classifier",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_finetuningoutcome_tests_unit_test_training_runtime_stub_training_runtime",
+      "fromNode": "n_src_training_types_finetuningoutcome",
+      "toNode": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_finetuningoutcome_src_training_finetuning",
+      "fromNode": "n_src_training_types_finetuningoutcome",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_finetuningoutcome_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_finetuningoutcome",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_finetuningoutcome_src_training_types",
+      "fromNode": "n_src_training_types_finetuningoutcome",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldsplit_src_training_data_build_folds",
+      "fromNode": "n_src_training_types_foldsplit",
+      "toNode": "n_src_training_data_build_folds",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldsplit_src_training_data",
+      "fromNode": "n_src_training_types_foldsplit",
+      "toNode": "n_src_training_data",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldsplit_src_training_finetuning",
+      "fromNode": "n_src_training_types_foldsplit",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldsplit_src_training_pretraining",
+      "fromNode": "n_src_training_types_foldsplit",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldsplit_src_training_types",
+      "fromNode": "n_src_training_types_foldsplit",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_config_load_hyperparameters",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_config_load_hyperparameters",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_tests_unit_test_training_runtime_stub_training_runtime",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_artifacts",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_config",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_config",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_finetuning",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_pretraining",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_tests_integration_test_vehicle_regression",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_tests_integration_test_vehicle_regression",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_artifacts_artifactwriter_write_hyperparameters",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_hyperparameters",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_types",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_hyperparameters_src_training_types_hyperparameters_from_mapping",
+      "fromNode": "n_src_training_types_hyperparameters",
+      "toNode": "n_src_training_types_hyperparameters_from_mapping",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_data_prepare_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_data_prepare_dataset",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_artifacts_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_artifacts_dataset",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_runtime_stub_training_runtime",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_tracking_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_tracking_dataset",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_artifacts",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_data",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_data",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_finetuning",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_pretraining",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_tracking",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_tracking",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_artifacts_artifactwriter_write_tracking_provenance",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_tracking_provenance",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_tracking_disabledtracker_log_prepared_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_tracking_disabledtracker_log_prepared_dataset",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_tracking_mlflowtracker_log_prepared_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_prepared_dataset",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_prepareddataset_src_training_types",
+      "fromNode": "n_src_training_types_prepareddataset",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_src_training_pretraining_train_pretrainer",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_src_training_pretraining_train_pretrainer",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_tests_unit_test_training_runtime_stub_training_runtime",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_src_training_finetuning",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_src_training_pretraining",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_pretrainingoutcome_src_training_types",
+      "fromNode": "n_src_training_types_pretrainingoutcome",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trainingtracker_src_training_finetuning",
+      "fromNode": "n_src_training_types_trainingtracker",
+      "toNode": "n_src_training_finetuning",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trainingtracker_src_training_pretraining",
+      "fromNode": "n_src_training_types_trainingtracker",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trainingtracker_src_training_types",
+      "fromNode": "n_src_training_types_trainingtracker",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trainingtracker_protocol",
+      "fromNode": "n_src_training_types_trainingtracker",
+      "toNode": "n_protocol",
+      "label": "inherits [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trainingtracker_src_training_types_trainingtracker_log_metrics",
+      "fromNode": "n_src_training_types_trainingtracker",
+      "toNode": "n_src_training_types_trainingtracker_log_metrics",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_training_pretraining_train_pretrainer",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_training_pretraining_train_pretrainer",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_models",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_models",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_training_pretraining",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_training_pretraining",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_models_tridentpretrainer_init",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_models_tridentpretrainer_init",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_transformer",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_transformer",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_transformer_tabulartransformerencoder_forward",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_transformer_tabulartransformerencoder_forward",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_transformer_tabulartransformerencoder_init",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_transformer_tabulartransformerencoder_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_transformer_tabulartransformerencoder_src_transformer_rationale_93",
+      "fromNode": "n_src_transformer_tabulartransformerencoder",
+      "toNode": "n_src_transformer_rationale_93",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_disabledtracker_fold_run",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_fold_run",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_mlflowtracker_fold_run",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_fold_run",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_tests_unit_test_training_runtime_faketracker_fold_run",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_fold_run",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_bufferedfoldtracker_init",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_bufferedfoldtracker_log_metrics",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_log_metrics",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_bufferedfoldtracker_log_artifact",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_log_artifact",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_bufferedfoldtracker_to_record",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_to_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_bufferedfoldtracker_src_training_tracking_rationale_29",
+      "fromNode": "n_src_training_tracking_bufferedfoldtracker",
+      "toNode": "n_src_training_tracking_rationale_29",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_create_tracker",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_create_tracker",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_parent_run",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_parent_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_fold_run",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_fold_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_log_metrics",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_log_metrics",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_log_artifact",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_log_artifact",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_log_prepared_dataset",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_log_prepared_dataset",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_disabledtracker_log_single_split_record",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_disabledtracker_log_single_split_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_disabledtracker_src_training_tracking_rationale_48",
+      "fromNode": "n_src_training_tracking_disabledtracker",
+      "toNode": "n_src_training_tracking_rationale_48",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_create_tracker",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_create_tracker",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_fold_run",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_fold_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_metrics",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_metrics",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_artifact",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_artifact",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_prepared_dataset",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_prepared_dataset",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_single_split_record",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_single_split_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_parent_summary",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_parent_summary",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_log_diagnostic_children",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_diagnostic_children",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_replay_record",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_replay_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_init",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_mlflowtracker_parent_run",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_mlflowtracker_parent_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_tracking_mlflowtracker_src_training_tracking_rationale_81",
+      "fromNode": "n_src_training_tracking_mlflowtracker",
+      "toNode": "n_src_training_tracking_rationale_81",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_summary_summarize_cross_validation",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_summary_summarize_cross_validation",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_tests_unit_test_training_artifacts_summary",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_tests_unit_test_training_artifacts_summary",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_artifacts",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_summary",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_tracking",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_tracking_mlflowtracker_log_parent_summary",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_parent_summary",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_crossvalidationsummary_src_training_types",
+      "fromNode": "n_src_training_types_crossvalidationsummary",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_bufferedfoldtracker_to_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_to_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_artifacts_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_artifacts_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_summary_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_summary_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_mlflowtracker_log_diagnostic_children",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_diagnostic_children",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_artifacts",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_summary",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_summary",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_disabledtracker_log_single_split_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_disabledtracker_log_single_split_record",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_mlflowtracker_log_single_split_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_single_split_record",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_tracking_mlflowtracker_replay_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_tracking_mlflowtracker_replay_record",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_foldtrackingrecord_src_training_types",
+      "fromNode": "n_src_training_types_foldtrackingrecord",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedartifact_src_training_tracking_bufferedfoldtracker_log_artifact",
+      "fromNode": "n_src_training_types_loggedartifact",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_log_artifact",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedartifact_tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "fromNode": "n_src_training_types_loggedartifact",
+      "toNode": "n_tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedartifact_src_training_tracking",
+      "fromNode": "n_src_training_types_loggedartifact",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedartifact_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_loggedartifact",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedartifact_src_training_types",
+      "fromNode": "n_src_training_types_loggedartifact",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_src_training_tracking_bufferedfoldtracker_log_metrics",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_src_training_tracking_bufferedfoldtracker_log_metrics",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_tests_unit_test_training_artifacts_record",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_tests_unit_test_training_artifacts_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_tests_unit_test_training_summary_record",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_tests_unit_test_training_summary_record",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_mismatched_loss_epochs",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_tests_unit_test_training_summary_test_summarize_cross_validation_rejects_mismatched_loss_epochs",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_src_training_summary",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_src_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_src_training_tracking",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_tests_unit_test_training_summary",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_tests_unit_test_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_loggedmetric_src_training_types",
+      "fromNode": "n_src_training_types_loggedmetric",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_metricsummary_src_training_summary_summarize_metric",
+      "fromNode": "n_src_training_types_metricsummary",
+      "toNode": "n_src_training_summary_summarize_metric",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_metricsummary_tests_unit_test_training_artifacts_summary",
+      "fromNode": "n_src_training_types_metricsummary",
+      "toNode": "n_tests_unit_test_training_artifacts_summary",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_metricsummary_src_training_summary",
+      "fromNode": "n_src_training_types_metricsummary",
+      "toNode": "n_src_training_summary",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_metricsummary_tests_unit_test_training_artifacts",
+      "fromNode": "n_src_training_types_metricsummary",
+      "toNode": "n_tests_unit_test_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_metricsummary_src_training_types",
+      "fromNode": "n_src_training_types_metricsummary",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_artifacts_artifactwriter_write_cv_tracking_artifacts",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_tests_unit_test_training_tracking_artifact_paths",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_tests_unit_test_training_tracking_artifact_paths",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_artifacts",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_artifacts",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_tracking",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_tests_unit_test_training_runtime",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_tests_unit_test_training_tracking",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_tests_unit_test_training_tracking",
+      "label": "imports [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_tracking_disabledtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_tracking_mlflowtracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_tracking_mlflowtracker_log_parent_summary",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_tracking_mlflowtracker_log_parent_summary",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_src_training_types_trackingartifactpaths_src_training_types",
+      "fromNode": "n_src_training_types_trackingartifactpaths",
+      "toNode": "n_src_training_types",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_stub_training_runtime",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_stub_training_runtime",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_init",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_init",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_parent_run",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_parent_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_fold_run",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_fold_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_log_artifact",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_log_artifact",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_tests_unit_test_training_runtime_faketracker_tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "fromNode": "n_tests_unit_test_training_runtime_faketracker",
+      "toNode": "n_tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_run_hyperparameter_optimization",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_run_hyperparameter_optimization",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_run",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_run",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_start_run",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_start_run",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_log_params",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_log_params",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_log_param",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_log_param",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_log_metric",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_log_metric",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_log_metrics",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_log_metrics",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_disabledmlflow_set_tag",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_disabledmlflow_set_tag",
+      "label": "method [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_disabledmlflow_opt_rationale_32",
+      "fromNode": "n_opt_disabledmlflow",
+      "toNode": "n_opt_rationale_32",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_info_opt_run",
+      "fromNode": "n_opt_info",
+      "toNode": "n_opt_run",
+      "label": "contains [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_run_opt_disabledmlflow_start_run",
+      "fromNode": "n_opt_run",
+      "toNode": "n_opt_disabledmlflow_start_run",
+      "label": "calls [EXTRACTED]"
+    },
+    {
+      "id": "e_opt_objectivefunctionwrapper_opt_run_hyperparameter_optimization",
+      "fromNode": "n_opt_objectivefunctionwrapper",
+      "toNode": "n_opt_run_hyperparameter_optimization",
+      "label": "calls [EXTRACTED]"
+    }
+  ]
+}

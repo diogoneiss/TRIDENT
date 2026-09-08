@@ -1,0 +1,164 @@
+{
+  "main": {
+    "id": "e5145713296af2a9",
+    "type": "split",
+    "children": [
+      {
+        "id": "95b13f55fa2bdcf4",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f6eb9e1c307c6fbe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Metric aggregation helpers..md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "88327ff48a0799bd",
+    "type": "split",
+    "children": [
+      {
+        "id": "afc3cf4fa5f83a67",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9e9b5e755463a6b7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "c7ccae62719c6b46",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "143db6bdc20adbfc",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "b270bc4aed113775",
+    "type": "split",
+    "children": [
+      {
+        "id": "073d18e0f14407e3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "89c2f332d6383058",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Metric aggregation helpers..md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "1b906e51041edd55",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Metric aggregation helpers..md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "6a26e9e3cc47085e",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "9530477a4212b34f",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Metric aggregation helpers..md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "f6eb9e1c307c6fbe",
+  "lastOpenFiles": [
+    "MetricSummary.md",
+    "test_summarize_cross_validation_rejects_fewer_than_two_folds().md",
+    "test_summarize_cross_validation_uses_one_role_for_a_tie().md",
+    "test_training_runtime.py.md",
+    "tracking.py.md",
+    "train_and_evaluate_classifier().md",
+    "_COMMUNITY_CLI Entry & Hyperparameter Search.md",
+    "_loss_band().md",
+    "dot-write_tracking_provenance().md",
+    "FoldResult.md",
+    "FoldTrackingRecord.md",
+    "test_training_metrics.py.md"
+  ]
+}
