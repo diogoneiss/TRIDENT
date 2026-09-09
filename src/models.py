@@ -1,10 +1,7 @@
 import torch
 import torch.nn as nn
-import pandas as pd
-import numpy as np
-import re
 
-from .embedder import TabularEmbedder
+from .embedder import EncodedTable, TabularEmbedder
 from .transformer import TabularTransformerEncoder
 
 class TridentPretrainer(nn.Module):
@@ -23,24 +20,31 @@ class TridentPretrainer(nn.Module):
         self.d_model = embedder.dimensao
         self.eps = 1e-8   # to avoid division by zero in optional normalization
 
-    def forward(self, df_masked: pd.DataFrame, df_original: pd.DataFrame):
+    def _as_encoded(self, data, device) -> EncodedTable:
+        return data if isinstance(data, EncodedTable) else self.embedder.encode(data, device)
+
+    def forward(self, masked, original):
+        """
+        masked / original : pd.DataFrame or EncodedTable
+            The corrupted view and the clean view of the same rows.
+        """
         device = next(self.parameters()).device
+        masked = self._as_encoded(masked, device)
+        original = self._as_encoded(original, device)
 
         # 1) "Corrupted" embeddings (Transformer input)
-        emb_in = self.embedder(df_masked)              # (B, L, d)
-        # 2) "Pure" embeddings (target) — detach to avoid backprop through them
-        emb_target = self.embedder(df_original).detach()  # (B, L, d)
+        emb_in = self.embedder(masked)                 # (B, L, d)
+        # 2) "Pure" embeddings (target) — never backpropagated through, so the
+        #    graph is not built for them at all
+        with torch.no_grad():
+            emb_target = self.embedder(original)       # (B, L, d)
 
         # 3) Pass through Transformer
         encoded = self.transformer(emb_in)             # (B, L, d)
 
-        # 4) Build boolean mask of where [MASK] existed
+        # 4) Boolean mask of where [MASK] existed, resolved at encoding time
         #    → shape (B, L‑1)   (ignoring CLS at column 0)
-        mask_matrix = []
-        for col in self.embedder.categorical_columns + self.embedder.numerical_columns:
-            mask_matrix.append((df_masked[col] == "[MASK]").values[:, None])  # shape (B,1)
-        mask_matrix = np.concatenate(mask_matrix, axis=1)                    # (B, L‑1)
-        mask_tensor = torch.tensor(mask_matrix, device=device, dtype=torch.bool)
+        mask_tensor = masked.masked_positions
 
         # 5) Select only masked positions (flatten)
         enc_sel  = encoded[:, 1:, :][mask_tensor]      # (N_mask, d)
@@ -48,13 +52,14 @@ class TridentPretrainer(nn.Module):
         #enc_sel = nn.functional.normalize(enc_sel, dim=-1)
         #tgt_sel = nn.functional.normalize(tgt_sel, dim=-1)
         if enc_sel.numel() == 0:          # no [MASK] in the batch
-            print("a")
             return torch.tensor(0., device=device, requires_grad=True), {}
 
         # 6) Loss = MSE between vectors
         loss = nn.functional.mse_loss(enc_sel, tgt_sel)
 
-        return loss, {"mse_embedding": loss.item()}
+        # The metric is returned as a detached tensor rather than a Python float so
+        # that reading it does not force a device synchronisation on every batch.
+        return loss, {"mse_embedding": loss.detach()}
 
 
 class TridentModel(nn.Module):
@@ -95,10 +100,10 @@ class TridentModel(nn.Module):
         else:
             self.class_weights = None
     
-    def forward(self, df, labels=None):
+    def forward(self, data, labels=None):
         """
-        df : pd.DataFrame
-            Input DataFrame (possibly masked/null, but in fine-tuning usually without mask).
+        data : pd.DataFrame or EncodedTable
+            Input rows (possibly masked/null, but in fine-tuning usually without mask).
         labels : Tensor (optional), shape (batch_size,) with true classes, 
                  if we want to calculate CrossEntropy loss.
 
@@ -109,7 +114,7 @@ class TridentModel(nn.Module):
         loss (optional) : torch.Tensor
             If 'labels' is provided, also returns the CrossEntropyLoss.
         """
-        x = self.embedder(df)                # (batch_size, seq_len, d_model)
+        x = self.embedder(data)              # (batch_size, seq_len, d_model)
         encoded_output = self.transformer(x) # (batch_size, seq_len, d_model)
         
         # Extract [CLS], which is at encoded_output[:, 0, :]

@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 import torch
 import random
@@ -99,39 +98,33 @@ def split_numeric_and_special(df, numerical_columns, device='cuda'):
     null_flags : torch.BoolTensor
         Tensor (n_rows, n_num_cols) with True where there's `[NULL]`.
     """
-    numeric_values = []
-    mask_flags = []
-    null_flags = []
-    
-    for col in numerical_columns:
-        col_data = df[col].values  # Can be float or string "[MASK]" or "[NULL]"
-        col_numeric = []
-        col_mask = []
-        col_null = []
-        
-        for val in col_data:
-            if val == "[MASK]":
-                col_numeric.append(0.0)
-                col_mask.append(True)
-                col_null.append(False)
-            elif val == "[NULL]":
-                col_numeric.append(0.0)
-                col_mask.append(False)
-                col_null.append(True)
-            else:
-                col_numeric.append(float(val))
-                col_mask.append(False)
-                col_null.append(False)
-        
-        numeric_values.append(col_numeric)
-        mask_flags.append(col_mask)
-        null_flags.append(col_null)
-    
-    # Convert from lists to tensors and transpose to (n_rows, n_num_cols)
-    numeric_values = torch.tensor(numeric_values, dtype=torch.float32, device=device).T
-    mask_flags     = torch.tensor(mask_flags,     dtype=torch.bool,   device=device).T
-    null_flags     = torch.tensor(null_flags,     dtype=torch.bool,   device=device).T
-    
+    n_rows = len(df)
+    n_columns = len(numerical_columns)
+
+    # Built column-major, then transposed, so every single-column slice of the
+    # returned tensors stays contiguous.
+    numeric_array = np.zeros((n_columns, n_rows), dtype=np.float64)
+    mask_array = np.zeros((n_columns, n_rows), dtype=bool)
+    null_array = np.zeros((n_columns, n_rows), dtype=bool)
+
+    for index, col in enumerate(numerical_columns):
+        col_data = df[col].to_numpy()  # Can be float or string "[MASK]" or "[NULL]"
+        if col_data.dtype == object:
+            is_mask = col_data == "[MASK]"
+            is_null = col_data == "[NULL]"
+            mask_array[index] = is_mask
+            null_array[index] = is_null
+            # astype() applies float() per element, so non-numeric junk still raises.
+            numeric_array[index] = np.where(is_mask | is_null, 0.0, col_data).astype(np.float64)
+        else:
+            # No special tokens can be present in a purely numeric column.
+            numeric_array[index] = col_data.astype(np.float64)
+
+    # Convert to tensors and transpose to (n_rows, n_num_cols)
+    numeric_values = torch.tensor(numeric_array, dtype=torch.float32, device=device).T
+    mask_flags     = torch.tensor(mask_array,    dtype=torch.bool,   device=device).T
+    null_flags     = torch.tensor(null_array,    dtype=torch.bool,   device=device).T
+
     return numeric_values, mask_flags, null_flags
 
 def create_pretrain_datasets(df, categorical_columns, numerical_columns,
