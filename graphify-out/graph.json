@@ -50,91 +50,13 @@
   },
   "nodes": [
     {
-      "id": "src_embedder_tabularembedder",
-      "label": "TabularEmbedder",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "tabularembedder",
-      "source_file": "src/embedder.py",
-      "source_location": "L9"
-    },
-    {
-      "id": "src_models_tridentmodel",
-      "label": "TridentModel",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "tridentmodel",
-      "source_file": "src/models.py",
-      "source_location": "L60"
-    },
-    {
-      "id": "src_models_tridentpretrainer",
-      "label": "TridentPretrainer",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "tridentpretrainer",
-      "source_file": "src/models.py",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_training_types_foldsplit",
-      "label": "FoldSplit",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "foldsplit",
-      "source_file": "src/training/types.py",
-      "source_location": "L81"
-    },
-    {
-      "id": "src_training_types_pretrainingoutcome",
-      "label": "PretrainingOutcome",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "pretrainingoutcome",
-      "source_file": "src/training/types.py",
-      "source_location": "L99"
-    },
-    {
-      "id": "src_training_types_trainingtracker",
-      "label": "TrainingTracker",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "trainingtracker",
-      "source_file": "src/training/types.py",
-      "source_location": "L191"
-    },
-    {
       "id": "src_transformer_encoderlayer",
       "label": "EncoderLayer",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": "encoderlayer",
       "source_file": "src/transformer.py",
@@ -147,7 +69,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": "feedforwardnetwork",
       "source_file": "src/transformer.py",
@@ -160,24 +82,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": "multiheadattention",
       "source_file": "src/transformer.py",
       "source_location": "L34"
-    },
-    {
-      "id": "src_transformer_tabulartransformerencoder",
-      "label": "TabularTransformerEncoder",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "tabulartransformerencoder",
-      "source_file": "src/transformer.py",
-      "source_location": "L92"
     },
     {
       "id": "src_training_artifacts_artifactwriter",
@@ -186,11 +95,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "artifactwriter",
       "source_file": "src/training/artifacts.py",
       "source_location": "L25"
+    },
+    {
+      "id": "src_training_tracking_bufferedfoldtracker",
+      "label": "BufferedFoldTracker",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "bufferedfoldtracker",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L28"
     },
     {
       "id": "src_training_tracking_disabledtracker",
@@ -199,7 +121,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "disabledtracker",
       "source_file": "src/training/tracking.py",
@@ -212,7 +134,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "mlflowtracker",
       "source_file": "src/training/tracking.py",
@@ -225,11 +147,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "crossvalidationsummary",
       "source_file": "src/training/types.py",
-      "source_location": "L152"
+      "source_location": "L150"
     },
     {
       "id": "src_training_types_foldtrackingrecord",
@@ -238,11 +160,37 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "foldtrackingrecord",
       "source_file": "src/training/types.py",
-      "source_location": "L126"
+      "source_location": "L124"
+    },
+    {
+      "id": "src_training_types_loggedartifact",
+      "label": "LoggedArtifact",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "loggedartifact",
+      "source_file": "src/training/types.py",
+      "source_location": "L118"
+    },
+    {
+      "id": "src_training_types_metricsummary",
+      "label": "MetricSummary",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "metricsummary",
+      "source_file": "src/training/types.py",
+      "source_location": "L131"
     },
     {
       "id": "src_training_types_prepareddataset",
@@ -251,11 +199,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "prepareddataset",
       "source_file": "src/training/types.py",
-      "source_location": "L88"
+      "source_location": "L86"
     },
     {
       "id": "src_training_types_trackingartifactpaths",
@@ -264,11 +212,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "trackingartifactpaths",
       "source_file": "src/training/types.py",
-      "source_location": "L159"
+      "source_location": "L157"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker",
+      "label": "FakeTracker",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "faketracker",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L26"
     },
     {
       "id": "opt_disabledmlflow",
@@ -310,30 +271,56 @@
       "source_location": "L34"
     },
     {
+      "id": "src_embedder_encodedtable",
+      "label": "EncodedTable",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": "encodedtable",
+      "source_file": "src/embedder.py",
+      "source_location": "L18"
+    },
+    {
+      "id": "src_models_tridentpretrainer",
+      "label": "TridentPretrainer",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": "tridentpretrainer",
+      "source_file": "src/models.py",
+      "source_location": "L7"
+    },
+    {
+      "id": "src_models_tridentmodel",
+      "label": "TridentModel",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "code",
+      "norm_label": "tridentmodel",
+      "source_file": "src/models.py",
+      "source_location": "L65"
+    },
+    {
       "id": "opt_objectivefunctionwrapper",
       "label": "ObjectiveFunctionWrapper",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "objectivefunctionwrapper",
       "source_file": "opt.py",
       "source_location": "L80"
-    },
-    {
-      "id": "src_training_types_trainingresult",
-      "label": "TrainingResult",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "trainingresult",
-      "source_file": "src/training/types.py",
-      "source_location": "L175"
     },
     {
       "id": "src_training_types_datasetspec",
@@ -342,24 +329,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "datasetspec",
       "source_file": "src/training/types.py",
-      "source_location": "L59"
+      "source_location": "L57"
     },
     {
-      "id": "src_training_types_finetuningoutcome",
-      "label": "FinetuningOutcome",
+      "id": "src_training_types_foldsplit",
+      "label": "FoldSplit",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
-      "norm_label": "finetuningoutcome",
+      "norm_label": "foldsplit",
       "source_file": "src/training/types.py",
-      "source_location": "L167"
+      "source_location": "L79"
     },
     {
       "id": "src_training_types_hyperparameters",
@@ -368,11 +355,24 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "hyperparameters",
       "source_file": "src/training/types.py",
       "source_location": "L9"
+    },
+    {
+      "id": "src_training_types_pretrainingoutcome",
+      "label": "PretrainingOutcome",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "pretrainingoutcome",
+      "source_file": "src/training/types.py",
+      "source_location": "L97"
     },
     {
       "id": "src_training_types_runtimeoptions",
@@ -381,11 +381,11 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "runtimeoptions",
       "source_file": "src/training/types.py",
-      "source_location": "L74"
+      "source_location": "L72"
     },
     {
       "id": "src_training_types_trainingrequest",
@@ -394,37 +394,50 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "trainingrequest",
       "source_file": "src/training/types.py",
-      "source_location": "L181"
+      "source_location": "L179"
     },
     {
-      "id": "tests_unit_test_training_runtime_faketracker",
-      "label": "FakeTracker",
+      "id": "src_training_types_trainingresult",
+      "label": "TrainingResult",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
-      "norm_label": "faketracker",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L26"
+      "norm_label": "trainingresult",
+      "source_file": "src/training/types.py",
+      "source_location": "L173"
     },
     {
-      "id": "src_training_tracking_bufferedfoldtracker",
-      "label": "BufferedFoldTracker",
+      "id": "src_embedder_tabularembedder",
+      "label": "TabularEmbedder",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
+      "community": 4,
+      "community_name": "pretraining.py",
       "file_type": "code",
-      "norm_label": "bufferedfoldtracker",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L28"
+      "norm_label": "tabularembedder",
+      "source_file": "src/embedder.py",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_transformer_tabulartransformerencoder",
+      "label": "TabularTransformerEncoder",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "tabulartransformerencoder",
+      "source_file": "src/transformer.py",
+      "source_location": "L92"
     },
     {
       "id": "src_training_types_foldresult",
@@ -437,20 +450,7 @@
       "file_type": "code",
       "norm_label": "foldresult",
       "source_file": "src/training/types.py",
-      "source_location": "L106"
-    },
-    {
-      "id": "src_training_types_loggedartifact",
-      "label": "LoggedArtifact",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "loggedartifact",
-      "source_file": "src/training/types.py",
-      "source_location": "L120"
+      "source_location": "L104"
     },
     {
       "id": "src_training_types_loggedmetric",
@@ -463,7 +463,7 @@
       "file_type": "code",
       "norm_label": "loggedmetric",
       "source_file": "src/training/types.py",
-      "source_location": "L113"
+      "source_location": "L111"
     },
     {
       "id": "src_training_types_lossband",
@@ -476,128 +476,33 @@
       "file_type": "code",
       "norm_label": "lossband",
       "source_file": "src/training/types.py",
-      "source_location": "L144"
+      "source_location": "L142"
     },
     {
-      "id": "src_training_types_metricsummary",
-      "label": "MetricSummary",
+      "id": "src_training_types_finetuningoutcome",
+      "label": "FinetuningOutcome",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
+      "community": 9,
+      "community_name": "finetuning.py",
       "file_type": "code",
-      "norm_label": "metricsummary",
+      "norm_label": "finetuningoutcome",
       "source_file": "src/training/types.py",
-      "source_location": "L133"
+      "source_location": "L165"
     },
     {
-      "id": "src_embedder_tabularembedder_forward",
-      "label": ".forward()",
+      "id": "src_training_types_trainingtracker",
+      "label": "TrainingTracker",
       "_callable": true,
+      "_callable_class": true,
       "_origin": "ast",
-      "community": 0,
+      "community": 9,
       "community_name": "finetuning.py",
       "file_type": "code",
-      "norm_label": ".forward()",
-      "source_file": "src/embedder.py",
-      "source_location": "L92"
-    },
-    {
-      "id": "src_embedder_tabularembedder_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "src/embedder.py",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_models_tridentmodel_forward",
-      "label": ".forward()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".forward()",
-      "source_file": "src/models.py",
-      "source_location": "L98"
-    },
-    {
-      "id": "src_models_tridentmodel_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "src/models.py",
-      "source_location": "L67"
-    },
-    {
-      "id": "src_models_tridentpretrainer_forward",
-      "label": ".forward()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".forward()",
-      "source_file": "src/models.py",
-      "source_location": "L26"
-    },
-    {
-      "id": "src_models_tridentpretrainer_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "src/models.py",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_training_finetuning_train_and_evaluate_classifier",
-      "label": "train_and_evaluate_classifier()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "train_and_evaluate_classifier()",
-      "source_file": "src/training/finetuning.py",
-      "source_location": "L64"
-    },
-    {
-      "id": "src_training_pretraining_train_pretrainer",
-      "label": "train_pretrainer()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "train_pretrainer()",
-      "source_file": "src/training/pretraining.py",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_training_types_trainingtracker_log_metrics",
-      "label": ".log_metrics()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".log_metrics()",
+      "norm_label": "trainingtracker",
       "source_file": "src/training/types.py",
-      "source_location": "L192"
+      "source_location": "L189"
     },
     {
       "id": "src_transformer_encoderlayer_forward",
@@ -605,7 +510,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".forward()",
       "source_file": "src/transformer.py",
@@ -617,7 +522,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/transformer.py",
@@ -629,7 +534,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".forward()",
       "source_file": "src/transformer.py",
@@ -641,7 +546,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/transformer.py",
@@ -653,7 +558,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": "initialize_weight()",
       "source_file": "src/transformer.py",
@@ -665,7 +570,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".forward()",
       "source_file": "src/transformer.py",
@@ -677,23 +582,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/transformer.py",
       "source_location": "L38"
-    },
-    {
-      "id": "src_transformer_tabulartransformerencoder_forward",
-      "label": ".forward()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": ".forward()",
-      "source_file": "src/transformer.py",
-      "source_location": "L105"
     },
     {
       "id": "src_transformer_tabulartransformerencoder_init",
@@ -701,47 +594,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/transformer.py",
       "source_location": "L96"
-    },
-    {
-      "id": "src_utils_create_pretrain_datasets",
-      "label": "create_pretrain_datasets()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "create_pretrain_datasets()",
-      "source_file": "src/utils.py",
-      "source_location": "L137"
-    },
-    {
-      "id": "src_utils_preprocess_table",
-      "label": "preprocess_table()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "preprocess_table()",
-      "source_file": "src/utils.py",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_utils_split_numeric_and_special",
-      "label": "split_numeric_and_special()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "split_numeric_and_special()",
-      "source_file": "src/utils.py",
-      "source_location": "L80"
     },
     {
       "id": "src_mlflow_utils_build_fold_tags",
@@ -749,71 +606,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "build_fold_tags()",
       "source_file": "src/mlflow_utils.py",
       "source_location": "L172"
-    },
-    {
-      "id": "src_mlflow_utils_build_hyperparams_dict",
-      "label": "build_hyperparams_dict()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "build_hyperparams_dict()",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L102"
-    },
-    {
-      "id": "src_mlflow_utils_build_run_tags",
-      "label": "build_run_tags()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "build_run_tags()",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L131"
-    },
-    {
-      "id": "src_mlflow_utils_get_or_create_experiment",
-      "label": "get_or_create_experiment()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "get_or_create_experiment()",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L67"
-    },
-    {
-      "id": "src_mlflow_utils_parse_missingness_percent",
-      "label": "parse_missingness_percent()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "parse_missingness_percent()",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L36"
-    },
-    {
-      "id": "src_mlflow_utils_setup_mlflow",
-      "label": "setup_mlflow()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "setup_mlflow()",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L46"
     },
     {
       "id": "src_training_artifacts_artifactwriter_init",
@@ -821,7 +618,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/training/artifacts.py",
@@ -833,7 +630,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".save_model()",
       "source_file": "src/training/artifacts.py",
@@ -845,7 +642,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".write_cv_tracking_artifacts()",
       "source_file": "src/training/artifacts.py",
@@ -857,7 +654,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".write_hyperparameters()",
       "source_file": "src/training/artifacts.py",
@@ -869,7 +666,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".write_loss_plot()",
       "source_file": "src/training/artifacts.py",
@@ -881,7 +678,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".write_tracking_provenance()",
       "source_file": "src/training/artifacts.py",
@@ -893,7 +690,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "_to_builtin()",
       "source_file": "src/training/artifacts.py",
@@ -905,7 +702,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "_write_json()",
       "source_file": "src/training/artifacts.py",
@@ -917,11 +714,59 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "final_metrics_for_tracking()",
       "source_file": "src/training/summary.py",
       "source_location": "L48"
+    },
+    {
+      "id": "src_training_tracking_bufferedfoldtracker_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L31"
+    },
+    {
+      "id": "src_training_tracking_bufferedfoldtracker_log_artifact",
+      "label": ".log_artifact()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".log_artifact()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L40"
+    },
+    {
+      "id": "src_training_tracking_bufferedfoldtracker_log_metrics",
+      "label": ".log_metrics()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".log_metrics()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L35"
+    },
+    {
+      "id": "src_training_tracking_bufferedfoldtracker_to_record",
+      "label": ".to_record()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".to_record()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L43"
     },
     {
       "id": "src_training_tracking_disabledtracker_finalize_cross_validation",
@@ -929,7 +774,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".finalize_cross_validation()",
       "source_file": "src/training/tracking.py",
@@ -941,7 +786,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".fold_run()",
       "source_file": "src/training/tracking.py",
@@ -953,7 +798,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_artifact()",
       "source_file": "src/training/tracking.py",
@@ -965,7 +810,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_metrics()",
       "source_file": "src/training/tracking.py",
@@ -977,7 +822,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_prepared_dataset()",
       "source_file": "src/training/tracking.py",
@@ -989,7 +834,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_single_split_record()",
       "source_file": "src/training/tracking.py",
@@ -1001,7 +846,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".parent_run()",
       "source_file": "src/training/tracking.py",
@@ -1013,11 +858,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".finalize_cross_validation()",
       "source_file": "src/training/tracking.py",
       "source_location": "L146"
+    },
+    {
+      "id": "src_training_tracking_mlflowtracker_fold_run",
+      "label": ".fold_run()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".fold_run()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L127"
     },
     {
       "id": "src_training_tracking_mlflowtracker_init",
@@ -1025,7 +882,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "src/training/tracking.py",
@@ -1037,7 +894,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_artifact()",
       "source_file": "src/training/tracking.py",
@@ -1049,7 +906,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "._log_diagnostic_children()",
       "source_file": "src/training/tracking.py",
@@ -1061,7 +918,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_metrics()",
       "source_file": "src/training/tracking.py",
@@ -1073,7 +930,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "._log_parent_summary()",
       "source_file": "src/training/tracking.py",
@@ -1085,7 +942,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_prepared_dataset()",
       "source_file": "src/training/tracking.py",
@@ -1097,23 +954,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_single_split_record()",
       "source_file": "src/training/tracking.py",
       "source_location": "L157"
-    },
-    {
-      "id": "src_training_tracking_mlflowtracker_parent_run",
-      "label": ".parent_run()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": ".parent_run()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L88"
     },
     {
       "id": "src_training_tracking_mlflowtracker_replay_record",
@@ -1121,11 +966,71 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "._replay_record()",
       "source_file": "src/training/tracking.py",
       "source_location": "L219"
+    },
+    {
+      "id": "tests_unit_test_training_artifacts_dataset",
+      "label": "_dataset()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "_dataset()",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L20"
+    },
+    {
+      "id": "tests_unit_test_training_artifacts_record",
+      "label": "_record()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "_record()",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L65"
+    },
+    {
+      "id": "tests_unit_test_training_artifacts_summary",
+      "label": "_summary()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "_summary()",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L34"
+    },
+    {
+      "id": "tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
+      "label": "test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations()",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L118"
+    },
+    {
+      "id": "tests_unit_test_training_artifacts_test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values",
+      "label": "test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values()",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L82"
     },
     {
       "id": "tests_unit_test_training_runtime_faketracker_finalize_cross_validation",
@@ -1133,11 +1038,47 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".finalize_cross_validation()",
       "source_file": "tests/unit/test_training_runtime.py",
       "source_location": "L65"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker_fold_run",
+      "label": ".fold_run()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".fold_run()",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L51"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L27"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker_log_artifact",
+      "label": ".log_artifact()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".log_artifact()",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L57"
     },
     {
       "id": "tests_unit_test_training_runtime_faketracker_log_prepared_dataset",
@@ -1145,11 +1086,35 @@
       "_callable": true,
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": ".log_prepared_dataset()",
       "source_file": "tests/unit/test_training_runtime.py",
       "source_location": "L61"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker_log_single_split_record",
+      "label": ".log_single_split_record()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".log_single_split_record()",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L88"
+    },
+    {
+      "id": "tests_unit_test_training_runtime_faketracker_parent_run",
+      "label": ".parent_run()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": ".parent_run()",
+      "source_file": "tests/unit/test_training_runtime.py",
+      "source_location": "L41"
     },
     {
       "id": "datasets_generate_splits_create_split_dict",
@@ -1233,7 +1198,7 @@
       "file_type": "code",
       "norm_label": "build_fold_result()",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L19"
+      "source_location": "L18"
     },
     {
       "id": "src_training_summary_compute_cv_summary",
@@ -1257,7 +1222,7 @@
       "file_type": "code",
       "norm_label": "test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold()",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L30"
+      "source_location": "L29"
     },
     {
       "id": "tests_unit_test_training_metrics_test_build_fold_result_omits_binary_confusion_fields_for_multiclass_dataset",
@@ -1293,7 +1258,7 @@
       "file_type": "code",
       "norm_label": "test_build_fold_result_uses_zero_precision_without_warning_for_unpredicted_class()",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L46"
+      "source_location": "L44"
     },
     {
       "id": "tests_unit_test_training_metrics_test_compute_cv_summary_retains_legacy_mean_std_format",
@@ -1305,7 +1270,7 @@
       "file_type": "code",
       "norm_label": "test_compute_cv_summary_retains_legacy_mean_std_format()",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L62"
+      "source_location": "L59"
     },
     {
       "id": "opt_disabledmlflow_log_metric",
@@ -1380,12 +1345,132 @@
       "source_location": "L38"
     },
     {
+      "id": "src_embedder_encodedtable_getitem",
+      "label": ".__getitem__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": ".__getitem__()",
+      "source_file": "src/embedder.py",
+      "source_location": "L36"
+    },
+    {
+      "id": "src_embedder_encodedtable_len",
+      "label": ".__len__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": ".__len__()",
+      "source_file": "src/embedder.py",
+      "source_location": "L33"
+    },
+    {
+      "id": "src_models_tridentpretrainer_as_encoded",
+      "label": "._as_encoded()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": "._as_encoded()",
+      "source_file": "src/models.py",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_models_tridentpretrainer_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "code",
+      "norm_label": ".forward()",
+      "source_file": "src/models.py",
+      "source_location": "L26"
+    },
+    {
+      "id": "src_models_tridentmodel_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "code",
+      "norm_label": ".forward()",
+      "source_file": "src/models.py",
+      "source_location": "L103"
+    },
+    {
+      "id": "src_models_tridentmodel_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "src/models.py",
+      "source_location": "L72"
+    },
+    {
+      "id": "src_models_tridentpretrainer_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "src/models.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_embedder_tabularembedder_encode",
+      "label": ".encode()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "code",
+      "norm_label": ".encode()",
+      "source_file": "src/embedder.py",
+      "source_location": "L148"
+    },
+    {
+      "id": "src_embedder_tabularembedder_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "code",
+      "norm_label": ".forward()",
+      "source_file": "src/embedder.py",
+      "source_location": "L189"
+    },
+    {
+      "id": "src_utils_split_numeric_and_special",
+      "label": "split_numeric_and_special()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "code",
+      "norm_label": "split_numeric_and_special()",
+      "source_file": "src/utils.py",
+      "source_location": "L79"
+    },
+    {
       "id": "main_format_duration",
       "label": "_format_duration()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "_format_duration()",
       "source_file": "main.py",
@@ -1397,7 +1482,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "main.py",
@@ -1409,7 +1494,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "run_all()",
       "source_file": "main.py",
@@ -1421,7 +1506,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "define_search_space()",
       "source_file": "opt.py",
@@ -1433,7 +1518,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": ".__call__()",
       "source_file": "opt.py",
@@ -1445,7 +1530,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "opt.py",
@@ -1457,7 +1542,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": ".save_best_params()",
       "source_file": "opt.py",
@@ -1469,11 +1554,71 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "run_hyperparameter_optimization()",
       "source_file": "opt.py",
       "source_location": "L194"
+    },
+    {
+      "id": "src_mlflow_utils_build_hyperparams_dict",
+      "label": "build_hyperparams_dict()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "build_hyperparams_dict()",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L102"
+    },
+    {
+      "id": "src_mlflow_utils_build_run_tags",
+      "label": "build_run_tags()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "build_run_tags()",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L131"
+    },
+    {
+      "id": "src_mlflow_utils_get_or_create_experiment",
+      "label": "get_or_create_experiment()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "get_or_create_experiment()",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L67"
+    },
+    {
+      "id": "src_mlflow_utils_parse_missingness_percent",
+      "label": "parse_missingness_percent()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "parse_missingness_percent()",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L36"
+    },
+    {
+      "id": "src_mlflow_utils_setup_mlflow",
+      "label": "setup_mlflow()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "setup_mlflow()",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L46"
     },
     {
       "id": "src_training_cli_parse_args",
@@ -1481,7 +1626,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "parse_args()",
       "source_file": "src/training/cli.py",
@@ -1493,7 +1638,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "run_from_namespace()",
       "source_file": "src/training/cli.py",
@@ -1505,35 +1650,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "validate_parsed_args()",
       "source_file": "src/training/config.py",
       "source_location": "L43"
-    },
-    {
-      "id": "src_training_data_build_folds",
-      "label": "build_folds()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "build_folds()",
-      "source_file": "src/training/data.py",
-      "source_location": "L69"
-    },
-    {
-      "id": "src_training_data_prepare_dataset",
-      "label": "prepare_dataset()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "prepare_dataset()",
-      "source_file": "src/training/data.py",
-      "source_location": "L15"
     },
     {
       "id": "src_training_discovery_discover_datasets",
@@ -1541,71 +1662,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "discover_datasets()",
       "source_file": "src/training/discovery.py",
       "source_location": "L10"
     },
     {
-      "id": "src_training_runner_mlflow_hyperparameters",
-      "label": "_mlflow_hyperparameters()",
+      "id": "src_training_tracking_mlflowtracker_parent_run",
+      "label": ".parent_run()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
-      "norm_label": "_mlflow_hyperparameters()",
-      "source_file": "src/training/runner.py",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_training_runner_run_training",
-      "label": "run_training()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "run_training()",
-      "source_file": "src/training/runner.py",
-      "source_location": "L33"
-    },
-    {
-      "id": "src_utils_set_global_seed",
-      "label": "set_global_seed()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "set_global_seed()",
-      "source_file": "src/utils.py",
-      "source_location": "L9"
-    },
-    {
-      "id": "tests_unit_test_training_data_test_build_folds_creates_two_disjoint_test_splits",
-      "label": "test_build_folds_creates_two_disjoint_test_splits()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "test_build_folds_creates_two_disjoint_test_splits()",
-      "source_file": "tests/unit/test_training_data.py",
-      "source_location": "L9"
-    },
-    {
-      "id": "tests_unit_test_training_data_test_build_folds_raises_legacy_error_when_predefined_split_is_missing",
-      "label": "test_build_folds_raises_legacy_error_when_predefined_split_is_missing()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "test_build_folds_raises_legacy_error_when_predefined_split_is_missing()",
-      "source_file": "tests/unit/test_training_data.py",
-      "source_location": "L18"
+      "norm_label": ".parent_run()",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L88"
     },
     {
       "id": "train_main",
@@ -1613,7 +1686,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "train.py",
@@ -1625,7 +1698,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "build_training_parser()",
       "source_file": "src/training/config.py",
@@ -1637,7 +1710,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "load_hyperparameters()",
       "source_file": "src/training/config.py",
@@ -1649,11 +1722,59 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "resolve_training_request()",
       "source_file": "src/training/config.py",
       "source_location": "L27"
+    },
+    {
+      "id": "src_training_data_build_folds",
+      "label": "build_folds()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "build_folds()",
+      "source_file": "src/training/data.py",
+      "source_location": "L69"
+    },
+    {
+      "id": "src_training_data_prepare_dataset",
+      "label": "prepare_dataset()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "prepare_dataset()",
+      "source_file": "src/training/data.py",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_training_runner_mlflow_hyperparameters",
+      "label": "_mlflow_hyperparameters()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "_mlflow_hyperparameters()",
+      "source_file": "src/training/runner.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_training_runner_run_training",
+      "label": "run_training()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "run_training()",
+      "source_file": "src/training/runner.py",
+      "source_location": "L33"
     },
     {
       "id": "src_training_types_datasetspec_from_name",
@@ -1661,11 +1782,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": ".from_name()",
       "source_file": "src/training/types.py",
-      "source_location": "L65"
+      "source_location": "L63"
     },
     {
       "id": "src_training_types_hyperparameters_from_mapping",
@@ -1673,11 +1794,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": ".from_mapping()",
       "source_file": "src/training/types.py",
-      "source_location": "L30"
+      "source_location": "L28"
+    },
+    {
+      "id": "src_utils_set_global_seed",
+      "label": "set_global_seed()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "set_global_seed()",
+      "source_file": "src/utils.py",
+      "source_location": "L8"
     },
     {
       "id": "tests_integration_test_vehicle_regression_test_vehicle_typed_runner_matches_regression_fixture",
@@ -1685,7 +1818,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_vehicle_typed_runner_matches_regression_fixture()",
       "source_file": "tests/integration/test_vehicle_regression.py",
@@ -1697,7 +1830,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_legacy_namespace_accepts_hyperparameter_override()",
       "source_file": "tests/unit/test_training_config.py",
@@ -1709,7 +1842,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_legacy_namespace_uses_legacy_runtime_defaults()",
       "source_file": "tests/unit/test_training_config.py",
@@ -1721,59 +1854,35 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_parser_exposes_runtime_options()",
       "source_file": "tests/unit/test_training_config.py",
       "source_location": "L24"
     },
     {
-      "id": "tests_unit_test_training_runtime_faketracker_init",
-      "label": ".__init__()",
+      "id": "tests_unit_test_training_data_test_build_folds_creates_two_disjoint_test_splits",
+      "label": "test_build_folds_creates_two_disjoint_test_splits()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L27"
+      "norm_label": "test_build_folds_creates_two_disjoint_test_splits()",
+      "source_file": "tests/unit/test_training_data.py",
+      "source_location": "L9"
     },
     {
-      "id": "tests_unit_test_training_runtime_faketracker_log_artifact",
-      "label": ".log_artifact()",
+      "id": "tests_unit_test_training_data_test_build_folds_raises_legacy_error_when_predefined_split_is_missing",
+      "label": "test_build_folds_raises_legacy_error_when_predefined_split_is_missing()",
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
-      "norm_label": ".log_artifact()",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L57"
-    },
-    {
-      "id": "tests_unit_test_training_runtime_faketracker_log_single_split_record",
-      "label": ".log_single_split_record()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "types.py",
-      "file_type": "code",
-      "norm_label": ".log_single_split_record()",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L88"
-    },
-    {
-      "id": "tests_unit_test_training_runtime_faketracker_parent_run",
-      "label": ".parent_run()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 3,
-      "community_name": "types.py",
-      "file_type": "code",
-      "norm_label": ".parent_run()",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L41"
+      "norm_label": "test_build_folds_raises_legacy_error_when_predefined_split_is_missing()",
+      "source_file": "tests/unit/test_training_data.py",
+      "source_location": "L18"
     },
     {
       "id": "tests_unit_test_training_runtime_stub_training_runtime",
@@ -1781,7 +1890,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "_stub_training_runtime()",
       "source_file": "tests/unit/test_training_runtime.py",
@@ -1793,7 +1902,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_runner_replays_single_split_into_parent_without_cv_artifacts_or_children()",
       "source_file": "tests/unit/test_training_runtime.py",
@@ -1805,7 +1914,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_runner_uses_fold_buffers_and_finalizes_cross_validation_once()",
       "source_file": "tests/unit/test_training_runtime.py",
@@ -1817,11 +1926,59 @@
       "_callable": true,
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_train_main_preserves_legacy_cross_validation_return_shape()",
       "source_file": "tests/unit/test_training_runtime.py",
       "source_location": "L203"
+    },
+    {
+      "id": "src_embedder_sanitize",
+      "label": "_sanitize()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "_sanitize()",
+      "source_file": "src/embedder.py",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_embedder_tabularembedder_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "src/embedder.py",
+      "source_location": "L54"
+    },
+    {
+      "id": "src_training_pretraining_train_pretrainer",
+      "label": "train_pretrainer()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "train_pretrainer()",
+      "source_file": "src/training/pretraining.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_transformer_tabulartransformerencoder_forward",
+      "label": ".forward()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": ".forward()",
+      "source_file": "src/transformer.py",
+      "source_location": "L105"
     },
     {
       "id": "src_training_artifacts_artifactwriter_write_metrics",
@@ -1942,138 +2099,6 @@
       "norm_label": "_validate_final_metrics()",
       "source_file": "src/training/summary.py",
       "source_location": "L63"
-    },
-    {
-      "id": "src_training_tracking_bufferedfoldtracker_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L31"
-    },
-    {
-      "id": "src_training_tracking_bufferedfoldtracker_log_artifact",
-      "label": ".log_artifact()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".log_artifact()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L40"
-    },
-    {
-      "id": "src_training_tracking_bufferedfoldtracker_log_metrics",
-      "label": ".log_metrics()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".log_metrics()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L35"
-    },
-    {
-      "id": "src_training_tracking_bufferedfoldtracker_to_record",
-      "label": ".to_record()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".to_record()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L43"
-    },
-    {
-      "id": "src_training_tracking_mlflowtracker_fold_run",
-      "label": ".fold_run()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".fold_run()",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L127"
-    },
-    {
-      "id": "tests_unit_test_training_artifacts_dataset",
-      "label": "_dataset()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "_dataset()",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L20"
-    },
-    {
-      "id": "tests_unit_test_training_artifacts_record",
-      "label": "_record()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "_record()",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L65"
-    },
-    {
-      "id": "tests_unit_test_training_artifacts_summary",
-      "label": "_summary()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "_summary()",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L34"
-    },
-    {
-      "id": "tests_unit_test_training_artifacts_test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations",
-      "label": "test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations()",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L118"
-    },
-    {
-      "id": "tests_unit_test_training_artifacts_test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values",
-      "label": "test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values()",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L82"
-    },
-    {
-      "id": "tests_unit_test_training_runtime_faketracker_fold_run",
-      "label": ".fold_run()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": ".fold_run()",
-      "source_file": "tests/unit/test_training_runtime.py",
-      "source_location": "L51"
     },
     {
       "id": "tests_unit_test_training_summary_record",
@@ -2340,242 +2365,59 @@
       "source_location": "L299"
     },
     {
-      "id": "protocol",
-      "label": "Protocol",
+      "id": "src_training_finetuning_train_and_evaluate_classifier",
+      "label": "train_and_evaluate_classifier()",
+      "_callable": true,
       "_origin": "ast",
-      "community": 0,
+      "community": 9,
       "community_name": "finetuning.py",
       "file_type": "code",
-      "norm_label": "protocol",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_embedder",
-      "label": "embedder.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "embedder.py",
-      "source_file": "src/embedder.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_models",
-      "label": "models.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "models.py",
-      "source_file": "src/models.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_models_py_dataframe",
-      "label": "DataFrame",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "dataframe",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_training_finetuning",
-      "label": "finetuning.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "finetuning.py",
+      "norm_label": "train_and_evaluate_classifier()",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L1"
+      "source_location": "L62"
     },
     {
-      "id": "src_training_finetuning_py_device",
-      "label": "device",
+      "id": "src_training_types_trainingtracker_log_metrics",
+      "label": ".log_metrics()",
+      "_callable": true,
       "_origin": "ast",
-      "community": 0,
+      "community": 9,
       "community_name": "finetuning.py",
       "file_type": "code",
-      "norm_label": "device",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_training_pretraining",
-      "label": "pretraining.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "pretraining.py",
-      "source_file": "src/training/pretraining.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_pretraining_py_device",
-      "label": "device",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "device",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_transformer",
-      "label": "transformer.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "transformer.py",
-      "source_file": "src/transformer.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_utils",
-      "label": "utils.py",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "code",
-      "norm_label": "utils.py",
-      "source_file": "src/utils.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_embedder_rationale_10",
-      "label": "Class that encapsulates the creation of embeddings for tabular data: -\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "class that encapsulates the creation of embeddings for tabular data: -...",
-      "source_file": "src/embedder.py",
-      "source_location": "L10"
-    },
-    {
-      "id": "src_embedder_rationale_93",
-      "label": "For each row in the DataFrame, generates the resulting embedding: 1) Transforms\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "for each row in the dataframe, generates the resulting embedding: 1) transforms...",
-      "source_file": "src/embedder.py",
-      "source_location": "L93"
-    },
-    {
-      "id": "src_models_rationale_11",
-      "label": "Given a masked DataFrame, asks the Transformer to reconstruct, only at [MASK]\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "given a masked dataframe, asks the transformer to reconstruct, only at [mask]...",
-      "source_file": "src/models.py",
-      "source_location": "L11"
-    },
-    {
-      "id": "src_models_rationale_61",
-      "label": "Unified model for the classification task: 1) Generates tabular embeddings\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "unified model for the classification task: 1) generates tabular embeddings...",
-      "source_file": "src/models.py",
-      "source_location": "L61"
-    },
-    {
-      "id": "src_models_rationale_68",
-      "label": "Parameters ---------- embedder : TabularEmbedder Responsible for generating\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "parameters ---------- embedder : tabularembedder responsible for generating...",
-      "source_file": "src/models.py",
-      "source_location": "L68"
-    },
-    {
-      "id": "src_models_rationale_99",
-      "label": "df : pd.DataFrame Input DataFrame (possibly masked/null, but in fine-tuning\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "df : pd.dataframe input dataframe (possibly masked/null, but in fine-tuning...",
-      "source_file": "src/models.py",
-      "source_location": "L99"
-    },
-    {
-      "id": "src_training_finetuning_rationale_1",
-      "label": "Classifier fine-tuning and fold metric calculation.",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "classifier fine-tuning and fold metric calculation.",
-      "source_file": "src/training/finetuning.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_finetuning_rationale_72",
-      "label": "Fine-tune and evaluate the classifier using the legacy optimization loop.",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "fine-tune and evaluate the classifier using the legacy optimization loop.",
-      "source_file": "src/training/finetuning.py",
-      "source_location": "L72"
-    },
-    {
-      "id": "src_training_pretraining_rationale_1",
-      "label": "Masked reconstruction pre-training stage.",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "masked reconstruction pre-training stage.",
-      "source_file": "src/training/pretraining.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_pretraining_rationale_23",
-      "label": "Train the masked reconstruction model using the legacy optimization loop.",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "train the masked reconstruction model using the legacy optimization loop.",
-      "source_file": "src/training/pretraining.py",
-      "source_location": "L23"
-    },
-    {
-      "id": "src_training_types_rationale_193",
-      "label": "Log metrics at an optional training step.",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "log metrics at an optional training step.",
+      "norm_label": ".log_metrics()",
       "source_file": "src/training/types.py",
-      "source_location": "L193"
+      "source_location": "L190"
+    },
+    {
+      "id": "src_utils_create_pretrain_datasets",
+      "label": "create_pretrain_datasets()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "create_pretrain_datasets()",
+      "source_file": "src/utils.py",
+      "source_location": "L130"
+    },
+    {
+      "id": "src_utils_preprocess_table",
+      "label": "preprocess_table()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "preprocess_table()",
+      "source_file": "src/utils.py",
+      "source_location": "L18"
     },
     {
       "id": "src_transformer_rationale_14",
       "label": "Simple feed-forward network with two linear layers and ReLU activation",
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "rationale",
       "norm_label": "simple feed-forward network with two linear layers and relu activation",
       "source_file": "src/transformer.py",
@@ -2586,7 +2428,7 @@
       "label": "Multi-head attention layer for transformers",
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "rationale",
       "norm_label": "multi-head attention layer for transformers",
       "source_file": "src/transformer.py",
@@ -2597,7 +2439,7 @@
       "label": "Initializes the weight of a layer using Xavier uniform for weights and zeros\u2026",
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "rationale",
       "norm_label": "initializes the weight of a layer using xavier uniform for weights and zeros...",
       "source_file": "src/transformer.py",
@@ -2608,73 +2450,18 @@
       "label": "Transformer encoder layer with self-attention and feed-forward",
       "_origin": "ast",
       "community": 0,
-      "community_name": "finetuning.py",
+      "community_name": "EncoderLayer",
       "file_type": "rationale",
       "norm_label": "transformer encoder layer with self-attention and feed-forward",
       "source_file": "src/transformer.py",
       "source_location": "L70"
     },
     {
-      "id": "src_transformer_rationale_93",
-      "label": "Complete transformer encoder for tabular data",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "complete transformer encoder for tabular data",
-      "source_file": "src/transformer.py",
-      "source_location": "L93"
-    },
-    {
-      "id": "src_utils_rationale_139",
-      "label": "Example function that: 1) Splits train/val (e.g., 90/10) 2) Generates masked DF\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "example function that: 1) splits train/val (e.g., 90/10) 2) generates masked df...",
-      "source_file": "src/utils.py",
-      "source_location": "L139"
-    },
-    {
-      "id": "src_utils_rationale_20",
-      "label": "Preprocesses the table to replace null values with the `[NULL]` token, applies\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "preprocesses the table to replace null values with the `[null]` token, applies...",
-      "source_file": "src/utils.py",
-      "source_location": "L20"
-    },
-    {
-      "id": "src_utils_rationale_81",
-      "label": "Separates real numerical values from special tokens `[MASK]` and `[NULL]`.\u2026",
-      "_origin": "ast",
-      "community": 0,
-      "community_name": "finetuning.py",
-      "file_type": "rationale",
-      "norm_label": "separates real numerical values from special tokens `[mask]` and `[null]`....",
-      "source_file": "src/utils.py",
-      "source_location": "L81"
-    },
-    {
-      "id": "src_mlflow_utils",
-      "label": "mlflow_utils.py",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "code",
-      "norm_label": "mlflow_utils.py",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L1"
-    },
-    {
       "id": "src_training_artifacts",
       "label": "artifacts.py",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "artifacts.py",
       "source_file": "src/training/artifacts.py",
@@ -2685,7 +2472,7 @@
       "label": "Any",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "any",
       "source_file": "",
@@ -2696,7 +2483,7 @@
       "label": "Path",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "path",
       "source_file": "",
@@ -2707,95 +2494,51 @@
       "label": "tracking.py",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "code",
       "norm_label": "tracking.py",
       "source_file": "src/training/tracking.py",
       "source_location": "L1"
     },
     {
-      "id": "src_mlflow_utils_rationale_1",
-      "label": "src/mlflow_utils.py ------------------- Centralised MLflow utilities for\u2026",
+      "id": "src_training_types",
+      "label": "types.py",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "src/mlflow_utils.py ------------------- centralised mlflow utilities for...",
-      "source_file": "src/mlflow_utils.py",
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "types.py",
+      "source_file": "src/training/types.py",
       "source_location": "L1"
     },
     {
-      "id": "src_mlflow_utils_rationale_107",
-      "label": "Build a flat dict of all TRIDENT hyperparameters suitable for\u2026",
+      "id": "tests_unit_test_training_artifacts",
+      "label": "test_training_artifacts.py",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "build a flat dict of all trident hyperparameters suitable for...",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L107"
-    },
-    {
-      "id": "src_mlflow_utils_rationale_138",
-      "label": "Build a flat dict of MLflow tags for a training run. Parameters ----------\u2026",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "build a flat dict of mlflow tags for a training run. parameters ----------...",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L138"
+      "community_name": "types.py",
+      "file_type": "code",
+      "norm_label": "test_training_artifacts.py",
+      "source_file": "tests/unit/test_training_artifacts.py",
+      "source_location": "L1"
     },
     {
       "id": "src_mlflow_utils_rationale_173",
       "label": "Build tags for a per-fold child run. Parameters ---------- fold_idx: Zero-based\u2026",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "build tags for a per-fold child run. parameters ---------- fold_idx: zero-based...",
       "source_file": "src/mlflow_utils.py",
       "source_location": "L173"
     },
     {
-      "id": "src_mlflow_utils_rationale_37",
-      "label": "Return the normalized percentage encoded by a ``_<n>nan`` suffix.",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "return the normalized percentage encoded by a ``_<n>nan`` suffix.",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_mlflow_utils_rationale_47",
-      "label": "Configure the MLflow tracking URI. Priority order: 1. ``tracking_uri`` argument\u2026",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "configure the mlflow tracking uri. priority order: 1. ``tracking_uri`` argument...",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L47"
-    },
-    {
-      "id": "src_mlflow_utils_rationale_68",
-      "label": "Return the experiment_id for the given dataset, creating it if absent.\u2026",
-      "_origin": "ast",
-      "community": 1,
-      "community_name": "FoldTrackingRecord",
-      "file_type": "rationale",
-      "norm_label": "return the experiment_id for the given dataset, creating it if absent....",
-      "source_file": "src/mlflow_utils.py",
-      "source_location": "L68"
-    },
-    {
       "id": "src_training_artifacts_rationale_1",
       "label": "Filesystem artifacts emitted by a training runtime.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "filesystem artifacts emitted by a training runtime.",
       "source_file": "src/training/artifacts.py",
@@ -2806,7 +2549,7 @@
       "label": "Write prepared-dataset lineage for a parent training run.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "write prepared-dataset lineage for a parent training run.",
       "source_file": "src/training/artifacts.py",
@@ -2817,7 +2560,7 @@
       "label": "Write the parent-run CSV, summary, diagnostic manifest, and lineage.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "write the parent-run csv, summary, diagnostic manifest, and lineage.",
       "source_file": "src/training/artifacts.py",
@@ -2828,7 +2571,7 @@
       "label": "Return a fold's legacy metrics plus its tracked step-less test loss.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "return a fold's legacy metrics plus its tracked step-less test loss.",
       "source_file": "src/training/summary.py",
@@ -2839,18 +2582,29 @@
       "label": "MLflow adapters for the training runtime.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "mlflow adapters for the training runtime.",
       "source_file": "src/training/tracking.py",
       "source_location": "L1"
     },
     {
+      "id": "src_training_tracking_rationale_29",
+      "label": "Collect one fold's MLflow events until its diagnostic role is known.",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "rationale",
+      "norm_label": "collect one fold's mlflow events until its diagnostic role is known.",
+      "source_file": "src/training/tracking.py",
+      "source_location": "L29"
+    },
+    {
       "id": "src_training_tracking_rationale_48",
       "label": "A tracker whose methods deliberately avoid importing MLflow side effects.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "a tracker whose methods deliberately avoid importing mlflow side effects.",
       "source_file": "src/training/tracking.py",
@@ -2861,11 +2615,22 @@
       "label": "Log one comparison parent and only selected diagnostic fold runs.",
       "_origin": "ast",
       "community": 1,
-      "community_name": "FoldTrackingRecord",
+      "community_name": "types.py",
       "file_type": "rationale",
       "norm_label": "log one comparison parent and only selected diagnostic fold runs.",
       "source_file": "src/training/tracking.py",
       "source_location": "L81"
+    },
+    {
+      "id": "src_training_types_rationale_1",
+      "label": "Immutable values exchanged between the training workflow stages.",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "types.py",
+      "file_type": "rationale",
+      "norm_label": "immutable values exchanged between the training workflow stages.",
+      "source_file": "src/training/types.py",
+      "source_location": "L1"
     },
     {
       "id": "datasets_generate_splits",
@@ -2989,7 +2754,7 @@
       "source_location": "L1"
     },
     {
-      "id": "src_training_finetuning_rationale_27",
+      "id": "src_training_finetuning_rationale_25",
       "label": "Build the legacy per-fold classification metric set.",
       "_origin": "ast",
       "community": 11,
@@ -2997,7 +2762,7 @@
       "file_type": "rationale",
       "norm_label": "build the legacy per-fold classification metric set.",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L27"
+      "source_location": "L25"
     },
     {
       "id": "src_training_summary_rationale_174",
@@ -3069,11 +2834,229 @@
       "source_location": "L1"
     },
     {
+      "id": "src_embedder_rationale_19",
+      "label": "A whole DataFrame converted to tensors once, then sliced per batch. The per-\u2026",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "rationale",
+      "norm_label": "a whole dataframe converted to tensors once, then sliced per batch. the per-...",
+      "source_file": "src/embedder.py",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_embedder_rationale_37",
+      "label": "Select rows with a slice or an index tensor, keeping the layout.",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "rationale",
+      "norm_label": "select rows with a slice or an index tensor, keeping the layout.",
+      "source_file": "src/embedder.py",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_models_rationale_27",
+      "label": "masked / original : pd.DataFrame or EncodedTable The corrupted view and the\u2026",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "rationale",
+      "norm_label": "masked / original : pd.dataframe or encodedtable the corrupted view and the...",
+      "source_file": "src/models.py",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_models_rationale_8",
+      "label": "Given a masked DataFrame, asks the Transformer to reconstruct, only at [MASK]\u2026",
+      "_origin": "ast",
+      "community": 16,
+      "community_name": "TridentPretrainer",
+      "file_type": "rationale",
+      "norm_label": "given a masked dataframe, asks the transformer to reconstruct, only at [mask]...",
+      "source_file": "src/models.py",
+      "source_location": "L8"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance",
+      "label": "0003-training-loop-performance.md",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "0003-training-loop-performance.md",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_exactness_standard_and_result",
+      "label": "Exactness standard and result",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "exactness standard and result",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L49"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_fixes_included",
+      "label": "Fixes included",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "fixes included",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L76"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_found_and_deliberately_not_fixed",
+      "label": "Found and deliberately NOT fixed",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "found and deliberately not fixed",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L87"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_measured_speedup",
+      "label": "Measured speedup",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "measured speedup",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L65"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_problem",
+      "label": "Problem",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "problem",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L7"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_status",
+      "label": "Status",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "status",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L3"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "label": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "ticket 0003: training loop performance (behavior-preserving)",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_tickets_0003_training_loop_performance_what_changed",
+      "label": "What changed",
+      "_origin": "ast",
+      "community": 17,
+      "community_name": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "what changed",
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L27"
+    },
+    {
+      "id": "src_models_rationale_104",
+      "label": "data : pd.DataFrame or EncodedTable Input rows (possibly masked/null, but in\u2026",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "rationale",
+      "norm_label": "data : pd.dataframe or encodedtable input rows (possibly masked/null, but in...",
+      "source_file": "src/models.py",
+      "source_location": "L104"
+    },
+    {
+      "id": "src_models_rationale_66",
+      "label": "Unified model for the classification task: 1) Generates tabular embeddings\u2026",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "rationale",
+      "norm_label": "unified model for the classification task: 1) generates tabular embeddings...",
+      "source_file": "src/models.py",
+      "source_location": "L66"
+    },
+    {
+      "id": "src_models_rationale_73",
+      "label": "Parameters ---------- embedder : TabularEmbedder Responsible for generating\u2026",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "TridentModel",
+      "file_type": "rationale",
+      "norm_label": "parameters ---------- embedder : tabularembedder responsible for generating...",
+      "source_file": "src/models.py",
+      "source_location": "L73"
+    },
+    {
+      "id": "src_embedder_rationale_149",
+      "label": "Convert a whole DataFrame into the tensors ``forward`` consumes. Doing this\u2026",
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "rationale",
+      "norm_label": "convert a whole dataframe into the tensors ``forward`` consumes. doing this...",
+      "source_file": "src/embedder.py",
+      "source_location": "L149"
+    },
+    {
+      "id": "src_embedder_rationale_190",
+      "label": "For each row, generates the resulting embedding: 1) Transforms each categorical\u2026",
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "rationale",
+      "norm_label": "for each row, generates the resulting embedding: 1) transforms each categorical...",
+      "source_file": "src/embedder.py",
+      "source_location": "L190"
+    },
+    {
+      "id": "src_utils_rationale_80",
+      "label": "Separates real numerical values from special tokens `[MASK]` and `[NULL]`.\u2026",
+      "_origin": "ast",
+      "community": 19,
+      "community_name": ".encode",
+      "file_type": "rationale",
+      "norm_label": "separates real numerical values from special tokens `[mask]` and `[null]`....",
+      "source_file": "src/utils.py",
+      "source_location": "L80"
+    },
+    {
       "id": "main",
       "label": "main.py",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "main.py",
       "source_file": "main.py",
@@ -3084,10 +3067,21 @@
       "label": "opt.py",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "opt.py",
       "source_file": "opt.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_mlflow_utils",
+      "label": "mlflow_utils.py",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "code",
+      "norm_label": "mlflow_utils.py",
+      "source_file": "src/mlflow_utils.py",
       "source_location": "L1"
     },
     {
@@ -3095,7 +3089,7 @@
       "label": "cli.py",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "cli.py",
       "source_file": "src/training/cli.py",
@@ -3106,31 +3100,9 @@
       "label": "Namespace",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "namespace",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "src_training_data",
-      "label": "data.py",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "data.py",
-      "source_file": "src/training/data.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_data_py_dataframe",
-      "label": "DataFrame",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "dataframe",
       "source_file": "",
       "source_location": ""
     },
@@ -3139,32 +3111,10 @@
       "label": "discovery.py",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "discovery.py",
       "source_file": "src/training/discovery.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_runner",
-      "label": "runner.py",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "runner.py",
-      "source_file": "src/training/runner.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "tests_unit_test_training_data",
-      "label": "test_training_data.py",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "code",
-      "norm_label": "test_training_data.py",
-      "source_file": "tests/unit/test_training_data.py",
       "source_location": "L1"
     },
     {
@@ -3172,7 +3122,7 @@
       "label": "train.py",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "code",
       "norm_label": "train.py",
       "source_file": "train.py",
@@ -3183,7 +3133,7 @@
       "label": "Return a human-readable duration string.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "return a human-readable duration string.",
       "source_file": "main.py",
@@ -3194,7 +3144,7 @@
       "label": "Command-line entry point for TRIDENT.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "command-line entry point for trident.",
       "source_file": "main.py",
@@ -3205,7 +3155,7 @@
       "label": "Run training sequentially on every discovered dataset.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "run training sequentially on every discovered dataset.",
       "source_file": "main.py",
@@ -3216,7 +3166,7 @@
       "label": "Save the best parameters found so far to the correct location",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "save the best parameters found so far to the correct location",
       "source_file": "opt.py",
@@ -3227,7 +3177,7 @@
       "label": "Run hyperparameter optimization with Optuna",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "run hyperparameter optimization with optuna",
       "source_file": "opt.py",
@@ -3238,7 +3188,7 @@
       "label": "Define the hyperparameter search space for Optuna",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "define the hyperparameter search space for optuna",
       "source_file": "opt.py",
@@ -3249,18 +3199,84 @@
       "label": "Wrapper class for the Optuna objective function to maintain state",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "wrapper class for the optuna objective function to maintain state",
       "source_file": "opt.py",
       "source_location": "L81"
     },
     {
+      "id": "src_mlflow_utils_rationale_1",
+      "label": "src/mlflow_utils.py ------------------- Centralised MLflow utilities for\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "src/mlflow_utils.py ------------------- centralised mlflow utilities for...",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_mlflow_utils_rationale_107",
+      "label": "Build a flat dict of all TRIDENT hyperparameters suitable for\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "build a flat dict of all trident hyperparameters suitable for...",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L107"
+    },
+    {
+      "id": "src_mlflow_utils_rationale_138",
+      "label": "Build a flat dict of MLflow tags for a training run. Parameters ----------\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "build a flat dict of mlflow tags for a training run. parameters ----------...",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L138"
+    },
+    {
+      "id": "src_mlflow_utils_rationale_37",
+      "label": "Return the normalized percentage encoded by a ``_<n>nan`` suffix.",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "return the normalized percentage encoded by a ``_<n>nan`` suffix.",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_mlflow_utils_rationale_47",
+      "label": "Configure the MLflow tracking URI. Priority order: 1. ``tracking_uri`` argument\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "configure the mlflow tracking uri. priority order: 1. ``tracking_uri`` argument...",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L47"
+    },
+    {
+      "id": "src_mlflow_utils_rationale_68",
+      "label": "Return the experiment_id for the given dataset, creating it if absent.\u2026",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "opt.py",
+      "file_type": "rationale",
+      "norm_label": "return the experiment_id for the given dataset, creating it if absent....",
+      "source_file": "src/mlflow_utils.py",
+      "source_location": "L68"
+    },
+    {
       "id": "src_training_cli_rationale_1",
       "label": "Compatibility entry points for command-line and programmatic training.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "compatibility entry points for command-line and programmatic training.",
       "source_file": "src/training/cli.py",
@@ -3271,7 +3287,7 @@
       "label": "Run a legacy namespace and retain the flat Optuna return contract.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "run a legacy namespace and retain the flat optuna return contract.",
       "source_file": "src/training/cli.py",
@@ -3282,51 +3298,18 @@
       "label": "Post-parse validation for mutually exclusive and dependent flags.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "post-parse validation for mutually exclusive and dependent flags.",
       "source_file": "src/training/config.py",
       "source_location": "L44"
     },
     {
-      "id": "src_training_data_rationale_1",
-      "label": "Dataset preparation and fold construction for the training workflow.",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "dataset preparation and fold construction for the training workflow.",
-      "source_file": "src/training/data.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_data_rationale_16",
-      "label": "Load, encode, and scale a dataset before constructing its folds.",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "load, encode, and scale a dataset before constructing its folds.",
-      "source_file": "src/training/data.py",
-      "source_location": "L16"
-    },
-    {
-      "id": "src_training_data_rationale_72",
-      "label": "Construct the legacy predefined or cross-validation fold splits.",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "construct the legacy predefined or cross-validation fold splits.",
-      "source_file": "src/training/data.py",
-      "source_location": "L72"
-    },
-    {
       "id": "src_training_discovery_rationale_1",
       "label": "Runtime discovery of available datasets in datasets/processed_datasets/.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "runtime discovery of available datasets in datasets/processed_datasets/.",
       "source_file": "src/training/discovery.py",
@@ -3337,51 +3320,18 @@
       "label": "Return sorted dataset names from *datasets/processed_datasets/*. Each\u2026",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "return sorted dataset names from *datasets/processed_datasets/*. each...",
       "source_file": "src/training/discovery.py",
       "source_location": "L11"
     },
     {
-      "id": "src_training_runner_rationale_1",
-      "label": "Typed orchestration for TRIDENT training.",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "typed orchestration for trident training.",
-      "source_file": "src/training/runner.py",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_training_runner_rationale_34",
-      "label": "Run all folds and return raw folds plus the legacy aggregate metrics.",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "run all folds and return raw folds plus the legacy aggregate metrics.",
-      "source_file": "src/training/runner.py",
-      "source_location": "L34"
-    },
-    {
-      "id": "src_utils_rationale_10",
-      "label": "Sets the global seed to ensure reproducibility",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "runner.py",
-      "file_type": "rationale",
-      "norm_label": "sets the global seed to ensure reproducibility",
-      "source_file": "src/utils.py",
-      "source_location": "L10"
-    },
-    {
       "id": "train_rationale_1",
       "label": "Legacy public facade for TRIDENT training.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "legacy public facade for trident training.",
       "source_file": "train.py",
@@ -3392,7 +3342,7 @@
       "label": "Retain the historical ``train.main`` programmatic entry point.",
       "_origin": "ast",
       "community": 2,
-      "community_name": "runner.py",
+      "community_name": "opt.py",
       "file_type": "rationale",
       "norm_label": "retain the historical ``train.main`` programmatic entry point.",
       "source_file": "train.py",
@@ -3403,7 +3353,7 @@
       "label": "ArgumentParser",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "argumentparser",
       "source_file": "",
@@ -3414,7 +3364,7 @@
       "label": "integration",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "integration",
       "source_file": "",
@@ -3425,7 +3375,7 @@
       "label": "config.py",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "config.py",
       "source_file": "src/training/config.py",
@@ -3436,21 +3386,43 @@
       "label": "Namespace",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "namespace",
       "source_file": "",
       "source_location": ""
     },
     {
-      "id": "src_training_types",
-      "label": "types.py",
+      "id": "src_training_data",
+      "label": "data.py",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
-      "norm_label": "types.py",
-      "source_file": "src/training/types.py",
+      "norm_label": "data.py",
+      "source_file": "src/training/data.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_data_py_dataframe",
+      "label": "DataFrame",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "dataframe",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_training_runner",
+      "label": "runner.py",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "runner.py",
+      "source_file": "src/training/runner.py",
       "source_location": "L1"
     },
     {
@@ -3458,7 +3430,7 @@
       "label": "Any",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "any",
       "source_file": "",
@@ -3469,7 +3441,7 @@
       "label": "test_vehicle_regression.py",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_vehicle_regression.py",
       "source_file": "tests/integration/test_vehicle_regression.py",
@@ -3480,10 +3452,21 @@
       "label": "test_training_config.py",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_training_config.py",
       "source_file": "tests/unit/test_training_config.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "tests_unit_test_training_data",
+      "label": "test_training_data.py",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "code",
+      "norm_label": "test_training_data.py",
+      "source_file": "tests/unit/test_training_data.py",
       "source_location": "L1"
     },
     {
@@ -3491,7 +3474,7 @@
       "label": "test_training_runtime.py",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "code",
       "norm_label": "test_training_runtime.py",
       "source_file": "tests/unit/test_training_runtime.py",
@@ -3502,29 +3485,84 @@
       "label": "Translation from legacy argparse namespaces to typed training requests.",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "rationale",
       "norm_label": "translation from legacy argparse namespaces to typed training requests.",
       "source_file": "src/training/config.py",
       "source_location": "L1"
     },
     {
-      "id": "src_training_types_rationale_1",
-      "label": "Immutable values exchanged between the training workflow stages.",
+      "id": "src_training_data_rationale_1",
+      "label": "Dataset preparation and fold construction for the training workflow.",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "rationale",
-      "norm_label": "immutable values exchanged between the training workflow stages.",
-      "source_file": "src/training/types.py",
+      "norm_label": "dataset preparation and fold construction for the training workflow.",
+      "source_file": "src/training/data.py",
       "source_location": "L1"
+    },
+    {
+      "id": "src_training_data_rationale_16",
+      "label": "Load, encode, and scale a dataset before constructing its folds.",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "rationale",
+      "norm_label": "load, encode, and scale a dataset before constructing its folds.",
+      "source_file": "src/training/data.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "src_training_data_rationale_72",
+      "label": "Construct the legacy predefined or cross-validation fold splits.",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "rationale",
+      "norm_label": "construct the legacy predefined or cross-validation fold splits.",
+      "source_file": "src/training/data.py",
+      "source_location": "L72"
+    },
+    {
+      "id": "src_training_runner_rationale_1",
+      "label": "Typed orchestration for TRIDENT training.",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "rationale",
+      "norm_label": "typed orchestration for trident training.",
+      "source_file": "src/training/runner.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_runner_rationale_34",
+      "label": "Run all folds and return raw folds plus the legacy aggregate metrics.",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "rationale",
+      "norm_label": "run all folds and return raw folds plus the legacy aggregate metrics.",
+      "source_file": "src/training/runner.py",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_utils_rationale_9",
+      "label": "Sets the global seed to ensure reproducibility",
+      "_origin": "ast",
+      "community": 3,
+      "community_name": "runner.py",
+      "file_type": "rationale",
+      "norm_label": "sets the global seed to ensure reproducibility",
+      "source_file": "src/utils.py",
+      "source_location": "L9"
     },
     {
       "id": "tests_integration_test_vehicle_regression_rationale_1",
       "label": "Opt-in regression baseline for a short typed vehicle training run.",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "rationale",
       "norm_label": "opt-in regression baseline for a short typed vehicle training run.",
       "source_file": "tests/integration/test_vehicle_regression.py",
@@ -3535,7 +3573,7 @@
       "label": "A deterministic short CPU/CUDA run remains within recorded tolerances.",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "rationale",
       "norm_label": "a deterministic short cpu/cuda run remains within recorded tolerances.",
       "source_file": "tests/integration/test_vehicle_regression.py",
@@ -3546,11 +3584,121 @@
       "label": "The compatibility facade returns Optuna's flat mean-metrics mapping.",
       "_origin": "ast",
       "community": 3,
-      "community_name": "types.py",
+      "community_name": "runner.py",
       "file_type": "rationale",
       "norm_label": "the compatibility facade returns optuna's flat mean-metrics mapping.",
       "source_file": "tests/unit/test_training_runtime.py",
       "source_location": "L204"
+    },
+    {
+      "id": "src_embedder",
+      "label": "embedder.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "embedder.py",
+      "source_file": "src/embedder.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_models",
+      "label": "models.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "models.py",
+      "source_file": "src/models.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_pretraining",
+      "label": "pretraining.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "pretraining.py",
+      "source_file": "src/training/pretraining.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_pretraining_py_device",
+      "label": "device",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "device",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "src_transformer",
+      "label": "transformer.py",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "code",
+      "norm_label": "transformer.py",
+      "source_file": "src/transformer.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_embedder_rationale_13",
+      "label": "Reduce a column name to a valid ModuleDict/ParameterDict key.",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "rationale",
+      "norm_label": "reduce a column name to a valid moduledict/parameterdict key.",
+      "source_file": "src/embedder.py",
+      "source_location": "L13"
+    },
+    {
+      "id": "src_embedder_rationale_48",
+      "label": "Class that encapsulates the creation of embeddings for tabular data: -\u2026",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "rationale",
+      "norm_label": "class that encapsulates the creation of embeddings for tabular data: -...",
+      "source_file": "src/embedder.py",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_training_pretraining_rationale_1",
+      "label": "Masked reconstruction pre-training stage.",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "rationale",
+      "norm_label": "masked reconstruction pre-training stage.",
+      "source_file": "src/training/pretraining.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_pretraining_rationale_23",
+      "label": "Train the masked reconstruction model using the legacy optimization loop.",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "rationale",
+      "norm_label": "train the masked reconstruction model using the legacy optimization loop.",
+      "source_file": "src/training/pretraining.py",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_transformer_rationale_93",
+      "label": "Complete transformer encoder for tabular data",
+      "_origin": "ast",
+      "community": 4,
+      "community_name": "pretraining.py",
+      "file_type": "rationale",
+      "norm_label": "complete transformer encoder for tabular data",
+      "source_file": "src/transformer.py",
+      "source_location": "L93"
     },
     {
       "id": "src_training_artifacts_py_dataframe",
@@ -3586,17 +3734,6 @@
       "source_location": ""
     },
     {
-      "id": "tests_unit_test_training_artifacts",
-      "label": "test_training_artifacts.py",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "code",
-      "norm_label": "test_training_artifacts.py",
-      "source_file": "tests/unit/test_training_artifacts.py",
-      "source_location": "L1"
-    },
-    {
       "id": "tests_unit_test_training_summary",
       "label": "test_training_summary.py",
       "_origin": "ast",
@@ -3628,17 +3765,6 @@
       "norm_label": "aggregate completed cv folds into comparable final and loss statistics.",
       "source_file": "src/training/summary.py",
       "source_location": "L30"
-    },
-    {
-      "id": "src_training_tracking_rationale_29",
-      "label": "Collect one fold's MLflow events until its diagnostic role is known.",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "summarize_cross_validation",
-      "file_type": "rationale",
-      "norm_label": "collect one fold's mlflow events until its diagnostic role is known.",
-      "source_file": "src/training/tracking.py",
-      "source_location": "L29"
     },
     {
       "id": "claude",
@@ -3776,7 +3902,7 @@
       "node_kind": "heading",
       "norm_label": "building folds \u2014 `build_folds` (`src/training/data.py:69`)",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L61"
+      "source_location": "L58"
     },
     {
       "id": "docs_architecture_contents",
@@ -3812,7 +3938,7 @@
       "node_kind": "heading",
       "norm_label": "end-to-end training orchestration",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L320"
+      "source_location": "L319"
     },
     {
       "id": "docs_architecture_hyperparameter_code_wiring_reference",
@@ -3824,7 +3950,7 @@
       "node_kind": "heading",
       "norm_label": "hyperparameter \u2192 code wiring reference",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L343"
+      "source_location": "L342"
     },
     {
       "id": "docs_architecture_implementation",
@@ -3836,10 +3962,10 @@
       "node_kind": "heading",
       "norm_label": "implementation",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L123"
+      "source_location": "L124"
     },
     {
-      "id": "docs_architecture_implementation_270",
+      "id": "docs_architecture_implementation_269",
       "label": "Implementation",
       "_origin": "ast",
       "community": 8,
@@ -3848,10 +3974,10 @@
       "node_kind": "heading",
       "norm_label": "implementation",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L270"
+      "source_location": "L269"
     },
     {
-      "id": "docs_architecture_implementation_304",
+      "id": "docs_architecture_implementation_303",
       "label": "Implementation",
       "_origin": "ast",
       "community": 8,
@@ -3860,7 +3986,7 @@
       "node_kind": "heading",
       "norm_label": "implementation",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L304"
+      "source_location": "L303"
     },
     {
       "id": "docs_architecture_inside_multiheadattention_src_transformer_py_34",
@@ -3872,7 +3998,7 @@
       "node_kind": "heading",
       "norm_label": "inside `multiheadattention` (`src/transformer.py:34`)",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L209"
+      "source_location": "L208"
     },
     {
       "id": "docs_architecture_inside_one_encoderlayer_src_transformer_py_69",
@@ -3884,7 +4010,7 @@
       "node_kind": "heading",
       "norm_label": "inside one `encoderlayer` (`src/transformer.py:69`)",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L179"
+      "source_location": "L178"
     },
     {
       "id": "docs_architecture_loading_encoding_scaling_prepare_dataset_src_training_data_py_15",
@@ -3908,7 +4034,7 @@
       "node_kind": "heading",
       "norm_label": "per-epoch masking and batching",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L75"
+      "source_location": "L72"
     },
     {
       "id": "docs_architecture_running_it",
@@ -3920,7 +4046,7 @@
       "node_kind": "heading",
       "norm_label": "running it",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L369"
+      "source_location": "L368"
     },
     {
       "id": "docs_architecture_tabularembedder_a_table_row_becomes_a_token_sequence",
@@ -3932,7 +4058,7 @@
       "node_kind": "heading",
       "norm_label": "tabularembedder \u2014 a table row becomes a token sequence",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L99"
+      "source_location": "L100"
     },
     {
       "id": "docs_architecture_tabulartransformerencoder_the_shared_backbone",
@@ -3944,7 +4070,7 @@
       "node_kind": "heading",
       "norm_label": "tabulartransformerencoder \u2014 the shared backbone",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L156"
+      "source_location": "L155"
     },
     {
       "id": "docs_architecture_the_big_picture",
@@ -3968,7 +4094,7 @@
       "node_kind": "heading",
       "norm_label": "the stack",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L160"
+      "source_location": "L159"
     },
     {
       "id": "docs_architecture_theory",
@@ -3980,10 +4106,10 @@
       "node_kind": "heading",
       "norm_label": "theory",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L103"
+      "source_location": "L104"
     },
     {
-      "id": "docs_architecture_theory_257",
+      "id": "docs_architecture_theory_256",
       "label": "Theory",
       "_origin": "ast",
       "community": 8,
@@ -3992,10 +4118,10 @@
       "node_kind": "heading",
       "norm_label": "theory",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L257"
+      "source_location": "L256"
     },
     {
-      "id": "docs_architecture_theory_292",
+      "id": "docs_architecture_theory_291",
       "label": "Theory",
       "_origin": "ast",
       "community": 8,
@@ -4004,7 +4130,7 @@
       "node_kind": "heading",
       "norm_label": "theory",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L292"
+      "source_location": "L291"
     },
     {
       "id": "docs_architecture_trident_architecture",
@@ -4028,7 +4154,7 @@
       "node_kind": "heading",
       "norm_label": "tridentmodel \u2014 the fine-tuning / classification head",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L288"
+      "source_location": "L287"
     },
     {
       "id": "docs_architecture_tridentpretrainer_the_self_supervised_objective",
@@ -4040,217 +4166,106 @@
       "node_kind": "heading",
       "norm_label": "tridentpretrainer \u2014 the self-supervised objective",
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L253"
+      "source_location": "L252"
     },
     {
-      "id": "context_component_ablation_benchmark",
-      "label": "Component-Ablation Benchmark",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "component-ablation benchmark",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
+      "id": "protocol",
+      "label": "Protocol",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "protocol",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "context_cv_summary",
-      "label": "CV Summary",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "cv summary",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
+      "id": "src_training_finetuning",
+      "label": "finetuning.py",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "finetuning.py",
+      "source_file": "src/training/finetuning.py",
+      "source_location": "L1"
     },
     {
-      "id": "context_dataset_provenance",
-      "label": "Dataset Provenance",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "dataset provenance",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
+      "id": "src_training_finetuning_py_device",
+      "label": "device",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "device",
+      "source_file": "",
+      "source_location": ""
     },
     {
-      "id": "context_diagnostic_fold_run",
-      "label": "Diagnostic Fold Run",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "diagnostic fold run",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
+      "id": "src_utils",
+      "label": "utils.py",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "code",
+      "norm_label": "utils.py",
+      "source_file": "src/utils.py",
+      "source_location": "L1"
     },
     {
-      "id": "context_experiment_family",
-      "label": "Experiment Family",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "experiment family",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_fold_ranking_metric",
-      "label": "Fold-Ranking Metric",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "fold-ranking metric",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_full_factorial_ablation",
-      "label": "Full-Factorial Ablation",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "full-factorial ablation",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_internal_cv_interval",
-      "label": "Internal CV Interval",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "internal cv interval",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_loss_band",
-      "label": "Loss Band",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "loss band",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_paired_single_seed_cv_protocol",
-      "label": "Paired Single-Seed CV Protocol",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "paired single-seed cv protocol",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_primary_endpoint",
-      "label": "Primary Endpoint",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "primary endpoint",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context_single_split_run",
-      "label": "Single-Split Run",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "concept",
-      "norm_label": "single-split run",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "context",
-      "label": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
-      "file_type": "document",
-      "norm_label": "trident experiment tracking context (context.md)",
-      "source_file": "CONTEXT.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
-      "id": "docs_adr_0002_curated_cross_validation_mlflow_runs_curated_diagnostic_child_runs_pattern",
-      "label": "Curated Diagnostic Child Runs Pattern",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 4,
-      "community_name": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
-      "contributor": null,
+      "id": "src_training_finetuning_rationale_1",
+      "label": "Classifier fine-tuning and fold metric calculation.",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
       "file_type": "rationale",
-      "norm_label": "curated diagnostic child runs pattern",
-      "source_file": "docs/adr/0002-curated-cross-validation-mlflow-runs.md",
-      "source_location": null,
-      "source_url": null
+      "norm_label": "classifier fine-tuning and fold metric calculation.",
+      "source_file": "src/training/finetuning.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_training_finetuning_rationale_70",
+      "label": "Fine-tune and evaluate the classifier using the legacy optimization loop.",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "rationale",
+      "norm_label": "fine-tune and evaluate the classifier using the legacy optimization loop.",
+      "source_file": "src/training/finetuning.py",
+      "source_location": "L70"
+    },
+    {
+      "id": "src_training_types_rationale_191",
+      "label": "Log metrics at an optional training step.",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "rationale",
+      "norm_label": "log metrics at an optional training step.",
+      "source_file": "src/training/types.py",
+      "source_location": "L191"
+    },
+    {
+      "id": "src_utils_rationale_132",
+      "label": "Example function that: 1) Splits train/val (e.g., 90/10) 2) Generates masked DF\u2026",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "rationale",
+      "norm_label": "example function that: 1) splits train/val (e.g., 90/10) 2) generates masked df...",
+      "source_file": "src/utils.py",
+      "source_location": "L132"
+    },
+    {
+      "id": "src_utils_rationale_19",
+      "label": "Preprocesses the table to replace null values with the `[NULL]` token, applies\u2026",
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "finetuning.py",
+      "file_type": "rationale",
+      "norm_label": "preprocesses the table to replace null values with the `[null]` token, applies...",
+      "source_file": "src/utils.py",
+      "source_location": "L19"
     },
     {
       "id": "agents_src_training_package",
@@ -4294,6 +4309,186 @@
       "file_type": "concept",
       "norm_label": "vehicle_00nan regression fixture",
       "source_file": "AGENTS.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_component_ablation_benchmark",
+      "label": "Component-Ablation Benchmark",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "component-ablation benchmark",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_cv_summary",
+      "label": "CV Summary",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "cv summary",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_dataset_provenance",
+      "label": "Dataset Provenance",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "dataset provenance",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_diagnostic_fold_run",
+      "label": "Diagnostic Fold Run",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "diagnostic fold run",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_experiment_family",
+      "label": "Experiment Family",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "experiment family",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_fold_ranking_metric",
+      "label": "Fold-Ranking Metric",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "fold-ranking metric",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_full_factorial_ablation",
+      "label": "Full-Factorial Ablation",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "full-factorial ablation",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_internal_cv_interval",
+      "label": "Internal CV Interval",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "internal cv interval",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_loss_band",
+      "label": "Loss Band",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "loss band",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_paired_single_seed_cv_protocol",
+      "label": "Paired Single-Seed CV Protocol",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "paired single-seed cv protocol",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_primary_endpoint",
+      "label": "Primary Endpoint",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "primary endpoint",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "context_single_split_run",
+      "label": "Single-Split Run",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "concept",
+      "norm_label": "single-split run",
+      "source_file": "CONTEXT.md",
       "source_location": null,
       "source_url": null
     },
@@ -4628,6 +4823,21 @@
       "source_url": null
     },
     {
+      "id": "context",
+      "label": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "document",
+      "norm_label": "trident experiment tracking context (context.md)",
+      "source_file": "CONTEXT.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
       "id": "datasets_categorical_columns_credit_g",
       "label": "credit-g Categorical Columns",
       "_origin": "semantic",
@@ -4864,6 +5074,21 @@
       "file_type": "rationale",
       "norm_label": "compatibility facade pattern",
       "source_file": "docs/adr/0001-training-package-with-compatibility-facade.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "docs_adr_0002_curated_cross_validation_mlflow_runs_curated_diagnostic_child_runs_pattern",
+      "label": "Curated Diagnostic Child Runs Pattern",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 6,
+      "community_name": "TRIDENT README",
+      "contributor": null,
+      "file_type": "rationale",
+      "norm_label": "curated diagnostic child runs pattern",
+      "source_file": "docs/adr/0002-curated-cross-validation-mlflow-runs.md",
       "source_location": null,
       "source_url": null
     }
@@ -5122,7 +5347,19 @@
       "weight": 1.0
     },
     {
-      "source": "src_embedder_tabularembedder_forward",
+      "source": "src_embedder_encodedtable_getitem",
+      "target": "src_embedder_encodedtable",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/embedder.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_tabularembedder_encode",
       "target": "src_utils_split_numeric_and_special",
       "relation": "calls",
       "_origin": "ast",
@@ -5130,7 +5367,55 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/embedder.py",
-      "source_location": "L128",
+      "source_location": "L170",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_tabularembedder_encode",
+      "target": "src_embedder_encodedtable",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/embedder.py",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_tabularembedder_forward",
+      "target": "src_embedder_tabularembedder_encode",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/embedder.py",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_tabularembedder_init",
+      "target": "src_embedder_sanitize",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/embedder.py",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_tridentpretrainer_forward",
+      "target": "src_models_tridentpretrainer_as_encoded",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/models.py",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -5142,7 +5427,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/models.py",
-      "source_location": "L20",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -5370,7 +5655,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L61",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -5382,7 +5667,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L102",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -5394,7 +5679,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L178",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -5406,7 +5691,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L192",
+      "source_location": "L193",
       "weight": 1.0
     },
     {
@@ -5418,7 +5703,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L82",
+      "source_location": "L80",
       "weight": 1.0
     },
     {
@@ -5430,7 +5715,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/pretraining.py",
-      "source_location": "L117",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -5478,7 +5763,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/training/pretraining.py",
-      "source_location": "L62",
+      "source_location": "L66",
       "weight": 1.0
     },
     {
@@ -6102,7 +6387,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/utils.py",
-      "source_location": "L152",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -6426,7 +6711,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L31",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -6462,7 +6747,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L49",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
@@ -6474,7 +6759,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L63",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -7506,7 +7791,7 @@
       "confidence_score": 1.0,
       "context": "generic_arg",
       "source_file": "src/training/types.py",
-      "source_location": "L30",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -7638,7 +7923,19 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/embedder.py",
-      "source_location": "L7",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models",
+      "target": "src_embedder_encodedtable",
+      "relation": "imports",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "src/models.py",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -7650,7 +7947,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/models.py",
-      "source_location": "L7",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -7662,7 +7959,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/models.py",
-      "source_location": "L8",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -7890,7 +8187,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -7902,7 +8199,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -7914,7 +8211,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7926,7 +8223,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7938,7 +8235,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7950,7 +8247,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7962,7 +8259,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7974,7 +8271,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -7986,7 +8283,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -9066,7 +9363,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/embedder.py",
-      "source_location": "L7",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -9078,7 +9375,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/models.py",
-      "source_location": "L7",
+      "source_location": "L4",
       "weight": 1.0
     },
     {
@@ -9090,7 +9387,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/models.py",
-      "source_location": "L8",
+      "source_location": "L5",
       "weight": 1.0
     },
     {
@@ -9174,7 +9471,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -9186,7 +9483,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L14",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
@@ -9198,7 +9495,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -9646,18 +9943,6 @@
       "weight": 1.0
     },
     {
-      "source": "src_models_tridentpretrainer_forward",
-      "target": "src_models_py_dataframe",
-      "relation": "references",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "parameter_type",
-      "source_file": "src/models.py",
-      "source_location": "L26",
-      "weight": 1.0
-    },
-    {
       "source": "src_models_tridentpretrainer_init",
       "target": "src_embedder_tabularembedder",
       "relation": "references",
@@ -9666,7 +9951,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/models.py",
-      "source_location": "L19",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -9678,7 +9963,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/models.py",
-      "source_location": "L19",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -9810,7 +10095,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L19",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -9822,7 +10107,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L64",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
@@ -10162,6 +10447,18 @@
       "weight": 1.0
     },
     {
+      "source": "src_models_tridentpretrainer_as_encoded",
+      "target": "src_embedder_encodedtable",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "return_type",
+      "source_file": "src/models.py",
+      "source_location": "L23",
+      "weight": 1.0
+    },
+    {
       "source": "src_training_artifacts_artifactwriter_save_model",
       "target": "src_training_artifacts_py_path",
       "relation": "references",
@@ -10398,7 +10695,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L61",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -10409,7 +10706,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L75",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -10420,7 +10717,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L103",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -10431,7 +10728,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L123",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -10442,7 +10739,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L160",
+      "source_location": "L159",
       "weight": 1.0
     },
     {
@@ -10453,7 +10750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L179",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
@@ -10464,7 +10761,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L209",
+      "source_location": "L208",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_architecture_trident_architecture",
+      "target": "docs_architecture_tabularembedder_a_table_row_becomes_a_token_sequence",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/ARCHITECTURE.md",
+      "source_location": "L100",
       "weight": 1.0
     },
     {
@@ -10475,7 +10783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L156",
+      "source_location": "L155",
       "weight": 1.0
     },
     {
@@ -10497,7 +10805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L253",
+      "source_location": "L252",
       "weight": 1.0
     },
     {
@@ -10508,7 +10816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L288",
+      "source_location": "L287",
       "weight": 1.0
     },
     {
@@ -10519,7 +10827,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L320",
+      "source_location": "L319",
       "weight": 1.0
     },
     {
@@ -10530,7 +10838,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L343",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -10541,7 +10849,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L369",
+      "source_location": "L368",
       "weight": 1.0
     },
     {
@@ -10567,58 +10875,135 @@
       "weight": 1.0
     },
     {
-      "source": "docs_architecture_trident_architecture",
-      "target": "docs_architecture_tabularembedder_a_table_row_becomes_a_token_sequence",
+      "source": "docs_architecture_tridentmodel_the_fine_tuning_classification_head",
+      "target": "docs_architecture_theory_291",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L99",
+      "source_location": "L291",
       "weight": 1.0
     },
     {
       "source": "docs_architecture_tridentmodel_the_fine_tuning_classification_head",
-      "target": "docs_architecture_theory_292",
+      "target": "docs_architecture_implementation_303",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L292",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_architecture_tridentmodel_the_fine_tuning_classification_head",
-      "target": "docs_architecture_implementation_304",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L304",
+      "source_location": "L303",
       "weight": 1.0
     },
     {
       "source": "docs_architecture_tridentpretrainer_the_self_supervised_objective",
-      "target": "docs_architecture_theory_257",
+      "target": "docs_architecture_theory_256",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L257",
+      "source_location": "L256",
       "weight": 1.0
     },
     {
       "source": "docs_architecture_tridentpretrainer_the_self_supervised_objective",
-      "target": "docs_architecture_implementation_270",
+      "target": "docs_architecture_implementation_269",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L270",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance",
+      "target": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_what_changed",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_status",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_exactness_standard_and_result",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_measured_speedup",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_problem",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_fixes_included",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_0003_training_loop_performance_ticket_0003_training_loop_performance_behavior_preserving",
+      "target": "docs_tickets_0003_training_loop_performance_found_and_deliberately_not_fixed",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/0003-training-loop-performance.md",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -10722,13 +11107,35 @@
     },
     {
       "source": "src_embedder",
+      "target": "src_embedder_sanitize",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder",
+      "target": "src_embedder_encodedtable",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder",
       "target": "src_embedder_tabularembedder",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/embedder.py",
-      "source_location": "L9",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
@@ -10799,24 +11206,24 @@
     },
     {
       "source": "src_models",
-      "target": "src_models_tridentpretrainer",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/models.py",
-      "source_location": "L10",
-      "weight": 1.0
-    },
-    {
-      "source": "src_models",
       "target": "src_models_tridentmodel",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/models.py",
-      "source_location": "L60",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models",
+      "target": "src_models_tridentpretrainer",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -10959,7 +11366,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/finetuning.py",
-      "source_location": "L19",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -10970,7 +11377,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/finetuning.py",
-      "source_location": "L64",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
@@ -11179,7 +11586,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L106",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -11190,7 +11597,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L113",
+      "source_location": "L111",
       "weight": 1.0
     },
     {
@@ -11201,7 +11608,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L120",
+      "source_location": "L118",
       "weight": 1.0
     },
     {
@@ -11212,7 +11619,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L126",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -11223,7 +11630,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L133",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -11234,7 +11641,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L144",
+      "source_location": "L142",
       "weight": 1.0
     },
     {
@@ -11245,7 +11652,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L152",
+      "source_location": "L150",
       "weight": 1.0
     },
     {
@@ -11256,7 +11663,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L159",
+      "source_location": "L157",
       "weight": 1.0
     },
     {
@@ -11267,7 +11674,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L167",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -11278,7 +11685,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L175",
+      "source_location": "L173",
       "weight": 1.0
     },
     {
@@ -11289,7 +11696,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L181",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -11300,7 +11707,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L191",
+      "source_location": "L189",
       "weight": 1.0
     },
     {
@@ -11311,7 +11718,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L59",
+      "source_location": "L57",
       "weight": 1.0
     },
     {
@@ -11322,7 +11729,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L74",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -11333,7 +11740,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L81",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -11344,7 +11751,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L88",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -11366,7 +11773,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L99",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -11432,7 +11839,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L137",
+      "source_location": "L130",
       "weight": 1.0
     },
     {
@@ -11443,7 +11850,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L19",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -11454,7 +11861,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L80",
+      "source_location": "L79",
       "weight": 1.0
     },
     {
@@ -11465,7 +11872,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -11608,7 +12015,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L30",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -11619,7 +12026,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L46",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -11630,7 +12037,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "tests/unit/test_training_metrics.py",
-      "source_location": "L62",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -11949,7 +12356,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L191",
+      "source_location": "L189",
       "weight": 1.0
     },
     {
@@ -12052,14 +12459,25 @@
       "weight": 1.0
     },
     {
-      "source": "src_embedder_tabularembedder",
-      "target": "src_embedder_tabularembedder_init",
+      "source": "src_embedder_encodedtable",
+      "target": "src_embedder_encodedtable_len",
       "relation": "method",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/embedder.py",
-      "source_location": "L16",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_tabularembedder",
+      "target": "src_embedder_tabularembedder_encode",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L148",
       "weight": 1.0
     },
     {
@@ -12070,18 +12488,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/embedder.py",
-      "source_location": "L92",
+      "source_location": "L189",
       "weight": 1.0
     },
     {
-      "source": "src_models_tridentmodel",
-      "target": "src_models_tridentmodel_init",
+      "source": "src_embedder_tabularembedder",
+      "target": "src_embedder_tabularembedder_init",
       "relation": "method",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "src/models.py",
-      "source_location": "L67",
+      "source_file": "src/embedder.py",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -12092,7 +12510,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/models.py",
-      "source_location": "L98",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_tridentmodel",
+      "target": "src_models_tridentmodel_init",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -12103,7 +12532,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/models.py",
-      "source_location": "L19",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_tridentpretrainer",
+      "target": "src_models_tridentpretrainer_as_encoded",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L23",
       "weight": 1.0
     },
     {
@@ -12444,7 +12884,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L65",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -12455,7 +12895,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L30",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -12466,7 +12906,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L192",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -12767,25 +13207,69 @@
       "weight": 1.0
     },
     {
-      "source": "src_embedder_rationale_10",
-      "target": "src_embedder_tabularembedder",
+      "source": "src_embedder_rationale_13",
+      "target": "src_embedder_sanitize",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/embedder.py",
-      "source_location": "L10",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
-      "source": "src_embedder_rationale_93",
+      "source": "src_embedder_rationale_149",
+      "target": "src_embedder_tabularembedder_encode",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_rationale_19",
+      "target": "src_embedder_encodedtable",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_rationale_190",
       "target": "src_embedder_tabularembedder_forward",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/embedder.py",
-      "source_location": "L93",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_rationale_37",
+      "target": "src_embedder_encodedtable_getitem",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "src_embedder_rationale_48",
+      "target": "src_embedder_tabularembedder",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/embedder.py",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -12866,47 +13350,58 @@
       "weight": 1.0
     },
     {
-      "source": "src_models_rationale_11",
-      "target": "src_models_tridentpretrainer",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/models.py",
-      "source_location": "L11",
-      "weight": 1.0
-    },
-    {
-      "source": "src_models_rationale_61",
-      "target": "src_models_tridentmodel",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/models.py",
-      "source_location": "L61",
-      "weight": 1.0
-    },
-    {
-      "source": "src_models_rationale_68",
-      "target": "src_models_tridentmodel_init",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/models.py",
-      "source_location": "L68",
-      "weight": 1.0
-    },
-    {
-      "source": "src_models_rationale_99",
+      "source": "src_models_rationale_104",
       "target": "src_models_tridentmodel_forward",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/models.py",
-      "source_location": "L99",
+      "source_location": "L104",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_rationale_27",
+      "target": "src_models_tridentpretrainer_forward",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L27",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_rationale_66",
+      "target": "src_models_tridentmodel",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_rationale_73",
+      "target": "src_models_tridentmodel_init",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "src_models_rationale_8",
+      "target": "src_models_tridentpretrainer",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/models.py",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
@@ -13053,25 +13548,25 @@
       "weight": 1.0
     },
     {
-      "source": "src_training_finetuning_rationale_27",
+      "source": "src_training_finetuning_rationale_25",
       "target": "src_training_finetuning_build_fold_result",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/finetuning.py",
-      "source_location": "L27",
+      "source_location": "L25",
       "weight": 1.0
     },
     {
-      "source": "src_training_finetuning_rationale_72",
+      "source": "src_training_finetuning_rationale_70",
       "target": "src_training_finetuning_train_and_evaluate_classifier",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/finetuning.py",
-      "source_location": "L72",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -13240,14 +13735,14 @@
       "weight": 1.0
     },
     {
-      "source": "src_training_types_rationale_193",
+      "source": "src_training_types_rationale_191",
       "target": "src_training_types_trainingtracker_log_metrics",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/training/types.py",
-      "source_location": "L193",
+      "source_location": "L191",
       "weight": 1.0
     },
     {
@@ -13306,47 +13801,47 @@
       "weight": 1.0
     },
     {
-      "source": "src_utils_rationale_10",
-      "target": "src_utils_set_global_seed",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/utils.py",
-      "source_location": "L10",
-      "weight": 1.0
-    },
-    {
-      "source": "src_utils_rationale_139",
+      "source": "src_utils_rationale_132",
       "target": "src_utils_create_pretrain_datasets",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L139",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
-      "source": "src_utils_rationale_20",
+      "source": "src_utils_rationale_19",
       "target": "src_utils_preprocess_table",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L20",
+      "source_location": "L19",
       "weight": 1.0
     },
     {
-      "source": "src_utils_rationale_81",
+      "source": "src_utils_rationale_80",
       "target": "src_utils_split_numeric_and_special",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/utils.py",
-      "source_location": "L81",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_utils_rationale_9",
+      "target": "src_utils_set_global_seed",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/utils.py",
+      "source_location": "L9",
       "weight": 1.0
     },
     {
@@ -13434,7 +13929,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L371",
+      "source_location": "L370",
       "weight": 1.0
     },
     {
@@ -13599,7 +14094,7 @@
       "confidence_score": 0.95,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L65",
+      "source_location": "L63",
       "weight": 0.8
     },
     {
@@ -13611,7 +14106,7 @@
       "confidence_score": 0.95,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L66",
+      "source_location": "L64",
       "weight": 0.8
     },
     {
@@ -13623,7 +14118,7 @@
       "confidence_score": 0.95,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L67",
+      "source_location": "L65",
       "weight": 0.8
     },
     {
@@ -13635,7 +14130,7 @@
       "confidence_score": 0.95,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L68",
+      "source_location": "L66",
       "weight": 0.8
     },
     {
@@ -13647,7 +14142,7 @@
       "confidence_score": 0.95,
       "context": "parameter_type",
       "source_file": "src/training/finetuning.py",
-      "source_location": "L70",
+      "source_location": "L68",
       "weight": 0.8
     },
     {
@@ -13735,18 +14230,6 @@
       "weight": 0.8
     },
     {
-      "source": "src_training_finetuning_train_and_evaluate_classifier",
-      "target": "src_training_types_foldresult",
-      "relation": "uses",
-      "_origin": "ast",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "context": "return_type",
-      "source_file": "src/training/finetuning.py",
-      "source_location": "L71",
-      "weight": 0.8
-    },
-    {
       "source": "src_models_tridentpretrainer",
       "target": "src_embedder_tabularembedder",
       "relation": "uses",
@@ -13754,7 +14237,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "src/models.py",
-      "source_location": "L19",
+      "source_location": "L16",
       "weight": 0.8
     },
     {
@@ -13765,7 +14248,18 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "src/models.py",
-      "source_location": "L19",
+      "source_location": "L16",
+      "weight": 0.8
+    },
+    {
+      "source": "src_models_tridentpretrainer",
+      "target": "src_embedder_encodedtable",
+      "relation": "uses",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "src/models.py",
+      "source_location": "L23",
       "weight": 0.8
     },
     {
@@ -15178,5 +15672,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "d71c5c954539d19b4cdc78b1591ea49ed4c47022"
+  "built_at_commit": "8a2371d8ec2516f7c7d2f31eb484fe45aeef75a4"
 }

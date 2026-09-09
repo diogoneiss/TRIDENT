@@ -1,17 +1,22 @@
 {
-  "0": "finetuning.py",
-  "1": "FoldTrackingRecord",
-  "2": "runner.py",
-  "3": "types.py",
-  "4": "TRIDENT Experiment Tracking Context (CONTEXT.md)",
+  "0": "EncoderLayer",
+  "1": "types.py",
+  "2": "opt.py",
+  "3": "runner.py",
+  "4": "pretraining.py",
   "5": "summarize_cross_validation",
   "6": "TRIDENT README",
   "7": "test_training_tracking.py",
   "8": "TRIDENT Architecture",
+  "9": "finetuning.py",
   "10": "generate_splits.py",
   "11": "build_fold_result",
   "12": "_DisabledMlflow",
   "13": "__init__.py",
   "14": "trident",
-  "15": "start_mlflow.ps1"
+  "15": "start_mlflow.ps1",
+  "16": "TridentPretrainer",
+  "17": "Ticket 0003: Training Loop Performance (Behavior-Preserving)",
+  "18": "TridentModel",
+  "19": ".encode"
 }
