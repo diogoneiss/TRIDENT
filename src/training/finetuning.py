@@ -1,6 +1,5 @@
 """Classifier fine-tuning and fold metric calculation."""
 
-import copy
 from typing import Sequence
 
 import numpy as np
@@ -21,7 +20,6 @@ def build_fold_result(
     dataset_name: str,
     expected_labels: np.ndarray,
     predicted_labels: np.ndarray,
-    test_loss: float,
     dataset_label_classes: Sequence[object] | None = None,
 ) -> FoldResult:
     """Build the legacy per-fold classification metric set."""
@@ -68,7 +66,7 @@ def train_and_evaluate_classifier(
     hyperparameters: Hyperparameters,
     device: torch.device,
     tracker: TrainingTracker,
-) -> FoldResult:
+) -> FinetuningOutcome:
     """Fine-tune and evaluate the classifier using the legacy optimization loop."""
     train_frame = dataset.frame.iloc[fold.train_indices].reset_index(drop=True)
     validation_frame = dataset.frame.iloc[fold.validation_indices].reset_index(drop=True)
@@ -118,34 +116,36 @@ def train_and_evaluate_classifier(
     train_losses: list[float] = []
     validation_losses: list[float] = []
 
+    # Fine-tuning re-uses the same rows every epoch, so encoding happens once.
+    train_encoded = model.embedder.encode(processed_train, device)
+    validation_encoded = model.embedder.encode(processed_validation, device)
+    test_encoded = model.embedder.encode(processed_test, device)
+
     print("\n=== Starting Fine-Tuning (Classification) ===")
     for epoch in tqdm(range(hyperparameters.finetuning_epochs), desc="Fine-tuning epochs"):
         model.train()
-        indices = torch.randperm(len(processed_train))
-        train_loss_sum = 0.0
+        # Drawn on the CPU generator, then moved once so batch slicing stays on device.
+        indices = torch.randperm(len(processed_train)).to(device)
+        # Accumulated on device in float64, so the per-batch losses are summed in
+        # the same order and precision as before without a synchronisation each step.
+        train_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
         train_batch_count = 0
-        # for start in tqdm(
-        #     range(0, len(processed_train), hyperparameters.batch_size),
-        #     desc=f"FineTune Epoch {epoch + 1}/{hyperparameters.finetuning_epochs}",
-        #     unit="batch",
-        #     leave=False,
-        # ):
         for start in range(0, len(processed_train), hyperparameters.batch_size):
             batch_indices = indices[start : start + hyperparameters.batch_size]
-            logits, loss = model(processed_train.iloc[batch_indices], labels=train_labels[batch_indices])
+            logits, loss = model(train_encoded[batch_indices], labels=train_labels[batch_indices])
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             scheduler.step()
-            train_loss_sum += loss.item()
+            train_loss_sum += loss.detach().double()
             train_batch_count += 1
-        average_train_loss = train_loss_sum / train_batch_count
+        average_train_loss = (train_loss_sum / train_batch_count).item()
         train_losses.append(average_train_loss)
 
         model.eval()
         with torch.no_grad():
             validation_logits, validation_loss = model(
-                processed_validation, labels=validation_labels
+                validation_encoded, labels=validation_labels
             )
             validation_predictions = torch.argmax(validation_logits, dim=1)
         validation_loss_value = validation_loss.item()
@@ -167,20 +167,21 @@ def train_and_evaluate_classifier(
         )
         if validation_loss_value < best_validation_loss:
             best_validation_loss = validation_loss_value
-            best_model_state = copy.deepcopy(model.state_dict())
+            best_model_state = {
+                name: tensor.detach().clone() for name, tensor in model.state_dict().items()
+            }
 
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
     model.eval()
     with torch.no_grad():
-        test_logits, test_loss = model(processed_test, labels=test_labels)
+        test_logits, test_loss = model(test_encoded, labels=test_labels)
         test_predictions = torch.argmax(test_logits, dim=1)
     result = build_fold_result(
         fold="single_split",
         dataset_name=dataset.frame.attrs.get("dataset_name", ""),
         expected_labels=test_labels.cpu().numpy(),
         predicted_labels=test_predictions.cpu().numpy(),
-        test_loss=float(test_loss.item()),
         dataset_label_classes=dataset.label_classes,
     )
     tracker.log_metrics(

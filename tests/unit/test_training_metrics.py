@@ -7,7 +7,7 @@ from src.training.summary import compute_cv_summary
 
 
 def test_build_fold_result_retains_classification_metrics() -> None:
-    result = build_fold_result(1, "vehicle_00nan", np.array([0, 1]), np.array([0, 1]), 0.2)
+    result = build_fold_result(1, "vehicle_00nan", np.array([0, 1]), np.array([0, 1]))
 
     assert result.metrics["accuracy"] == 1.0
     assert result.metrics["f1_micro"] == 1.0
@@ -20,7 +20,6 @@ def test_build_fold_result_omits_binary_confusion_fields_for_multiclass_dataset(
         "vehicle_00nan",
         np.array([0, 1]),
         np.array([0, 1]),
-        0.2,
         dataset_label_classes=np.array([0, 1, 2]),
     )
 
@@ -33,7 +32,6 @@ def test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold()
         "vehicle_00nan",
         np.array([0, 0]),
         np.array([0, 0]),
-        0.2,
         dataset_label_classes=np.array([0, 1]),
     )
 
@@ -51,8 +49,7 @@ def test_build_fold_result_uses_zero_precision_without_warning_for_unpredicted_c
             "vehicle_00nan",
             np.array([0, 1]),
             np.array([0, 0]),
-            0.2,
-            dataset_label_classes=np.array([0, 1]),
+                dataset_label_classes=np.array([0, 1]),
         )
 
     assert result.metrics["precision_macro"] == 0.25

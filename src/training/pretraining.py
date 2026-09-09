@@ -58,6 +58,10 @@ def train_pretrainer(
     validation_losses: list[float] = []
 
     print("\n=== Starting Pre-Training (new masks each epoch) ===")
+    # The clean reconstruction targets never change, so they are encoded once per fold.
+    original_train = model.embedder.encode(train_frame, device)
+    original_validation = model.embedder.encode(validation_frame, device)
+
     for epoch in tqdm(range(hyperparameters.pretraining_epochs), desc="Pre train epochs"):
         masked_train_frame = preprocess_table(
             train_frame.copy(), p_base=hyperparameters.mask_probability, fine_tunning=False
@@ -65,46 +69,39 @@ def train_pretrainer(
         masked_validation_frame = preprocess_table(
             validation_frame.copy(), p_base=hyperparameters.mask_probability, fine_tunning=False
         )
+        # Fresh masks need a fresh encoding, but still only one per epoch rather
+        # than one per mini-batch.
+        masked_train = model.embedder.encode(masked_train_frame, device)
+        masked_validation = model.embedder.encode(masked_validation_frame, device)
         model.train()
-        indices = torch.randperm(len(masked_train_frame))
-        train_loss_sum = 0.0
+        # Drawn on the CPU generator, then moved once so batch slicing stays on device.
+        indices = torch.randperm(len(masked_train_frame)).to(device)
+        # Accumulated on device in float64, so the per-batch losses are summed in
+        # the same order and precision as before without a synchronisation each step.
+        train_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
         train_steps = 0
-        # for start in tqdm(
-        #     range(0, len(masked_train_frame), hyperparameters.batch_size),
-        #     desc="Batch",
-        #     unit="batch",
-        #     leave=False,
-        # ):
         for start in range(0, len(masked_train_frame), hyperparameters.batch_size):
-
             batch_indices = indices[start : start + hyperparameters.batch_size]
-            masked_batch = masked_train_frame.iloc[batch_indices].reset_index(drop=True)
-            original_batch = train_frame.iloc[batch_indices].reset_index(drop=True)
             optimizer.zero_grad()
-            total_loss, _ = model(masked_batch, original_batch)
+            total_loss, _ = model(masked_train[batch_indices], original_train[batch_indices])
             total_loss.backward()
             optimizer.step()
             scheduler.step()
-            train_loss_sum += total_loss.item()
+            train_loss_sum += total_loss.detach().double()
             train_steps += 1
-        average_train_loss = train_loss_sum / train_steps
+        average_train_loss = (train_loss_sum / train_steps).item()
         train_losses.append(average_train_loss)
 
         model.eval()
         with torch.no_grad():
-            validation_loss_sum = 0.0
+            validation_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
             validation_steps = 0
             for start in range(0, len(masked_validation_frame), hyperparameters.batch_size):
-                masked_batch = masked_validation_frame.iloc[
-                    start : start + hyperparameters.batch_size
-                ].reset_index(drop=True)
-                original_batch = validation_frame.iloc[
-                    start : start + hyperparameters.batch_size
-                ].reset_index(drop=True)
-                total_loss, _ = model(masked_batch, original_batch)
-                validation_loss_sum += total_loss.item()
+                batch = slice(start, start + hyperparameters.batch_size)
+                total_loss, _ = model(masked_validation[batch], original_validation[batch])
+                validation_loss_sum += total_loss.double()
                 validation_steps += 1
-            average_validation_loss = validation_loss_sum / validation_steps
+            average_validation_loss = (validation_loss_sum / validation_steps).item()
             validation_losses.append(average_validation_loss)
         tracker.log_metrics(
             {
