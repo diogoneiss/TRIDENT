@@ -13,10 +13,8 @@ class Hyperparameters:
     layers: int = 2
     feedforward_dimension: int = 32
     dropout: float = 0.2
-    # pretraining_epochs: int = 40
-    pretraining_epochs: int = 300
-    # finetuning_epochs: int = 40
-    finetuning_epochs: int = 150
+    pretraining_epochs: int = 100
+    finetuning_epochs: int = 75
 
     batch_size: int = 256
     pretraining_learning_rate: float = 0.00034
@@ -35,7 +33,7 @@ class Hyperparameters:
             layers=int(values.get("LAYERS", values.get("layers", 2))),
             feedforward_dimension=int(values.get("DIM_FEED", values.get("feedforward_dimension", 32))),
             dropout=float(values.get("DROPOUT", values.get("dropout", 0.2))),
-            pretraining_epochs=int(values.get("EPOCHS_PRE", values.get("pretraining_epochs", 40))),
+            pretraining_epochs=int(values.get("EPOCHS_PRE", values.get("pretraining_epochs", 100))),
             batch_size=int(values.get("BATCH", values.get("batch_size", 256))),
             pretraining_learning_rate=float(
                 values.get("LR_PRE", values.get("pretraining_learning_rate", 0.00034))
@@ -44,7 +42,7 @@ class Hyperparameters:
                 values.get("WEIGHT_DECAY_PRE", values.get("pretraining_weight_decay", 0.005))
             ),
             mask_probability=float(values.get("PROB_MASCARA", values.get("mask_probability", 0.5))),
-            finetuning_epochs=int(values.get("EPOCH_FINE", values.get("finetuning_epochs", 40))),
+            finetuning_epochs=int(values.get("EPOCH_FINE", values.get("finetuning_epochs", 75))),
             finetuning_learning_rate=float(
                 values.get("LR_FINE", values.get("finetuning_learning_rate", 0.001))
             ),

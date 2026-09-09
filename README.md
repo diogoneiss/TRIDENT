@@ -206,12 +206,12 @@ TRIDENT supports three configuration modes:
   "LAYERS": 2,
   "DIM_FEED": 32,
   "DROPOUT": 0.2,
-  "EPOCHS_PRE": 40,
+  "EPOCHS_PRE": 100,
   "BATCH": 256,
   "LR_PRE": 0.00034,
   "WEIGHT_DECAY_PRE": 0.005,
   "PROB_MASCARA": 0.5,
-  "EPOCH_FINE": 40,
+  "EPOCH_FINE": 75,
   "LR_FINE": 0.001,
   "WEIGHT_DECAY_FINE": 0.0019
 }
