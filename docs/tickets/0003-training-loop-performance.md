@@ -86,6 +86,9 @@ Pre-training / fine-tuning milliseconds per epoch, CUDA, two samples averaged:
 
 ## Found and deliberately NOT fixed
 
+The canonical, fuller list lives in [docs/BACKLOG.md](../BACKLOG.md), with
+reproductions and suggested fixes. Summarized here:
+
 1. **Scheduler cadence.** `CosineAnnealingLR(T_max=epochs)` is stepped once per *batch*, so the
    learning rate reaches zero after `epochs` batches and then oscillates back up for the rest of
    training. `AGENTS.md` protects scheduler cadence, so this was left alone. It looks unintended.
