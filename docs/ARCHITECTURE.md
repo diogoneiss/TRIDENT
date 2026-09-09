@@ -79,17 +79,21 @@ flowchart TD
     Frame --> PP{"preprocess_table()<br/>(src/utils.py:19)"}
     PP -->|"pretraining<br/>p_base = mask_probability"| Dyn["1. Replace nulls with '[NULL]'<br/>2. Dynamically mask cells to '[MASK]',<br/>probability scaled DOWN by the row's<br/>existing null density<br/>3. Guarantee ≥ 1 masked cell per row<br/>— re-rolled every epoch"]
     PP -->|"fine-tuning<br/>p_base = 0, fine_tunning=True"| NullOnly["Replace nulls with '[NULL]' only.<br/>No masking. Computed once,<br/>not per epoch (no randomness to refresh)"]
-    Dyn --> Shuffle["torch.randperm(len(frame))"]
-    NullOnly --> Shuffle
-    Shuffle --> Batch["frame[start : start+batch_size]<br/>— manual index slicing, no DataLoader"]
-    Batch --> ToEmb["TabularEmbedder.forward(batch)"]
+    Dyn --> Encode["TabularEmbedder.encode(frame)<br/>— whole frame to tensors, ONCE per epoch"]
+    NullOnly --> EncodeOnce["TabularEmbedder.encode(frame)<br/>— ONCE per fold, never re-encoded"]
+    Encode --> Shuffle["torch.randperm(len(frame))<br/>drawn on CPU, moved to device once"]
+    EncodeOnce --> Shuffle
+    Shuffle --> Batch["encoded[start : start+batch_size]<br/>— tensor slicing, no DataLoader"]
+    Batch --> ToEmb["TabularEmbedder.forward(EncodedTable)"]
 ```
 
 Notes worth knowing:
 
 - Masking never overwrites an already-null cell — `[MASK]` and `[NULL]` are mutually exclusive per cell.
-- Pretraining validation is batched the same way as training; fine-tuning validation and test sets run as a **single full-batch forward pass**, no loop (`finetuning.py:145-150,175-177`).
-- Inside `TabularEmbedder.forward`, numerical columns go through one more step — `split_numeric_and_special` (`src/utils.py:80`) — which turns the string/float column values into three aligned tensors: `numeric_values` (float, `0.0` at any special token), `mask_flags`, and `null_flags`.
+- Pretraining validation is batched the same way as training; fine-tuning validation and test sets run as a **single full-batch forward pass**, no loop.
+- **Pandas work happens once per frame, not once per batch.** `TabularEmbedder.encode` (`src/embedder.py`) turns a whole DataFrame into an `EncodedTable`: label-encoded categorical indices, numerical values, `[MASK]`/`[NULL]` flags, and the `[MASK]` position matrix the pre-training loss needs. Pre-training re-encodes the masked frames each epoch because the masks are re-rolled; the clean targets and every fine-tuning frame are encoded a single time.
+- `EncodedTable` stores its per-column tensors feature-major, so slicing a batch keeps each column contiguous. `forward` accepts either an `EncodedTable` or a raw DataFrame, so `model(df)` still works for saved models and ad-hoc inference.
+- `split_numeric_and_special` (`src/utils.py`) still produces `numeric_values` (float, `0.0` at any special token), `mask_flags` and `null_flags`, but vectorized over whole columns instead of looping cell by cell.
 
 ---
 
@@ -125,24 +129,22 @@ flowchart TD
     Row --> Num["n_num numerical columns"]
     Cat --> CatIdx["LabelEncoder.transform<br/>→ long indices, (B,) per column"]
     CatIdx --> CatEmb["nn.Embedding(num_categories, dimensao)<br/>→ (B, dimensao) per column"]
-    Num --> Split["split_numeric_and_special()<br/>→ value / mask_flag / null_flag, each (B, n_num)"]
-    Split --> ColVal["column value: (B, 1)"]
-    ColVal --> MLP["Linear(1, hidden_dim) → ReLU → Linear(hidden_dim, dimensao)<br/>→ (B, dimensao)"]
-    Split --> Scatter["Overwrite masked/null rows with the<br/>learned '_mask'/'_null' vectors<br/>→ (B, dimensao)"]
-    MLP --> Scatter
-    CatEmb --> CatCat["torch.cat(dim=1) over columns<br/>→ (B, n_cat·dimensao)"]
-    Scatter --> NumCat["torch.cat(dim=1) over columns<br/>→ (B, n_num·dimensao)"]
-    CatCat --> AllCat["torch.cat → (B, (n_cat+n_num)·dimensao)"]
-    NumCat --> AllCat
-    AllCat --> View["view(B, n_tokens, dimensao)<br/>n_tokens = n_cat + n_num"]
+    Num --> Split["value / mask_flag / null_flag<br/>from the EncodedTable, each (n_num, B)"]
+    Split --> MLP["Per-column MLP, evaluated for ALL columns at once:<br/>broadcast multiply-add → ReLU → baddbmm<br/>→ (n_num, B, dimensao)"]
+    Split --> Where["torch.where: use the learned '_mask'/'_null'<br/>vector wherever the cell was special<br/>→ (n_num, B, dimensao)"]
+    MLP --> Where
+    CatEmb --> CatStack["torch.stack(dim=1) over columns<br/>→ (B, n_cat, dimensao)"]
+    Where --> NumT["transpose → (B, n_num, dimensao)"]
+    CatStack --> AllCat["torch.cat(dim=1)<br/>→ (B, n_tokens, dimensao)"]
+    NumT --> AllCat
     CLS["cls_token: (dimensao,)"] --> Expand["expand → (B, 1, dimensao)"]
-    View --> PrependCLS["cat(dim=1) → (B, n_tokens+1, dimensao)"]
+    AllCat --> PrependCLS["cat(dim=1) → (B, n_tokens+1, dimensao)"]
     Expand --> PrependCLS
-    PrependCLS --> PosLookup["pos_embedding_layer(0..n_tokens)<br/>→ (B, n_tokens+1, dimensao)"]
-    PrependCLS --> Add["elementwise +"]
-    PosLookup --> Add
-    Add --> Out["Output: (B, n_tokens+1, dimensao)"]
+    PrependCLS --> PosAdd2["+ pos_embedding_layer.weight[:n_tokens+1]<br/>broadcast over the batch"]
+    PosAdd2 --> Out["Output: (B, n_tokens+1, dimensao)"]
 ```
+
+Each numerical column still owns its own `Linear(1, hidden_dim) → ReLU → Linear(hidden_dim, dimensao)` parameters, and they still appear per column in `state_dict`. `forward` gathers those parameters and applies them as one batched operation, so the cost is a fixed number of kernel launches instead of two per column.
 
 `n_tokens = len(categorical_columns) + len(numerical_columns)` is fixed at construction time, and column order is always *categorical columns, then numerical columns*, in list order — that ordering **is** the positional embedding's meaning, so it has to stay identical between training and inference.
 
@@ -310,7 +312,7 @@ flowchart TD
     Logits --> CE["CrossEntropyLoss(weight=class_weights)<br/>when labels given"]
 ```
 
-`class_weights` come from `sklearn.utils.class_weight.compute_class_weight("balanced", ...)` computed over the fold's *training* labels only (`finetuning.py:96-101`). The best-validation-loss checkpoint is tracked across all `finetuning_epochs` and restored at the end (`copy.deepcopy(model.state_dict())`) — training always runs the full epoch budget, it just doesn't keep the last epoch's weights if an earlier one scored better on validation loss.
+`class_weights` come from `sklearn.utils.class_weight.compute_class_weight("balanced", ...)` computed over the fold's *training* labels only (`finetuning.py:96-101`). The best-validation-loss checkpoint is tracked across all `finetuning_epochs` and restored at the end (a detached clone of `model.state_dict()`) — training always runs the full epoch budget, it just doesn't keep the last epoch's weights if an earlier one scored better on validation loss.
 
 ---
 
