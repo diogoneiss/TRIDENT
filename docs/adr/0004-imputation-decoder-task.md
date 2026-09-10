@@ -9,7 +9,11 @@ facts verified along the way. Implementation plan:
 [`docs/wayfinder/imputation-decoder/plan.md`](../wayfinder/imputation-decoder/plan.md),
 to be executed test-first with `mattpocock-skills:tdd`.
 Resolves backlog item B3 as a side effect; leaves C1, C2, C4, I1 and I2 untouched and
-routes around them.
+routes around them, and raises the new item C5 (numeric precision and scaling).
+
+The backfill of decision 7 was **applied on 2026-09-10** to the 251 runs recorded between
+2026-07-03 and that date. The six imputation runs already present were skipped, keeping
+their own `task = imputation`.
 
 ## Context
 

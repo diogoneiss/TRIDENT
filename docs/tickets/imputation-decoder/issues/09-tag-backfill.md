@@ -1,6 +1,6 @@
 # 09. Tag backfill
 
-Status: awaiting-approval (script done and dry-run verified; `--apply` needs the user)
+Status: done (applied 2026-09-10 with the user's approval) on `feat/imputation-task`
 Blocked by: 08
 Plan task: 9. ADR 0004 decision 7. Wayfinder ticket 06.
 
@@ -25,7 +25,7 @@ and `is_optuna=false` with no marker.
 - [x] With `--marker`, the marker is written beside the value; without it, only the value.
 - [x] Deleted runs are reported, never written.
 - [x] Dry run by default; the report names the count.
-- [ ] Applied to `mlflow.db`: 251 runs for each tag; the applied date recorded in ADR
+- [x] Applied to `mlflow.db`: 251 runs for each tag; the applied date recorded in ADR
       0004's status.
 
 ## Constraints
@@ -68,3 +68,16 @@ and `is_optuna=false` with no marker.
   ```
 
   Record the applied date in ADR 0004's status afterwards.
+
+- 2026-09-10, **applied** with the user's approval. Final state of the store:
+
+  | task | is_optuna | marker | runs |
+  |---|---|---|---|
+  | `classification` | `false` | `task_backfilled=true` | 251 |
+  | `imputation` | `false` | none | 6 |
+
+  257 runs, every one carrying both tags. The six imputation runs (a `credit-g` end-to-end
+  test and the user's `spambase` run, each a parent plus two diagnostic children) were
+  **skipped**, keeping their recorded `task = imputation` rather than being overwritten,
+  which is the no-overwrite guarantee working on real data. `is_optuna_backfilled` was
+  written on 0 runs, as decided. The applied date is recorded in ADR 0004's status.

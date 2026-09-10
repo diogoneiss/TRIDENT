@@ -191,6 +191,12 @@ Planning only: this map produces the decisions and the plan, not the implementat
 
 ## Not yet specified
 
+- **Numeric precision and scaling** (raised by the user 2026-09-10 after reading a real
+  `spambase_20nan` preview): float32 storage in `EncodedTable` amplifies through the
+  inverse scaler, so original-unit display carries up to 1.15e-01 of error on `kc2`'s
+  widest column; exact zeros print as `1e-09` noise; numerical imputations are unbounded,
+  and clamping them was explicitly rejected. Scoring is exact regardless. Recorded as
+  backlog item **C5**; too broad to ticket here and worth its own effort.
 - **Saved-model shape**: what `--save_model` writes for a decoder run, and how it
   interacts with backlog H3 (whole-object pickling). Adjacent and equally unsharp: whether
   an imputation run should be able to write out a fully imputed copy of a dataset, which

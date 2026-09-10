@@ -19,6 +19,7 @@ before anyone touches them, because they change published results.
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
 | C2 | `"nan"` is a real category next to `[NULL]` | Low today | Yes |
 | C3 | `LABELS` hyperparameter is logged but never used | Low | No |
+| C5 | Numeric precision and scaling: float32 storage, inverse-scaling error, and unbounded numerical imputations | Medium | Partly |
 | C4 | Pre-training re-initializes already-initialized layers | Low | Yes |
 | P1 | `preprocess_table` row fallback is a Python loop | Medium | No |
 | P2 | Hand-rolled attention instead of fused SDPA | Medium | Yes |
@@ -160,6 +161,42 @@ dataset changes nothing but implies otherwise.
 
 Suggested fix: drop the field, or validate it against the dataset and fail loudly
 on a mismatch.
+
+### C5. Numeric precision and scaling — needs research
+
+Three related concerns surfaced while reading a real imputation preview
+(`spambase_20nan`). None is a wrong number today, but together they decide how far the
+original-unit reporting can be trusted, so they want investigating rather than patching.
+
+**1. Values round-trip through float32.** `EncodedTable.num_values` is float32 while the
+prepared frame is float64. Inverting the scaler from the float32 value amplifies the
+rounding by that column's `scale_`, so a column with a wide spread shows visible error:
+
+| dataset | widest column | `scale_` | error in original units |
+|---|---|---|---|
+| `kc2_20nan` | `e` | 123,400 | 1.15e-01 |
+| `credit-g_20nan` | `credit_amount` | 2,826 | 6.64e-04 |
+| `spambase_20nan` | `capital_run_length_longest` | 206.7 | 2.79e-04 |
+| `electricity_20nan` | `vicprice` | 0.0109 | 4.03e-08 |
+
+**Scoring is unaffected**: both sides of every comparison are the same float32 values, so
+`rmse_num_z` and `impute_score` are exact. It is the *original-unit display* that inherits
+the amplification, and on `kc2` that is a tenth of a unit.
+
+**2. Exact zeros print as scientific-notation noise.** `spambase` is 77% exact zeros, and
+each prints as e.g. `1.144e-09` in the preview, which reads as a meaningful tiny value
+rather than "zero". Cosmetic, but it makes the artifact harder to trust at a glance.
+
+**3. Numerical imputations are unbounded.** The numerical head is a plain regressor, so it
+happily predicts a negative count (`capital_run_length_total` imputed at `-38.55`) or a
+negative word frequency. **Clamping was considered and deliberately rejected** by the
+author: the model should not be handed constraints it did not learn. Recorded so the
+behaviour is understood, not so it is silenced.
+
+Questions worth answering: should `num_values` be float64, and what does that cost in
+memory and speed on the 45k-row datasets? Should the preview round to the column's own
+observed precision instead of a fixed format? Does any of this interact with C1, where the
+scaler is fit before splitting?
 
 ### C4. Pre-training re-initializes already-initialized layers — protected
 
