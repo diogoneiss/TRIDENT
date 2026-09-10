@@ -87,6 +87,8 @@ class DecodedCells:
 
     categorical_ids: torch.Tensor  # (n_categorical, batch) long
     numerical_values: torch.Tensor  # (n_numerical, batch) float, scaled space
+    # How sure the head was of the category it chose, for a reader judging a preview.
+    categorical_confidence: torch.Tensor  # (n_categorical, batch) float
 
 
 class TridentDecoder(nn.Module):
@@ -214,10 +216,15 @@ class TridentDecoder(nn.Module):
         """Fill every cell of the batch, in the column's own vocabulary."""
         encoded = self._encode(data)
         categorical_ids = []
+        categorical_confidence = []
         for index, key in enumerate(self.embedder.categorical_keys):
             logits = self.categorical_heads[key](encoded[:, index, :])
             valid_ids = getattr(self, f"valid_ids_{key}")
-            categorical_ids.append(valid_ids[logits.argmax(dim=-1)])
+            chosen = logits.argmax(dim=-1)
+            categorical_ids.append(valid_ids[chosen])
+            categorical_confidence.append(
+                logits.softmax(dim=-1).gather(1, chosen.unsqueeze(1)).squeeze(1)
+            )
         offset = len(self.embedder.categorical_keys)
         numerical_values = [
             self.numerical_heads[key](encoded[:, offset + index, :]).squeeze(-1)
@@ -227,6 +234,9 @@ class TridentDecoder(nn.Module):
         return DecodedCells(
             categorical_ids=_stack(categorical_ids, rows, torch.long, encoded.device),
             numerical_values=_stack(numerical_values, rows, torch.float32, encoded.device),
+            categorical_confidence=_stack(
+                categorical_confidence, rows, torch.float32, encoded.device
+            ),
         )
 
 

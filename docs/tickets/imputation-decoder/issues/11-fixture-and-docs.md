@@ -40,3 +40,8 @@ pattern, and bring the documentation in line with ADR 0004.
 - Do not tighten the tolerance below the existing fixture's 0.01.
 
 ## Comments
+
+- 2026-09-10 (from ticket 06): gather the rest of ticket 12's pre-registered comparison.
+  One fold of `credit-g_20nan` put the `[MASK]` path at 0.965 and the `[NULL]` path at
+  1.042; the criterion needs a majority of folds on at least two datasets at both 20% and
+  60%. Record the verdict in ADR 0004 decision 11.

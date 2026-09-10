@@ -307,6 +307,21 @@ class FinetuningOutcome:
 
 
 @dataclass(frozen=True)
+class DecodingOutcome:
+    """What one fold's decode stage produced.
+
+    ``scored_cells`` holds one row per cell the model was asked to fill on the test
+    split, which is what both the imputation metrics and the preview artifacts read.
+    """
+
+    model: Any
+    result: Any
+    train_losses: Sequence[float]
+    validation_losses: Sequence[float]
+    scored_cells: Any
+
+
+@dataclass(frozen=True)
 class TrainingResult:
     fold_results: Sequence[FoldResult]
     mean_metrics: dict[str, float]

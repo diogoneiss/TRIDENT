@@ -19,7 +19,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | 03 | [Imputation metrics as pure functions](issues/03-imputation-metrics.md) | done | none |
 | 04 | [The decoder model](issues/04-decoder-model.md) | done | none |
 | 05 | [Data support for evaluation](issues/05-evaluation-data-support.md) | done | none |
-| 06 | [The decode stage](issues/06-decode-stage.md) | ready-for-agent | 01, 02, 03, 04, 05 |
+| 06 | [The decode stage](issues/06-decode-stage.md) | done | 01, 02, 03, 04, 05 |
 | 07 | [Imputation artifacts](issues/07-imputation-artifacts.md) | ready-for-agent | 05, 06 |
 | 08 | [Runner, MLflow identity, batch summary](issues/08-runner-and-mlflow-identity.md) | ready-for-agent | 02, 06, 07 |
 | 09 | [Tag backfill](issues/09-tag-backfill.md) | ready-for-agent | 08 |

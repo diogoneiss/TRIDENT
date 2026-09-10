@@ -43,3 +43,7 @@ metric.
   `_log_execution_params`. It was left out of ticket 02 so that every change to the
   tracking seam lands in one place. `logged_hyperparameters(request)` in `config.py` is
   the public replacement for the runner's old private `_mlflow_hyperparameters`.
+
+- 2026-09-10 (from ticket 06): the **classification guard** moved here. A test that
+  `run_training` with the default task never constructs a `TridentDecoder` is only
+  meaningful once this ticket adds the task dispatch; before that it passes vacuously.
