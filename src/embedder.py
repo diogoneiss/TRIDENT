@@ -14,6 +14,19 @@ def _sanitize(column: str) -> str:
     return re.sub(r'[^a-zA-Z0-9_]', '_', column)
 
 
+def as_category_strings(column) -> np.ndarray:
+    """Stringify a categorical column with every kind of missing value collapsed to one.
+
+    ``astype(str)`` renders pandas' missing sentinels differently: ``NaN`` becomes
+    ``"nan"``, ``None`` becomes ``"None"``, ``NaT`` becomes ``"NaT"``. Left alone they
+    would become distinct categories with distinct embeddings, so a frame built in code
+    would disagree with the same frame read from a CSV. Reading a CSV only ever yields
+    ``NaN``, so collapsing to ``"nan"`` keeps every existing run byte for byte while
+    making the representation single-valued for both training tasks.
+    """
+    return column.where(column.notna(), np.nan).astype(str).to_numpy()
+
+
 @dataclass(frozen=True)
 class EncodedTable:
     """A whole DataFrame converted to tensors once, then sliced per batch.
@@ -93,7 +106,7 @@ class TabularEmbedder(nn.Module):
             le = LabelEncoder()
 
             # Collect original categories + special tokens
-            orig_vals = df[col].astype(str).unique()
+            orig_vals = np.unique(as_category_strings(df[col]))
             special_tokens = ["[MASK]", "[NULL]"]
             categories = np.unique(np.concatenate([orig_vals, special_tokens]))
 
@@ -161,7 +174,7 @@ class TabularEmbedder(nn.Module):
         if self.categorical_columns:
             cat_array = np.empty((len(self.categorical_columns), n_rows), dtype=np.int64)
             for index, col in enumerate(self.categorical_columns):
-                cat_array[index] = self.label_encoders[col].transform(df[col].astype(str).values)
+                cat_array[index] = self.label_encoders[col].transform(as_category_strings(df[col]))
             cat_indices = torch.tensor(cat_array, dtype=torch.long, device=device)
         else:
             cat_indices = torch.zeros((0, n_rows), dtype=torch.long, device=device)
