@@ -1,0 +1,57 @@
+{
+  "environment": {
+    "python": "3.10",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "torch": "2.5.1+cu121",
+    "device": "cuda",
+    "seed": 42,
+    "cv_folds": 2,
+    "runs": 3
+  },
+  "hyperparameters": {
+    "DIM": 16,
+    "HIDDEN_DIM": 8,
+    "HEADS": 4,
+    "LAYERS": 1,
+    "DIM_FEED": 16,
+    "DROPOUT": 0.1,
+    "EPOCHS_PRE": 2,
+    "EPOCHS_DECODE": 2,
+    "BATCH": 64,
+    "LR_PRE": 0.00034,
+    "WEIGHT_DECAY_PRE": 0.005,
+    "PROB_MASCARA": 0.5,
+    "LR_DECODE": 0.001,
+    "WEIGHT_DECAY_DECODE": 0.0019,
+    "LAMBDA_NUM": 1.0,
+    "EVAL_MASK_RATE": 0.2
+  },
+  "folds": [
+    {
+      "impute/masked/impute_score": 1.3972246866445832,
+      "impute/masked/rmse_num_z": 1.056293654605907,
+      "impute/masked/acc_cat": 0.34242093784078514,
+      "impute/induced/impute_score": 1.3739522894738032,
+      "impute/induced/rmse_num_z": 1.0215407136818082,
+      "impute/induced/acc_cat": 0.35764158262218776
+    },
+    {
+      "impute/masked/impute_score": 1.4019680591006674,
+      "impute/masked/rmse_num_z": 0.9996902012123393,
+      "impute/masked/acc_cat": 0.41301775147928993,
+      "impute/induced/impute_score": 1.3064739671409975,
+      "impute/induced/rmse_num_z": 1.081275380837228,
+      "impute/induced/acc_cat": 0.40350877192982454
+    }
+  ],
+  "mean": {
+    "impute/masked/impute_score": 1.3995963728726253,
+    "impute/masked/rmse_num_z": 1.0279919279091232,
+    "impute/masked/acc_cat": 0.37771934466003754,
+    "impute/induced/impute_score": 1.3402131283074004,
+    "impute/induced/rmse_num_z": 1.051408047259518,
+    "impute/induced/acc_cat": 0.38057517727600615
+  },
+  "observed_max_deviation": 0.0,
+  "tolerance": 0.01
+}

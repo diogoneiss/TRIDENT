@@ -14,9 +14,10 @@ Every diagram in this doc comes in two flavors: a **theory** version (block name
 4. [TabularTransformerEncoder — the shared backbone](#tabulartransformerencoder--the-shared-backbone)
 5. [TridentPretrainer — the self-supervised objective](#tridentpretrainer--the-self-supervised-objective)
 6. [TridentModel — the fine-tuning / classification head](#tridentmodel--the-fine-tuning--classification-head)
-7. [End-to-end training orchestration](#end-to-end-training-orchestration)
-8. [Hyperparameter → code wiring reference](#hyperparameter--code-wiring-reference)
-9. [Running it](#running-it)
+7. [TridentDecoder — reconstructing cell values](#tridentdecoder--reconstructing-cell-values)
+8. [End-to-end training orchestration](#end-to-end-training-orchestration)
+9. [Hyperparameter → code wiring reference](#hyperparameter--code-wiring-reference)
+10. [Running it](#running-it)
 
 ---
 
@@ -316,6 +317,69 @@ flowchart TD
 
 ---
 
+## TridentDecoder — reconstructing cell values
+
+`src/models.py`. The imputation task's counterpart to `TridentModel`, added by
+[ADR 0004](adr/0004-imputation-decoder-task.md). Where the classifier reads one token
+(`[CLS]`) and answers one question, the decoder reads *every* column token and answers a
+question per hidden cell: what value was taken away here?
+
+It wraps the *same* embedder and transformer that pre-training produced, exactly as the
+classifier does, and adds one head per column. It never re-initialises them.
+
+### Theory
+
+```mermaid
+flowchart TD
+    Row["Row with cells hidden<br/>([MASK] where a value was taken)"] --> Emb["TabularEmbedder<br/>(weights carried over from pretraining)"]
+    Emb --> Enc["TabularTransformerEncoder"]
+    Enc --> Drop["Drop the [CLS] position;<br/>keep one vector per column"]
+    Drop --> CatHead["Categorical column:<br/>score its real categories only"]
+    Drop --> NumHead["Numerical column:<br/>predict a scalar"]
+    CatHead --> CE["Cross-entropy at hidden cells"]
+    NumHead --> MSE["Squared error at hidden cells"]
+    CE --> Sum["mean(CE) + lambda_num * mean(MSE)"]
+    MSE --> Sum
+```
+
+The two terms are averaged over **their own** hidden cells before being summed, so a table
+of twenty numerical and two categorical columns cannot drown the categorical term.
+
+### Implementation
+
+```mermaid
+flowchart TD
+    Hidden["hidden: EncodedTable<br/>masked_positions (B, n_tokens)"] --> Emb["embedder(hidden) → (B, L, d)"]
+    Emb --> Enc["transformer(...) → (B, L, d)"]
+    Enc --> Slice["[:, 1:, :] → (B, n_tokens, d)<br/>column j at index j, cat-then-num"]
+    Slice --> Cat["cat_heads[key]: Linear(d, V_col − 3)<br/>→ (N_hidden, V_col − 3)"]
+    Slice --> Num["num_heads[key]: Linear(d, hidden_dim)<br/>→ ReLU → Linear(hidden_dim, 1)"]
+    Cat --> CEsel["cross_entropy vs local_of[target id]"]
+    Num --> MSEsel["mse vs targets.num_values"]
+```
+
+**The output space excludes three vocabulary entries**, and this is the point of the
+design rather than a detail. Every categorical vocabulary contains `[MASK]`, `[NULL]` and
+the placeholder a missing cell stringifies to (`"nan"`; `as_category_strings` in
+`embedder.py` collapses every pandas missing sentinel to that one, so naming it is enough).
+None is ever a legitimate imputation, so the head has `V_col − 3` outputs and the target is
+remapped through a `local_of` buffer. The excluded ids are looked up through the column's
+own `LabelEncoder`, never assumed: classes are sorted, so they land at different positions
+in every column.
+
+Two `EncodedTable`s go in. The **hidden** view supplies the context *and*, through
+`masked_positions`, says which cells to score; the **clean** view supplies their true
+values. Targets are encoded from `preprocess_table(..., fine_tunning=True)` rather than the
+raw frame, which is what pre-training encodes: the raw frame puts nulls on the dead
+placeholder id and leaves `NaN` in the numerical targets (1400 of them on
+`credit-g_20nan`), while the processed frame has neither.
+
+`predict` returns the same three things a caller needs and nothing about how the heads
+work: the column's own vocabulary id for each categorical cell, a scalar for each numerical
+one, and how sure the head was.
+
+---
+
 ## End-to-end training orchestration
 
 `run_training` (`src/training/runner.py:33`) is the function everything above gets called from, once per fold. MLflow's parent-run/fold-run/best-fold/worst-fold tagging is a separate concern, documented in full in [CONTEXT.md](../CONTEXT.md) and [ADR 0002](adr/0002-curated-cross-validation-mlflow-runs.md) — this diagram only shows where the model code above plugs in.
@@ -328,8 +392,11 @@ flowchart TD
     Parent --> FoldLoop{"for each fold"}
     FoldLoop --> FoldRun["Open MLflow fold run"]
     FoldRun --> Pretrain["train_pretrainer(...)<br/>fresh embedder + transformer,<br/>pretraining_epochs"]
-    Pretrain --> Finetune["train_and_evaluate_classifier(...)<br/>reuses the pretrained embedder + transformer,<br/>finetuning_epochs, restores best-val checkpoint,<br/>evaluates once on the test split"]
-    Finetune --> Artifacts["Optional: loss plots, saved model weights"]
+    Pretrain --> Task{"request.task"}
+    Task -->|"classification"| Finetune["train_and_evaluate_classifier(...)<br/>reuses the pretrained embedder + transformer,<br/>finetuning_epochs, restores best-val checkpoint,<br/>evaluates once on the test split"]
+    Task -->|"imputation"| Decode["train_and_evaluate_decoder(...)<br/>same reused encoder, decode_epochs,<br/>masks re-rolled each epoch, fixed validation mask,<br/>scores self-masked and induced-missing cells"]
+    Decode --> Artifacts
+    Finetune --> Artifacts["Optional: loss plots, saved model weights;<br/>imputation also writes a preview and a cell ledger"]
     Artifacts --> Record["Record FoldResult"]
     Record --> FoldLoop
     FoldLoop -->|"all folds done"| Aggregate{"cv_folds set?"}

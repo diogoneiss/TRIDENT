@@ -24,7 +24,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | 08 | [Runner, MLflow identity, batch summary](issues/08-runner-and-mlflow-identity.md) | done | 02, 06, 07 |
 | 09 | [Tag backfill](issues/09-tag-backfill.md) | awaiting-approval | 08 |
 | 10 | [Optuna for the imputation task](issues/10-optuna-imputation.md) | done | 02, 08 |
-| 11 | [Regression fixture and documentation](issues/11-fixture-and-docs.md) | ready-for-agent | 08, 10 |
+| 11 | [Regression fixture and documentation](issues/11-fixture-and-docs.md) | done | 08, 10 |
 
 The frontier after ticket 01 is 02, 03, 04 and 05, which are independent of each other.
 

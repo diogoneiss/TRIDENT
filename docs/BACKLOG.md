@@ -14,7 +14,7 @@ before anyone touches them, because they change published results.
 |---|---|---|---|
 | ~~B1~~ | ~~Learning-rate schedule completes a full cosine cycle~~ — fixed, see below | High | Yes |
 | B2 | `--cv_folds 1` crashes with `ZeroDivisionError` | Medium | No |
-| B3 | Optuna proposes head counts that crash, scored as 0.0 | Medium | No |
+| ~~B3~~ | ~~Optuna proposes head counts that crash, scored as 0.0~~ — fixed, see below | Medium | No |
 | ~~B4~~ | ~~Optuna with MLflow enabled scored every trial 0.0~~ — fixed, see below | High | No |
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
 | C2 | `"nan"` is a real category next to `[NULL]` | Low today | Yes |
@@ -80,6 +80,8 @@ Suggested fix: reject `cv_folds < 2` at parse time with a clear message, pointin
 users at the predefined-split mode (omit `--cv_folds`) for a single split.
 
 ### B3. Optuna proposes head counts that crash, and scores them as 0.0
+
+**Fixed 2026-09-10** by [ADR 0004](adr/0004-imputation-decoder-task.md): `define_search_space` now draws `HEADS` first and `DIM` as a multiple of it, so an invalid pair cannot be sampled at all, and a crashing trial raises `optuna.TrialPruned` instead of being scored. Returning `0.0` was only "the worst possible score" while maximising macro F1; under the imputation task's minimised error ratio it is the *best* achievable value, so the search would have hunted for crashes. The original analysis is kept below.
 
 `define_search_space` (`opt.py`) samples `DIM` over `range(64, 257, 32)` and `HEADS`
 over `{4, 8, 12, 16}` independently. `MultiHeadAttention` computes
@@ -288,6 +290,8 @@ already does with `create_tracker(enabled)`.
   (selectable schedule, legacy default, MLflow tag plus backfill script).
 - **B4**, Optuna trials crashing on a second top-level MLflow run, via the
   `optuna_trial` tracking role (see above).
+- **B3**, invalid `HEADS`/`DIM` pairs, via [ADR 0004](adr/0004-imputation-decoder-task.md)
+  (constrained sampling plus `TrialPruned` on failure).
 
 These came out of the same review and are done, in
 [ticket 0003](tickets/0003-training-loop-performance.md):

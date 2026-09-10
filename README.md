@@ -159,6 +159,11 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--metrics_dir`: Project-level raw-fold metrics directory (default: `metrics`)
 - `--disable_mlflow`: Disable all MLflow setup, runs, logs, and artifacts (enabled by default)
 
+### Task Selection
+
+- `--task`: What to train, one of `classification` (default) or `imputation`. Classification predicts the label from the `[CLS]` token and is what every run did before [ADR 0004](docs/adr/0004-imputation-decoder-task.md); imputation replaces the classifier with a decoder that reconstructs hidden cell values. Command-line only, never from a hyperparameter file, so an `--all` batch cannot end up training a different task per dataset
+- `--score_null_path`: Also score the dataset's own missing cells with the model seeing `[NULL]` rather than `[MASK]`, as a diagnostic that never ranks folds. Requires `--task imputation` and is refused at parse time otherwise
+
 ### Training Options
 
 - `--plot_losses`: Generate training loss visualizations
@@ -218,6 +223,8 @@ TRIDENT supports three configuration modes:
 }
 ```
 
+Every key is optional and defaulted, so a file written before a key existed keeps loading. The decode keys below are read only by `--task imputation`, and the fine-tuning keys only by `--task classification`; each run records just the ones it used.
+
 ### Hyperparameter Descriptions
 
 #### Model Architecture
@@ -244,6 +251,15 @@ TRIDENT supports three configuration modes:
 - `WEIGHT_DECAY_FINE`: Fine-tuning weight decay
 - `LR_SCHEDULER`: Learning-rate schedule name, see `--lr_scheduler` (default: `cosine_legacy`)
 
+#### Imputation (`--task imputation` only)
+
+- `EPOCHS_DECODE`: Number of decode-stage epochs (default: `150`)
+- `LR_DECODE`: Decode-stage learning rate (default: `0.001`)
+- `WEIGHT_DECAY_DECODE`: Decode-stage weight decay (default: `0.0019`)
+- `LAMBDA_NUM`: Weight on the numerical reconstruction term, each term already averaged over its own hidden cells (default: `1.0`)
+- `EVAL_MASK_RATE`: **Nominal** share of cells hidden for scoring (default: `0.2`). Nominal because the masking helper scales it down by each row's null density and never hides an already-missing cell, so asking for `0.2` hides about 20% of a `_00nan` variant but about 5% of an `_80nan` one. Each run logs the realised share as `impute/masked/realised_rate`. This is the evaluation counterpart of `PROB_MASCARA`, which governs training corruption
+- `EVAL_MASK_RATES_EXTRA`: Extra nominal rates to score the test fold at, as diagnostics only (default: `[]`). They reuse the same checkpoint, so each costs one forward pass rather than another training run; the primary rate above is what validation selects on and what ranks folds
+
 ## Project Structure
 
 ```text
@@ -262,6 +278,45 @@ TRIDENT/
     ├── categorical_columns/   # Feature type definitions
     └── generate_splits.py     # Data preprocessing pipeline
 ```
+
+## The Imputation Task
+
+`--task imputation` keeps pre-training exactly as it is and replaces classifier fine-tuning with a **decode stage**: per-column heads reconstruct the actual value of every hidden cell. A categorical head scores only the column's real categories, so it can never answer `[MASK]`, `[NULL]` or the placeholder a missing cell stringifies to; a numerical head predicts a scalar in scaled space.
+
+```bash
+# Imputation on a variant with injected gaps, scored against its complete sibling
+uv run main.py --dataset_name credit-g_20nan --task imputation --cv_folds 3 --lr_scheduler cosine
+
+# Add the diagnostic that shows the same gaps through the [NULL] token instead
+uv run main.py --dataset_name credit-g_20nan --task imputation --cv_folds 3 --score_null_path
+```
+
+The decode stage has no published runs to preserve, so prefer `--lr_scheduler cosine` over the legacy default.
+
+### What gets scored
+
+Two populations, on the test fold only:
+
+- **Self-masked cells** — observed cells hidden for scoring. They exist on every variant, and they rank the fold.
+- **Induced-missing cells** — cells a `_XXnan` variant is missing whose true value the row-aligned `_00nan` sibling holds. They are the real imputation benchmark and the headline number wherever the sibling exists, and they reach the model as `[MASK]`, the token the decoder was trained to fill.
+
+Metrics per population: `rmse_num_z` and `mae_num_z` pooled over numerical cells in scaled space, `acc_cat` pooled over categorical cells, `macro_f1_cat` averaged per column, and the counts of each. Folds are ranked by
+
+```
+impute_score = w_num * (rmse_num_z / mean-imputation rmse) + w_cat * (err_cat / mode-imputation err)
+```
+
+with the baselines learned from the **training** fold and applied to the same scored cells, and `w_*` the share of scored cells of each kind. **Lower is better**; `1.0` means no better than filling the column mean or mode. It degrades correctly on the six all-numerical datasets and on all-categorical `kr-vs-kp`.
+
+### Artifacts
+
+| File | What it holds |
+|---|---|
+| `imputation_fold_N_preview.md` | A fixed-seed sample of rows, each as three lines: what was true, what the model saw, what it filled in. Original units |
+| `imputation_fold_N_cells.csv` | Every scored cell, a superset of the preview, with both scalings, the model's confidence and an `in_preview` flag |
+| `metrics/per_column_imputation.csv` | Per-column errors for every fold, long form, on the parent run |
+
+Every fold writes its files; only the `best_fold` and `worst_fold` children upload them, exactly as loss plots already behave.
 
 ## Training Methodology
 
@@ -295,7 +350,7 @@ When cross-validation is enabled (`--cv_folds <K>`), individual metrics are comp
 
 #### MLflow Cross-Validation Comparisons
 
-Each training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing executions, and compare runs that share `tags.lr_scheduler`: the schedule changes results, so it is tagged on every parent, diagnostic child and Optuna run. Runs recorded before the tag existed were backfilled with `lr_scheduler = cosine_legacy` and also carry `lr_scheduler_backfilled = true` ([ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md); re-run `scripts/backfill_lr_scheduler_tag.py --apply` against any other tracking store). For a cross-validation run, compare `cv/test/f1_macro/mean` with `cv/test/f1_macro/ci95_lower`, `cv/test/f1_macro/ci95_upper`, and `cv/test/f1_macro/std`; the same `mean`, `ci95_lower`, `ci95_upper`, `std`, `min`, `max`, and `fold_count` fields are logged under `cv/test/<metric>/...` for every numeric final fold metric.
+Each training invocation is a top-level MLflow run. Filter `tags.run_role = parent` and `tags.task` (`classification` or `imputation`) before comparing executions, and compare runs that share `tags.lr_scheduler`: the schedule changes results, so it is tagged on every parent, diagnostic child and Optuna run. Runs recorded before the tag existed were backfilled with `lr_scheduler = cosine_legacy` and also carry `lr_scheduler_backfilled = true` ([ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md); re-run `scripts/backfill_lr_scheduler_tag.py --apply` against any other tracking store). For a cross-validation run, compare `cv/test/f1_macro/mean` with `cv/test/f1_macro/ci95_lower`, `cv/test/f1_macro/ci95_upper`, and `cv/test/f1_macro/std`; the same `mean`, `ci95_lower`, `ci95_upper`, `std`, `min`, `max`, and `fold_count` fields are logged under `cv/test/<metric>/...` for every numeric final fold metric.
 
 The 95% bounds are internal CV uncertainty, not an independent-test guarantee: the folds share training data. Parent loss charts use the readable mean/lower/upper bands `cv/pretrain/train_loss/{mean,ci95_lower,ci95_upper}`, `cv/pretrain/val_loss/{mean,ci95_lower,ci95_upper}`, `cv/finetune/train_loss/{mean,ci95_lower,ci95_upper}`, and `cv/finetune/val_loss/{mean,ci95_lower,ci95_upper}`.
 
@@ -308,6 +363,10 @@ Diagnostic children also log `pretrain/learning_rate` and `finetune/learning_rat
 Every fold records wall-clock stage timings as step-less metrics: `time/pretrain_seconds`, `time/finetune_seconds`, and `time/total_seconds` (their sum). They cover the two training stages only, not data preparation, plotting, or artifact writes. A cross-validation parent summarizes them as `cv/time/<name>/{mean,ci95_lower,ci95_upper,std,min,max,fold_count}` and logs `time/training_seconds`, the sum over folds; a single-split parent carries the raw `time/*` values and the same `time/training_seconds`, so one column sorts every parent by training cost. `metrics/raw_fold_metrics.csv` and `metrics/cv_summary.json` keep every fold's timing, not only the replayed diagnostic children. Timings never enter `metrics.csv` or the regression fixture. Every parent is tagged `device`, `gpu_name`, `torch_version`, and `cuda_version`; compare timings only between runs that share them.
 
 Optuna studies live in the same experiment without crowding the comparison table. The study is one top-level run tagged `run_role = optuna_study`, with `optuna/best_objective_value`, `optuna/best_trial_number`, and `best_<param>` params. Each trial is one nested run under it tagged `run_role = optuna_trial` and `trial_number`, and the trainer logs into that run rather than opening a second top-level run: the full parameter set, the same dataset, schedule, and environment tags as a parent, the final metrics (`cv/test/*` and `cv/time/*`, or `test/*` and `time/*` for the predefined split that trials use), `time/training_seconds`, `optuna/objective_value`, and `trial_status`. The winner is tagged `best_trial = true` once the study finishes. Trials deliberately skip loss histories, artifacts, dataset lineage, and diagnostic children; `--retrain_best` records the chosen configuration as a normal `run_role = parent` run tagged `optuna_study_run_id`.
+
+Two tags identify a run's kind, and both sit on every run kind so either can be filtered on safely. `tags.task` says which task trained; runs recorded before the task existed are backfilled as `classification` and also carry `tags.task_backfilled = true`. `tags.is_optuna` is `true` only on an Optuna study parent and its trials, so `tags.is_optuna = 'false'` selects the runs meant for comparison; a `--retrain_best` run stays `false` and links back through `optuna_study_run_id`. It needs no backfilled marker, because the store itself proves the value. Both are stamped by `scripts/backfill_run_tags.py` ([ADR 0004](docs/adr/0004-imputation-decoder-task.md)).
+
+An imputation parent is named `impute_<dataset>_<timestamp>` and reports `cv/test/impute/masked/impute_score/mean` alongside `cv/test/impute/induced/...`; lower is better.
 
 The tracking layout is specified in [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md). Deployable logged-model lifecycle work is intentionally deferred to [Ticket 0002](docs/tickets/0002-mlflow-logged-model-lifecycle.md).
 
