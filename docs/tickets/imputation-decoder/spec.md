@@ -15,7 +15,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | # | Ticket | Status | Blocked by |
 |---|---|---|---|
 | 01 | [Per-task fold-ranking contract](issues/01-ranking-contract.md) | done (`cbf991c`) | none |
-| 02 | [Request, hyperparameters and command line](issues/02-request-and-cli.md) | ready-for-agent | 01 |
+| 02 | [Request, hyperparameters and command line](issues/02-request-and-cli.md) | done | 01 |
 | 03 | [Imputation metrics as pure functions](issues/03-imputation-metrics.md) | done | none |
 | 04 | [The decoder model](issues/04-decoder-model.md) | done | none |
 | 05 | [Data support for evaluation](issues/05-evaluation-data-support.md) | done | none |

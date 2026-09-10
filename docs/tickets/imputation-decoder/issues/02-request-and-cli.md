@@ -1,6 +1,6 @@
 # 02. Request, hyperparameters and command line
 
-Status: ready-for-agent
+Status: done (this commit) on `feat/imputation-task`
 Blocked by: 01
 Plan task: 2. ADR 0004 decisions 1, 9, 11. Wayfinder tickets 08, 11, 12.
 
@@ -34,17 +34,19 @@ Modify `src/training/types.py`, `src/training/config.py`, `src/training/runner.p
 
 ## Acceptance criteria
 
-- [ ] New `Hyperparameters` fields with JSON keys and defaults: `decode_epochs` /
+- [x] New `Hyperparameters` fields with JSON keys and defaults: `decode_epochs` /
       `EPOCHS_DECODE` 150, `decode_learning_rate` / `LR_DECODE` 0.001,
       `decode_weight_decay` / `WEIGHT_DECAY_DECODE` 0.0019, `lambda_num` / `LAMBDA_NUM` 1.0,
       `eval_mask_rate` / `EVAL_MASK_RATE` 0.2, `eval_mask_rates_extra` /
       `EVAL_MASK_RATES_EXTRA` `()`.
-- [ ] `TrainingRequest` gains `task: str = "classification"` and `score_null_path: bool =
+- [x] `TrainingRequest` gains `task: str = "classification"` and `score_null_path: bool =
       False` (defaulted fields after the undefaulted ones; order between them free).
-- [ ] `--task` and `--score_null_path` parse as above; the rejection is a `SystemExit`
+- [x] `--task` and `--score_null_path` parse as above; the rejection is a `SystemExit`
       from `validate_parsed_args`, not a runtime error.
-- [ ] Logged parameter set is task-specific as above; `task` appears as a parameter.
-- [ ] Existing unit suite and the vehicle regression pass with no edit.
+- [x] Logged parameter set is task-specific as above.
+- [ ] `task` appears as a run parameter -- **deferred to ticket 08**, which owns the
+      tracking seam: `_log_execution_params` and `parent_run` change signature there.
+- [x] Existing unit suite and the vehicle regression pass with no edit.
 
 ## Constraints
 
@@ -53,3 +55,33 @@ Modify `src/training/types.py`, `src/training/config.py`, `src/training/runner.p
 - `EVAL_MASK_RATE` stays a scalar; the sweep list is the separate key.
 
 ## Comments
+
+- 2026-09-10, four red-green slices in `tests/unit/test_training_config.py`:
+
+  | Slice | Behaviour pinned |
+  |---|---|
+  | 1 | A config written before the imputation task still loads |
+  | 2 | A run trains classification unless it is asked for imputation |
+  | 3 | The null-path diagnostic is refused without the imputation task |
+  | 4 | A run records the parameters it used and no others |
+
+  Slice 1 uses the exact fifteen keys of `datasets/hiperparams/vehicle/vehicle_00nan.json`,
+  which already lacks `LR_SCHEDULER`, so it is the real backward-compatibility case rather
+  than an invented one.
+
+  Slice 4 pins **both** key sets exactly, so classification's recorded parameters are
+  unchanged column for column while an imputation run drops `EPOCH_FINE`, `LR_FINE`,
+  `WEIGHT_DECAY_FINE` and `LABELS` and gains the five decode keys. `_mlflow_hyperparameters`
+  moved out of `runner.py` and became the public `logged_hyperparameters(request)` in
+  `config.py`, which ticket 10's Optuna trial record will also use.
+
+  Exercised through the real entry point, not only the parser: `--task` and
+  `--score_null_path` appear in `main.py --help`, and
+  `main.py --dataset_name credit-g_20nan --score_null_path` exits with
+  `error: --score_null_path requires --task imputation` before any data is read.
+
+  Unit suite 103 green; the vehicle regression passes unedited.
+
+  **Deferred to ticket 08**: logging `task` as a run parameter. It belongs with the
+  tracking-seam changes, where `parent_run` and `_log_execution_params` gain their
+  arguments, rather than half here and half there.

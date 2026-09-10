@@ -7,6 +7,7 @@ import torch
 from src.utils import set_global_seed
 
 from .artifacts import ArtifactWriter
+from .config import logged_hyperparameters
 from .data import build_folds, prepare_dataset
 from .environment import runtime_environment_tags
 from .finetuning import train_and_evaluate_classifier
@@ -14,24 +15,6 @@ from .pretraining import train_pretrainer
 from .summary import compute_cv_summary, stage_timing_metrics, summarize_cross_validation
 from .tracking import create_tracker
 from .types import FoldResult, TrainingRequest, TrainingResult
-
-
-def _mlflow_hyperparameters(request: TrainingRequest) -> dict[str, object]:
-    hyperparameters = request.hyperparameters
-    return {
-        "DIM": hyperparameters.dimension, "HIDDEN_DIM": hyperparameters.hidden_dimension,
-        "HEADS": hyperparameters.heads, "LAYERS": hyperparameters.layers,
-        "DIM_FEED": hyperparameters.feedforward_dimension, "DROPOUT": hyperparameters.dropout,
-        "EPOCHS_PRE": hyperparameters.pretraining_epochs, "BATCH": hyperparameters.batch_size,
-        "LR_PRE": hyperparameters.pretraining_learning_rate,
-        "WEIGHT_DECAY_PRE": hyperparameters.pretraining_weight_decay,
-        "PROB_MASCARA": hyperparameters.mask_probability,
-        "EPOCH_FINE": hyperparameters.finetuning_epochs,
-        "LR_FINE": hyperparameters.finetuning_learning_rate,
-        "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
-        "LABELS": hyperparameters.labels,
-        "LR_SCHEDULER": hyperparameters.lr_scheduler,
-    }
 
 
 def run_training(request: TrainingRequest) -> TrainingResult:
@@ -52,7 +35,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         dataset_name=request.dataset.dataset_name,
         seed=request.seed,
         cv_folds=request.cv_folds,
-        hyperparameters=_mlflow_hyperparameters(request),
+        hyperparameters=logged_hyperparameters(request),
         lr_scheduler=request.hyperparameters.lr_scheduler,
         environment=runtime_environment_tags(device),
         extra_tags=request.runtime.tracking_tags,

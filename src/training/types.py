@@ -89,6 +89,23 @@ class Hyperparameters:
     labels: int = 4
     lr_scheduler: str = DEFAULT_LR_SCHEDULER
 
+    # The decode stage, used only by the imputation task. Defaulted so that every config
+    # written before that task existed keeps loading unchanged; the fine-tuning values are
+    # mirrored because the decode stage is fine-tuning's counterpart.
+    decode_epochs: int = 150
+    decode_learning_rate: float = 0.001
+    decode_weight_decay: float = 0.0019
+    # Weight on the numerical reconstruction term, each term already averaged over its own
+    # hidden cells.
+    lambda_num: float = 1.0
+    # Nominal share of cells hidden when scoring. Nominal because the masking helper
+    # scales it down by each row's null density: asking for 0.2 hides about 20% of a
+    # complete variant but about 5% of an 80%-missing one.
+    eval_mask_rate: float = 0.2
+    # Extra nominal rates to score the test fold at, as diagnostics only. The primary rate
+    # above is what validation and fold ranking use.
+    eval_mask_rates_extra: tuple[float, ...] = ()
+
     def __post_init__(self) -> None:
         if self.lr_scheduler not in LR_SCHEDULER_NAMES:
             raise ValueError(
@@ -124,6 +141,21 @@ class Hyperparameters:
             labels=int(values.get("LABELS", values.get("labels", 4))),
             lr_scheduler=str(
                 values.get("LR_SCHEDULER", values.get("lr_scheduler", DEFAULT_LR_SCHEDULER))
+            ),
+            decode_epochs=int(values.get("EPOCHS_DECODE", values.get("decode_epochs", 150))),
+            decode_learning_rate=float(
+                values.get("LR_DECODE", values.get("decode_learning_rate", 0.001))
+            ),
+            decode_weight_decay=float(
+                values.get("WEIGHT_DECAY_DECODE", values.get("decode_weight_decay", 0.0019))
+            ),
+            lambda_num=float(values.get("LAMBDA_NUM", values.get("lambda_num", 1.0))),
+            eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
+            eval_mask_rates_extra=tuple(
+                float(rate)
+                for rate in values.get(
+                    "EVAL_MASK_RATES_EXTRA", values.get("eval_mask_rates_extra", ())
+                )
             ),
         )
 
@@ -289,6 +321,16 @@ class TrainingRequest:
     cv_folds: int | None
     plot_losses: bool
     save_model: bool
+    # Defaulted, so every existing construction site -- including the reviewed
+    # vehicle_00nan regression fixture -- keeps meaning what it meant.
+    task: str = DEFAULT_TASK
+    score_null_path: bool = False
+
+    def __post_init__(self) -> None:
+        if self.task not in TASK_NAMES:
+            raise ValueError(
+                f"Unknown task {self.task!r}; expected one of {', '.join(TASK_NAMES)}"
+            )
 
 
 class TrainingTracker(Protocol):

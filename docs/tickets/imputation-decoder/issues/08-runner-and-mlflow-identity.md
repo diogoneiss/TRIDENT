@@ -38,3 +38,8 @@ metric.
 - Same `TRIDENT/<base>` experiment; no new experiment.
 
 ## Comments
+
+- 2026-09-10 (from ticket 02): also log `task` as a run parameter here, via
+  `_log_execution_params`. It was left out of ticket 02 so that every change to the
+  tracking seam lands in one place. `logged_hyperparameters(request)` in `config.py` is
+  the public replacement for the runner's old private `_mlflow_hyperparameters`.

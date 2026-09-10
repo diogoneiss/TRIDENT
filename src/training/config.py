@@ -7,7 +7,9 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .types import (
+    DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
+    TASK_NAMES,
     DatasetSpec,
     Hyperparameters,
     RuntimeOptions,
@@ -41,6 +43,43 @@ def _load_base_hyperparameters(args: argparse.Namespace) -> Hyperparameters:
     return Hyperparameters()
 
 
+def logged_hyperparameters(request: TrainingRequest) -> dict[str, object]:
+    """The parameters this run actually used, under their config-file names.
+
+    Only the ones the run's task consumes: an imputation run has no classifier, so the
+    fine-tuning rates and the label count would describe nothing, and a classification run
+    has no decoder. A parameter recorded but never used misleads whoever reads the run
+    later, which is exactly the complaint backlog item C3 makes about ``LABELS``.
+    """
+    values = request.hyperparameters
+    shared: dict[str, object] = {
+        "DIM": values.dimension, "HIDDEN_DIM": values.hidden_dimension,
+        "HEADS": values.heads, "LAYERS": values.layers,
+        "DIM_FEED": values.feedforward_dimension, "DROPOUT": values.dropout,
+        "EPOCHS_PRE": values.pretraining_epochs, "BATCH": values.batch_size,
+        "LR_PRE": values.pretraining_learning_rate,
+        "WEIGHT_DECAY_PRE": values.pretraining_weight_decay,
+        "PROB_MASCARA": values.mask_probability,
+        "LR_SCHEDULER": values.lr_scheduler,
+    }
+    if request.task == "imputation":
+        return {
+            **shared,
+            "EPOCHS_DECODE": values.decode_epochs,
+            "LR_DECODE": values.decode_learning_rate,
+            "WEIGHT_DECAY_DECODE": values.decode_weight_decay,
+            "LAMBDA_NUM": values.lambda_num,
+            "EVAL_MASK_RATE": values.eval_mask_rate,
+        }
+    return {
+        **shared,
+        "EPOCH_FINE": values.finetuning_epochs,
+        "LR_FINE": values.finetuning_learning_rate,
+        "WEIGHT_DECAY_FINE": values.finetuning_weight_decay,
+        "LABELS": values.labels,
+    }
+
+
 def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
     return TrainingRequest(
         dataset=DatasetSpec.from_name(args.dataset_name, getattr(args, "label_column", None)),
@@ -57,6 +96,8 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         cv_folds=getattr(args, "cv_folds", None),
         plot_losses=getattr(args, "plot_losses", False),
         save_model=getattr(args, "save_model", False),
+        task=getattr(args, "task", None) or DEFAULT_TASK,
+        score_null_path=getattr(args, "score_null_path", False),
     )
 
 
@@ -75,6 +116,11 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
             raise SystemExit("error: --limit can only be used with --all")
         if getattr(args, "nan_level", 0) != 0:
             raise SystemExit("error: --nan_level can only be used with --all")
+
+    # The null-path diagnostic scores what a decoder reconstructs, and classification has
+    # no decoder, so there would be nothing to score. Caught here rather than mid-run.
+    if getattr(args, "score_null_path", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
+        raise SystemExit("error: --score_null_path requires --task imputation")
 
     # --all is incompatible with --use_optuna.
     if run_all and getattr(args, "use_optuna", False):
@@ -127,6 +173,26 @@ def build_training_parser() -> argparse.ArgumentParser:
         help=(
             "Learning-rate schedule for both training stages. Overrides LR_SCHEDULER from the "
             "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003)."
+        ),
+    )
+    parser.add_argument(
+        "--task",
+        type=str,
+        default=DEFAULT_TASK,
+        choices=TASK_NAMES,
+        help=(
+            "What to train. 'classification' predicts the label from the [CLS] token and is "
+            "what every run did before ADR 0004. 'imputation' replaces the classifier with a "
+            "decoder that reconstructs hidden cell values. Command line only: a per-dataset "
+            "config choosing the task would make --all train different tasks per dataset."
+        ),
+    )
+    parser.add_argument(
+        "--score_null_path",
+        action="store_true",
+        help=(
+            "Also score induced-missing cells with the model seeing [NULL] rather than "
+            "[MASK], as a diagnostic. Requires --task imputation. Never ranks folds."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")
