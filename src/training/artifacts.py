@@ -13,11 +13,13 @@ import torch
 
 from .summary import final_metrics_for_tracking, fold_timings_for_tracking
 from .types import (
+    CLASSIFICATION,
     CrossValidationSummary,
     FoldResult,
     FoldTrackingRecord,
     Hyperparameters,
     PreparedDataset,
+    TaskSpec,
     TrackingArtifactPaths,
 )
 
@@ -73,8 +75,13 @@ class ArtifactWriter:
         dataset: PreparedDataset,
         seed: int,
         cv_folds: int,
+        task: TaskSpec = CLASSIFICATION,
     ) -> TrackingArtifactPaths:
-        """Write the parent-run CSV, summary, diagnostic manifest, and lineage."""
+        """Write the parent-run CSV, summary, diagnostic manifest, and lineage.
+
+        The manifest's ranking section is keyed by the task's fold-ranking metric, so a
+        classification run keeps producing ``f1_macro_ranking`` byte for byte.
+        """
         paths = TrackingArtifactPaths(
             raw_fold_metrics_csv=self.results_dir / "metrics" / "raw_fold_metrics.csv",
             summary_json=self.results_dir / "metrics" / "cv_summary.json",
@@ -113,20 +120,22 @@ class ArtifactWriter:
         }
         _write_json(paths.summary_json, summary_payload)
 
-        f1_macro_ranking = {
-            str(result.fold): result.metrics["f1_macro"]
+        ranking_metric = task.ranking_metric
+        short_name = task.ranking_metric_short_name
+        ranking = {
+            str(result.fold): result.metrics[ranking_metric]
             for result in (record.result for record in records)
-            if "f1_macro" in result.metrics
+            if ranking_metric in result.metrics
         }
         records_by_fold = {record.result.fold: record for record in records}
         manifest_payload = {
             "diagnostic_roles": {str(fold): role for fold, role in summary.diagnostic_roles.items()},
-            "f1_macro_ranking": f1_macro_ranking,
+            f"{short_name}_ranking": ranking,
             "selected_folds": [
                 {
                     "fold": fold,
                     "role": role,
-                    "f1_macro": f1_macro_ranking.get(str(fold)),
+                    short_name: ranking.get(str(fold)),
                 }
                 for fold, role in summary.diagnostic_roles.items()
             ],

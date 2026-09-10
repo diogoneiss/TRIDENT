@@ -16,6 +16,57 @@ LR_SCHEDULER_NAMES: tuple[str, ...] = (
 )
 DEFAULT_LR_SCHEDULER = "cosine_legacy"
 
+# Tasks a training request can run (ADR 0004). ``classification`` is every run before
+# that decision, so it stays the default; ``imputation`` trains the decode stage in
+# place of the classifier. Each task declares the fold-ranking metric and the
+# direction in which a fold is best: the pair travels together because best/worst
+# selection inverts without the direction.
+TASK_NAMES: tuple[str, ...] = ("classification", "imputation")
+DEFAULT_TASK = "classification"
+
+
+@dataclass(frozen=True)
+class TaskSpec:
+    name: str
+    ranking_metric: str
+    direction: str
+    # Metric prefix of the task's second training stage (``finetune`` or ``decode``).
+    # Pre-training is shared, so a task's loss bands are the pre-training pair plus
+    # this stage's pair.
+    stage: str
+
+    @property
+    def loss_keys(self) -> tuple[str, ...]:
+        return (
+            "pretrain/train_loss",
+            "pretrain/val_loss",
+            f"{self.stage}/train_loss",
+            f"{self.stage}/val_loss",
+        )
+
+    @property
+    def ranking_metric_short_name(self) -> str:
+        """The last path segment, used where slashes make poor keys (manifest JSON)."""
+        return self.ranking_metric.rsplit("/", 1)[-1]
+
+
+_TASK_SPECS: Mapping[str, TaskSpec] = {
+    "classification": TaskSpec("classification", "f1_macro", "maximize", "finetune"),
+    "imputation": TaskSpec("imputation", "impute/masked/impute_score", "minimize", "decode"),
+}
+CLASSIFICATION = _TASK_SPECS["classification"]
+IMPUTATION = _TASK_SPECS["imputation"]
+
+
+def task_spec(name: str) -> TaskSpec:
+    """Return the ranking contract for a task name, rejecting unknown names."""
+    try:
+        return _TASK_SPECS[name]
+    except KeyError:
+        raise ValueError(
+            f"Unknown task {name!r}; expected one of {', '.join(TASK_NAMES)}"
+        ) from None
+
 
 #TODO store those defaults elsewhere
 @dataclass(frozen=True)

@@ -10,20 +10,18 @@ import pandas as pd
 from scipy.stats import t
 
 from src.training.types import (
+    CLASSIFICATION,
     CrossValidationSummary,
     FoldTrackingRecord,
     LoggedMetric,
     LossBand,
     MetricSummary,
+    TaskSpec,
 )
 
 
-_LOSS_KEYS = (
-    "pretrain/train_loss",
-    "pretrain/val_loss",
-    "finetune/train_loss",
-    "finetune/val_loss",
-)
+# The per-epoch loss series a fold must log are task-specific: see
+# ``TaskSpec.loss_keys`` (the shared pre-training pair plus the task's second stage).
 
 # Step-less wall-clock events the runner logs once per fold. They are kept out
 # of ``FoldResult.metrics`` so the deterministic ``metrics.csv`` and the
@@ -34,6 +32,7 @@ _TIMING_PREFIX = "time/"
 TIMING_METRIC_KEYS = (
     f"{_TIMING_PREFIX}pretrain_seconds",
     f"{_TIMING_PREFIX}finetune_seconds",
+    f"{_TIMING_PREFIX}decode_seconds",
     f"{_TIMING_PREFIX}total_seconds",
 )
 
@@ -47,22 +46,29 @@ def stage_timing_metrics(pretraining_seconds: float, finetuning_seconds: float) 
     }
 
 
-def summarize_cross_validation(records: Sequence[FoldTrackingRecord]) -> CrossValidationSummary:
-    """Aggregate completed CV folds into comparable final and loss statistics."""
+def summarize_cross_validation(
+    records: Sequence[FoldTrackingRecord], task: TaskSpec = CLASSIFICATION
+) -> CrossValidationSummary:
+    """Aggregate completed CV folds into comparable final and loss statistics.
+
+    ``task`` names the fold-ranking metric the folds must carry and the direction in
+    which a fold is best. It defaults to classification so every existing caller keeps
+    today's behaviour.
+    """
     if len(records) < 2:
         raise ValueError("Cross-validation summary requires at least two folds.")
 
     final_metrics = tuple(final_metrics_for_tracking(record) for record in records)
-    metric_keys = _validate_final_metrics(records, final_metrics)
+    metric_keys = _validate_final_metrics(records, final_metrics, task)
     metrics = {
         key: _summarize_metric([float(metrics[key]) for metrics in final_metrics])
         for key in metric_keys
     }
-    loss_bands = _summarize_loss_bands(records)
+    loss_bands = _summarize_loss_bands(records, task)
     return CrossValidationSummary(
         metrics=metrics,
         loss_bands=loss_bands,
-        diagnostic_roles=_diagnostic_roles(records),
+        diagnostic_roles=_diagnostic_roles(records, task),
         timings=_summarize_timings(records),
     )
 
@@ -117,12 +123,15 @@ def _summarize_timings(records: Sequence[FoldTrackingRecord]) -> Mapping[str, Me
 def _validate_final_metrics(
     records: Sequence[FoldTrackingRecord],
     final_metrics: Sequence[Mapping[str, float | int | str]],
+    task: TaskSpec,
 ) -> tuple[str, ...]:
     metric_keys = tuple(final_metrics[0])
     if not metric_keys:
         raise ValueError("Cross-validation folds must include final metrics.")
-    if "f1_macro" not in metric_keys:
-        raise ValueError("Cross-validation folds must include the f1_macro metric.")
+    if task.ranking_metric not in metric_keys:
+        raise ValueError(
+            f"Cross-validation folds must include the {task.ranking_metric} metric."
+        )
 
     expected_keys = set(metric_keys)
     for record, metrics in zip(records, final_metrics):
@@ -149,11 +158,14 @@ def _summarize_metric(values: Sequence[float]) -> MetricSummary:
     )
 
 
-def _summarize_loss_bands(records: Sequence[FoldTrackingRecord]) -> Mapping[str, Sequence[LossBand]]:
-    fold_events = [_loss_events_by_key(record.metric_events) for record in records]
-    reference_steps = {key: set(fold_events[0][key]) for key in _LOSS_KEYS}
+def _summarize_loss_bands(
+    records: Sequence[FoldTrackingRecord], task: TaskSpec
+) -> Mapping[str, Sequence[LossBand]]:
+    loss_keys = task.loss_keys
+    fold_events = [_loss_events_by_key(record.metric_events, loss_keys) for record in records]
+    reference_steps = {key: set(fold_events[0][key]) for key in loss_keys}
     for events_by_key in fold_events:
-        for key in _LOSS_KEYS:
+        for key in loss_keys:
             if set(events_by_key[key]) != reference_steps[key]:
                 raise ValueError(f"Loss events for {key!r} must have matching steps across folds.")
 
@@ -162,12 +174,14 @@ def _summarize_loss_bands(records: Sequence[FoldTrackingRecord]) -> Mapping[str,
             _loss_band(step, [events_by_key[key][step] for events_by_key in fold_events])
             for step in sorted(reference_steps[key])
         )
-        for key in _LOSS_KEYS
+        for key in loss_keys
     }
 
 
-def _loss_events_by_key(metric_events: Sequence[LoggedMetric]) -> dict[str, dict[int, float]]:
-    events_by_key: dict[str, dict[int, float]] = {key: {} for key in _LOSS_KEYS}
+def _loss_events_by_key(
+    metric_events: Sequence[LoggedMetric], loss_keys: Sequence[str]
+) -> dict[str, dict[int, float]]:
+    events_by_key: dict[str, dict[int, float]] = {key: {} for key in loss_keys}
     for event in metric_events:
         if event.key not in events_by_key:
             continue
@@ -204,14 +218,17 @@ def _student_t_interval(
     return value_array, mean, standard_deviation, margin
 
 
-def _diagnostic_roles(records: Sequence[FoldTrackingRecord]) -> Mapping[int, str]:
+def _diagnostic_roles(records: Sequence[FoldTrackingRecord], task: TaskSpec) -> Mapping[int, str]:
+    # ``sign`` orients the fold-ranking metric so that a smaller key is always worse;
+    # ties still resolve to the lowest fold number for both roles.
+    sign = 1.0 if task.direction == "maximize" else -1.0
     worst = min(
         records,
-        key=lambda record: (float(record.result.metrics["f1_macro"]), record.result.fold),
+        key=lambda record: (sign * float(record.result.metrics[task.ranking_metric]), record.result.fold),
     )
     best = min(
         records,
-        key=lambda record: (-float(record.result.metrics["f1_macro"]), record.result.fold),
+        key=lambda record: (-sign * float(record.result.metrics[task.ranking_metric]), record.result.fold),
     )
     if best.result.fold == worst.result.fold:
         return {best.result.fold: "best_and_worst"}
