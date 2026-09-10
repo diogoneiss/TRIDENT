@@ -112,7 +112,14 @@ def test_each_trial_trains_inside_its_own_nested_run(mlflow_backend, monkeypatch
     assert trials["optuna_trial_2"].data.tags["best_trial"] == "true"
     assert "best_trial" not in trials["optuna_trial_0"].data.tags
     assert "best_trial" not in trials["optuna_trial_1"].data.tags
-    assert all(run.info.status == "FINISHED" for run in runs.values())
+    # A crashed trial is now pruned rather than scored, so MLflow marks its run failed
+    # instead of finishing a run that quietly recorded the best possible value.
+    assert trials["optuna_trial_1"].info.status == "FAILED"
+    assert all(
+        run.info.status == "FINISHED"
+        for name, run in runs.items()
+        if name != "optuna_trial_1"
+    )
     assert mlflow.active_run() is None
 
 

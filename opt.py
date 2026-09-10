@@ -16,6 +16,7 @@ from mlflow.tracking import MlflowClient
 from contextlib import nullcontext
 
 from src.mlflow_utils import LR_SCHEDULER_TAG, setup_mlflow, get_or_create_experiment, build_run_tags
+from src.training.types import task_spec
 from src.training.types import DEFAULT_LR_SCHEDULER
 
 # Import components from train.py
@@ -56,14 +57,19 @@ class _DisabledMlflow:
         return None
 
 
-def define_search_space(trial):
+def define_search_space(trial, task: str = 'classification'):
     """
     Define the hyperparameter search space for Optuna
     """
+    # Attention splits the width across heads, so the width must divide evenly. Sampling
+    # the two independently used to produce combinations that crash, which were then
+    # scored as merely terrible hyperparameters (backlog B3).
+    heads = trial.suggest_categorical('HEADS', [4, 8, 16])
+    dim = trial.suggest_int('DIM', 64 // heads, 256 // heads) * heads
     params = {
-        'DIM': trial.suggest_int('DIM', 64, 256, step=32),
+        'DIM': dim,
+        'HEADS': heads,
         'HIDDEN_DIM': trial.suggest_int('HIDDEN_DIM', 8, 64, step=8),
-        'HEADS': trial.suggest_int('HEADS', 4, 16, step=4),
         'LAYERS': trial.suggest_int('LAYERS', 1, 6, step=1),
         'DIM_FEED': trial.suggest_int('DIM_FEED', 16, 128, step=16),
         'DROPOUT': trial.suggest_float('DROPOUT', 0.1, 0.5, step=0.1),
@@ -71,11 +77,23 @@ def define_search_space(trial):
         'BATCH': trial.suggest_categorical('BATCH', [64, 128, 256, 512]),
         'LR_PRE': trial.suggest_float('LR_PRE', 1e-5, 1e-3, log=True),
         'WEIGHT_DECAY_PRE': trial.suggest_float('WEIGHT_DECAY_PRE', 1e-5, 1e-2, log=True),
+        # Governs training corruption only; the evaluation rate is deliberately absent,
+        # since a trial free to hide fewer cells would win by making its own exam easier.
         'PROB_MASCARA': trial.suggest_float('PROB_MASCARA', 0.2, 0.6, step=0.1),
-        'EPOCH_FINE': trial.suggest_int('EPOCH_FINE', 20, 60, step=10),
-        'LR_FINE': trial.suggest_float('LR_FINE', 1e-5, 1e-3, log=True),
-        'WEIGHT_DECAY_FINE': trial.suggest_float('WEIGHT_DECAY_FINE', 1e-5, 1e-2, log=True),
     }
+    if task == 'imputation':
+        params.update({
+            'EPOCHS_DECODE': trial.suggest_int('EPOCHS_DECODE', 20, 60, step=10),
+            'LR_DECODE': trial.suggest_float('LR_DECODE', 1e-5, 1e-3, log=True),
+            'WEIGHT_DECAY_DECODE': trial.suggest_float('WEIGHT_DECAY_DECODE', 1e-5, 1e-2, log=True),
+            'LAMBDA_NUM': trial.suggest_float('LAMBDA_NUM', 0.1, 10.0, log=True),
+        })
+    else:
+        params.update({
+            'EPOCH_FINE': trial.suggest_int('EPOCH_FINE', 20, 60, step=10),
+            'LR_FINE': trial.suggest_float('LR_FINE', 1e-5, 1e-3, log=True),
+            'WEIGHT_DECAY_FINE': trial.suggest_float('WEIGHT_DECAY_FINE', 1e-5, 1e-2, log=True),
+        })
     return params
 
 
@@ -89,7 +107,12 @@ class ObjectiveFunctionWrapper:
         self.output_dir = output_dir
         self.optuna_dir = optuna_dir  # Directory to store all Optuna results
         self.base_dataset_name = dataset_name.split('_')[0]
-        self.best_score = 0
+        # Which task the study is optimising, and the metric and direction that go with
+        # it. Set by run_hyperparameter_optimization before the study starts.
+        self.task = 'classification'
+        self.ranking_metric = 'f1_macro'
+        self.direction = 'maximize'
+        self.best_score = float('-inf')
         self.best_params = None
         self.best_trial_number = None
         self.best_metrics = None
@@ -102,7 +125,7 @@ class ObjectiveFunctionWrapper:
 
     def __call__(self, trial):
         # Define hyperparameters for this trial
-        params = define_search_space(trial)
+        params = define_search_space(trial, task=self.task)
         
         # Create Args object to pass to train_main
         class Args:
@@ -157,19 +180,26 @@ class ObjectiveFunctionWrapper:
                 metrics = train_main(args, return_metrics=True)
 
                 # Get the validation and test scores
-                f1_macro = metrics['f1_macro']
+                score = metrics[self.ranking_metric]
 
                 # The objective under one key whatever the evaluation mode;
                 # the full metric set is on the run as cv/test/* or test/*.
-                mlflow.log_metric("optuna/objective_value", f1_macro)
+                mlflow.log_metric("optuna/objective_value", score)
                 mlflow.set_tag("trial_status", "success")
 
                 # Report intermediate values
-                trial.report(f1_macro, step=0)
+                trial.report(score, step=0)
 
                 # Check if this is the best score so far
-                if f1_macro > self.best_score:
-                    self.best_score = f1_macro
+                # Lower is better for an error ratio, so the comparison follows the
+                # task rather than assuming bigger wins.
+                improved = (
+                    score > self.best_score
+                    if self.direction == 'maximize'
+                    else score < self.best_score
+                )
+                if improved:
+                    self.best_score = score
                     self.best_params = params
                     self.best_trial_number = trial.number
                     self.best_metrics = metrics
@@ -177,29 +207,40 @@ class ObjectiveFunctionWrapper:
                     # Save the best parameters found so far to datasets/hiperparams
                     self.save_best_params()
 
-                return f1_macro
+                return score
 
             except Exception as e:
                 logger.error(f"Trial {trial.number} failed with error: {str(e)}")
                 mlflow.set_tag("trial_status", "failed")
                 mlflow.set_tag("error", str(e)[:250])  # tag truncated to 250 chars
-                return 0.0  # Return worst possible score on failure
+                # Never score a failure. Returning 0.0 was "the worst possible score"
+                # only while maximising macro F1; under a minimised error ratio it is the
+                # best possible one, so the search would have hunted for crashes.
+                raise optuna.TrialPruned() from e
 
     def save_best_params(self):
+        """Save the best parameters found so far, somewhere the other task cannot feel.
+
+        ``datasets/hiperparams/<base>/<dataset>.json`` is read by **both** tasks and names
+        neither, so an imputation study writing there would silently retune every later
+        classification run on that dataset. An imputation study therefore keeps its result
+        inside its own study directory; promoting it is a deliberate copy.
         """
-        Save the best parameters found so far to the correct location
-        """
-        # Create directory structure if it doesn't exist
-        save_dir = Path('datasets/hiperparams') / self.base_dataset_name
+        if self.task == 'imputation':
+            save_dir = Path(self.optuna_dir) if self.optuna_dir else Path('.')
+        else:
+            save_dir = Path('datasets/hiperparams') / self.base_dataset_name
         save_dir.mkdir(exist_ok=True, parents=True)
-        
-        # Save the hyperparameters
+
         save_path = save_dir / f"{self.dataset_name}.json"
-        
         with open(save_path, 'w') as f:
             json.dump(self.best_params, f, indent=4)
-            
-        logger.info(f"Saved best hyperparameters (F1={self.best_score:.4f}) to {save_path}")
+
+        logger.info(
+            f"Saved best hyperparameters ({self.ranking_metric}={self.best_score:.4f}) "
+            f"to {save_path}"
+        )
+        return save_path
 
 
 def run_hyperparameter_optimization(args):
@@ -233,6 +274,11 @@ def run_hyperparameter_optimization(args):
     objective.metrics_dir = getattr(args, "metrics_dir", "metrics")
     objective.disable_mlflow = getattr(args, "disable_mlflow", False)
     objective.lr_scheduler = getattr(args, "lr_scheduler", None)
+    task = task_spec(getattr(args, "task", None) or "classification")
+    objective.task = task.name
+    objective.ranking_metric = task.ranking_metric
+    objective.direction = task.direction
+    objective.best_score = float("-inf") if task.direction == "maximize" else float("inf")
     
     # Create an Optuna study
     storage_name = f"sqlite:///{optuna_dir}/optuna_study.db"
@@ -240,7 +286,7 @@ def run_hyperparameter_optimization(args):
     study = optuna.create_study(
         study_name=f"TRIDENT_{args.dataset_name}",
         storage=storage_name,
-        direction="maximize",
+        direction=task.direction,
         load_if_exists=True
     )
     

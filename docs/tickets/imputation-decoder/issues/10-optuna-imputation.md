@@ -1,6 +1,6 @@
 # 10. Optuna for the imputation task
 
-Status: ready-for-agent
+Status: done (this commit) on `feat/imputation-task`
 Blocked by: 02, 08
 Plan task: 10. ADR 0004 decision 13. Wayfinder ticket 13.
 
@@ -26,8 +26,8 @@ study-directory-only writes for imputation studies.
 
 ## Acceptance criteria
 
-- [ ] All of the above, in `tests/unit/test_opt_tracking.py` or a sibling test module.
-- [ ] Classification studies keep their current behaviour except for the head-count
+- [x] All of the above, in `tests/unit/test_opt_tracking.py` or a sibling test module.
+- [x] Classification studies keep their current behaviour except for the head-count
       constraint and the pruning failure path.
 
 ## Constraints
@@ -38,3 +38,30 @@ study-directory-only writes for imputation studies.
   result.
 
 ## Comments
+
+- 2026-09-10, five red-green slices in `tests/unit/test_opt_search_space.py`:
+
+  | Slice | Behaviour pinned |
+  |---|---|
+  | 1 | A search tunes the stage its task actually runs |
+  | 2 | A search never tunes how hard its own exam is |
+  | 3 | Every sampled shape is one the model can actually build |
+  | 4 | A trial that crashes is discarded rather than scored |
+  | 5 | An imputation study never overwrites a dataset's shared config |
+
+  Slice 3 fixes backlog **B3** by construction rather than by rejection: `HEADS` is drawn
+  first and `DIM` as a multiple of it, so an invalid pair can no longer be sampled at all.
+  40 random trials all satisfy the constraint.
+
+  **Slice 5 caught the bug while proving it.** Its red run wrote
+  `datasets/hiperparams/credit-g/credit-g_20nan.json` -- the cross-task clobber happening
+  for real, from a test. The green run keeps the result inside the study directory. The
+  stray file was removed.
+
+  **One existing assertion changed for a real reason.** A crashed trial used to return
+  `0.0` and finish, so `test_each_trial_trains_inside_its_own_nested_run` asserted every
+  run was `FINISHED`. Pruning lets the exception leave the run open, so MLflow marks it
+  `FAILED`, which is what actually happened. The test now expects the failed trial to say
+  so, and the rest to finish.
+
+  Unit suite 128 green; the vehicle regression passes unedited.
