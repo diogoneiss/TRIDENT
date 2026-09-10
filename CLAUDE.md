@@ -12,7 +12,7 @@ Rules:
 
 ## MLflow run analysis
 
-Every training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing runs — `best_fold`/`worst_fold` children exist only for diagnosis and double-count if included. Full tagging/CI-metric layout: README.md § "MLflow Cross-Validation Comparisons", [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md).
+Every training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing runs — `best_fold`/`worst_fold` children exist only for diagnosis and double-count if included. Also compare within one `tags.lr_scheduler` value (`cosine_legacy` is the pre-ADR-0003 schedule; backfilled runs carry `lr_scheduler_backfilled = true`). Full tagging/CI-metric layout: README.md § "MLflow Cross-Validation Comparisons", [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md).
 
 ## Background & full reference
 

@@ -12,7 +12,7 @@ before anyone touches them, because they change published results.
 
 | ID | Item | Severity | Protected |
 |---|---|---|---|
-| B1 | Learning-rate schedule completes a full cosine cycle | High | Yes |
+| ~~B1~~ | ~~Learning-rate schedule completes a full cosine cycle~~ — fixed, see below | High | Yes |
 | B2 | `--cv_folds 1` crashes with `ZeroDivisionError` | Medium | No |
 | B3 | Optuna proposes head counts that crash, scored as 0.0 | Medium | No |
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
@@ -33,6 +33,12 @@ before anyone touches them, because they change published results.
 ## Bugs
 
 ### B1. The learning-rate schedule completes a full cosine cycle — protected
+
+**Fixed 2026-09-09** by [ADR 0003](adr/0003-selectable-learning-rate-schedule.md): the
+schedule is now selectable (`--lr_scheduler` / `LR_SCHEDULER`), the old behaviour
+survives as `cosine_legacy` and remains the default, and every MLflow run carries an
+`lr_scheduler` tag (backfilled on the 191 pre-existing runs). The original analysis
+is kept below for reference.
 
 `CosineAnnealingLR` is built with `T_max=<number of epochs>` but `scheduler.step()`
 is called once per **mini-batch**, in both stages
@@ -258,6 +264,9 @@ already does with `create_tracker(enabled)`.
 ---
 
 ## Fixed already
+
+- **B1**, the per-batch cosine schedule, via [ADR 0003](adr/0003-selectable-learning-rate-schedule.md)
+  (selectable schedule, legacy default, MLflow tag plus backfill script).
 
 These came out of the same review and are done, in
 [ticket 0003](tickets/0003-training-loop-performance.md):

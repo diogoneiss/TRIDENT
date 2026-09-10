@@ -351,7 +351,8 @@ flowchart TD
 | `layers` | `LAYERS` | Number of stacked `EncoderLayer`s |
 | `feedforward_dimension` | `DIM_FEED` | `filter_size` inside each `EncoderLayer`'s `FeedForwardNetwork` |
 | `dropout` | `DROPOUT` | Dropout rate inside every `EncoderLayer` (attention output + FFN output) |
-| `pretraining_epochs` / `finetuning_epochs` | `EPOCHS_PRE` / `EPOCH_FINE` | Epoch counts, and each stage's `CosineAnnealingLR(T_max=...)` |
+| `pretraining_epochs` / `finetuning_epochs` | `EPOCHS_PRE` / `EPOCH_FINE` | Epoch counts, and the horizon of each stage's `StageScheduler` |
+| `lr_scheduler` | `LR_SCHEDULER` | Which schedule `StageScheduler` (`src/training/schedulers.py`) builds for both stages: `cosine_legacy` (default, per-batch cosine with `T_max=epochs`), `cosine`, `warmup_cosine`, `constant`, `plateau`. Overridable with `--lr_scheduler`; tagged on MLflow runs. See [ADR 0003](adr/0003-selectable-learning-rate-schedule.md) |
 | `batch_size` | `BATCH` | Manual batch-slice size in both training loops |
 | `pretraining_learning_rate` / `_weight_decay` | `LR_PRE` / `WEIGHT_DECAY_PRE` | `AdamW` for `TridentPretrainer` |
 | `finetuning_learning_rate` / `_weight_decay` | `LR_FINE` / `WEIGHT_DECAY_FINE` | `AdamW` for `TridentModel` |

@@ -164,6 +164,7 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--plot_losses`: Generate training loss visualizations
 - `--save_model`: Save trained model checkpoints
 - `--cv_folds`: Number of folds for cross-validation (default: `None`, uses pre-defined split)
+- `--lr_scheduler`: Learning-rate schedule for both stages, one of `cosine_legacy`, `cosine`, `warmup_cosine`, `constant`, `plateau`. Overrides `LR_SCHEDULER` from the hyperparameter file and applies to every dataset of an `--all` batch and every Optuna trial. Default: `cosine_legacy`, the schedule of every run before [ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md)
 
 ### Optuna Optimization
 
@@ -241,6 +242,7 @@ TRIDENT supports three configuration modes:
 - `LR_FINE`: Fine-tuning learning rate
 - `WEIGHT_DECAY_PRE`: Pre-training weight decay
 - `WEIGHT_DECAY_FINE`: Fine-tuning weight decay
+- `LR_SCHEDULER`: Learning-rate schedule name, see `--lr_scheduler` (default: `cosine_legacy`)
 
 ## Project Structure
 
@@ -293,13 +295,15 @@ When cross-validation is enabled (`--cv_folds <K>`), individual metrics are comp
 
 #### MLflow Cross-Validation Comparisons
 
-Each training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing executions. For a cross-validation run, compare `cv/test/f1_macro/mean` with `cv/test/f1_macro/ci95_lower`, `cv/test/f1_macro/ci95_upper`, and `cv/test/f1_macro/std`; the same `mean`, `ci95_lower`, `ci95_upper`, `std`, `min`, `max`, and `fold_count` fields are logged under `cv/test/<metric>/...` for every numeric final fold metric.
+Each training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing executions, and compare runs that share `tags.lr_scheduler`: the schedule changes results, so it is tagged on every parent, diagnostic child and Optuna run. Runs recorded before the tag existed were backfilled with `lr_scheduler = cosine_legacy` and also carry `lr_scheduler_backfilled = true` ([ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md); re-run `scripts/backfill_lr_scheduler_tag.py --apply` against any other tracking store). For a cross-validation run, compare `cv/test/f1_macro/mean` with `cv/test/f1_macro/ci95_lower`, `cv/test/f1_macro/ci95_upper`, and `cv/test/f1_macro/std`; the same `mean`, `ci95_lower`, `ci95_upper`, `std`, `min`, `max`, and `fold_count` fields are logged under `cv/test/<metric>/...` for every numeric final fold metric.
 
 The 95% bounds are internal CV uncertainty, not an independent-test guarantee: the folds share training data. Parent loss charts use the readable mean/lower/upper bands `cv/pretrain/train_loss/{mean,ci95_lower,ci95_upper}`, `cv/pretrain/val_loss/{mean,ci95_lower,ci95_upper}`, `cv/finetune/train_loss/{mean,ci95_lower,ci95_upper}`, and `cv/finetune/val_loss/{mean,ci95_lower,ci95_upper}`.
 
 Open `best_fold`/`worst_fold` children only for diagnosis. They retain raw fold histories and optional plot/model artifacts; a tied best/worst selection produces one `best_and_worst` child. The parent remains the comparison record and retains `metrics/raw_fold_metrics.csv`, `metrics/cv_summary.json`, `tracking/diagnostic_manifest.json`, and `data/provenance.json`. MLflow input lineage records the prepared dataset and its processed CSV source. Encoding, scaling, split strategy, fold count, seed, and the prepared schema are recorded in `data/provenance.json`.
 
 A predefined single split is one top-level `parent` run with its raw histories, final metrics, lineage, and optional artifacts logged directly there. It creates no nested `single_split` run and no CV summary. With `--disable_mlflow`, tracking remains inert and no MLflow calls are made.
+
+Diagnostic children also log `pretrain/learning_rate` and `finetune/learning_rate` per epoch so the schedule that actually ran can be inspected.
 
 The tracking layout is specified in [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md). Deployable logged-model lifecycle work is intentionally deferred to [Ticket 0002](docs/tickets/0002-mlflow-logged-model-lifecycle.md).
 
