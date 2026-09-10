@@ -191,7 +191,11 @@ def test_disabled_tracker_never_calls_mlflow_apis(monkeypatch) -> None:
 
     tracker = create_tracker(enabled=False)
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=2,
+        hyperparameters={},
+        lr_scheduler="cosine_legacy",
     ) as active_tracker:
         with active_tracker.fold_run(
             fold=1, cv_folds=2, dataset_name="vehicle_00nan"
@@ -254,7 +258,9 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
             "LR_FINE": 0.001,
             "WEIGHT_DECAY_FINE": 0.0019,
             "LABELS": 4,
+            "LR_SCHEDULER": "cosine_legacy",
         },
+        "lr_scheduler": "cosine_legacy",
     }
     assert fake_tracker.fold_tracker_ids == pretraining_tracker_ids
     assert fake_tracker.fold_tracker_ids == finetuning_tracker_ids

@@ -27,6 +27,7 @@ def _mlflow_hyperparameters(request: TrainingRequest) -> dict[str, object]:
         "LR_FINE": hyperparameters.finetuning_learning_rate,
         "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
         "LABELS": hyperparameters.labels,
+        "LR_SCHEDULER": hyperparameters.lr_scheduler,
     }
 
 
@@ -47,6 +48,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         seed=request.seed,
         cv_folds=request.cv_folds,
         hyperparameters=_mlflow_hyperparameters(request),
+        lr_scheduler=request.hyperparameters.lr_scheduler,
     ) as active_tracker:
         for ordinal, fold in enumerate(folds, start=1):
             if request.cv_folds is not None:

@@ -192,7 +192,7 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     artifact_paths = _artifact_paths(tmp_path)
 
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=3, hyperparameters={}
+        dataset_name="vehicle_00nan", seed=42, cv_folds=3, hyperparameters={}, lr_scheduler="cosine"
     ) as active_tracker:
         records = [
             _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4, cv_folds=3),
@@ -214,6 +214,7 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     assert parent.data.tags["dataset_variant"] == "vehicle_00nan"
     assert parent.data.tags["missingness_percent"] == "0"
     assert parent.data.tags["evaluation_mode"] == "cross_validation"
+    assert parent.data.tags["lr_scheduler"] == "cosine"
     assert set(parent.data.metrics) == _PARENT_METRIC_KEYS
     assert parent.data.metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
     assert parent.data.metrics["cv/test/f1_macro/fold_count"] == 3.0
@@ -236,6 +237,7 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
         "worst_fold",
     }
     assert {child.data.tags["fold"] for child in children} == {"1", "3"}
+    assert {child.data.tags["lr_scheduler"] for child in children} == {"cosine"}
     assert all(child.data.tags["fold"] != "2" for child in children)
     child_by_fold = {child.data.tags["fold"]: child for child in children}
     assert child_by_fold["1"].data.metrics["test/f1_macro"] == pytest.approx(0.4)
@@ -271,7 +273,7 @@ def test_finalize_cross_validation_replays_one_diagnostic_child_for_a_tie(
     tracker = create_tracker(enabled=True)
 
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
+        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}, lr_scheduler="cosine_legacy"
     ) as active_tracker:
         records = [
             _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.5),
@@ -304,7 +306,7 @@ def test_log_single_split_record_replays_into_parent_without_a_child(
     artifact.write_text("single split")
 
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=None, hyperparameters={}
+        dataset_name="vehicle_00nan", seed=42, cv_folds=None, hyperparameters={}, lr_scheduler="warmup_cosine"
     ) as active_tracker:
         with active_tracker.fold_run(
             fold=1, cv_folds=None, dataset_name="vehicle_00nan"
@@ -325,6 +327,7 @@ def test_log_single_split_record_replays_into_parent_without_a_child(
     parent = runs[0]
     assert parent.data.tags["run_role"] == "parent"
     assert parent.data.tags["evaluation_mode"] == "single_split"
+    assert parent.data.tags["lr_scheduler"] == "warmup_cosine"
     assert parent.data.metrics["test/f1_macro"] == pytest.approx(0.4)
     history = client.get_metric_history(parent.info.run_id, "pretrain/train_loss")
     assert [(metric.step, metric.value) for metric in history] == [(7, 1.0)]
@@ -340,7 +343,7 @@ def test_finalize_cross_validation_logs_parent_artifacts_at_stable_paths(
     artifact_paths = _artifact_paths(tmp_path)
 
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
+        dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}, lr_scheduler="cosine_legacy"
     ) as active_tracker:
         records = [
             _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),
@@ -400,7 +403,11 @@ def test_disabled_tracker_buffers_records_without_creating_mlflow_runs(
 
         tracker = create_tracker(enabled=False)
         with tracker.parent_run(
-            dataset_name="vehicle_00nan", seed=42, cv_folds=2, hyperparameters={}
+            dataset_name="vehicle_00nan",
+            seed=42,
+            cv_folds=2,
+            hyperparameters={},
+            lr_scheduler="cosine_legacy",
         ) as active_tracker:
             records = [
                 _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),

@@ -14,7 +14,8 @@ import shutil
 import mlflow
 from contextlib import nullcontext
 
-from src.mlflow_utils import setup_mlflow, get_or_create_experiment, build_run_tags
+from src.mlflow_utils import LR_SCHEDULER_TAG, setup_mlflow, get_or_create_experiment, build_run_tags
+from src.training.types import DEFAULT_LR_SCHEDULER
 
 # Import components from train.py
 from train import main as train_main
@@ -94,6 +95,7 @@ class ObjectiveFunctionWrapper:
         # MLflow parent run ID — set by run_hyperparameter_optimization before calling study.optimize
         self.mlflow_parent_run_id: str | None = None
         self.mlflow_experiment_id: str | None = None
+        self.lr_scheduler: str | None = None
         
     def __call__(self, trial):
         # Define hyperparameters for this trial
@@ -117,6 +119,9 @@ class ObjectiveFunctionWrapper:
         args.save_model = False
         args.seed = self.seed
         args.hyperparams_override = params  # Add custom field for hyperparams
+        # The schedule is not part of the search space; every trial uses the one
+        # chosen on the command line (or the default) so trials stay comparable.
+        args.lr_scheduler = self.lr_scheduler
         
         # Create temporary directory
         os.makedirs(args.output_dir, exist_ok=True)
@@ -127,6 +132,7 @@ class ObjectiveFunctionWrapper:
             "trial_number": str(trial.number),
             "dataset": self.dataset_name,
             "run_type": "optuna_trial",
+            LR_SCHEDULER_TAG: self.lr_scheduler or DEFAULT_LR_SCHEDULER,
         }
 
         with mlflow.start_run(
@@ -221,6 +227,7 @@ def run_hyperparameter_optimization(args):
     )
     objective.metrics_dir = getattr(args, "metrics_dir", "metrics")
     objective.disable_mlflow = getattr(args, "disable_mlflow", False)
+    objective.lr_scheduler = getattr(args, "lr_scheduler", None)
     
     # Create an Optuna study
     storage_name = f"sqlite:///{optuna_dir}/optuna_study.db"
@@ -240,6 +247,7 @@ def run_hyperparameter_optimization(args):
         seed=args.seed,
     )
     parent_tags["n_trials"] = str(args.n_trials)
+    parent_tags[LR_SCHEDULER_TAG] = getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER
 
     with mlflow.start_run(
         experiment_id=experiment_id,
@@ -319,6 +327,7 @@ def run_hyperparameter_optimization(args):
         final_args.save_model = True
         final_args.seed = args.seed
         final_args.hyperparams_override = study.best_params
+        final_args.lr_scheduler = getattr(args, "lr_scheduler", None)
         
         # Run final training
         metrics = train_main(final_args, return_metrics=True)

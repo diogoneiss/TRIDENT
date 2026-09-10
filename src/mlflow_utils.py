@@ -32,6 +32,13 @@ DEFAULT_TRACKING_URI = "sqlite:///mlflow.db"
 # Top-level experiment prefix so all TRIDENT experiments are grouped together
 EXPERIMENT_PREFIX = "TRIDENT"
 
+# Tag recording which learning-rate schedule a run trained with (ADR 0003).
+# Runs created before the tag existed are backfilled by
+# ``scripts/backfill_lr_scheduler_tag.py`` and additionally carry
+# ``LR_SCHEDULER_BACKFILLED_TAG`` so provenance stays visible.
+LR_SCHEDULER_TAG = "lr_scheduler"
+LR_SCHEDULER_BACKFILLED_TAG = "lr_scheduler_backfilled"
+
 
 def parse_missingness_percent(dataset_name: str) -> str:
     """Return the normalized percentage encoded by a ``_<n>nan`` suffix."""

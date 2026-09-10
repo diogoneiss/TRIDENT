@@ -8,6 +8,7 @@ from typing import Iterator, Mapping, Sequence
 import mlflow
 
 from src.mlflow_utils import (
+    LR_SCHEDULER_TAG,
     build_fold_tags,
     build_run_tags,
     get_or_create_experiment,
@@ -83,6 +84,7 @@ class MlflowTracker:
     def __init__(self) -> None:
         self.experiment_id: str | None = None
         self.cv_folds: int | None = None
+        self.lr_scheduler: str | None = None
 
     @contextmanager
     def parent_run(
@@ -92,10 +94,12 @@ class MlflowTracker:
         seed: int,
         cv_folds: int | None,
         hyperparameters: dict[str, object],
+        lr_scheduler: str,
     ) -> Iterator["MlflowTracker"]:
         setup_mlflow()
         self.experiment_id = get_or_create_experiment(dataset_name)
         self.cv_folds = cv_folds
+        self.lr_scheduler = lr_scheduler
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         tags = build_run_tags(
             dataset_name=dataset_name,
@@ -109,6 +113,9 @@ class MlflowTracker:
                 "evaluation_mode": (
                     "cross_validation" if cv_folds is not None else "single_split"
                 ),
+                # A tag rather than only a param so runs can be filtered and grouped
+                # by schedule in the comparison table; see ADR 0003.
+                LR_SCHEDULER_TAG: lr_scheduler,
             },
         )
         with mlflow.start_run(
@@ -207,6 +214,8 @@ class MlflowTracker:
             record = records_by_fold[fold]
             tags = build_fold_tags(fold - 1, self.cv_folds)
             tags.update({"dataset": record.result.dataset_name, "run_role": role})
+            if self.lr_scheduler is not None:
+                tags[LR_SCHEDULER_TAG] = self.lr_scheduler
             with mlflow.start_run(
                 experiment_id=self.experiment_id,
                 run_name=f"{role}_fold_{fold}",
