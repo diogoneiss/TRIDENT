@@ -92,11 +92,33 @@ class DatasetSpec:
         )
 
 
+# How the top-level MLflow run of one training execution is recorded.
+#   parent        one comparable training execution: a new top-level run with
+#                 the full ADR 0002 record (summary, loss bands, artifacts,
+#                 lineage, diagnostic children).
+#   optuna_trial  one hyper-parameter search trial: logs a lightweight record
+#                 (tags, parameters, final summary metrics) into the trial run
+#                 the caller already has active, so trials never crowd the
+#                 ``run_role = parent`` comparison table.
+TRACKING_RUN_ROLES: tuple[str, ...] = ("parent", "optuna_trial")
+
+
 @dataclass(frozen=True)
 class RuntimeOptions:
     output_dir: Path = Path("results")
     metrics_dir: Path = Path("metrics")
     tracking_enabled: bool = True
+    tracking_run_role: str = "parent"
+    # Extra tags merged onto the top-level run, e.g. the study that produced a
+    # retrained configuration.
+    tracking_tags: Mapping[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.tracking_run_role not in TRACKING_RUN_ROLES:
+            raise ValueError(
+                f"Unknown tracking run role {self.tracking_run_role!r}; "
+                f"expected one of {', '.join(TRACKING_RUN_ROLES)}"
+            )
 
 
 @dataclass(frozen=True)

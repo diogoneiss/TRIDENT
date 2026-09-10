@@ -12,6 +12,7 @@ import logging
 from functools import partial
 import shutil
 import mlflow
+from mlflow.tracking import MlflowClient
 from contextlib import nullcontext
 
 from src.mlflow_utils import LR_SCHEDULER_TAG, setup_mlflow, get_or_create_experiment, build_run_tags
@@ -96,7 +97,9 @@ class ObjectiveFunctionWrapper:
         self.mlflow_parent_run_id: str | None = None
         self.mlflow_experiment_id: str | None = None
         self.lr_scheduler: str | None = None
-        
+        # trial number -> MLflow run id, filled as trials run.
+        self.trial_run_ids: dict[int, str] = {}
+
     def __call__(self, trial):
         # Define hyperparameters for this trial
         params = define_search_space(trial)
@@ -122,16 +125,23 @@ class ObjectiveFunctionWrapper:
         # The schedule is not part of the search space; every trial uses the one
         # chosen on the command line (or the default) so trials stay comparable.
         args.lr_scheduler = self.lr_scheduler
-        
+        # The runner logs into this trial's run instead of opening a second
+        # top-level run, which MLflow refuses while the trial run is active.
+        args.mlflow_run_role = "optuna_trial"
+
         # Create temporary directory
         os.makedirs(args.output_dir, exist_ok=True)
-        
-        # Open a nested MLflow child run for this trial (if parent run is active)
+
+        # One nested run per trial under the study run. The runner adds the
+        # structured dataset/schedule/environment tags, the hyperparameters and
+        # the final metrics; the tags below survive even if training never
+        # reaches the runner.
         trial_run_name = f"optuna_trial_{trial.number}"
         trial_tags = {
             "trial_number": str(trial.number),
             "dataset": self.dataset_name,
             "run_type": "optuna_trial",
+            "run_role": "optuna_trial",
             LR_SCHEDULER_TAG: self.lr_scheduler or DEFAULT_LR_SCHEDULER,
         }
 
@@ -140,46 +150,41 @@ class ObjectiveFunctionWrapper:
             run_name=trial_run_name,
             tags=trial_tags,
             nested=True,
-        ):
-            # Log trial hyperparameters
-            mlflow.log_params(params)
-            mlflow.log_param("trial_number", trial.number)
-
+        ) as trial_run:
+            self.trial_run_ids[trial.number] = trial_run.info.run_id
             try:
                 # Run the training with these hyperparameters
                 metrics = train_main(args, return_metrics=True)
-                
+
                 # Get the validation and test scores
                 f1_macro = metrics['f1_macro']
-                
-                # Log the trial result to MLflow
-                mlflow.log_metric("f1_macro", f1_macro)
+
+                # The objective under one key whatever the evaluation mode;
+                # the full metric set is on the run as cv/test/* or test/*.
+                mlflow.log_metric("optuna/objective_value", f1_macro)
                 mlflow.set_tag("trial_status", "success")
-                
+
                 # Report intermediate values
                 trial.report(f1_macro, step=0)
-                
+
                 # Check if this is the best score so far
                 if f1_macro > self.best_score:
                     self.best_score = f1_macro
                     self.best_params = params
                     self.best_trial_number = trial.number
                     self.best_metrics = metrics
-                    mlflow.set_tag("is_best_so_far", "true")
-                    
+
                     # Save the best parameters found so far to datasets/hiperparams
                     self.save_best_params()
-                else:
-                    mlflow.set_tag("is_best_so_far", "false")
-                    
+
                 return f1_macro
-                
+
             except Exception as e:
                 logger.error(f"Trial {trial.number} failed with error: {str(e)}")
                 mlflow.set_tag("trial_status", "failed")
                 mlflow.set_tag("error", str(e)[:250])  # tag truncated to 250 chars
                 return 0.0  # Return worst possible score on failure
-        
+
     def save_best_params(self):
         """
         Save the best parameters found so far to the correct location
@@ -247,6 +252,7 @@ def run_hyperparameter_optimization(args):
         seed=args.seed,
     )
     parent_tags["n_trials"] = str(args.n_trials)
+    parent_tags["run_role"] = "optuna_study"
     parent_tags[LR_SCHEDULER_TAG] = getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER
 
     with mlflow.start_run(
@@ -270,13 +276,20 @@ def run_hyperparameter_optimization(args):
 
         # Log best trial summary to the parent run
         mlflow.log_metrics({
-            "best_f1_macro": study.best_value,
-            "best_trial_number": float(study.best_trial.number),
+            "optuna/best_objective_value": study.best_value,
+            "optuna/best_trial_number": float(study.best_trial.number),
         })
         mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
         mlflow.set_tag("best_trial_number", str(study.best_trial.number))
 
         # ---- end of parent MLflow run ----
+
+    study_run_id = parent_run.info.run_id
+    # Tag the winning trial once the study is complete, so the tag can never
+    # go stale the way a running "best so far" marker would.
+    best_trial_run_id = objective.trial_run_ids.get(study.best_trial.number)
+    if best_trial_run_id is not None and not getattr(args, "disable_mlflow", False):
+        MlflowClient().set_tag(best_trial_run_id, "best_trial", "true")
     
     # Report best parameters
     logger.info("\n\n" + "="*50)
@@ -328,6 +341,8 @@ def run_hyperparameter_optimization(args):
         final_args.seed = args.seed
         final_args.hyperparams_override = study.best_params
         final_args.lr_scheduler = getattr(args, "lr_scheduler", None)
+        # A normal comparable parent run, linked back to the study that chose it.
+        final_args.mlflow_tags = {"optuna_study_run_id": study_run_id}
         
         # Run final training
         metrics = train_main(final_args, return_metrics=True)

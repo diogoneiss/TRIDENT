@@ -92,3 +92,28 @@ def test_hyperparameters_reject_unknown_scheduler() -> None:
         Hyperparameters(lr_scheduler="linear")
     with pytest.raises(ValueError, match="Unknown learning-rate scheduler"):
         Hyperparameters.from_mapping({"LR_SCHEDULER": "linear"})
+
+
+def test_legacy_namespace_defaults_to_parent_tracking_without_extra_tags() -> None:
+    request = resolve_training_request(Namespace(dataset_name="vehicle_00nan"))
+
+    assert request.runtime.tracking_run_role == "parent"
+    assert request.runtime.tracking_tags == {}
+
+
+def test_legacy_namespace_accepts_programmatic_tracking_role_and_tags() -> None:
+    args = Namespace(
+        dataset_name="vehicle_00nan",
+        mlflow_run_role="optuna_trial",
+        mlflow_tags={"optuna_study_run_id": "abc"},
+    )
+
+    request = resolve_training_request(args)
+
+    assert request.runtime.tracking_run_role == "optuna_trial"
+    assert request.runtime.tracking_tags == {"optuna_study_run_id": "abc"}
+
+
+def test_runtime_options_reject_unknown_tracking_role() -> None:
+    with pytest.raises(ValueError, match="tracking run role"):
+        RuntimeOptions(tracking_run_role="child")

@@ -62,6 +62,14 @@ tracked metrics, never fold metrics, so they stay out of the regression
 fixture.
 _Avoid_: run duration, epoch time
 
+**Optuna trial run**:
+One nested MLflow run per hyper-parameter search trial under its study run.
+The trainer logs into it a lightweight record: parameters, the structured
+tags, and final metrics only. It is never a comparison parent and never has
+diagnostic fold runs; `--retrain_best` produces the full parent record for
+the chosen configuration.
+_Avoid_: trial parent, nested training run
+
 **Component-ablation benchmark**:
 A reproducible experimental protocol that estimates each selected TRIDENT
 component's contribution while holding the dataset, data split, seed schedule,

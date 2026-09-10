@@ -101,42 +101,29 @@ class MlflowTracker:
         hyperparameters: dict[str, object],
         lr_scheduler: str,
         environment: Mapping[str, str] | None = None,
+        extra_tags: Mapping[str, str] | None = None,
     ) -> Iterator["MlflowTracker"]:
         setup_mlflow()
         self.experiment_id = get_or_create_experiment(dataset_name)
         self.cv_folds = cv_folds
         self.lr_scheduler = lr_scheduler
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        tags = build_run_tags(
+        tags = _execution_tags(
             dataset_name=dataset_name,
+            run_role="parent",
             run_type="train",
             seed=seed,
             cv_folds=cv_folds,
-            extra={
-                "run_role": "parent",
-                "dataset_variant": dataset_name,
-                "missingness_percent": parse_missingness_percent(dataset_name),
-                "evaluation_mode": (
-                    "cross_validation" if cv_folds is not None else "single_split"
-                ),
-                # A tag rather than only a param so runs can be filtered and grouped
-                # by schedule in the comparison table; see ADR 0003.
-                LR_SCHEDULER_TAG: lr_scheduler,
-                # Hardware and library descriptors (device, gpu_name, ...) so
-                # the ``time/`` metrics are only compared within one environment.
-                **(environment or {}),
-            },
+            lr_scheduler=lr_scheduler,
+            environment=environment,
+            extra_tags=extra_tags,
         )
         with mlflow.start_run(
             experiment_id=self.experiment_id,
             run_name=f"train_{dataset_name}_{timestamp}",
             tags=tags,
         ):
-            mlflow.log_params(hyperparameters)
-            mlflow.log_param("dataset_name", dataset_name)
-            mlflow.log_param("seed", seed)
-            if cv_folds is not None:
-                mlflow.log_param("cv_folds", cv_folds)
+            _log_execution_params(hyperparameters, dataset_name, seed, cv_folds)
             yield self
 
     @contextmanager
@@ -181,19 +168,12 @@ class MlflowTracker:
         summary: CrossValidationSummary,
         artifact_paths: TrackingArtifactPaths,
     ) -> None:
-        for metric_name, statistics in summary.metrics.items():
-            mlflow.log_metrics(_summary_metrics(f"cv/test/{metric_name}", statistics))
+        _log_summary_metrics(summary)
+        self._log_loss_bands(summary)
+        self._log_parent_artifacts(artifact_paths)
 
-        for timing_name, statistics in summary.timings.items():
-            mlflow.log_metrics(_summary_metrics(f"cv/time/{timing_name}", statistics))
-        if "total_seconds" in summary.timings:
-            # One mode-independent column: the same key a single-split parent
-            # logs, here as the sum of every fold's total.
-            total = summary.timings["total_seconds"]
-            mlflow.log_metric(
-                TRAINING_SECONDS_KEY, float(total.mean) * int(total.fold_count)
-            )
-
+    @staticmethod
+    def _log_loss_bands(summary: CrossValidationSummary) -> None:
         for loss_name, bands in summary.loss_bands.items():
             prefix = f"cv/{loss_name}"
             for band in bands:
@@ -206,6 +186,8 @@ class MlflowTracker:
                     step=int(band.step),
                 )
 
+    @staticmethod
+    def _log_parent_artifacts(artifact_paths: TrackingArtifactPaths) -> None:
         parent_artifacts = (
             (artifact_paths.raw_fold_metrics_csv, "metrics"),
             (artifact_paths.summary_json, "metrics"),
@@ -243,6 +225,138 @@ class MlflowTracker:
             mlflow.log_artifact(str(artifact.path), artifact_path=artifact.artifact_path)
 
 
+class OptunaTrialTracker(MlflowTracker):
+    """Log a lightweight trial record into the MLflow run the caller has active.
+
+    ``opt.py`` opens one nested run per trial under the study run. Opening a
+    second top-level run from inside it is what MLflow refuses, so this tracker
+    adopts that trial run instead: it tags it, logs the parameters and the
+    final summary metrics, and leaves it open for the caller to close. Loss
+    histories, artifacts, dataset lineage and diagnostic children are skipped
+    on purpose; a study of hundreds of trials would otherwise dwarf every
+    other run in the store. ``--retrain_best`` produces the full record for
+    the chosen configuration.
+    """
+
+    @contextmanager
+    def parent_run(
+        self,
+        *,
+        dataset_name: str,
+        seed: int,
+        cv_folds: int | None,
+        hyperparameters: dict[str, object],
+        lr_scheduler: str,
+        environment: Mapping[str, str] | None = None,
+        extra_tags: Mapping[str, str] | None = None,
+    ) -> Iterator["OptunaTrialTracker"]:
+        active = mlflow.active_run()
+        if active is None:
+            raise RuntimeError(
+                "optuna_trial tracking logs into the caller's active MLflow run; "
+                "open the trial run (nested under the study) before training."
+            )
+        self.experiment_id = active.info.experiment_id
+        self.cv_folds = cv_folds
+        self.lr_scheduler = lr_scheduler
+        mlflow.set_tags(
+            _execution_tags(
+                dataset_name=dataset_name,
+                run_role="optuna_trial",
+                run_type="optuna_trial",
+                seed=seed,
+                cv_folds=cv_folds,
+                lr_scheduler=lr_scheduler,
+                environment=environment,
+                extra_tags=extra_tags,
+            )
+        )
+        _log_execution_params(hyperparameters, dataset_name, seed, cv_folds)
+        yield self
+
+    def log_artifact(self, path: str, artifact_path: str | None = None) -> None:
+        return None
+
+    def log_prepared_dataset(self, dataset: PreparedDataset) -> None:
+        return None
+
+    def finalize_cross_validation(
+        self,
+        records: Sequence[FoldTrackingRecord],
+        summary: CrossValidationSummary,
+        dataset: PreparedDataset,
+        artifact_paths: TrackingArtifactPaths,
+    ) -> None:
+        _log_summary_metrics(summary)
+
+    def log_single_split_record(self, record: FoldTrackingRecord) -> None:
+        # Only the step-less final metrics and timings, not the epoch histories.
+        for event in record.metric_events:
+            if event.step is None:
+                mlflow.log_metric(event.key, event.value)
+        timings = fold_timings_for_tracking(record)
+        if "total_seconds" in timings:
+            mlflow.log_metric(TRAINING_SECONDS_KEY, timings["total_seconds"])
+
+
+def _execution_tags(
+    *,
+    dataset_name: str,
+    run_role: str,
+    run_type: str,
+    seed: int,
+    cv_folds: int | None,
+    lr_scheduler: str,
+    environment: Mapping[str, str] | None,
+    extra_tags: Mapping[str, str] | None,
+) -> dict[str, str]:
+    return build_run_tags(
+        dataset_name=dataset_name,
+        run_type=run_type,
+        seed=seed,
+        cv_folds=cv_folds,
+        extra={
+            "run_role": run_role,
+            "dataset_variant": dataset_name,
+            "missingness_percent": parse_missingness_percent(dataset_name),
+            "evaluation_mode": (
+                "cross_validation" if cv_folds is not None else "single_split"
+            ),
+            # A tag rather than only a param so runs can be filtered and grouped
+            # by schedule in the comparison table; see ADR 0003.
+            LR_SCHEDULER_TAG: lr_scheduler,
+            # Hardware and library descriptors (device, gpu_name, ...) so
+            # the ``time/`` metrics are only compared within one environment.
+            **(environment or {}),
+            **(extra_tags or {}),
+        },
+    )
+
+
+def _log_execution_params(
+    hyperparameters: dict[str, object], dataset_name: str, seed: int, cv_folds: int | None
+) -> None:
+    mlflow.log_params(hyperparameters)
+    mlflow.log_param("dataset_name", dataset_name)
+    mlflow.log_param("seed", seed)
+    if cv_folds is not None:
+        mlflow.log_param("cv_folds", cv_folds)
+
+
+def _log_summary_metrics(summary: CrossValidationSummary) -> None:
+    """Log the final CV statistics and timings; shared by parents and trials."""
+    for metric_name, statistics in summary.metrics.items():
+        mlflow.log_metrics(_summary_metrics(f"cv/test/{metric_name}", statistics))
+
+    for timing_name, statistics in summary.timings.items():
+        mlflow.log_metrics(_summary_metrics(f"cv/time/{timing_name}", statistics))
+    if "total_seconds" in summary.timings:
+        # One mode-independent column: the same key a single-split parent
+        # logs, here as the sum of every fold's total.
+        total = summary.timings["total_seconds"]
+        mlflow.log_metric(TRAINING_SECONDS_KEY, float(total.mean) * int(total.fold_count))
+
+
 def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]:
     return {
         f"{prefix}/mean": float(statistics.mean),
@@ -255,6 +369,12 @@ def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]
     }
 
 
-def create_tracker(enabled: bool):
+def create_tracker(enabled: bool, run_role: str = "parent"):
     """Return an MLflow-backed tracker only when tracking has been requested."""
-    return MlflowTracker() if enabled else DisabledTracker()
+    if not enabled:
+        return DisabledTracker()
+    if run_role == "optuna_trial":
+        return OptunaTrialTracker()
+    if run_role == "parent":
+        return MlflowTracker()
+    raise ValueError(f"Unknown tracking run role {run_role!r}")

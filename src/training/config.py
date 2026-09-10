@@ -49,6 +49,9 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
             output_dir=Path(getattr(args, "output_dir", "results")),
             metrics_dir=Path(getattr(args, "metrics_dir", "metrics")),
             tracking_enabled=not getattr(args, "disable_mlflow", False),
+            # Programmatic only (set by opt.py), like ``hyperparams_override``.
+            tracking_run_role=getattr(args, "mlflow_run_role", None) or "parent",
+            tracking_tags=dict(getattr(args, "mlflow_tags", None) or {}),
         ),
         seed=getattr(args, "seed", 42),
         cv_folds=getattr(args, "cv_folds", None),

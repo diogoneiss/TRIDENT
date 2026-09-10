@@ -7,8 +7,14 @@ from mlflow.tracking import MlflowClient
 import pandas as pd
 import pytest
 
+from src.mlflow_utils import get_or_create_experiment, setup_mlflow
 from src.training.summary import summarize_cross_validation
-from src.training.tracking import create_tracker
+from src.training.tracking import (
+    DisabledTracker,
+    MlflowTracker,
+    OptunaTrialTracker,
+    create_tracker,
+)
 from src.training.types import FoldResult, PreparedDataset, TrackingArtifactPaths
 
 
@@ -469,3 +475,154 @@ def test_disabled_tracker_buffers_records_without_creating_mlflow_runs(
     assert records[0].artifacts[0].path.name == "fold_1.txt"
     client = MlflowClient(tracking_uri=mlflow_backend)
     assert client.get_experiment_by_name("TRIDENT/vehicle") is None
+
+
+def test_create_tracker_selects_the_tracker_by_role() -> None:
+    assert isinstance(create_tracker(enabled=False), DisabledTracker)
+    assert isinstance(create_tracker(enabled=False, run_role="optuna_trial"), DisabledTracker)
+    assert type(create_tracker(enabled=True)) is MlflowTracker
+    assert type(create_tracker(enabled=True, run_role="optuna_trial")) is OptunaTrialTracker
+    with pytest.raises(ValueError, match="run role"):
+        create_tracker(enabled=True, run_role="child")
+
+
+def test_optuna_trial_tracker_requires_an_active_run(mlflow_backend) -> None:
+    tracker = create_tracker(enabled=True, run_role="optuna_trial")
+
+    with pytest.raises(RuntimeError, match="active MLflow run"):
+        with tracker.parent_run(
+            dataset_name="vehicle_00nan",
+            seed=42,
+            cv_folds=2,
+            hyperparameters={},
+            lr_scheduler="cosine_legacy",
+        ):
+            pass
+
+
+def _study_and_trial_runs(experiment_id: str):
+    study = mlflow.start_run(experiment_id=experiment_id, run_name="optuna_study")
+    trial = mlflow.start_run(
+        experiment_id=experiment_id,
+        run_name="optuna_trial_0",
+        tags={"trial_number": "0"},
+        nested=True,
+    )
+    return study, trial
+
+
+def test_optuna_trial_tracker_logs_a_light_record_into_the_active_trial_run(
+    tmp_path, mlflow_backend
+) -> None:
+    setup_mlflow()
+    experiment_id = get_or_create_experiment("vehicle_00nan")
+    tracker = create_tracker(enabled=True, run_role="optuna_trial")
+    study, trial = _study_and_trial_runs(experiment_id)
+    try:
+        with tracker.parent_run(
+            dataset_name="vehicle_00nan",
+            seed=42,
+            cv_folds=2,
+            hyperparameters={"DIM": 16},
+            lr_scheduler="cosine",
+            environment=_ENVIRONMENT,
+            extra_tags={"custom": "x"},
+        ) as active_tracker:
+            records = [
+                _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),
+                _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.8),
+            ]
+            active_tracker.log_artifact(str(tmp_path / "fold_1.txt"), artifact_path="parameters")
+            active_tracker.finalize_cross_validation(
+                records,
+                summarize_cross_validation(records),
+                _dataset(tmp_path),
+                _artifact_paths(tmp_path),
+            )
+        # The tracker leaves the caller's trial run open.
+        assert mlflow.active_run().info.run_id == trial.info.run_id
+    finally:
+        mlflow.end_run()
+        mlflow.end_run()
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    runs = _experiment_runs(client)
+    assert {run.info.run_name for run in runs} == {"optuna_study", "optuna_trial_0"}
+    trial_run = client.get_run(trial.info.run_id)
+    tags = trial_run.data.tags
+    assert tags["mlflow.parentRunId"] == study.info.run_id
+    assert tags["run_role"] == "optuna_trial"
+    assert tags["run_type"] == "optuna_trial"
+    assert tags["trial_number"] == "0"
+    assert tags["custom"] == "x"
+    assert tags["dataset_variant"] == "vehicle_00nan"
+    assert tags["evaluation_mode"] == "cross_validation"
+    assert tags["lr_scheduler"] == "cosine"
+    assert {key: tags[key] for key in _ENVIRONMENT} == _ENVIRONMENT
+    assert trial_run.data.params == {
+        "DIM": "16",
+        "dataset_name": "vehicle_00nan",
+        "seed": "42",
+        "cv_folds": "2",
+    }
+    metrics = trial_run.data.metrics
+    assert metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
+    assert metrics["cv/test/loss/mean"] == pytest.approx(0.2)
+    assert metrics["cv/time/total_seconds/mean"] == pytest.approx(22.5)
+    assert metrics["time/training_seconds"] == pytest.approx(45.0)
+    assert not any(key.startswith(("cv/pretrain/", "cv/finetune/")) for key in metrics)
+    assert _artifact_files(client, trial.info.run_id) == set()
+    assert list(trial_run.inputs.dataset_inputs) == []
+    assert client.get_run(study.info.run_id).data.metrics == {}
+
+
+def test_optuna_trial_tracker_replays_only_final_single_split_metrics(
+    tmp_path, mlflow_backend
+) -> None:
+    setup_mlflow()
+    experiment_id = get_or_create_experiment("vehicle_00nan")
+    tracker = create_tracker(enabled=True, run_role="optuna_trial")
+    artifact = tmp_path / "single_split.txt"
+    artifact.write_text("single split")
+    _, trial = _study_and_trial_runs(experiment_id)
+    try:
+        with tracker.parent_run(
+            dataset_name="vehicle_00nan",
+            seed=42,
+            cv_folds=None,
+            hyperparameters={},
+            lr_scheduler="cosine_legacy",
+        ) as active_tracker:
+            with active_tracker.fold_run(
+                fold=1, cv_folds=None, dataset_name="vehicle_00nan"
+            ) as fold_tracker:
+                fold_tracker.log_metrics({"pretrain/train_loss": 1.0}, step=7)
+                fold_tracker.log_metrics({"test/f1_macro": 0.4})
+                fold_tracker.log_metrics(
+                    {
+                        "time/pretrain_seconds": 2.0,
+                        "time/finetune_seconds": 1.0,
+                        "time/total_seconds": 3.0,
+                    }
+                )
+                fold_tracker.log_artifact(str(artifact), artifact_path="diagnostics")
+            active_tracker.log_single_split_record(
+                fold_tracker.to_record(
+                    FoldResult("single_split", "vehicle_00nan", {"f1_macro": 0.4})
+                )
+            )
+    finally:
+        mlflow.end_run()
+        mlflow.end_run()
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    trial_run = client.get_run(trial.info.run_id)
+    assert trial_run.data.tags["evaluation_mode"] == "single_split"
+    assert trial_run.data.metrics == {
+        "test/f1_macro": pytest.approx(0.4),
+        "time/pretrain_seconds": pytest.approx(2.0),
+        "time/finetune_seconds": pytest.approx(1.0),
+        "time/total_seconds": pytest.approx(3.0),
+        "time/training_seconds": pytest.approx(3.0),
+    }
+    assert _artifact_files(client, trial.info.run_id) == set()

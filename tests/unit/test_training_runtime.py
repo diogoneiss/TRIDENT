@@ -166,7 +166,9 @@ def _stub_training_runtime(monkeypatch, tmp_path, cv_folds: int | None):
 
     monkeypatch.setattr(runner, "prepare_dataset", lambda spec: dataset)
     monkeypatch.setattr(runner, "build_folds", lambda *args: folds)
-    monkeypatch.setattr(runner, "create_tracker", lambda enabled: fake_tracker)
+    monkeypatch.setattr(
+        runner, "create_tracker", lambda enabled, run_role="parent": fake_tracker
+    )
     monkeypatch.setattr(runner, "runtime_environment_tags", lambda device: dict(_ENVIRONMENT))
     monkeypatch.setattr(runner, "train_pretrainer", train_pretrainer)
     monkeypatch.setattr(runner, "train_and_evaluate_classifier", train_classifier)
@@ -278,6 +280,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         },
         "lr_scheduler": "cosine_legacy",
         "environment": _ENVIRONMENT,
+        "extra_tags": {},
     }
     assert fake_tracker.fold_tracker_ids == pretraining_tracker_ids
     assert fake_tracker.fold_tracker_ids == finetuning_tracker_ids

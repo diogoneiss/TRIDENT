@@ -15,6 +15,7 @@ before anyone touches them, because they change published results.
 | ~~B1~~ | ~~Learning-rate schedule completes a full cosine cycle~~ — fixed, see below | High | Yes |
 | B2 | `--cv_folds 1` crashes with `ZeroDivisionError` | Medium | No |
 | B3 | Optuna proposes head counts that crash, scored as 0.0 | Medium | No |
+| ~~B4~~ | ~~Optuna with MLflow enabled scored every trial 0.0~~ — fixed, see below | High | No |
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
 | C2 | `"nan"` is a real category next to `[NULL]` | Low today | Yes |
 | C3 | `LABELS` hyperparameter is logged but never used | Low | No |
@@ -100,6 +101,24 @@ have nothing to do with model quality, and roughly 18% of the grid is wasted.
 Suggested fix: constrain the search space so `HEADS` divides `DIM`, or raise
 `optuna.TrialPruned` for invalid combinations so they are not scored. Separately,
 consider narrowing the bare `except Exception` so genuine crashes stay visible.
+
+### B4. Optuna with MLflow enabled scored every trial 0.0
+
+**Fixed 2026-09-09.** Each trial opened a nested MLflow run and then called the
+trainer, whose tracker called `mlflow.start_run` without `nested=True`. MLflow
+raises `Run with UUID ... is already active` for that, the trial's bare
+`except Exception` swallowed it, and the trial returned 0.0, so a study with
+tracking on was a study of zeros. The store held no Optuna runs, consistent with
+this never having worked since the training refactor.
+
+The runner now takes a tracking role: `opt.py` sets `mlflow_run_role =
+"optuna_trial"` and the runner logs a lightweight record into the trial run the
+objective already has open (`src/training/tracking.py`, `OptunaTrialTracker`),
+instead of opening a second top-level run. Trials carry parameters, the
+structured tags and final metrics only; the winning trial is tagged
+`best_trial = true` after the study, and `--retrain_best` produces a normal
+parent run tagged `optuna_study_run_id`. Covered by
+`tests/unit/test_opt_tracking.py`.
 
 ---
 
@@ -267,6 +286,8 @@ already does with `create_tracker(enabled)`.
 
 - **B1**, the per-batch cosine schedule, via [ADR 0003](adr/0003-selectable-learning-rate-schedule.md)
   (selectable schedule, legacy default, MLflow tag plus backfill script).
+- **B4**, Optuna trials crashing on a second top-level MLflow run, via the
+  `optuna_trial` tracking role (see above).
 
 These came out of the same review and are done, in
 [ticket 0003](tickets/0003-training-loop-performance.md):
