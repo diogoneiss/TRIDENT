@@ -25,6 +25,27 @@ _LOSS_KEYS = (
     "finetune/val_loss",
 )
 
+# Step-less wall-clock events the runner logs once per fold. They are kept out
+# of ``FoldResult.metrics`` so the deterministic ``metrics.csv`` and the
+# regression fixture never see a non-deterministic number, and they are
+# summarized separately from the test metrics so the parent shows them under
+# ``cv/time/`` rather than ``cv/test/``.
+_TIMING_PREFIX = "time/"
+TIMING_METRIC_KEYS = (
+    f"{_TIMING_PREFIX}pretrain_seconds",
+    f"{_TIMING_PREFIX}finetune_seconds",
+    f"{_TIMING_PREFIX}total_seconds",
+)
+
+
+def stage_timing_metrics(pretraining_seconds: float, finetuning_seconds: float) -> dict[str, float]:
+    """Build the per-fold timing events from the two measured stage durations."""
+    return {
+        f"{_TIMING_PREFIX}pretrain_seconds": float(pretraining_seconds),
+        f"{_TIMING_PREFIX}finetune_seconds": float(finetuning_seconds),
+        f"{_TIMING_PREFIX}total_seconds": float(pretraining_seconds) + float(finetuning_seconds),
+    }
+
 
 def summarize_cross_validation(records: Sequence[FoldTrackingRecord]) -> CrossValidationSummary:
     """Aggregate completed CV folds into comparable final and loss statistics."""
@@ -42,6 +63,7 @@ def summarize_cross_validation(records: Sequence[FoldTrackingRecord]) -> CrossVa
         metrics=metrics,
         loss_bands=loss_bands,
         diagnostic_roles=_diagnostic_roles(records),
+        timings=_summarize_timings(records),
     )
 
 
@@ -58,6 +80,38 @@ def final_metrics_for_tracking(record: FoldTrackingRecord) -> dict[str, float | 
     if test_loss_events:
         metrics["loss"] = test_loss_events[0].value
     return metrics
+
+
+def fold_timings_for_tracking(record: FoldTrackingRecord) -> dict[str, float]:
+    """Return a fold's step-less stage timings keyed without the ``time/`` prefix."""
+    timings: dict[str, float] = {}
+    for key in TIMING_METRIC_KEYS:
+        events = [
+            event
+            for event in record.metric_events
+            if event.key == key and event.step is None
+        ]
+        if len(events) > 1:
+            raise ValueError(f"Each fold must include at most one step-less {key!r} event.")
+        if not events:
+            continue
+        value = events[0].value
+        if not _is_finite_number(value) or float(value) < 0:
+            raise ValueError(f"Timing {key!r} must be a finite, non-negative number.")
+        timings[key[len(_TIMING_PREFIX):]] = float(value)
+    return timings
+
+
+def _summarize_timings(records: Sequence[FoldTrackingRecord]) -> Mapping[str, MetricSummary]:
+    fold_timings = [fold_timings_for_tracking(record) for record in records]
+    expected_keys = set(fold_timings[0])
+    for timings in fold_timings[1:]:
+        if set(timings) != expected_keys:
+            raise ValueError("All folds must have the same timing keys.")
+    return {
+        key: _summarize_metric([timings[key] for timings in fold_timings])
+        for key in fold_timings[0]
+    }
 
 
 def _validate_final_metrics(

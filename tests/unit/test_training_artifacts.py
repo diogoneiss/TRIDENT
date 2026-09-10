@@ -59,6 +59,17 @@ def _summary() -> CrossValidationSummary:
             )
         },
         diagnostic_roles={1: "worst_fold", 2: "best_fold"},
+        timings={
+            "total_seconds": MetricSummary(
+                mean=np.float64(4.5),
+                ci95_lower=np.float64(-14.56),
+                ci95_upper=np.float64(23.56),
+                std=np.float64(2.12),
+                minimum=np.float64(3.0),
+                maximum=np.float64(6.0),
+                fold_count=np.int64(2),
+            ),
+        },
     )
 
 
@@ -74,7 +85,12 @@ def _record(
             "vehicle_00nan",
             {"accuracy": np.float64(0.5 + f1_macro / 2), "f1_macro": np.float64(f1_macro)},
         ),
-        metric_events=(LoggedMetric("test/loss", test_loss, None),),
+        metric_events=(
+            LoggedMetric("test/loss", test_loss, None),
+            LoggedMetric("time/pretrain_seconds", 2.0 * fold, None),
+            LoggedMetric("time/finetune_seconds", 1.0 * fold, None),
+            LoggedMetric("time/total_seconds", 3.0 * fold, None),
+        ),
         artifacts=artifacts,
     )
 
@@ -99,9 +115,14 @@ def test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_va
     assert summary["metrics"]["f1_macro"]["fold_count"] == 2
     assert summary["metrics"]["loss"]["mean"] == 0.3
     assert summary["loss_bands"]["finetune/val_loss"][0]["step"] == 0
+    assert summary["timings"]["total_seconds"]["mean"] == 4.5
+    assert summary["timings"]["total_seconds"]["fold_count"] == 2
 
     raw_fold_metrics = pd.read_csv(paths.raw_fold_metrics_csv)
     assert raw_fold_metrics["loss"].tolist() == [0.2, 0.4]
+    assert raw_fold_metrics["pretrain_seconds"].tolist() == [2.0, 4.0]
+    assert raw_fold_metrics["finetune_seconds"].tolist() == [1.0, 2.0]
+    assert raw_fold_metrics["total_seconds"].tolist() == [3.0, 6.0]
 
     provenance = json.loads(paths.provenance_json.read_text())
     assert provenance["source_path"].endswith("vehicle_00nan.csv")

@@ -3,7 +3,11 @@ from math import nan, sqrt
 
 import pytest
 
-from src.training.summary import summarize_cross_validation
+from src.training.summary import (
+    fold_timings_for_tracking,
+    stage_timing_metrics,
+    summarize_cross_validation,
+)
 from src.training.types import FoldResult, FoldTrackingRecord, LoggedMetric
 
 
@@ -23,8 +27,20 @@ def _record(fold: int, f1_macro: float) -> FoldTrackingRecord:
             LoggedMetric("finetune/train_loss", 3.0 + fold, 0),
             LoggedMetric("finetune/val_loss", 4.0 + fold, 0),
             LoggedMetric("test/loss", 0.1 * fold, None),
+            LoggedMetric("time/pretrain_seconds", 10.0 * fold, None),
+            LoggedMetric("time/finetune_seconds", 5.0 * fold, None),
+            LoggedMetric("time/total_seconds", 15.0 * fold, None),
         ),
         artifacts=(),
+    )
+
+
+def _without_timings(record: FoldTrackingRecord) -> FoldTrackingRecord:
+    return replace(
+        record,
+        metric_events=tuple(
+            event for event in record.metric_events if not event.key.startswith("time/")
+        ),
     )
 
 
@@ -40,6 +56,12 @@ def test_summarize_cross_validation_logs_statistics_and_loss_bands() -> None:
     assert stats.ci95_lower == pytest.approx(-1.94124094723494)
     assert stats.ci95_upper == pytest.approx(3.14124094723494)
     assert summary.metrics["loss"].mean == pytest.approx(0.15)
+    assert "pretrain_seconds" not in summary.metrics
+    assert set(summary.timings) == {"pretrain_seconds", "finetune_seconds", "total_seconds"}
+    assert summary.timings["total_seconds"].mean == pytest.approx(22.5)
+    assert summary.timings["total_seconds"].fold_count == 2
+    assert summary.timings["pretrain_seconds"].minimum == pytest.approx(10.0)
+    assert summary.timings["finetune_seconds"].maximum == pytest.approx(10.0)
     assert summary.diagnostic_roles == {1: "worst_fold", 2: "best_fold"}
     loss_band = summary.loss_bands["finetune/val_loss"][0]
     assert loss_band.mean == pytest.approx(5.5)
@@ -101,3 +123,66 @@ def test_summarize_cross_validation_rejects_mismatched_loss_epochs() -> None:
 
     with pytest.raises(ValueError, match="steps"):
         summarize_cross_validation([_record(1, 0.4), mismatched])
+
+
+def test_summarize_cross_validation_has_empty_timings_without_timing_events() -> None:
+    summary = summarize_cross_validation(
+        [_without_timings(_record(1, 0.4)), _without_timings(_record(2, 0.8))]
+    )
+
+    assert summary.timings == {}
+    assert summary.metrics["f1_macro"].mean == pytest.approx(0.6)
+
+
+def test_summarize_cross_validation_rejects_timings_missing_on_one_fold() -> None:
+    with pytest.raises(ValueError, match="timing keys"):
+        summarize_cross_validation([_record(1, 0.4), _without_timings(_record(2, 0.8))])
+
+
+def test_summarize_cross_validation_rejects_duplicate_timing_events() -> None:
+    duplicated = replace(
+        _record(2, 0.8),
+        metric_events=_record(2, 0.8).metric_events
+        + (LoggedMetric("time/total_seconds", 1.0, None),),
+    )
+
+    with pytest.raises(ValueError, match="at most one"):
+        summarize_cross_validation([_record(1, 0.4), duplicated])
+
+
+def test_summarize_cross_validation_rejects_negative_timing() -> None:
+    negative = replace(
+        _without_timings(_record(2, 0.8)),
+        metric_events=_without_timings(_record(2, 0.8)).metric_events
+        + (
+            LoggedMetric("time/pretrain_seconds", -1.0, None),
+            LoggedMetric("time/finetune_seconds", 1.0, None),
+            LoggedMetric("time/total_seconds", 0.0, None),
+        ),
+    )
+
+    with pytest.raises(ValueError, match="non-negative"):
+        summarize_cross_validation([_record(1, 0.4), negative])
+
+
+def test_fold_timings_for_tracking_ignores_stepped_timing_events() -> None:
+    record = replace(
+        _without_timings(_record(1, 0.4)),
+        metric_events=_without_timings(_record(1, 0.4)).metric_events
+        + (LoggedMetric("time/total_seconds", 9.0, 3),),
+    )
+
+    assert fold_timings_for_tracking(record) == {}
+    assert fold_timings_for_tracking(_record(2, 0.8)) == {
+        "pretrain_seconds": 20.0,
+        "finetune_seconds": 10.0,
+        "total_seconds": 30.0,
+    }
+
+
+def test_stage_timing_metrics_sums_the_two_stages() -> None:
+    assert stage_timing_metrics(2.0, 1.5) == {
+        "time/pretrain_seconds": 2.0,
+        "time/finetune_seconds": 1.5,
+        "time/total_seconds": 3.5,
+    }

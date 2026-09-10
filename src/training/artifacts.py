@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from .summary import final_metrics_for_tracking
+from .summary import final_metrics_for_tracking, fold_timings_for_tracking
 from .types import (
     CrossValidationSummary,
     FoldResult,
@@ -93,6 +93,9 @@ class ArtifactWriter:
                 "fold": record.result.fold,
                 "dataset": record.result.dataset_name,
                 **final_metrics_for_tracking(record),
+                # Every fold's timing is kept here for audit; MLflow only
+                # replays the best and worst folds as children.
+                **fold_timings_for_tracking(record),
             }
             for record in records
         ]
@@ -105,6 +108,7 @@ class ArtifactWriter:
             ),
             "formula": "mean ± t(0.975, n - 1) * sample_std / sqrt(n)",
             "metrics": summary.metrics,
+            "timings": summary.timings,
             "loss_bands": summary.loss_bands,
         }
         _write_json(paths.summary_json, summary_payload)

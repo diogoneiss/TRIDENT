@@ -53,6 +53,15 @@ standard deviation, observed minimum and maximum, and fold count. Loss series
 include only mean and internal CV bounds at each epoch.
 _Avoid_: aggregate run, average fold
 
+**Stage timing**:
+The wall-clock seconds one fold spent in pre-training or fine-tuning, measured
+in the runner around each stage call. It excludes data preparation, plotting,
+and artifact writes, and is only comparable between runs that share the same
+`device`, `gpu_name`, `torch_version`, and `cuda_version` tags. Timings are
+tracked metrics, never fold metrics, so they stay out of the regression
+fixture.
+_Avoid_: run duration, epoch time
+
 **Component-ablation benchmark**:
 A reproducible experimental protocol that estimates each selected TRIDENT
 component's contribution while holding the dataset, data split, seed schedule,

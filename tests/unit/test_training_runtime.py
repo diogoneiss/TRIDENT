@@ -91,6 +91,21 @@ class FakeTracker:
         self.single_split_record = record
 
 
+_ENVIRONMENT = {
+    "device": "cpu",
+    "gpu_name": "none",
+    "torch_version": "0.0.0",
+    "cuda_version": "none",
+}
+_TIMING_KEYS = {"time/pretrain_seconds", "time/finetune_seconds", "time/total_seconds"}
+
+
+def _timing_events(record: FoldTrackingRecord) -> dict[str, float]:
+    events = [event for event in record.metric_events if event.key in _TIMING_KEYS]
+    assert all(event.step is None for event in events)
+    return {event.key: event.value for event in events}
+
+
 def _stub_training_runtime(monkeypatch, tmp_path, cv_folds: int | None):
     import src.training.runner as runner
 
@@ -152,6 +167,7 @@ def _stub_training_runtime(monkeypatch, tmp_path, cv_folds: int | None):
     monkeypatch.setattr(runner, "prepare_dataset", lambda spec: dataset)
     monkeypatch.setattr(runner, "build_folds", lambda *args: folds)
     monkeypatch.setattr(runner, "create_tracker", lambda enabled: fake_tracker)
+    monkeypatch.setattr(runner, "runtime_environment_tags", lambda device: dict(_ENVIRONMENT))
     monkeypatch.setattr(runner, "train_pretrainer", train_pretrainer)
     monkeypatch.setattr(runner, "train_and_evaluate_classifier", train_classifier)
 
@@ -261,6 +277,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
             "LR_SCHEDULER": "cosine_legacy",
         },
         "lr_scheduler": "cosine_legacy",
+        "environment": _ENVIRONMENT,
     }
     assert fake_tracker.fold_tracker_ids == pretraining_tracker_ids
     assert fake_tracker.fold_tracker_ids == finetuning_tracker_ids
@@ -287,6 +304,19 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         1: "worst_fold",
         2: "best_fold",
     }
+    for record in fake_tracker.finalized_records:
+        timings = _timing_events(record)
+        assert set(timings) == _TIMING_KEYS
+        assert all(value >= 0 for value in timings.values())
+        assert timings["time/total_seconds"] == pytest.approx(
+            timings["time/pretrain_seconds"] + timings["time/finetune_seconds"]
+        )
+    assert set(fake_tracker.finalized_summary.timings) == {
+        "pretrain_seconds",
+        "finetune_seconds",
+        "total_seconds",
+    }
+    assert fake_tracker.finalized_summary.timings["total_seconds"].fold_count == 2
     assert fake_tracker.finalized_artifact_paths is not None
     assert all(
         path.exists()
@@ -300,8 +330,11 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
     results_dir = fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv.parents[1]
     raw_fold_metrics = pd.read_csv(fake_tracker.finalized_artifact_paths.raw_fold_metrics_csv)
     assert raw_fold_metrics["loss"].tolist() == [0.4, 0.2]
+    assert {"pretrain_seconds", "finetune_seconds", "total_seconds"} <= set(raw_fold_metrics.columns)
+    assert (raw_fold_metrics["total_seconds"] >= 0).all()
     summary_payload = json.loads(fake_tracker.finalized_artifact_paths.summary_json.read_text())
     assert summary_payload["metrics"]["loss"]["mean"] == pytest.approx(0.3)
+    assert summary_payload["timings"]["total_seconds"]["fold_count"] == 2
     assert set(fake_tracker.logged_artifacts) == {
         (results_dir / "hyperparameters.json", "parameters"),
         (results_dir / "metrics.csv", "metrics"),
@@ -313,6 +346,11 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
     assert result.fold_results[0].fold == 1
     assert result.fold_results[1].fold == 2
     assert all("loss" not in fold_result.metrics for fold_result in result.fold_results)
+    # Timing never enters the deterministic fold metrics or the Optuna return shape.
+    assert all(
+        not any(key.endswith("_seconds") for key in fold_result.metrics)
+        for fold_result in result.fold_results
+    )
     assert result.mean_metrics == {"accuracy": 0.55, "f1_macro": 0.45}
     assert fake_tracker.active is False
 
@@ -338,6 +376,8 @@ def test_runner_replays_single_split_into_parent_without_cv_artifacts_or_childre
     assert fake_tracker.finalized_records is None
     assert fake_tracker.single_split_record is not None
     assert fake_tracker.single_split_record.result is result.fold_results[0]
+    assert set(_timing_events(fake_tracker.single_split_record)) == _TIMING_KEYS
+    assert fake_tracker.parent_run_kwargs["environment"] == _ENVIRONMENT
     assert fake_tracker.lineage_datasets[0] is dataset
     assert {(path.name, artifact_path) for path, artifact_path in fake_tracker.logged_artifacts} == {
         ("hyperparameters.json", "parameters"),

@@ -1,6 +1,6 @@
 """Immutable values exchanged between the training workflow stages."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
@@ -175,6 +175,10 @@ class CrossValidationSummary:
     metrics: Mapping[str, MetricSummary]
     loss_bands: Mapping[str, Sequence[LossBand]]
     diagnostic_roles: Mapping[int, str]
+    # Wall-clock stage timings summarized across folds, keyed without the
+    # ``time/`` prefix (``pretrain_seconds``, ``finetune_seconds``,
+    # ``total_seconds``). Empty when the folds logged no timing events.
+    timings: Mapping[str, MetricSummary] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

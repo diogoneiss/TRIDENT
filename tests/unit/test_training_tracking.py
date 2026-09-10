@@ -56,6 +56,17 @@ _PARENT_METRIC_KEYS = {
     "cv/finetune/val_loss/mean",
     "cv/finetune/val_loss/ci95_lower",
     "cv/finetune/val_loss/ci95_upper",
+} | {
+    f"cv/time/{name}/{statistic}"
+    for name in ("pretrain_seconds", "finetune_seconds", "total_seconds")
+    for statistic in ("mean", "ci95_lower", "ci95_upper", "std", "min", "max", "fold_count")
+} | {"time/training_seconds"}
+
+_ENVIRONMENT = {
+    "device": "cuda",
+    "gpu_name": "Test GPU",
+    "torch_version": "2.5.1+cu121",
+    "cuda_version": "12.1",
 }
 
 _LOSS_HISTORY_KEYS = {
@@ -156,6 +167,13 @@ def _buffered_record(
                 "test/loss": 0.5 - f1_macro / 2,
             }
         )
+        fold_tracker.log_metrics(
+            {
+                "time/pretrain_seconds": 10.0 * fold,
+                "time/finetune_seconds": 5.0 * fold,
+                "time/total_seconds": 15.0 * fold,
+            }
+        )
         artifact = tmp_path / f"fold_{fold}.txt"
         artifact.write_text(f"fold {fold}")
         fold_tracker.log_artifact(str(artifact), artifact_path="diagnostics")
@@ -192,7 +210,12 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     artifact_paths = _artifact_paths(tmp_path)
 
     with tracker.parent_run(
-        dataset_name="vehicle_00nan", seed=42, cv_folds=3, hyperparameters={}, lr_scheduler="cosine"
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=3,
+        hyperparameters={},
+        lr_scheduler="cosine",
+        environment=_ENVIRONMENT,
     ) as active_tracker:
         records = [
             _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4, cv_folds=3),
@@ -215,11 +238,17 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     assert parent.data.tags["missingness_percent"] == "0"
     assert parent.data.tags["evaluation_mode"] == "cross_validation"
     assert parent.data.tags["lr_scheduler"] == "cosine"
+    assert {key: parent.data.tags[key] for key in _ENVIRONMENT} == _ENVIRONMENT
     assert set(parent.data.metrics) == _PARENT_METRIC_KEYS
     assert parent.data.metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
     assert parent.data.metrics["cv/test/f1_macro/fold_count"] == 3.0
     assert parent.data.metrics["cv/test/loss/mean"] == pytest.approx(0.2)
     assert parent.data.metrics["cv/finetune/val_loss/mean"] == pytest.approx(6.0)
+    assert parent.data.metrics["cv/time/total_seconds/mean"] == pytest.approx(30.0)
+    assert parent.data.metrics["cv/time/pretrain_seconds/min"] == pytest.approx(10.0)
+    assert parent.data.metrics["cv/time/finetune_seconds/max"] == pytest.approx(15.0)
+    assert parent.data.metrics["cv/time/total_seconds/fold_count"] == 3.0
+    assert parent.data.metrics["time/training_seconds"] == pytest.approx(90.0)
     for metric_name in _LOSS_HISTORY_KEYS:
         loss_history = client.get_metric_history(parent.info.run_id, metric_name)
         assert [metric.step for metric in loss_history] == [7]
@@ -250,6 +279,9 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
         "test/accuracy": (0, 0.7),
         "test/f1_macro": (0, 0.4),
         "test/loss": (0, 0.3),
+        "time/pretrain_seconds": (0, 10.0),
+        "time/finetune_seconds": (0, 5.0),
+        "time/total_seconds": (0, 15.0),
     }
     assert set(child_by_fold["1"].data.metrics) == set(expected_worst_history)
     for metric_name, (expected_step, expected_value) in expected_worst_history.items():
@@ -313,6 +345,13 @@ def test_log_single_split_record_replays_into_parent_without_a_child(
         ) as fold_tracker:
             fold_tracker.log_metrics({"pretrain/train_loss": 1.0}, step=7)
             fold_tracker.log_metrics({"test/f1_macro": 0.4})
+            fold_tracker.log_metrics(
+                {
+                    "time/pretrain_seconds": 2.0,
+                    "time/finetune_seconds": 1.0,
+                    "time/total_seconds": 3.0,
+                }
+            )
             fold_tracker.log_artifact(str(artifact), artifact_path="diagnostics")
         active_tracker.log_single_split_record(
             fold_tracker.to_record(
@@ -328,7 +367,11 @@ def test_log_single_split_record_replays_into_parent_without_a_child(
     assert parent.data.tags["run_role"] == "parent"
     assert parent.data.tags["evaluation_mode"] == "single_split"
     assert parent.data.tags["lr_scheduler"] == "warmup_cosine"
+    assert "device" not in parent.data.tags
     assert parent.data.metrics["test/f1_macro"] == pytest.approx(0.4)
+    assert parent.data.metrics["time/total_seconds"] == pytest.approx(3.0)
+    assert parent.data.metrics["time/training_seconds"] == pytest.approx(3.0)
+    assert not any(key.startswith("cv/") for key in parent.data.metrics)
     history = client.get_metric_history(parent.info.run_id, "pretrain/train_loss")
     assert [(metric.step, metric.value) for metric in history] == [(7, 1.0)]
     assert _artifact_files(client, parent.info.run_id) == {

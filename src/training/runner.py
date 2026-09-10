@@ -1,14 +1,17 @@
 """Typed orchestration for TRIDENT training."""
 
+import time
+
 import torch
 
 from src.utils import set_global_seed
 
 from .artifacts import ArtifactWriter
 from .data import build_folds, prepare_dataset
+from .environment import runtime_environment_tags
 from .finetuning import train_and_evaluate_classifier
 from .pretraining import train_pretrainer
-from .summary import compute_cv_summary, summarize_cross_validation
+from .summary import compute_cv_summary, stage_timing_metrics, summarize_cross_validation
 from .tracking import create_tracker
 from .types import FoldResult, TrainingRequest, TrainingResult
 
@@ -49,6 +52,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         cv_folds=request.cv_folds,
         hyperparameters=_mlflow_hyperparameters(request),
         lr_scheduler=request.hyperparameters.lr_scheduler,
+        environment=runtime_environment_tags(device),
     ) as active_tracker:
         for ordinal, fold in enumerate(folds, start=1):
             if request.cv_folds is not None:
@@ -56,9 +60,12 @@ def run_training(request: TrainingRequest) -> TrainingResult:
             with active_tracker.fold_run(
                 fold=ordinal, cv_folds=request.cv_folds, dataset_name=request.dataset.dataset_name
             ) as fold_tracker:
+                pretraining_started = time.perf_counter()
                 pretraining = train_pretrainer(
                     dataset, fold, request.hyperparameters, device, fold_tracker
                 )
+                pretraining_seconds = time.perf_counter() - pretraining_started
+                finetuning_started = time.perf_counter()
                 finetuning = train_and_evaluate_classifier(
                     dataset,
                     fold,
@@ -66,6 +73,13 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     request.hyperparameters,
                     device,
                     fold_tracker,
+                )
+                finetuning_seconds = time.perf_counter() - finetuning_started
+                # Both stages end with host-side ``.item()`` reads, so GPU work
+                # has drained when the clock is read. Logged before plots and
+                # model saving so the timing covers training only.
+                fold_tracker.log_metrics(
+                    stage_timing_metrics(pretraining_seconds, finetuning_seconds)
                 )
                 if request.plot_losses:
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""

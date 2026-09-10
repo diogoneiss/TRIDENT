@@ -15,15 +15,20 @@ from src.mlflow_utils import (
     parse_missingness_percent,
     setup_mlflow,
 )
+from src.training.summary import fold_timings_for_tracking
 from src.training.types import (
     CrossValidationSummary,
     FoldResult,
     FoldTrackingRecord,
     LoggedArtifact,
     LoggedMetric,
+    MetricSummary,
     PreparedDataset,
     TrackingArtifactPaths,
 )
+
+# Total training wall-clock for one parent run, whatever its evaluation mode.
+TRAINING_SECONDS_KEY = "time/training_seconds"
 
 
 class BufferedFoldTracker:
@@ -95,6 +100,7 @@ class MlflowTracker:
         cv_folds: int | None,
         hyperparameters: dict[str, object],
         lr_scheduler: str,
+        environment: Mapping[str, str] | None = None,
     ) -> Iterator["MlflowTracker"]:
         setup_mlflow()
         self.experiment_id = get_or_create_experiment(dataset_name)
@@ -116,6 +122,9 @@ class MlflowTracker:
                 # A tag rather than only a param so runs can be filtered and grouped
                 # by schedule in the comparison table; see ADR 0003.
                 LR_SCHEDULER_TAG: lr_scheduler,
+                # Hardware and library descriptors (device, gpu_name, ...) so
+                # the ``time/`` metrics are only compared within one environment.
+                **(environment or {}),
             },
         )
         with mlflow.start_run(
@@ -163,6 +172,9 @@ class MlflowTracker:
 
     def log_single_split_record(self, record: FoldTrackingRecord) -> None:
         self._replay_record(record)
+        timings = fold_timings_for_tracking(record)
+        if "total_seconds" in timings:
+            mlflow.log_metric(TRAINING_SECONDS_KEY, timings["total_seconds"])
 
     def _log_parent_summary(
         self,
@@ -170,17 +182,16 @@ class MlflowTracker:
         artifact_paths: TrackingArtifactPaths,
     ) -> None:
         for metric_name, statistics in summary.metrics.items():
-            prefix = f"cv/test/{metric_name}"
-            mlflow.log_metrics(
-                {
-                    f"{prefix}/mean": float(statistics.mean),
-                    f"{prefix}/ci95_lower": float(statistics.ci95_lower),
-                    f"{prefix}/ci95_upper": float(statistics.ci95_upper),
-                    f"{prefix}/std": float(statistics.std),
-                    f"{prefix}/min": float(statistics.minimum),
-                    f"{prefix}/max": float(statistics.maximum),
-                    f"{prefix}/fold_count": float(statistics.fold_count),
-                }
+            mlflow.log_metrics(_summary_metrics(f"cv/test/{metric_name}", statistics))
+
+        for timing_name, statistics in summary.timings.items():
+            mlflow.log_metrics(_summary_metrics(f"cv/time/{timing_name}", statistics))
+        if "total_seconds" in summary.timings:
+            # One mode-independent column: the same key a single-split parent
+            # logs, here as the sum of every fold's total.
+            total = summary.timings["total_seconds"]
+            mlflow.log_metric(
+                TRAINING_SECONDS_KEY, float(total.mean) * int(total.fold_count)
             )
 
         for loss_name, bands in summary.loss_bands.items():
@@ -230,6 +241,18 @@ class MlflowTracker:
             mlflow.log_metric(event.key, event.value, step=event.step)
         for artifact in record.artifacts:
             mlflow.log_artifact(str(artifact.path), artifact_path=artifact.artifact_path)
+
+
+def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]:
+    return {
+        f"{prefix}/mean": float(statistics.mean),
+        f"{prefix}/ci95_lower": float(statistics.ci95_lower),
+        f"{prefix}/ci95_upper": float(statistics.ci95_upper),
+        f"{prefix}/std": float(statistics.std),
+        f"{prefix}/min": float(statistics.minimum),
+        f"{prefix}/max": float(statistics.maximum),
+        f"{prefix}/fold_count": float(statistics.fold_count),
+    }
 
 
 def create_tracker(enabled: bool):

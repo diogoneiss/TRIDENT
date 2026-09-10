@@ -305,6 +305,8 @@ A predefined single split is one top-level `parent` run with its raw histories, 
 
 Diagnostic children also log `pretrain/learning_rate` and `finetune/learning_rate` per epoch so the schedule that actually ran can be inspected.
 
+Every fold records wall-clock stage timings as step-less metrics: `time/pretrain_seconds`, `time/finetune_seconds`, and `time/total_seconds` (their sum). They cover the two training stages only, not data preparation, plotting, or artifact writes. A cross-validation parent summarizes them as `cv/time/<name>/{mean,ci95_lower,ci95_upper,std,min,max,fold_count}` and logs `time/training_seconds`, the sum over folds; a single-split parent carries the raw `time/*` values and the same `time/training_seconds`, so one column sorts every parent by training cost. `metrics/raw_fold_metrics.csv` and `metrics/cv_summary.json` keep every fold's timing, not only the replayed diagnostic children. Timings never enter `metrics.csv` or the regression fixture. Every parent is tagged `device`, `gpu_name`, `torch_version`, and `cuda_version`; compare timings only between runs that share them.
+
 The tracking layout is specified in [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md). Deployable logged-model lifecycle work is intentionally deferred to [Ticket 0002](docs/tickets/0002-mlflow-logged-model-lifecycle.md).
 
 ## Example Workflows
