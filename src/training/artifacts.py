@@ -4,7 +4,7 @@ import json
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -201,11 +201,146 @@ class ArtifactWriter:
         plt.close()
         return path
 
+    def write_imputation_preview(
+        self,
+        name: str,
+        scored_cells: pd.DataFrame,
+        seed: int,
+        fold: int,
+        sample_rows: int = 10,
+        scaler: object = None,
+        numerical_columns: Sequence[str] = (),
+    ) -> tuple[Path, Path]:
+        """A readable sample of what the model filled in, and the full record behind it.
+
+        One sample draw feeds both files, so the preview can never show a row the ledger
+        marks as unshown. The preview is for a person, so its numbers are in original
+        units; the ledger keeps the scaled values the scoring used as well.
+        """
+        directory = self.results_dir / "imputation"
+        directory.mkdir(parents=True, exist_ok=True)
+
+        rows = sorted(scored_cells["row"].unique())
+        generator = np.random.default_rng((seed * 1_000_003 + fold) % (2**32))
+        chosen = set(
+            generator.choice(rows, size=min(sample_rows, len(rows)), replace=False).tolist()
+        )
+
+        ledger = scored_cells.copy()
+        ledger["in_preview"] = ledger["row"].isin(chosen)
+        ledger["actual_original_units"] = _to_original_units(
+            ledger, "actual", scaler, numerical_columns
+        )
+        ledger["imputed_original_units"] = _to_original_units(
+            ledger, "imputed", scaler, numerical_columns
+        )
+        ledger_path = directory / f"{name}_cells.csv"
+        ledger.to_csv(ledger_path, index=False)
+
+        preview_path = directory / f"{name}_preview.md"
+        preview_path.write_text(
+            _render_preview(ledger[ledger["in_preview"]], self.dataset_name), encoding="utf-8"
+        )
+        return preview_path, ledger_path
+
+    def write_per_column_imputation(
+        self, per_fold: Mapping[int | str, Mapping[str, pd.DataFrame]]
+    ) -> Path:
+        """Every fold's per-column errors in one long-form table on the parent run.
+
+        Pooled metrics rank a fold; this says which column a poor one struggled with. It
+        is an artifact rather than tracked metrics because a 57-column table would
+        otherwise add hundreds of series per fold to the store.
+        """
+        rows = [
+            {"fold": fold, "population": population, **record}
+            for fold, populations in per_fold.items()
+            for population, table in populations.items()
+            for record in table.to_dict("records")
+        ]
+        path = self.results_dir / "metrics" / "per_column_imputation.csv"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        pd.DataFrame(
+            rows, columns=["fold", "population", "column", "metric", "value"]
+        ).to_csv(path, index=False)
+        return path
+
     def save_model(self, name: str, model: object) -> Path:
         path = self.results_dir / name
         torch.save(model, path)
         print(f"Final model saved to: {path}")
         return path
+
+
+def _to_original_units(
+    ledger: pd.DataFrame, column: str, scaler: object, numerical_columns: Sequence[str]
+) -> list:
+    """Numbers as a person would recognise them; categories are already readable."""
+    values = []
+    order = list(numerical_columns)
+    for _, cell in ledger.iterrows():
+        if cell["kind"] != "numerical" or scaler is None or cell["column"] not in order:
+            values.append(cell[column])
+            continue
+        # inverse_transform wants a whole row, so undo this one column by hand.
+        index = order.index(cell["column"])
+        values.append(
+            float(cell[column]) * float(scaler.scale_[index]) + float(scaler.mean_[index])
+        )
+    return values
+
+
+# How many cells of one row share a table before it stops being readable.
+_PREVIEW_WIDTH = 6
+
+
+def _render_preview(previewed: pd.DataFrame, dataset_name: str) -> str:
+    """Each sampled row as three lines: what was true, what the model saw, what it said."""
+    lines = [
+        f"# Imputation preview: {dataset_name}",
+        "",
+        "One block per sampled row. `model saw` distinguishes a cell hidden for scoring",
+        "from one the dataset was already missing. Values are in original units.",
+        "",
+    ]
+    if previewed.empty:
+        lines.append("_No cells were scored._")
+        return "\n".join(lines) + "\n"
+
+    for row, cells in previewed.groupby("row", sort=True):
+        lines.append(f"**row {row}** -- {len(cells)} cell(s) filled in")
+        lines.append("")
+        # A row can have a dozen cells filled in, and one table that wide reads as noise,
+        # so it is split into blocks a reader can take in at a glance.
+        for start in range(0, len(cells), _PREVIEW_WIDTH):
+            block = cells.iloc[start : start + _PREVIEW_WIDTH]
+            lines.append("| | " + " | ".join(block["column"]) + " |")
+            lines.append("|---|" + "---|" * len(block))
+            lines.append(
+                "| actual | "
+                + " | ".join(_show(value) for value in block["actual_original_units"])
+                + " |"
+            )
+            lines.append(
+                "| model saw | "
+                + " | ".join(
+                    "[NULL]->[MASK]" if population.startswith("induced") else "[MASK]"
+                    for population in block["population"]
+                )
+                + " |"
+            )
+            lines.append(
+                "| imputed | "
+                + " | ".join(_show(value) for value in block["imputed_original_units"])
+                + " |"
+            )
+            lines.append("")
+    return "\n".join(lines) + "\n"
+
+
+def _show(value: object, width: int = 18) -> str:
+    text = f"{value:.4g}" if isinstance(value, float) else str(value)
+    return text if len(text) <= width else text[: width - 2] + ".."
 
 
 def _write_json(path: Path, payload: object) -> None:

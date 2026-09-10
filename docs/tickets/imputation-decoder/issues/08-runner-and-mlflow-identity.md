@@ -47,3 +47,8 @@ metric.
 - 2026-09-10 (from ticket 06): the **classification guard** moved here. A test that
   `run_training` with the default task never constructs a `TridentDecoder` is only
   meaningful once this ticket adds the task dispatch; before that it passes vacuously.
+
+- 2026-09-10 (from ticket 07): `ArtifactWriter.write_hyperparameters` writes a fixed
+  classification key set, so an imputation run's `hyperparameters.json` would claim
+  `EPOCH_FINE` and `LABELS`, the same trap `logged_hyperparameters` avoids for MLflow
+  params. Give it the task (or the request) here.
