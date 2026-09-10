@@ -564,6 +564,7 @@ def test_optuna_trial_tracker_logs_a_light_record_into_the_active_trial_run(
         "dataset_name": "vehicle_00nan",
         "seed": "42",
         "cv_folds": "2",
+        "task": "classification",
     }
     metrics = trial_run.data.metrics
     assert metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
@@ -626,3 +627,42 @@ def test_optuna_trial_tracker_replays_only_final_single_split_metrics(
         "time/training_seconds": pytest.approx(3.0),
     }
     assert _artifact_files(client, trial.info.run_id) == set()
+
+
+def test_every_run_says_which_task_it_trained_and_whether_a_search_made_it(
+    tmp_path, mlflow_backend
+) -> None:
+    """Both tags sit on every run kind, so either can be filtered on safely.
+
+    A tag present on parents but missing from diagnostic children cannot be used to
+    exclude anything, which is how `run_type` ended up on 90 of 251 stored runs.
+    """
+    tracker = create_tracker(enabled=True)
+    dataset = _dataset(tmp_path)
+
+    with tracker.parent_run(
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=2,
+        hyperparameters={},
+        lr_scheduler="cosine",
+        environment=_ENVIRONMENT,
+        task="imputation",
+    ) as active_tracker:
+        records = [
+            _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4, cv_folds=2),
+            _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.6, cv_folds=2),
+        ]
+        active_tracker.finalize_cross_validation(
+            records, summarize_cross_validation(records), dataset, _artifact_paths(tmp_path)
+        )
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    runs = _experiment_runs(client)
+    assert len(runs) == 3  # one parent, two diagnostic children
+    for run in runs:
+        assert run.data.tags["task"] == "imputation"
+        assert run.data.tags["is_optuna"] == "false"
+    parent = next(run for run in runs if "mlflow.parentRunId" not in run.data.tags)
+    assert parent.data.tags["mlflow.runName"].startswith("impute_vehicle_00nan_")
+    assert parent.data.params["task"] == "imputation"

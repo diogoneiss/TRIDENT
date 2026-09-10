@@ -25,7 +25,10 @@ def _format_duration(seconds: float) -> str:
 def run_all(args) -> None:
     """Run training sequentially on every discovered dataset."""
     from src.training.discovery import discover_datasets
+    from src.training.types import task_spec
 
+    # The batch table reports whatever this task ranks by, not always macro F1.
+    task = task_spec(getattr(args, "task", None) or "classification")
     datasets = discover_datasets(nan_level=args.nan_level, limit=args.limit)
 
     total = len(datasets)
@@ -47,16 +50,16 @@ def run_all(args) -> None:
         try:
             metrics = run_from_namespace(run_args, return_metrics=True)
             elapsed = time.perf_counter() - start
-            f1 = metrics.get("f1_macro", "N/A") if metrics else "N/A"
+            score = metrics.get(task.ranking_metric, "N/A") if metrics else "N/A"
             results.append(
-                {"dataset": dataset_name, "status": "SUCCESS", "f1_macro": f1, "time": elapsed}
+                {"dataset": dataset_name, "status": "SUCCESS", "score": score, "time": elapsed}
             )
             logger.info("✓ %s completed in %s", dataset_name, _format_duration(elapsed))
         except Exception:
             elapsed = time.perf_counter() - start
             logger.exception("✗ %s failed after %s", dataset_name, _format_duration(elapsed))
             results.append(
-                {"dataset": dataset_name, "status": "FAILED", "f1_macro": "—", "time": elapsed}
+                {"dataset": dataset_name, "status": "FAILED", "score": "—", "time": elapsed}
             )
 
     # Print summary table.
@@ -67,12 +70,12 @@ def run_all(args) -> None:
     print("\n" + "=" * 70)
     print("  BATCH RUN SUMMARY")
     print("=" * 70)
-    print(f"  {'Dataset':<25} {'Status':<10} {'F1 Macro':<12} {'Time':<10}")
+    print(f"  {'Dataset':<25} {'Status':<10} {task.ranking_metric_short_name:<12} {'Time':<10}")
     print("  " + "-" * 57)
     for r in results:
-        f1_str = f"{r['f1_macro']:.4f}" if isinstance(r["f1_macro"], float) else str(r["f1_macro"])
+        shown = f"{r['score']:.4f}" if isinstance(r["score"], float) else str(r["score"])
         print(
-            f"  {r['dataset']:<25} {r['status']:<10} {f1_str:<12} {_format_duration(r['time']):<10}"
+            f"  {r['dataset']:<25} {r['status']:<10} {shown:<12} {_format_duration(r['time']):<10}"
         )
     print("  " + "-" * 57)
     print(f"  Total: {total} dataset(s) | {successes} succeeded | {failures} failed")

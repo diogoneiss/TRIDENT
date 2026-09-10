@@ -1,6 +1,7 @@
 from argparse import Namespace
 from contextlib import contextmanager
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import mlflow
@@ -8,11 +9,14 @@ import pandas as pd
 import pytest
 
 from src.training.tracking import BufferedFoldTracker
+from src.training.runner import run_training
 from src.training.types import (
     CrossValidationSummary,
+    DecodingOutcome,
     DatasetSpec,
     FinetuningOutcome,
     FoldResult,
+    FoldSplit,
     FoldTrackingRecord,
     Hyperparameters,
     PreparedDataset,
@@ -281,6 +285,7 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         "lr_scheduler": "cosine_legacy",
         "environment": _ENVIRONMENT,
         "extra_tags": {},
+        "task": "classification",
     }
     assert fake_tracker.fold_tracker_ids == pretraining_tracker_ids
     assert fake_tracker.fold_tracker_ids == finetuning_tracker_ids
@@ -398,3 +403,139 @@ def test_runner_replays_single_split_into_parent_without_cv_artifacts_or_childre
     assert not list((tmp_path / "results").rglob("diagnostic_manifest.json"))
     assert result.fold_results[0].fold == "single_split"
     assert fake_tracker.active is False
+
+
+def _minimal_request(tmp_path, task: str, cv_folds=None) -> TrainingRequest:
+    return TrainingRequest(
+        dataset=DatasetSpec.from_name("vehicle_00nan", "class"),
+        hyperparameters=Hyperparameters(),
+        runtime=RuntimeOptions(
+            output_dir=tmp_path / "results",
+            metrics_dir=tmp_path / "metrics",
+            tracking_enabled=False,
+        ),
+        seed=42,
+        cv_folds=cv_folds,
+        plot_losses=False,
+        save_model=False,
+        task=task,
+    )
+
+
+def _stub_stages(monkeypatch, tmp_path, folds=1, scores=(0.5,)):
+    """Replace both second stages with recorders, leaving the runner's choice on show."""
+    import src.training.runner as runner
+
+    frame = pd.DataFrame({"feature": [0.0, 1.0], "class": [0, 1]})
+    frame.attrs["dataset_name"] = "vehicle_00nan"
+    dataset = PreparedDataset(
+        frame=frame, label_column="class", categorical_columns=(),
+        numerical_columns=("feature",), label_classes=("car", "van"),
+        source_path=tmp_path / "vehicle_00nan.csv", splits_path=tmp_path / "split.json",
+    )
+    dataset.source_path.write_text("feature,class\n0,car\n1,van\n")
+    called: list[str] = []
+
+    monkeypatch.setattr(runner, "prepare_dataset", lambda spec: dataset)
+    monkeypatch.setattr(
+        runner, "build_folds", lambda *args, **kwargs: [FoldSplit([0], [1], [1])] * folds
+    )
+    def pretrainer(dataset, fold, hyperparameters, device, tracker):
+        tracker.log_metrics({"pretrain/train_loss": 1.0, "pretrain/val_loss": 2.0}, step=0)
+        return PretrainingOutcome(object(), (1.0,), (2.0,))
+
+    monkeypatch.setattr(runner, "train_pretrainer", pretrainer)
+
+    def classifier(dataset, fold, pretraining, hyperparameters, device, tracker):
+        called.append("classification")
+        tracker.log_metrics({"finetune/train_loss": 1.0, "finetune/val_loss": 1.0}, step=0)
+        return FinetuningOutcome(
+            object(), FoldResult("single_split", "vehicle_00nan", {"f1_macro": 0.5}), (1.0,), (1.0,)
+        )
+
+    def decoder(**kwargs):
+        called.append("imputation")
+        kwargs["tracker"].log_metrics({"decode/train_loss": 1.0, "decode/val_loss": 1.0}, step=0)
+        score = scores[(len(called) - 1) % len(scores)]
+        return DecodingOutcome(
+            object(),
+            FoldResult(
+                "single_split", "vehicle_00nan",
+                {"impute/masked/impute_score": score, "impute/masked/rmse_num_z": score},
+            ),
+            (1.0,), (1.0,),
+            pd.DataFrame(
+                [{"row": 0, "column": "feature", "kind": "numerical", "population": "masked",
+                  "actual": 0.0, "imputed": score, "confidence": float("nan")}]
+            ),
+        )
+
+    monkeypatch.setattr(runner, "train_and_evaluate_classifier", classifier)
+    monkeypatch.setattr(runner, "train_and_evaluate_decoder", decoder)
+    return called
+
+
+def test_the_runner_runs_the_stage_its_task_asks_for_and_only_that_one(
+    monkeypatch, tmp_path
+) -> None:
+    """A classification run must never reach the decoder, which is what keeps it untouched."""
+    called = _stub_stages(monkeypatch, tmp_path)
+
+    run_training(_minimal_request(tmp_path / "a", "classification"))
+    run_training(_minimal_request(tmp_path / "b", "imputation"))
+
+    assert called == ["classification", "imputation"]
+
+
+def test_an_imputation_run_calls_its_best_fold_the_one_with_the_lowest_score(
+    monkeypatch, tmp_path
+) -> None:
+    """Lower is better for an error ratio, so best and worst are the other way round.
+
+    Selecting by the classification rule would hand back the worst fold for diagnosis
+    without raising anything, which is the quietest way for this to go wrong.
+    """
+    _stub_stages(monkeypatch, tmp_path, folds=2, scores=(0.9, 0.4))
+
+    run_training(_minimal_request(tmp_path / "run", "imputation", cv_folds=2))
+
+    manifest = json.loads(
+        next((tmp_path / "run" / "results").rglob("diagnostic_manifest.json")).read_text()
+    )
+    assert manifest["diagnostic_roles"] == {"1": "worst_fold", "2": "best_fold"}
+    assert manifest["impute_score_ranking"] == {"1": 0.9, "2": 0.4}
+
+
+def test_an_imputation_run_leaves_a_preview_and_a_ledger_for_every_fold(
+    monkeypatch, tmp_path
+) -> None:
+    """The files are the point of the task, so they are written without being asked for."""
+    _stub_stages(monkeypatch, tmp_path, folds=2, scores=(0.9, 0.4))
+
+    run_training(_minimal_request(tmp_path / "run", "imputation", cv_folds=2))
+
+    results = tmp_path / "run" / "results"
+    assert len(list(results.rglob("*_preview.md"))) == 2
+    assert len(list(results.rglob("*_cells.csv"))) == 2
+    assert len(list(results.rglob("per_column_imputation.csv"))) == 1
+
+
+def test_a_classification_run_writes_no_imputation_artifacts(monkeypatch, tmp_path) -> None:
+    """Nothing about the new task should appear in a run that never used it."""
+    _stub_stages(monkeypatch, tmp_path)
+
+    run_training(_minimal_request(tmp_path / "run", "classification"))
+
+    assert list((tmp_path / "run" / "results").rglob("*_preview.md")) == []
+
+
+def test_a_loss_plot_is_named_after_the_stage_that_produced_it(monkeypatch, tmp_path) -> None:
+    """An imputation run's curves are the decode stage's, so calling them fine-tuning lies."""
+    _stub_stages(monkeypatch, tmp_path)
+    request = _minimal_request(tmp_path / "run", "imputation")
+    request = replace(request, plot_losses=True)
+
+    run_training(request)
+
+    plots = {path.name for path in (tmp_path / "run" / "results").rglob("*.png")}
+    assert plots == {"pretrain_losses.png", "decode_losses.png"}

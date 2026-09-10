@@ -21,7 +21,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | 05 | [Data support for evaluation](issues/05-evaluation-data-support.md) | done | none |
 | 06 | [The decode stage](issues/06-decode-stage.md) | done | 01, 02, 03, 04, 05 |
 | 07 | [Imputation artifacts](issues/07-imputation-artifacts.md) | done | 05, 06 |
-| 08 | [Runner, MLflow identity, batch summary](issues/08-runner-and-mlflow-identity.md) | ready-for-agent | 02, 06, 07 |
+| 08 | [Runner, MLflow identity, batch summary](issues/08-runner-and-mlflow-identity.md) | done | 02, 06, 07 |
 | 09 | [Tag backfill](issues/09-tag-backfill.md) | ready-for-agent | 08 |
 | 10 | [Optuna for the imputation task](issues/10-optuna-imputation.md) | ready-for-agent | 02, 08 |
 | 11 | [Regression fixture and documentation](issues/11-fixture-and-docs.md) | ready-for-agent | 08, 10 |

@@ -32,8 +32,15 @@ class ArtifactWriter:
         self.dataset_name = dataset_name
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    def write_hyperparameters(self, hyperparameters: Hyperparameters) -> Path:
-        values = {
+    def write_hyperparameters(
+        self, hyperparameters: Hyperparameters, task: TaskSpec = CLASSIFICATION
+    ) -> Path:
+        """Record the values this run used, and only those.
+
+        A file claiming a fine-tuning rate on a run that never fine-tuned misleads
+        whoever reads it later, the same way a logged-but-unused parameter does.
+        """
+        shared = {
             "DIM": hyperparameters.dimension,
             "HIDDEN_DIM": hyperparameters.hidden_dimension,
             "HEADS": hyperparameters.heads,
@@ -45,12 +52,25 @@ class ArtifactWriter:
             "LR_PRE": hyperparameters.pretraining_learning_rate,
             "WEIGHT_DECAY_PRE": hyperparameters.pretraining_weight_decay,
             "PROB_MASCARA": hyperparameters.mask_probability,
-            "EPOCH_FINE": hyperparameters.finetuning_epochs,
-            "LR_FINE": hyperparameters.finetuning_learning_rate,
-            "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
-            "LABELS": hyperparameters.labels,
             "LR_SCHEDULER": hyperparameters.lr_scheduler,
         }
+        if task.name == "imputation":
+            values = {
+                **shared,
+                "EPOCHS_DECODE": hyperparameters.decode_epochs,
+                "LR_DECODE": hyperparameters.decode_learning_rate,
+                "WEIGHT_DECAY_DECODE": hyperparameters.decode_weight_decay,
+                "LAMBDA_NUM": hyperparameters.lambda_num,
+                "EVAL_MASK_RATE": hyperparameters.eval_mask_rate,
+            }
+        else:
+            values = {
+                **shared,
+                "EPOCH_FINE": hyperparameters.finetuning_epochs,
+                "LR_FINE": hyperparameters.finetuning_learning_rate,
+                "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
+                "LABELS": hyperparameters.labels,
+            }
         path = self.results_dir / "hyperparameters.json"
         path.write_text(json.dumps(values, indent=4))
         print(f"Hyperparameters saved to: {path}")

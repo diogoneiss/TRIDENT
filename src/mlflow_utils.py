@@ -39,6 +39,15 @@ EXPERIMENT_PREFIX = "TRIDENT"
 LR_SCHEDULER_TAG = "lr_scheduler"
 LR_SCHEDULER_BACKFILLED_TAG = "lr_scheduler_backfilled"
 
+# Which task a run trained (ADR 0004), and whether a hyper-parameter search produced it.
+# Both are dense: every run kind carries a real value, so either can be filtered on
+# without a gap swallowing runs. Runs recorded before the task existed are backfilled as
+# "classification" and marked with TASK_BACKFILLED_TAG; is_optuna needs no such marker,
+# because the store itself proves the value.
+TASK_TAG = "task"
+TASK_BACKFILLED_TAG = "task_backfilled"
+IS_OPTUNA_TAG = "is_optuna"
+
 
 def parse_missingness_percent(dataset_name: str) -> str:
     """Return the normalized percentage encoded by a ``_<n>nan`` suffix."""

@@ -8,7 +8,9 @@ from typing import Iterator, Mapping, Sequence
 import mlflow
 
 from src.mlflow_utils import (
+    IS_OPTUNA_TAG,
     LR_SCHEDULER_TAG,
+    TASK_TAG,
     build_fold_tags,
     build_run_tags,
     get_or_create_experiment,
@@ -17,6 +19,7 @@ from src.mlflow_utils import (
 )
 from src.training.summary import fold_timings_for_tracking
 from src.training.types import (
+    DEFAULT_TASK,
     CrossValidationSummary,
     FoldResult,
     FoldTrackingRecord,
@@ -90,6 +93,8 @@ class MlflowTracker:
         self.experiment_id: str | None = None
         self.cv_folds: int | None = None
         self.lr_scheduler: str | None = None
+        self.task: str = DEFAULT_TASK
+        self.is_optuna: bool = False
 
     @contextmanager
     def parent_run(
@@ -102,11 +107,15 @@ class MlflowTracker:
         lr_scheduler: str,
         environment: Mapping[str, str] | None = None,
         extra_tags: Mapping[str, str] | None = None,
+        task: str = DEFAULT_TASK,
+        is_optuna: bool = False,
     ) -> Iterator["MlflowTracker"]:
         setup_mlflow()
         self.experiment_id = get_or_create_experiment(dataset_name)
         self.cv_folds = cv_folds
         self.lr_scheduler = lr_scheduler
+        self.task = task
+        self.is_optuna = is_optuna
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         tags = _execution_tags(
             dataset_name=dataset_name,
@@ -117,13 +126,17 @@ class MlflowTracker:
             lr_scheduler=lr_scheduler,
             environment=environment,
             extra_tags=extra_tags,
+            task=task,
+            is_optuna=is_optuna,
         )
+        # An imputation run reads first in a run list and sorts beside its own kind.
+        prefix = "impute" if task == "imputation" else "train"
         with mlflow.start_run(
             experiment_id=self.experiment_id,
-            run_name=f"train_{dataset_name}_{timestamp}",
+            run_name=f"{prefix}_{dataset_name}_{timestamp}",
             tags=tags,
         ):
-            _log_execution_params(hyperparameters, dataset_name, seed, cv_folds)
+            _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task)
             yield self
 
     @contextmanager
@@ -209,6 +222,8 @@ class MlflowTracker:
             tags.update({"dataset": record.result.dataset_name, "run_role": role})
             if self.lr_scheduler is not None:
                 tags[LR_SCHEDULER_TAG] = self.lr_scheduler
+            tags[TASK_TAG] = self.task
+            tags[IS_OPTUNA_TAG] = _flag(self.is_optuna)
             with mlflow.start_run(
                 experiment_id=self.experiment_id,
                 run_name=f"{role}_fold_{fold}",
@@ -249,6 +264,8 @@ class OptunaTrialTracker(MlflowTracker):
         lr_scheduler: str,
         environment: Mapping[str, str] | None = None,
         extra_tags: Mapping[str, str] | None = None,
+        task: str = DEFAULT_TASK,
+        is_optuna: bool = True,
     ) -> Iterator["OptunaTrialTracker"]:
         active = mlflow.active_run()
         if active is None:
@@ -259,6 +276,8 @@ class OptunaTrialTracker(MlflowTracker):
         self.experiment_id = active.info.experiment_id
         self.cv_folds = cv_folds
         self.lr_scheduler = lr_scheduler
+        self.task = task
+        self.is_optuna = is_optuna
         mlflow.set_tags(
             _execution_tags(
                 dataset_name=dataset_name,
@@ -269,9 +288,11 @@ class OptunaTrialTracker(MlflowTracker):
                 lr_scheduler=lr_scheduler,
                 environment=environment,
                 extra_tags=extra_tags,
+                task=task,
+                is_optuna=is_optuna,
             )
         )
-        _log_execution_params(hyperparameters, dataset_name, seed, cv_folds)
+        _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task)
         yield self
 
     def log_artifact(self, path: str, artifact_path: str | None = None) -> None:
@@ -309,6 +330,8 @@ def _execution_tags(
     lr_scheduler: str,
     environment: Mapping[str, str] | None,
     extra_tags: Mapping[str, str] | None,
+    task: str = DEFAULT_TASK,
+    is_optuna: bool = False,
 ) -> dict[str, str]:
     return build_run_tags(
         dataset_name=dataset_name,
@@ -325,6 +348,11 @@ def _execution_tags(
             # A tag rather than only a param so runs can be filtered and grouped
             # by schedule in the comparison table; see ADR 0003.
             LR_SCHEDULER_TAG: lr_scheduler,
+            # Which task the run trained, and whether a search produced it. Both are
+            # dense -- a real value on every run kind -- so either can be filtered on
+            # without a gap silently swallowing runs.
+            TASK_TAG: task,
+            IS_OPTUNA_TAG: _flag(is_optuna),
             # Hardware and library descriptors (device, gpu_name, ...) so
             # the ``time/`` metrics are only compared within one environment.
             **(environment or {}),
@@ -333,12 +361,22 @@ def _execution_tags(
     )
 
 
+def _flag(value: bool) -> str:
+    """MLflow tag values are strings, so a boolean has to be spelled out."""
+    return "true" if value else "false"
+
+
 def _log_execution_params(
-    hyperparameters: dict[str, object], dataset_name: str, seed: int, cv_folds: int | None
+    hyperparameters: dict[str, object],
+    dataset_name: str,
+    seed: int,
+    cv_folds: int | None,
+    task: str = DEFAULT_TASK,
 ) -> None:
     mlflow.log_params(hyperparameters)
     mlflow.log_param("dataset_name", dataset_name)
     mlflow.log_param("seed", seed)
+    mlflow.log_param("task", task)
     if cv_folds is not None:
         mlflow.log_param("cv_folds", cv_folds)
 
