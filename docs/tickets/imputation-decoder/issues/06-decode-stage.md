@@ -42,3 +42,10 @@ null path) on the test fold, returning a `DecodingOutcome`.
 - **Never** `model.apply(initialize_weights)`.
 
 ## Comments
+
+- 2026-09-10 (from ticket 05): `EVAL_MASK_RATE` is **nominal**. `preprocess_table` scales
+  the probability by each row's null density and never masks a null, so asking for 0.2
+  hides 20.4% of `credit-g_00nan` but only 5.0% of `credit-g_80nan`. Log the **realised**
+  rate (hidden cells over scored-eligible cells) as a metric beside the nominal one, or a
+  self-masked score cannot be compared across the missingness ladder. See ticket 05's
+  comments for the full table.

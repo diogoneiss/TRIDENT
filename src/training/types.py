@@ -188,6 +188,10 @@ class PreparedDataset:
     label_classes: Sequence[Any]
     source_path: Path
     splits_path: Path
+    # The scaler that produced ``frame``'s numerical columns, kept so a preview can show
+    # a credit amount rather than a z-score. Retaining it does not move when scaling
+    # happens; ``None`` when the dataset has no numerical columns.
+    scaler: Any = None
 
 
 @dataclass(frozen=True)
