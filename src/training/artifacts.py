@@ -47,6 +47,7 @@ class ArtifactWriter:
             "LR_FINE": hyperparameters.finetuning_learning_rate,
             "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
             "LABELS": hyperparameters.labels,
+            "LR_SCHEDULER": hyperparameters.lr_scheduler,
         }
         path = self.results_dir / "hyperparameters.json"
         path.write_text(json.dumps(values, indent=4))

@@ -4,6 +4,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence
 
+# Learning-rate schedule names accepted by ``Hyperparameters.lr_scheduler`` and
+# the ``--lr_scheduler`` flag. ``cosine_legacy`` is the schedule every run before
+# ADR 0003 used, so it stays the default to keep old configs reproducible.
+LR_SCHEDULER_NAMES: tuple[str, ...] = (
+    "cosine_legacy",
+    "cosine",
+    "warmup_cosine",
+    "constant",
+    "plateau",
+)
+DEFAULT_LR_SCHEDULER = "cosine_legacy"
+
+
 #TODO store those defaults elsewhere
 @dataclass(frozen=True)
 class Hyperparameters:
@@ -23,6 +36,14 @@ class Hyperparameters:
     finetuning_learning_rate: float = 0.001
     finetuning_weight_decay: float = 0.0019
     labels: int = 4
+    lr_scheduler: str = DEFAULT_LR_SCHEDULER
+
+    def __post_init__(self) -> None:
+        if self.lr_scheduler not in LR_SCHEDULER_NAMES:
+            raise ValueError(
+                f"Unknown learning-rate scheduler {self.lr_scheduler!r}; "
+                f"expected one of {', '.join(LR_SCHEDULER_NAMES)}"
+            )
 
     @classmethod
     def from_mapping(cls, values: Mapping[str, Any]) -> "Hyperparameters":
@@ -50,6 +71,9 @@ class Hyperparameters:
                 values.get("WEIGHT_DECAY_FINE", values.get("finetuning_weight_decay", 0.0019))
             ),
             labels=int(values.get("LABELS", values.get("labels", 4))),
+            lr_scheduler=str(
+                values.get("LR_SCHEDULER", values.get("lr_scheduler", DEFAULT_LR_SCHEDULER))
+            ),
         )
 
 

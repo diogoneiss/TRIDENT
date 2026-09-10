@@ -10,6 +10,7 @@ from src.models import TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 from src.utils import preprocess_table
 
+from .schedulers import StageScheduler, batches_per_epoch
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
@@ -51,8 +52,11 @@ def train_pretrainer(
         lr=hyperparameters.pretraining_learning_rate,
         weight_decay=hyperparameters.pretraining_weight_decay,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=hyperparameters.pretraining_epochs
+    scheduler = StageScheduler(
+        optimizer,
+        hyperparameters.lr_scheduler,
+        epochs=hyperparameters.pretraining_epochs,
+        batches_per_epoch=batches_per_epoch(len(train_frame), hyperparameters.batch_size),
     )
     train_losses: list[float] = []
     validation_losses: list[float] = []
@@ -86,7 +90,7 @@ def train_pretrainer(
             total_loss, _ = model(masked_train[batch_indices], original_train[batch_indices])
             total_loss.backward()
             optimizer.step()
-            scheduler.step()
+            scheduler.after_batch()
             train_loss_sum += total_loss.detach().double()
             train_steps += 1
         average_train_loss = (train_loss_sum / train_steps).item()
@@ -103,13 +107,17 @@ def train_pretrainer(
                 validation_steps += 1
             average_validation_loss = (validation_loss_sum / validation_steps).item()
             validation_losses.append(average_validation_loss)
+        # Logged before the epoch-level schedules advance, so the value is the
+        # rate this epoch actually trained at.
         tracker.log_metrics(
             {
                 "pretrain/train_loss": float(average_train_loss),
                 "pretrain/val_loss": float(average_validation_loss),
+                "pretrain/learning_rate": scheduler.learning_rate,
             },
             step=epoch,
         )
+        scheduler.after_epoch(average_validation_loss)
 
     return PretrainingOutcome(
         model=model,

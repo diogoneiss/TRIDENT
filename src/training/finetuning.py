@@ -12,6 +12,7 @@ from tqdm import tqdm
 from src.models import TridentModel
 from src.utils import preprocess_table
 
+from .schedulers import StageScheduler, batches_per_epoch
 from .types import FinetuningOutcome, FoldResult, FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
@@ -108,8 +109,11 @@ def train_and_evaluate_classifier(
         lr=hyperparameters.finetuning_learning_rate,
         weight_decay=hyperparameters.finetuning_weight_decay,
     )
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-        optimizer, T_max=hyperparameters.finetuning_epochs
+    scheduler = StageScheduler(
+        optimizer,
+        hyperparameters.lr_scheduler,
+        epochs=hyperparameters.finetuning_epochs,
+        batches_per_epoch=batches_per_epoch(len(processed_train), hyperparameters.batch_size),
     )
     best_validation_loss = float("inf")
     best_model_state = None
@@ -136,7 +140,7 @@ def train_and_evaluate_classifier(
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            scheduler.step()
+            scheduler.after_batch()
             train_loss_sum += loss.detach().double()
             train_batch_count += 1
         average_train_loss = (train_loss_sum / train_batch_count).item()
@@ -162,9 +166,11 @@ def train_and_evaluate_classifier(
                 "finetune/val_f1_macro": float(
                     f1_score(validation_expected, validation_predicted, average="macro")
                 ),
+                "finetune/learning_rate": scheduler.learning_rate,
             },
             step=epoch,
         )
+        scheduler.after_epoch(validation_loss_value)
         if validation_loss_value < best_validation_loss:
             best_validation_loss = validation_loss_value
             best_model_state = {

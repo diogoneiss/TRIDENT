@@ -1,14 +1,31 @@
 """Translation from legacy argparse namespaces to typed training requests."""
 
 import argparse
+import dataclasses
 import json
 from pathlib import Path
 from typing import Any, Mapping
 
-from .types import DatasetSpec, Hyperparameters, RuntimeOptions, TrainingRequest
+from .types import (
+    LR_SCHEDULER_NAMES,
+    DatasetSpec,
+    Hyperparameters,
+    RuntimeOptions,
+    TrainingRequest,
+)
 
 
 def load_hyperparameters(args: argparse.Namespace) -> Hyperparameters:
+    hyperparameters = _load_base_hyperparameters(args)
+    # ``--lr_scheduler`` wins over whatever the override mapping or JSON file said,
+    # so one invocation can re-run any stored configuration under another schedule.
+    lr_scheduler = getattr(args, "lr_scheduler", None)
+    if lr_scheduler is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, lr_scheduler=lr_scheduler)
+    return hyperparameters
+
+
+def _load_base_hyperparameters(args: argparse.Namespace) -> Hyperparameters:
     override = getattr(args, "hyperparams_override", None)
     if override is not None:
         return Hyperparameters.from_mapping(override)
@@ -99,6 +116,16 @@ def build_training_parser() -> argparse.ArgumentParser:
     parser.add_argument("--save_model", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--cv_folds", type=int, default=None)
+    parser.add_argument(
+        "--lr_scheduler",
+        type=str,
+        default=None,
+        choices=LR_SCHEDULER_NAMES,
+        help=(
+            "Learning-rate schedule for both training stages. Overrides LR_SCHEDULER from the "
+            "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003)."
+        ),
+    )
     parser.add_argument("--use_optuna", action="store_true")
     parser.add_argument("--n_trials", type=int, default=50)
     parser.add_argument("--retrain_best", action="store_true")
