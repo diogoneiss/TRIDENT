@@ -117,7 +117,7 @@ class MlflowTracker:
         self.task = task
         self.is_optuna = is_optuna
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-        tags = _execution_tags(
+        tags = execution_tags(
             dataset_name=dataset_name,
             run_role="parent",
             run_type="train",
@@ -279,7 +279,7 @@ class OptunaTrialTracker(MlflowTracker):
         self.task = task
         self.is_optuna = is_optuna
         mlflow.set_tags(
-            _execution_tags(
+            execution_tags(
                 dataset_name=dataset_name,
                 run_role="optuna_trial",
                 run_type="optuna_trial",
@@ -320,7 +320,7 @@ class OptunaTrialTracker(MlflowTracker):
             mlflow.log_metric(TRAINING_SECONDS_KEY, timings["total_seconds"])
 
 
-def _execution_tags(
+def execution_tags(
     *,
     dataset_name: str,
     run_role: str,

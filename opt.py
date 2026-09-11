@@ -15,7 +15,8 @@ import mlflow
 from mlflow.tracking import MlflowClient
 from contextlib import nullcontext
 
-from src.mlflow_utils import LR_SCHEDULER_TAG, setup_mlflow, get_or_create_experiment, build_run_tags
+from src.mlflow_utils import IS_OPTUNA_TAG, LR_SCHEDULER_TAG, TASK_TAG, setup_mlflow, get_or_create_experiment
+from src.training.tracking import execution_tags
 from src.training.types import task_spec
 from src.training.types import DEFAULT_LR_SCHEDULER
 
@@ -64,8 +65,10 @@ def define_search_space(trial, task: str = 'classification'):
     # Attention splits the width across heads, so the width must divide evenly. Sampling
     # the two independently used to produce combinations that crash, which were then
     # scored as merely terrible hyperparameters (backlog B3).
+    # What Optuna records is the per-head width, named as such; the model width the trial
+    # trains with is derived below and is what the returned configuration carries.
     heads = trial.suggest_categorical('HEADS', [4, 8, 16])
-    dim = trial.suggest_int('DIM', 64 // heads, 256 // heads) * heads
+    dim = trial.suggest_int('HEAD_DIM', 64 // heads, 256 // heads) * heads
     params = {
         'DIM': dim,
         'HEADS': heads,
@@ -126,7 +129,11 @@ class ObjectiveFunctionWrapper:
     def __call__(self, trial):
         # Define hyperparameters for this trial
         params = define_search_space(trial, task=self.task)
-        
+        # Optuna's own record of the trial holds what was sampled (head count, per-head
+        # width), not the configuration trained with. Keep that on the trial so the study
+        # can hand on exactly what its winner ran, even after a resume.
+        trial.set_user_attr("hyperparameters", params)
+
         # Create Args object to pass to train_main
         class Args:
             pass
@@ -144,6 +151,10 @@ class ObjectiveFunctionWrapper:
         args.plot_losses = False
         args.save_model = False
         args.seed = self.seed
+        # This namespace is built here, not parsed, so the study's task has to be copied
+        # on. Without it the runner falls back to classification, trains the wrong stage
+        # and never produces the imputation ranking metric the objective then asks for.
+        args.task = self.task
         args.hyperparams_override = params  # Add custom field for hyperparams
         # The schedule is not part of the search space; every trial uses the one
         # chosen on the command line (or the default) so trials stay comparable.
@@ -166,6 +177,10 @@ class ObjectiveFunctionWrapper:
             "run_type": "optuna_trial",
             "run_role": "optuna_trial",
             LR_SCHEDULER_TAG: self.lr_scheduler or DEFAULT_LR_SCHEDULER,
+            # Both tags are dense on every run kind; a trial that crashes before the
+            # runner sets its own would otherwise be a run of no known task.
+            TASK_TAG: self.task,
+            IS_OPTUNA_TAG: "true",
         }
 
         with mlflow.start_run(
@@ -287,19 +302,28 @@ def run_hyperparameter_optimization(args):
         study_name=f"TRIDENT_{args.dataset_name}",
         storage=storage_name,
         direction=task.direction,
-        load_if_exists=True
+        load_if_exists=True,
+        # The seed that fixes every trial's training fixes the sampler too, so a study
+        # can be rerun; an unseeded sampler made each study a one-off.
+        sampler=optuna.samplers.TPESampler(seed=args.seed),
     )
     
     # Open the MLflow parent run for this Optuna study
     parent_run_name = f"optuna_{args.dataset_name}_{timestamp}"
-    parent_tags = build_run_tags(
+    # The same helper every other run kind uses, so the study parent carries the dense
+    # ``task`` and ``is_optuna`` tags a filter relies on (ADR 0004, decision 7).
+    parent_tags = execution_tags(
         dataset_name=args.dataset_name,
+        run_role="optuna_study",
         run_type="optuna_study",
         seed=args.seed,
+        cv_folds=None,
+        lr_scheduler=getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
+        environment=None,
+        extra_tags={"n_trials": str(args.n_trials)},
+        task=task.name,
+        is_optuna=True,
     )
-    parent_tags["n_trials"] = str(args.n_trials)
-    parent_tags["run_role"] = "optuna_study"
-    parent_tags[LR_SCHEDULER_TAG] = getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER
 
     with mlflow.start_run(
         experiment_id=experiment_id,
@@ -320,12 +344,16 @@ def run_hyperparameter_optimization(args):
         # Run the optimization
         study.optimize(objective, n_trials=args.n_trials)
 
+        # The configuration the winning trial actually trained with, not Optuna's record
+        # of what it sampled (the study's own best params hold ``HEAD_DIM``, not ``DIM``).
+        best_config = study.best_trial.user_attrs["hyperparameters"]
+
         # Log best trial summary to the parent run
         mlflow.log_metrics({
             "optuna/best_objective_value": study.best_value,
             "optuna/best_trial_number": float(study.best_trial.number),
         })
-        mlflow.log_params({f"best_{k}": v for k, v in study.best_params.items()})
+        mlflow.log_params({f"best_{k}": v for k, v in best_config.items()})
         mlflow.set_tag("best_trial_number", str(study.best_trial.number))
 
         # ---- end of parent MLflow run ----
@@ -340,9 +368,9 @@ def run_hyperparameter_optimization(args):
     # Report best parameters
     logger.info("\n\n" + "="*50)
     logger.info(f"Best trial: {study.best_trial.number}")
-    logger.info(f"Best F1 macro: {study.best_value:.4f}")
+    logger.info(f"Best {task.ranking_metric}: {study.best_value:.4f}")
     logger.info("Best hyperparameters:")
-    for key, value in study.best_params.items():
+    for key, value in best_config.items():
         logger.info(f"  {key}: {value}")
     logger.info("="*50)
     
@@ -350,17 +378,25 @@ def run_hyperparameter_optimization(args):
     # 1. Save best hyperparameters
     best_params_path = optuna_dir / "best_hyperparameters.json"
     with open(best_params_path, 'w') as f:
-        json.dump(study.best_params, f, indent=4)
+        json.dump(best_config, f, indent=4)
     logger.info(f"Best hyperparameters saved to {best_params_path}")
     
-    # 2. Also save to the standard hiperparams directory for model loading
-    base_dataset_name = args.dataset_name.split('_')[0]
-    hiperparams_dir = Path('datasets/hiperparams') / base_dataset_name
-    hiperparams_dir.mkdir(exist_ok=True, parents=True)
-    hiperparams_path = hiperparams_dir / f"{args.dataset_name}.json"
-    with open(hiperparams_path, 'w') as f:
-        json.dump(study.best_params, f, indent=4)
-    logger.info(f"Saved for model loading: {hiperparams_path}")
+    # 2. Also save to the standard hiperparams directory for model loading. That file is
+    # read by both tasks and names neither, so an imputation study stays inside its own
+    # study directory (same rule as ``save_best_params``); promoting it is a deliberate
+    # copy until a task-keyed lookup exists.
+    if task.name == 'imputation':
+        logger.info(
+            "Imputation study: not writing datasets/hiperparams, which classification reads"
+        )
+    else:
+        base_dataset_name = args.dataset_name.split('_')[0]
+        hiperparams_dir = Path('datasets/hiperparams') / base_dataset_name
+        hiperparams_dir.mkdir(exist_ok=True, parents=True)
+        hiperparams_path = hiperparams_dir / f"{args.dataset_name}.json"
+        with open(hiperparams_path, 'w') as f:
+            json.dump(best_config, f, indent=4)
+        logger.info(f"Saved for model loading: {hiperparams_path}")
     
     # Retrain the model with the best parameters and save results in optuna_dir
     if args.retrain_best:
@@ -385,7 +421,9 @@ def run_hyperparameter_optimization(args):
         final_args.plot_losses = True
         final_args.save_model = True
         final_args.seed = args.seed
-        final_args.hyperparams_override = study.best_params
+        # Same hand-built namespace as a trial: the task travels with it.
+        final_args.task = task.name
+        final_args.hyperparams_override = best_config
         final_args.lr_scheduler = getattr(args, "lr_scheduler", None)
         # A normal comparable parent run, linked back to the study that chose it.
         final_args.mlflow_tags = {"optuna_study_run_id": study_run_id}

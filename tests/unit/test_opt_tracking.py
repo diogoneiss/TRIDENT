@@ -1,6 +1,8 @@
 """MLflow structure of an Optuna study: one study run, one light run per trial."""
 
 from argparse import Namespace
+import json
+from pathlib import Path
 from typing import Iterator
 
 import mlflow
@@ -44,7 +46,14 @@ class _TrainingStub:
         if trial_number in self.failing:
             raise RuntimeError("boom")
         score = self.scores.get(trial_number, 0.9)
-        return {"fold": "single_split", "dataset": args.dataset_name, "f1_macro": score}
+        # The real runner returns the metrics of whichever task the namespace names, so a
+        # namespace that forgot its task gets classification metrics and no imputation key.
+        metric = (
+            "impute/masked/impute_score"
+            if getattr(args, "task", None) == "imputation"
+            else "f1_macro"
+        )
+        return {"fold": "single_split", "dataset": args.dataset_name, metric: score}
 
     @staticmethod
     def _trial_number(active) -> int | None:
@@ -146,6 +155,115 @@ def test_retraining_the_best_trial_links_a_normal_parent_run_to_the_study(
         for key, value in study.data.params.items()
         if key.startswith("best_")
     } or retrain.hyperparams_override
+
+
+def test_an_imputation_study_trains_the_imputation_task_in_every_trial(
+    mlflow_backend, monkeypatch
+) -> None:
+    """The objective builds each trial's namespace itself, so the task has to be copied on.
+
+    Without it every trial trains a classifier, looks up the imputation ranking metric,
+    raises and is pruned: a study that finishes with zero scored trials. The retrain
+    namespace is built the same way and must carry the task too.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(
+        _optuna_args(task="imputation", n_trials=2, retrain_best=True)
+    )
+
+    assert [args.task for args in stub.calls] == ["imputation", "imputation", "imputation"]
+
+
+def test_every_run_a_study_opens_says_which_task_and_that_a_search_made_it(
+    mlflow_backend, monkeypatch
+) -> None:
+    """``task`` and ``is_optuna`` are dense on every other run kind (ADR 0004, decision 7).
+
+    A study parent without them slips through any filter on either tag, and a trial that
+    crashes before the runner sets its tags would be a run of no known task.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2))
+
+    runs = _runs_by_name(MlflowClient(tracking_uri=mlflow_backend))
+    study = next(run for name, run in runs.items() if name.startswith("optuna_vehicle_00nan_"))
+    trials = [run for name, run in runs.items() if name.startswith("optuna_trial_")]
+    assert len(trials) == 2
+    assert study.data.tags["task"] == "imputation"
+    assert study.data.tags["is_optuna"] == "true"
+    assert all(trial.data.tags["task"] == "imputation" for trial in trials)
+    assert all(trial.data.tags["is_optuna"] == "true" for trial in trials)
+
+
+def test_a_finished_imputation_study_leaves_the_shared_config_alone(
+    mlflow_backend, monkeypatch
+) -> None:
+    """Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no task.
+
+    The per-trial write already stays inside the study directory; the end-of-study write
+    did not, so a *finished* imputation study still retuned every later classification
+    run on that dataset, after every trial had carefully avoided doing so.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2))
+
+    assert not (Path("datasets") / "hiperparams").exists()
+    study_dirs = list((Path("results") / "vehicle_00nan").glob("optuna_*"))
+    assert len(study_dirs) == 1
+    assert (study_dirs[0] / "best_hyperparameters.json").exists()
+
+
+def test_a_study_with_the_same_seed_samples_the_same_trials(mlflow_backend, monkeypatch) -> None:
+    """A study is an experiment: the seed that fixes every trial's training fixes the sampler.
+
+    Separate output directories, because the study storage is named to the second and a
+    second study in the same second would resume the first instead of starting over.
+    """
+    sampled: list[list[dict]] = []
+    for output_dir in ("first", "second"):
+        stub = _TrainingStub(scores={})
+        monkeypatch.setattr(opt, "train_main", stub)
+        opt.run_hyperparameter_optimization(
+            _optuna_args(n_trials=3, disable_mlflow=True, output_dir=output_dir)
+        )
+        sampled.append([args.hyperparams_override for args in stub.calls])
+
+    assert sampled[0] == sampled[1]
+
+
+def test_the_configuration_a_study_hands_on_is_the_one_its_best_trial_trained_with(
+    mlflow_backend, monkeypatch
+) -> None:
+    """The width is sampled as a multiple of the head count, so what Optuna records under
+    ``DIM`` is that multiplier, not the width the trial trained with.
+
+    Everything a study hands on (the retrain, the saved file, the ``best_`` params on the
+    study run) must carry the trained configuration; a retrain from Optuna's record builds
+    a model the winning trial never ran, and a head count that no longer divides the width.
+    """
+    stub = _TrainingStub(scores={0: 0.8, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(n_trials=2, retrain_best=True))
+
+    winning = stub.calls[0].hyperparams_override
+    retrain = stub.calls[-1]
+    assert winning["DIM"] % winning["HEADS"] == 0
+    assert retrain.hyperparams_override == winning
+    saved = next((Path("results") / "vehicle_00nan").glob("optuna_*/best_hyperparameters.json"))
+    assert json.loads(saved.read_text()) == winning
+    study = next(
+        run
+        for name, run in _runs_by_name(MlflowClient(tracking_uri=mlflow_backend)).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.params["best_DIM"] == str(winning["DIM"])
 
 
 def test_disabled_tracking_runs_the_study_without_touching_the_store(
