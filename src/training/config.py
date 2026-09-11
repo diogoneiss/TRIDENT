@@ -122,6 +122,15 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     if getattr(args, "score_null_path", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_null_path requires --task imputation")
 
+    # One fold is not cross-validation: build_folds derives the validation ratio as
+    # 0.1 / (1 - 1/cv_folds), which divides by zero at 1 (backlog B2). Omitting the flag
+    # is the single-split mode, so the message points there rather than just refusing.
+    cv_folds = getattr(args, "cv_folds", None)
+    if cv_folds is not None and cv_folds < 2:
+        raise SystemExit(
+            "error: --cv_folds must be 2 or more; omit it to use the predefined split"
+        )
+
     # --all is incompatible with --use_optuna.
     if run_all and getattr(args, "use_optuna", False):
         raise SystemExit("error: --all and --use_optuna are mutually exclusive")

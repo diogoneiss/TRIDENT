@@ -32,6 +32,24 @@ def test_build_folds_raises_legacy_error_when_predefined_split_is_missing(tmp_pa
         build_folds(frame, label_column="class", cv_folds=None, seed=42)
 
 
+def test_building_a_single_fold_says_what_is_wrong_instead_of_dividing_by_zero() -> None:
+    """Backlog B2: the command line is not the only way in.
+
+    `validate_parsed_args` refuses `--cv_folds 1`, but `train.main` takes a Namespace
+    directly and Optuna builds its own, so the guard has to exist here too. The failure
+    was a bare ZeroDivisionError from `0.1 / (1 - 1/cv_folds)`, several steps after the
+    mistake and naming nothing the caller passed.
+    """
+    frame = pd.DataFrame({"feature": range(12), "class": [0, 1] * 6})
+
+    with pytest.raises(ValueError, match="cv_folds"):
+        build_folds(frame, label_column="class", cv_folds=1, seed=42)
+    with pytest.raises(ValueError, match="cv_folds"):
+        build_folds(frame, label_column="class", cv_folds=0, seed=42)
+    # Two folds and the predefined-split path are both still reachable.
+    assert len(build_folds(frame, label_column="class", cv_folds=2, seed=42)) == 2
+
+
 def test_a_prepared_dataset_can_return_its_numbers_to_original_units() -> None:
     """Scaled numbers are unreadable, so a preview has to be able to undo the scaling.
 

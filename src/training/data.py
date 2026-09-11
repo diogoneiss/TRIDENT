@@ -156,6 +156,17 @@ def build_folds(
             )
         ]
 
+    # One fold is not cross-validation. scikit-learn's splitter already refuses it, but
+    # its message names `n_splits` rather than the `--cv_folds` the caller passed, and
+    # the validation ratio below would divide by zero if it ever got that far (B2).
+    # `train.main` and Optuna build their own arguments, so the guard cannot live only in
+    # `validate_parsed_args`.
+    if cv_folds < 2:
+        raise ValueError(
+            f"cv_folds must be 2 or more to cross-validate, got {cv_folds}; "
+            "pass cv_folds=None to use the predefined split"
+        )
+
     encoded_labels = frame[label_column].values
     class_counts = Counter(encoded_labels)
     min_samples = min(class_counts.values()) if class_counts else 0

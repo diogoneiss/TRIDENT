@@ -13,7 +13,7 @@ before anyone touches them, because they change published results.
 | ID | Item | Severity | Protected |
 |---|---|---|---|
 | ~~B1~~ | ~~Learning-rate schedule completes a full cosine cycle~~ — fixed, see below | High | Yes |
-| B2 | `--cv_folds 1` crashes with `ZeroDivisionError` | Medium | No |
+| ~~B2~~ | ~~`--cv_folds 1` fails with an error naming `n_splits`~~ -- fixed, see below | Medium | No |
 | ~~B3~~ | ~~Optuna proposes head counts that crash, scored as 0.0~~ — fixed, see below | Medium | No |
 | ~~B4~~ | ~~Optuna with MLflow enabled scored every trial 0.0~~ — fixed, see below | High | No |
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
@@ -67,6 +67,21 @@ Likely intent: step once per epoch, or set `T_max` to `epochs * batches_per_epoc
 Either changes every published number, so it needs an explicit decision.
 
 ### B2. `--cv_folds 1` crashes
+
+**Fixed 2026-09-10.** `validate_parsed_args` now refuses `cv_folds < 2` when the arguments
+are read, and `build_folds` raises a `ValueError` naming `cv_folds` for callers that reach
+it directly -- `train.main` takes a Namespace and Optuna builds its own, so the parse-time
+guard alone would not cover them. Both messages point at omitting the flag, which is the
+predefined-split mode and the single-split path the user actually wanted.
+
+**The reported symptom below was wrong**, and the correction is worth keeping: the
+`ZeroDivisionError` is unreachable. scikit-learn's `KFold`/`StratifiedKFold` refuses
+`n_splits=1` before `raw_folds` is ever iterated, so the validation ratio is never
+computed. What a user actually hit was `k-fold cross-validation requires at least one
+train/test split by setting n_splits=2 or more, got n_splits=1` -- a clear enough error
+that names an argument they never typed. The fix is the same either way.
+
+The original analysis is kept below.
 
 `build_folds` (`src/training/data.py`) computes
 `validation_ratio = 0.1 / (1.0 - 1.0 / cv_folds)`, which divides by zero when
@@ -359,6 +374,8 @@ already does with `create_tracker(enabled)`.
   (selectable schedule, legacy default, MLflow tag plus backfill script).
 - **B4**, Optuna trials crashing on a second top-level MLflow run, via the
   `optuna_trial` tracking role (see above).
+- **B2**, `--cv_folds 1`, via a parse-time rejection plus a `build_folds` guard for the
+  programmatic callers. The `ZeroDivisionError` in the original report was unreachable.
 - **B3**, invalid `HEADS`/`DIM` pairs, via [ADR 0004](adr/0004-imputation-decoder-task.md)
   (constrained sampling plus `TrialPruned` on failure).
 - **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)

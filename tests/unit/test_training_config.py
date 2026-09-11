@@ -212,3 +212,23 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
     }
+
+
+def test_a_single_cross_validation_fold_is_refused_with_a_way_forward() -> None:
+    """Backlog B2: `--cv_folds 1` divided by zero several steps into the run.
+
+    One fold is not cross-validation, and the validation ratio `build_folds` derives
+    from it is `0.1 / (1 - 1/1)`. Refusing it when the arguments are read costs the
+    user nothing, and the message names the mode they actually wanted: omitting the
+    flag entirely runs the predefined split, which is the real single-split path.
+    """
+    parser = build_training_parser()
+    single = parser.parse_args(["--dataset_name", "vehicle_00nan", "--cv_folds", "1"])
+    two = parser.parse_args(["--dataset_name", "vehicle_00nan", "--cv_folds", "2"])
+    predefined = parser.parse_args(["--dataset_name", "vehicle_00nan"])
+
+    with pytest.raises(SystemExit, match="cv_folds"):
+        validate_parsed_args(single)
+    # The flag's legal values are untouched, and omitting it stays the split mode.
+    assert validate_parsed_args(two).cv_folds == 2
+    assert validate_parsed_args(predefined).cv_folds is None
