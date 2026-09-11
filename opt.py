@@ -15,7 +15,16 @@ import mlflow
 from mlflow.tracking import MlflowClient
 from contextlib import nullcontext
 
-from src.mlflow_utils import IS_OPTUNA_TAG, LR_SCHEDULER_TAG, TASK_TAG, setup_mlflow, get_or_create_experiment
+from src.mlflow_utils import (
+    IS_OPTUNA_TAG,
+    LR_SCHEDULER_TAG,
+    SEARCH_SPACE_TAG,
+    TASK_TAG,
+    setup_mlflow,
+    get_or_create_experiment,
+)
+from src.training.config import build_training_parser, validate_parsed_args
+from src.training.data import PROCESSED_DATASETS, declared_column_types
 from src.training.tracking import execution_tags
 from src.training.types import task_spec
 from src.training.types import DEFAULT_LR_SCHEDULER
@@ -58,10 +67,35 @@ class _DisabledMlflow:
         return None
 
 
-def define_search_space(trial, task: str = 'classification'):
+def define_search_space(
+    trial, task: str = 'classification', profile: str = 'full', mixed_columns: bool = True
+):
     """
-    Define the hyperparameter search space for Optuna
+    Define the hyperparameter search space for Optuna.
+
+    ``profile`` is the search-space profile (ADR 0005): ``full`` samples every knob the
+    task uses; ``reduced`` samples only the knobs that govern the task's own stage and the
+    corruption it learns from. A key the profile does not return is *held*: the trial runs
+    it at the task default, because the override replaces the base configuration.
+    ``mixed_columns`` says whether the table has both column types, which is the only case
+    in which the loss balance ``LAMBDA_NUM`` does anything.
     """
+    if profile == 'reduced':
+        params = {
+            # Corruption rate in both stages: the decode stage re-rolls masks at this rate
+            # every epoch, so the decoder learns from exactly these cells.
+            'PROB_MASCARA': trial.suggest_float('PROB_MASCARA', 0.2, 0.6, step=0.1),
+            # The stage that produces the output. The range reaches above the default
+            # 1e-3, which the old 1e-5..1e-3 range had on its upper bound.
+            'LR_DECODE': trial.suggest_float('LR_DECODE', 1e-4, 1e-2, log=True),
+            'WEIGHT_DECAY_DECODE': trial.suggest_float('WEIGHT_DECAY_DECODE', 1e-5, 1e-2, log=True),
+            # The one regulariser acting on both stages.
+            'DROPOUT': trial.suggest_float('DROPOUT', 0.1, 0.5, step=0.1),
+        }
+        if mixed_columns:
+            params['LAMBDA_NUM'] = trial.suggest_float('LAMBDA_NUM', 0.1, 10.0, log=True)
+        return params
+
     # Attention splits the width across heads, so the width must divide evenly. Sampling
     # the two independently used to produce combinations that crash, which were then
     # scored as merely terrible hyperparameters (backlog B3).
@@ -87,10 +121,15 @@ def define_search_space(trial, task: str = 'classification'):
     if task == 'imputation':
         params.update({
             'EPOCHS_DECODE': trial.suggest_int('EPOCHS_DECODE', 20, 60, step=10),
-            'LR_DECODE': trial.suggest_float('LR_DECODE', 1e-5, 1e-3, log=True),
+            # Reaches above the default 1e-3, which the old 1e-5..1e-3 range had on its
+            # upper bound (ADR 0005, decision 2: a correction, so it applies here too).
+            'LR_DECODE': trial.suggest_float('LR_DECODE', 1e-4, 1e-2, log=True),
             'WEIGHT_DECAY_DECODE': trial.suggest_float('WEIGHT_DECAY_DECODE', 1e-5, 1e-2, log=True),
-            'LAMBDA_NUM': trial.suggest_float('LAMBDA_NUM', 0.1, 10.0, log=True),
         })
+        # The loss balance weighs the numerical term against the categorical one, so on
+        # a single-type table it is a pure scale and would only waste a dimension.
+        if mixed_columns:
+            params['LAMBDA_NUM'] = trial.suggest_float('LAMBDA_NUM', 0.1, 10.0, log=True)
     else:
         params.update({
             'EPOCH_FINE': trial.suggest_int('EPOCH_FINE', 20, 60, step=10),
@@ -115,6 +154,11 @@ class ObjectiveFunctionWrapper:
         self.task = 'classification'
         self.ranking_metric = 'f1_macro'
         self.direction = 'maximize'
+        # Which knobs a trial samples, and whether the table has both column types (the
+        # only case in which the loss balance is worth a dimension). Set by
+        # run_hyperparameter_optimization once per study, never per trial.
+        self.profile = 'full'
+        self.mixed_columns = True
         self.best_score = float('-inf')
         self.best_params = None
         self.best_trial_number = None
@@ -128,7 +172,9 @@ class ObjectiveFunctionWrapper:
 
     def __call__(self, trial):
         # Define hyperparameters for this trial
-        params = define_search_space(trial, task=self.task)
+        params = define_search_space(
+            trial, task=self.task, profile=self.profile, mixed_columns=self.mixed_columns
+        )
         # Optuna's own record of the trial holds what was sampled (head count, per-head
         # width), not the configuration trained with. Keep that on the trial so the study
         # can hand on exactly what its winner ran, even after a resume.
@@ -181,6 +227,7 @@ class ObjectiveFunctionWrapper:
             # runner sets its own would otherwise be a run of no known task.
             TASK_TAG: self.task,
             IS_OPTUNA_TAG: "true",
+            SEARCH_SPACE_TAG: self.profile,
         }
 
         with mlflow.start_run(
@@ -190,6 +237,9 @@ class ObjectiveFunctionWrapper:
             nested=True,
         ) as trial_run:
             self.trial_run_ids[trial.number] = trial_run.info.run_id
+            # A param as well as a tag, so the profile shows in the trial's parameter
+            # table beside the knobs it explains.
+            mlflow.log_param(SEARCH_SPACE_TAG, self.profile)
             try:
                 # Run the training with these hyperparameters
                 metrics = train_main(args, return_metrics=True)
@@ -294,6 +344,27 @@ def run_hyperparameter_optimization(args):
     objective.ranking_metric = task.ranking_metric
     objective.direction = task.direction
     objective.best_score = float("-inf") if task.direction == "maximize" else float("inf")
+    # Unspecified, the profile follows the task: only imputation defines ``reduced`` so far.
+    profile = getattr(args, "search_space", None) or (
+        "reduced" if task.name == "imputation" else "full"
+    )
+    objective.profile = profile
+    # Whether the table has both column types decides whether the loss balance is
+    # sampled. Read once from the table's header and the pipeline's declaration, the way
+    # the loader does it, never from dtypes (electricity's integer-coded ``day`` is
+    # declared categorical) and never per trial.
+    base_dataset_name = args.dataset_name.split('_')[0]
+    header = pd.read_csv(
+        PROCESSED_DATASETS / base_dataset_name / f"{args.dataset_name}.csv", nrows=0
+    ).columns.tolist()
+    categorical_columns, numerical_columns = declared_column_types(
+        header, getattr(args, "label_column", None) or "class", base_dataset_name
+    )
+    objective.mixed_columns = bool(categorical_columns) and bool(numerical_columns)
+    logger.info(
+        f"Search-space profile: {profile}; table has both column types: "
+        f"{objective.mixed_columns}"
+    )
     
     # Create an Optuna study
     storage_name = f"sqlite:///{optuna_dir}/optuna_study.db"
@@ -320,7 +391,7 @@ def run_hyperparameter_optimization(args):
         cv_folds=None,
         lr_scheduler=getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
         environment=None,
-        extra_tags={"n_trials": str(args.n_trials)},
+        extra_tags={"n_trials": str(args.n_trials), SEARCH_SPACE_TAG: profile},
         task=task.name,
         is_optuna=True,
     )
@@ -335,6 +406,7 @@ def run_hyperparameter_optimization(args):
             "dataset_name": args.dataset_name,
             "seed": args.seed,
             "optuna_storage": storage_name,
+            SEARCH_SPACE_TAG: profile,
         })
 
         # Give the objective access to the parent run so it can open child runs
@@ -451,22 +523,20 @@ def run_hyperparameter_optimization(args):
     logger.info(f"All Optuna results saved in: {optuna_dir}")
 
 
+def build_parser() -> argparse.ArgumentParser:
+    """The training parser, so a study launched here accepts every flag main.py accepts.
+
+    opt.py used to keep a private parser that lacked --task, --lr_scheduler,
+    --disable_mlflow and --metrics_dir, so a study launched through it could not be an
+    imputation study at all. One parser for both entry points cannot drift (ADR 0005).
+    """
+    parser = build_training_parser()
+    parser.description = "TRIDENT: hyperparameter optimization with Optuna"
+    return parser
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='TRIDENT: Hyperparameter optimization with Optuna')
-    
-    # Required parameters
-    parser.add_argument('--dataset_name', type=str, required=True,
-                        help='Dataset name (without the .csv extension)')
-    
-    # Optional parameters
-    parser.add_argument('--n_trials', type=int, default=50,
-                        help='Number of Optuna trials to run (default: 50)')
-    parser.add_argument('--output_dir', type=str, default='results',
-                        help='Output directory for Optuna results')
-    parser.add_argument('--seed', type=int, default=42,
-                        help='Seed for random number generation')
-    parser.add_argument('--retrain_best', action='store_true',
-                        help='Retrain the model with the best parameters after optimization')
-    
-    args = parser.parse_args()
-    run_hyperparameter_optimization(args)
+    arguments = validate_parsed_args(build_parser().parse_args())
+    if getattr(arguments, "all", False):
+        raise SystemExit("error: opt.py runs one dataset; pass --dataset_name")
+    run_hyperparameter_optimization(arguments)

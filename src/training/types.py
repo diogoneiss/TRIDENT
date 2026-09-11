@@ -24,6 +24,12 @@ DEFAULT_LR_SCHEDULER = "cosine_legacy"
 TASK_NAMES: tuple[str, ...] = ("classification", "imputation")
 DEFAULT_TASK = "classification"
 
+# Search-space profiles for a hyper-parameter search (ADR 0005). ``full`` samples every
+# knob the task uses; ``reduced`` samples only the knobs that govern the task's own stage
+# and the corruption it learns from, holding the rest at the task default. Only the
+# imputation task defines ``reduced`` so far; the flag resolves per task when unspecified.
+SEARCH_SPACE_PROFILES: tuple[str, ...] = ("full", "reduced")
+
 
 @dataclass(frozen=True)
 class TaskSpec:

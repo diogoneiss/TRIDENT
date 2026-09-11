@@ -50,6 +50,41 @@ def test_building_a_single_fold_says_what_is_wrong_instead_of_dividing_by_zero()
     assert len(build_folds(frame, label_column="class", cv_folds=2, seed=42)) == 2
 
 
+def test_column_types_follow_the_pipelines_declaration_not_the_dtypes() -> None:
+    """electricity's integer-coded ``day`` is declared categorical; dtype inference misses it.
+
+    The declaration is the categorical-columns file, and every other feature is numerical.
+    This is what preparing a dataset has always done, exposed so a study can read the mix
+    from a table's header without loading the table (ADR 0005, decision 2).
+    """
+    from src.training.data import declared_column_types
+
+    def header(base: str) -> list[str]:
+        return pd.read_csv(
+            data.PROCESSED_DATASETS / base / f"{base}_00nan.csv", nrows=0
+        ).columns.tolist()
+
+    electricity_categorical, electricity_numerical = declared_column_types(
+        header("electricity"), "class", "electricity"
+    )
+    vehicle_categorical, vehicle_numerical = declared_column_types(
+        header("vehicle"), "class", "vehicle"
+    )
+    credit_categorical, credit_numerical = declared_column_types(
+        header("credit-g"), "class", "credit-g"
+    )
+
+    assert electricity_categorical == ["day"]
+    assert len(electricity_numerical) == 7 and "class" not in electricity_numerical
+    assert vehicle_categorical == [] and len(vehicle_numerical) == 18
+    assert credit_categorical == [
+        "checking_status", "credit_history", "purpose", "savings_status", "employment",
+        "personal_status", "other_parties", "property_magnitude", "other_payment_plans",
+        "housing", "job", "own_telephone", "foreign_worker",
+    ]
+    assert len(credit_numerical) == 7
+
+
 def test_a_prepared_dataset_can_return_its_numbers_to_original_units() -> None:
     """Scaled numbers are unreadable, so a preview has to be able to undo the scaling.
 

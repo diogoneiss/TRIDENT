@@ -47,6 +47,9 @@ LR_SCHEDULER_BACKFILLED_TAG = "lr_scheduler_backfilled"
 TASK_TAG = "task"
 TASK_BACKFILLED_TAG = "task_backfilled"
 IS_OPTUNA_TAG = "is_optuna"
+# Which search-space profile a study sampled (ADR 0005). Sparse: only Optuna runs carry
+# it, and the dense is_optuna tag already gates any filter on it, so no backfill.
+SEARCH_SPACE_TAG = "search_space"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:

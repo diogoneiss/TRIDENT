@@ -8,13 +8,13 @@ import pytest
 from opt import define_search_space
 
 
-def _sampled(task: str, trials: int = 40) -> list[dict]:
+def _sampled(task: str, trials: int = 40, **space) -> list[dict]:
     """Draw a spread of trials so a constraint is tested against many combinations."""
     drawn: list[dict] = []
     study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=0))
 
     def objective(trial):
-        drawn.append(define_search_space(trial, task=task))
+        drawn.append(define_search_space(trial, task=task, **space))
         return 0.0
 
     optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -36,6 +36,68 @@ def test_a_search_tunes_the_stage_its_task_actually_runs() -> None:
     )
     assert not {"EPOCH_FINE", "LR_FINE", "WEIGHT_DECAY_FINE"} & set(for_imputation)
     assert "DIM" in for_classification and "DIM" in for_imputation
+
+
+def test_the_reduced_profile_samples_only_what_moves_the_decoder() -> None:
+    """A held hyperparameter runs at the task default, so it must not appear at all.
+
+    The reduced profile gives freedom to the decode stage and to the corruption it learns
+    from, and to the loss balance only where both column types exist (ADR 0005,
+    decision 2).
+    """
+    mixed = _sampled("imputation", trials=1, profile="reduced", mixed_columns=True)[0]
+    single_type = _sampled("imputation", trials=1, profile="reduced", mixed_columns=False)[0]
+
+    assert set(mixed) == {
+        "PROB_MASCARA", "LR_DECODE", "WEIGHT_DECAY_DECODE", "DROPOUT", "LAMBDA_NUM"
+    }
+    assert set(single_type) == {"PROB_MASCARA", "LR_DECODE", "WEIGHT_DECAY_DECODE", "DROPOUT"}
+
+
+def test_the_decode_learning_rate_can_exceed_its_default_in_both_profiles() -> None:
+    """The default is 1e-3 and the old range ended there, so nothing above it was reachable.
+
+    Forty log-uniform draws over a range that reaches 1e-2 land above 1e-3 with certainty
+    for any practical purpose; a range capped at the default never does.
+    """
+    for profile in ("full", "reduced"):
+        drawn = _sampled("imputation", trials=40, profile=profile)
+        assert max(params["LR_DECODE"] for params in drawn) > 1e-3, profile
+
+
+def test_lambda_num_is_sampled_only_where_both_column_types_exist() -> None:
+    """On a single-type table the loss balance is a pure scale, so sampling it wastes a dimension.
+
+    The full profile keeps every other knob; only the loss balance follows the table.
+    """
+    mixed = _sampled("imputation", trials=1, profile="full", mixed_columns=True)[0]
+    single_type = _sampled("imputation", trials=1, profile="full", mixed_columns=False)[0]
+
+    assert "LAMBDA_NUM" in mixed
+    assert "LAMBDA_NUM" not in single_type
+    assert set(single_type) == set(mixed) - {"LAMBDA_NUM"}
+    assert len(mixed) == 15
+
+
+def test_the_study_entry_point_accepts_every_training_flag() -> None:
+    """opt.py's private parser lacked --task, --lr_scheduler, --disable_mlflow and
+    --metrics_dir, so a study launched through it could not be an imputation study at all.
+
+    One parser for both entry points cannot drift (ADR 0005, decision 1).
+    """
+    from opt import build_parser
+
+    args = build_parser().parse_args(
+        [
+            "--dataset_name", "credit-g_20nan", "--task", "imputation",
+            "--search_space", "reduced", "--lr_scheduler", "cosine", "--disable_mlflow",
+            "--metrics_dir", "scratch", "--n_trials", "3", "--retrain_best",
+        ]
+    )
+
+    assert args.task == "imputation" and args.search_space == "reduced"
+    assert args.lr_scheduler == "cosine" and args.disable_mlflow is True
+    assert args.metrics_dir == "scratch" and args.n_trials == 3 and args.retrain_best is True
 
 
 def test_a_search_never_tunes_how_hard_its_own_exam_is() -> None:

@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from .types import (
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
+    SEARCH_SPACE_PROFILES,
     TASK_NAMES,
     DatasetSpec,
     Hyperparameters,
@@ -135,6 +136,15 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     if run_all and getattr(args, "use_optuna", False):
         raise SystemExit("error: --all and --use_optuna are mutually exclusive")
 
+    # The reduced profile holds the shared knobs and samples the decode stage; for
+    # classification it would sample a space no one has asked to run (ADR 0005). Refused
+    # here rather than mid-study, like --score_null_path.
+    if (
+        getattr(args, "search_space", None) == "reduced"
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --search_space reduced requires --task imputation")
+
     return args
 
 
@@ -207,4 +217,17 @@ def build_training_parser() -> argparse.ArgumentParser:
     parser.add_argument("--use_optuna", action="store_true")
     parser.add_argument("--n_trials", type=int, default=50)
     parser.add_argument("--retrain_best", action="store_true")
+    parser.add_argument(
+        "--search_space",
+        type=str,
+        default=None,
+        choices=SEARCH_SPACE_PROFILES,
+        help=(
+            "Which hyperparameters an Optuna study samples (ADR 0005). 'full' samples every "
+            "knob the task uses; 'reduced' samples only the decode-stage knobs, the mask "
+            "rate and dropout, holding the rest at the task default. Unspecified resolves "
+            "to 'reduced' for --task imputation and 'full' for classification; 'reduced' is "
+            "defined only for the imputation task."
+        ),
+    )
     return parser

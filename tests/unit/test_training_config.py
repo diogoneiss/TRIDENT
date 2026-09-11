@@ -186,6 +186,28 @@ def test_the_null_path_diagnostic_is_refused_without_the_imputation_task() -> No
     assert resolve_training_request(with_imputation).score_null_path is True
 
 
+def test_a_reduced_search_space_exists_only_for_imputation_until_someone_defines_it() -> None:
+    """The reduced profile holds the shared knobs and samples the decode stage, so for
+    classification it would sample a space no one has asked to run (ADR 0005, decision 1).
+
+    Refused at parse time, like --score_null_path, rather than mid-study. Left unspecified,
+    the flag stays unspecified so the study can resolve it per task.
+    """
+    parser = build_training_parser()
+    with_classification = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--search_space", "reduced"]
+    )
+    with_imputation = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--task", "imputation", "--search_space", "reduced"]
+    )
+    unspecified = parser.parse_args(["--dataset_name", "credit-g_20nan"])
+
+    with pytest.raises(SystemExit, match="search_space"):
+        validate_parsed_args(with_classification)
+    assert validate_parsed_args(with_imputation).search_space == "reduced"
+    assert unspecified.search_space is None
+
+
 def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
     """A recorded parameter that did nothing misleads whoever reads the run later.
 

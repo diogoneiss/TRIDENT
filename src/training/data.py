@@ -18,18 +18,16 @@ from .types import DatasetSpec, FoldSplit, PreparedDataset
 PROCESSED_DATASETS = Path("datasets/processed_datasets")
 
 
-def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
-    """Load, encode, and scale a dataset before constructing its folds."""
-    dataset_path = _variant_path(spec.base_dataset_name, spec.dataset_name)
-    splits_path = PROCESSED_DATASETS / "splits" / f"{spec.base_dataset_name}_split.json"
-    categorical_columns_path = (
-        Path("datasets/categorical_columns") / f"{spec.base_dataset_name}.txt"
-    )
+def declared_column_types(
+    columns: list[str], label_column: str, base_dataset_name: str
+) -> tuple[list[str], list[str]]:
+    """The pipeline's column types: the declared categorical list, every other feature numerical.
 
-    if not dataset_path.exists():
-        raise FileNotFoundError(f"Dataset not found: {dataset_path}")
-
-    frame = pd.read_csv(dataset_path)
+    The declaration is ``datasets/categorical_columns/<base>.txt``; dtypes never decide,
+    which is why an integer-coded column such as electricity's ``day`` is categorical here.
+    Exposed so a hyper-parameter search can read a table's mix from its header alone.
+    """
+    categorical_columns_path = Path("datasets/categorical_columns") / f"{base_dataset_name}.txt"
     categorical_columns: list[str] = []
     if categorical_columns_path.exists() and categorical_columns_path.stat().st_size > 0:
         content = categorical_columns_path.read_text().strip()
@@ -39,6 +37,24 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
     else:
         print("Warning: Categorical columns file not found. All columns will be treated as numerical.")
 
+    feature_columns = [column for column in columns if column != label_column]
+    numerical_columns = [column for column in feature_columns if column not in categorical_columns]
+    return categorical_columns, numerical_columns
+
+
+def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
+    """Load, encode, and scale a dataset before constructing its folds."""
+    dataset_path = _variant_path(spec.base_dataset_name, spec.dataset_name)
+    splits_path = PROCESSED_DATASETS / "splits" / f"{spec.base_dataset_name}_split.json"
+
+    if not dataset_path.exists():
+        raise FileNotFoundError(f"Dataset not found: {dataset_path}")
+
+    frame = pd.read_csv(dataset_path)
+    categorical_columns, numerical_columns = declared_column_types(
+        frame.columns.tolist(), spec.label_column, spec.base_dataset_name
+    )
+
     label_encoder = LabelEncoder()
     frame[spec.label_column] = label_encoder.fit_transform(frame[spec.label_column])
     print("=== Label Mapping ===")
@@ -46,9 +62,6 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
         print(f"{index} -> {label}")
     print("====================")
 
-    feature_columns = frame.columns.tolist()
-    feature_columns.remove(spec.label_column)
-    numerical_columns = [column for column in feature_columns if column not in categorical_columns]
     scaler = None
     raw_numerical = None
     if numerical_columns:

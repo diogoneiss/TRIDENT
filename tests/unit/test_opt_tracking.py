@@ -18,6 +18,12 @@ def mlflow_backend(tmp_path, monkeypatch) -> Iterator[str]:
     tracking_uri = f"sqlite:///{(tmp_path / 'mlflow.db').as_posix()}"
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("MLFLOW_TRACKING_URI", tracking_uri)
+    # A study reads the table's header to learn its column mix before the first trial
+    # (ADR 0005). Training is stubbed, so only the header has to exist: vehicle, all
+    # numerical, no categorical declaration.
+    table = tmp_path / "datasets" / "processed_datasets" / "vehicle" / "vehicle_00nan.csv"
+    table.parent.mkdir(parents=True)
+    table.write_text("compactness,circularity,class\n")
     # ``run_hyperparameter_optimization`` rebinds the module-level name when
     # tracking is disabled; make sure that never leaks into other tests.
     monkeypatch.setattr(opt, "mlflow", opt.mlflow)
@@ -103,6 +109,9 @@ def test_each_trial_trains_inside_its_own_nested_run(mlflow_backend, monkeypatch
     assert study.data.tags["run_role"] == "optuna_study"
     assert study.data.tags["run_type"] == "optuna_study"
     assert study.data.tags["lr_scheduler"] == "cosine_legacy"
+    # Unspecified, a classification study samples the full space and says so.
+    assert study.data.tags["search_space"] == "full"
+    assert study.data.params["search_space"] == "full"
     assert study.data.metrics["optuna/best_objective_value"] == pytest.approx(0.6)
     assert study.data.metrics["optuna/best_trial_number"] == 2.0
     assert study.data.tags["best_trial_number"] == "2"
@@ -264,6 +273,33 @@ def test_the_configuration_a_study_hands_on_is_the_one_its_best_trial_trained_wi
         if name.startswith("optuna_vehicle_00nan_")
     )
     assert study.data.params["best_DIM"] == str(winning["DIM"])
+
+
+def test_an_imputation_study_records_and_samples_the_reduced_profile_by_default(
+    mlflow_backend, monkeypatch
+) -> None:
+    """Unspecified, an imputation study resolves to ``reduced``; the choice is a sparse tag and
+    param on the study parent and every trial, so studies compare within one profile.
+
+    vehicle has no categorical column, so the loss balance is not among the sampled knobs.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2))
+
+    runs = _runs_by_name(MlflowClient(tracking_uri=mlflow_backend))
+    study = next(run for name, run in runs.items() if name.startswith("optuna_vehicle_00nan_"))
+    trials = [run for name, run in runs.items() if name.startswith("optuna_trial_")]
+    assert study.data.tags["search_space"] == "reduced"
+    assert study.data.params["search_space"] == "reduced"
+    assert all(trial.data.tags["search_space"] == "reduced" for trial in trials)
+    assert all(trial.data.params["search_space"] == "reduced" for trial in trials)
+    assert all(
+        set(args.hyperparams_override)
+        == {"PROB_MASCARA", "LR_DECODE", "WEIGHT_DECAY_DECODE", "DROPOUT"}
+        for args in stub.calls
+    )
 
 
 def test_disabled_tracking_runs_the_study_without_touching_the_store(
