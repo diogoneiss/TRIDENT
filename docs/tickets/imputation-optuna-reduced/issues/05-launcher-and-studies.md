@@ -1,6 +1,6 @@
 # 05. The launcher and the six studies
 
-Status: ready-for-agent
+Status: in-progress (Claude, session of 2026-09-11; six studies running)
 Blocked by: 04
 Plan task: 5. ADR 0005 decision 4. Wayfinder ticket 03.
 
@@ -22,7 +22,7 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
 
 ## Acceptance criteria
 
-- [ ] `-DryRun` prints the six commands and runs nothing.
+- [x] `-DryRun` prints the six commands and runs nothing.
 - [ ] Six promoted files exist: `datasets/hiperparams/<base>/<base>_<variant>.imputation.json`
       for the three datasets and two variants, each complete, each committed.
 - [ ] Six study parents in the store with `is_optuna = true`, `task = imputation`,
