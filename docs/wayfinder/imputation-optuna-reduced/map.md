@@ -2,6 +2,11 @@
 
 Label: wayfinder:map
 Charted: 2026-09-10
+**Status: destination reached 2026-09-10.** All eight tickets are resolved. The handoff
+is [ADR 0005](../../adr/0005-reduced-optuna-search-for-imputation.md), the
+[implementation plan](plan.md) and the execution tickets under
+[`docs/tickets/imputation-optuna-reduced/`](../../tickets/imputation-optuna-reduced/spec.md);
+this map and its tickets remain as the record of how each decision was reached.
 Tracker: local markdown. `AGENTS.md` keeps tickets, plans and decisions under `docs/`,
 so this effort lives at `docs/wayfinder/imputation-optuna-reduced/`. Tickets are
 `issues/NN-<slug>.md`; each carries `Type:`, `Status:` (`open` / `claimed` / `resolved`)
@@ -13,8 +18,8 @@ naming a ticket). One decision per session.
 
 Charting note: three grilling rounds in the charting session settled the six decision
 tickets (01 to 06) on the spot. They are recorded as resolved so each decision and its
-reasoning has one home. The repair (07) was resolved the same day in commit `161fc92`; the
-destination (08) is the one open ticket.
+reasoning has one home. The repair (07) was resolved the same day in commit `161fc92`, and
+the destination (08) the same day after it.
 
 ## Destination
 
@@ -175,6 +180,13 @@ study. The six studies and the comparison runs are execution, launched from the 
   and every saved file carry what the winner ran. Proof: a two-trial credit-g study scored
   both trials on a scratch store. Measured: a single-split trial costs 66 s on credit-g and
   293 s on kr-vs-kp, 1.7 times a 2-fold fold.
+- [08. Record the design: ADR 0005 and the implementation plan](issues/08-record-adr-and-plan.md):
+  the destination. `docs/adr/0005-reduced-optuna-search-for-imputation.md` synthesises the
+  seven decisions with links back to every ticket; `plan.md` orders six tasks, the four
+  code tasks serialised on `opt.py`; execution tickets 01 to 06 under
+  `docs/tickets/imputation-optuna-reduced/`; seven plumbing choices pinned in the ADR
+  beyond the grilling, listed in the ticket for veto. `docs/BACKLOG.md` gains H5 and the
+  notes on I2 and the `--retrain_best` interval.
 
 ## Not yet specified
 

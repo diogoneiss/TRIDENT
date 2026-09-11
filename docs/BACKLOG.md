@@ -29,6 +29,7 @@ before anyone touches them, because they change published results.
 | H2 | Padding-mask branch is unreachable | Low | No |
 | H3 | `torch.save` pickles the whole model object | Medium | No |
 | H4 | `opt.py` rebinds the module-level `mlflow` name | Low | No |
+| H5 | The decode stage logs its timing under `time/finetune_seconds` | Low | No |
 
 ---
 
@@ -357,6 +358,14 @@ study leaves the file holding a mid-search best rather than a final one.
 Suggested fix: write to the timestamped `optuna_<timestamp>/` directory only, and
 require an explicit flag to promote a result into `datasets/hiperparams/`.
 
+**Decided 2026-09-10** by [ADR 0005](adr/0005-reduced-optuna-search-for-imputation.md)
+decision 5, exactly as suggested: the running best stays inside the study directory for
+both tasks, `--promote_best` writes the shared file for classification and a task-keyed
+`<dataset>.imputation.json` for imputation, and the promoted file is complete. Lands with
+[execution ticket 03](tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md).
+The end-of-study write already skips the shared file for imputation studies since
+`161fc92`.
+
 ---
 
 ## Code health
@@ -397,6 +406,18 @@ already does with `create_tracker(enabled)`.
 
 ---
 
+### H5. The decode stage logs its timing under `time/finetune_seconds`
+
+`stage_timing_metrics` names the second stage's wall-clock `time/finetune_seconds`
+whatever the task, so an imputation run's decode stage reports under fine-tuning's key
+(seen on every imputation run in the store, and recorded in ADR 0005 decision 7). Nothing
+reads the key by task, so nothing is wrong, but whoever looks for `time/decode_seconds`
+finds nothing. Renaming it per task changes the summary key set the regression fixtures
+do not pin (timings are tracked metrics, never fold metrics), so it is cheap; it is left
+here rather than done so the two imputation runs already tracked keep their key.
+
+---
+
 ## Fixed already
 
 - **B1**, the per-batch cosine schedule, via [ADR 0003](adr/0003-selectable-learning-rate-schedule.md)
@@ -409,7 +430,15 @@ already does with `create_tracker(enabled)`.
   Optuna's lowest `PROB_MASCARA`, with the draw sequence untouched. Full vectorisation
   stays open and is protected.
 - **B3**, invalid `HEADS`/`DIM` pairs, via [ADR 0004](adr/0004-imputation-decoder-task.md)
-  (constrained sampling plus `TrialPruned` on failure).
+  (constrained sampling plus `TrialPruned` on failure). **Its fix broke `--retrain_best`
+  for both tasks** between `356bcca` and `161fc92`: the sampled per-head width was
+  recorded under the name `DIM`, and `study.best_params` fed the retrain, the saved file
+  and the study's `best_` params, so a retrain built a model the winning trial never ran.
+  Fixed in `161fc92` (the sampled value is `HEAD_DIM`; the trained configuration travels
+  on the trial as a user attribute), together with the imputation study's missing `task`
+  on its trial namespaces, its unconditional end-of-study write, the study parent's
+  missing `task` / `is_optuna` tags and the unseeded sampler; see ADR 0005 decision 7. No
+  run in the store used `--retrain_best` in that interval.
 - **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)
   (exact truth retained before scaling; three-decimal display with a rounding marker).
   Concern 3, unbounded numerical imputations, stands as recorded behaviour.
@@ -428,6 +457,8 @@ These came out of the same review and are done, in
 ## Open housekeeping
 
 `datasets/hiperparams/vehicle/vehicle_00nan.json` was created to pin the single
-vehicle run. It is untracked and its contents now match the defaults exactly, so it
-changes nothing today. It will silently keep vehicle at 300/150 if the defaults are
+vehicle run. **Verified absent on 2026-09-10**: no configuration JSON exists anywhere
+under `datasets/hiperparams/` (two empty directories remain), so every run uses the
+defaults unless a promoted file appears. The note below describes what the file would
+do if recreated. Its contents matched the defaults exactly, so it changed nothing. It will silently keep vehicle at 300/150 if the defaults are
 ever lowered again. Delete it or commit it deliberately.
