@@ -24,7 +24,7 @@ before anyone touches them, because they change published results.
 | P1 | `preprocess_table` row fallback is a Python loop -- **partly fixed**, the rest is protected | Low now | Partly |
 | P2 | Hand-rolled attention instead of fused SDPA | Medium | Yes |
 | I1 | No way to set hyperparameters from the CLI | Medium | No |
-| I2 | Optuna overwrites the dataset's hyperparameter file | Medium | No |
+| ~~I2~~ | ~~Optuna overwrites the dataset's hyperparameter file~~ — fixed, see below | Medium | No |
 | H1 | `create_pretrain_datasets` is dead code | Low | No |
 | H2 | Padding-mask branch is unreachable | Low | No |
 | H3 | `torch.save` pickles the whole model object | Medium | No |
@@ -364,7 +364,7 @@ both tasks, `--promote_best` writes the shared file for classification and a tas
 `<dataset>.imputation.json` for imputation, and the promoted file is complete. Lands with
 [execution ticket 03](tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md).
 The end-of-study write already skips the shared file for imputation studies since
-`161fc92`.
+`161fc92`. **Fixed 2026-09-11** in `a24dcec` ([execution ticket 03](tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md)).
 
 ---
 
@@ -439,6 +439,12 @@ here rather than done so the two imputation runs already tracked keep their key.
   on its trial namespaces, its unconditional end-of-study write, the study parent's
   missing `task` / `is_optuna` tags and the unseeded sampler; see ADR 0005 decision 7. No
   run in the store used `--retrain_best` in that interval.
+- **I2**, the study overwriting the dataset's hyperparameter file, via
+  [ADR 0005](adr/0005-reduced-optuna-search-for-imputation.md) decision 5
+  (`a24dcec`): the running best and the final best stay inside the study directory for
+  both tasks, and `--promote_best` publishes a complete configuration, task-keyed
+  (`<dataset>.imputation.json`) for imputation and the shared file for classification.
+  Every run logs a `config_source` param.
 - **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)
   (exact truth retained before scaling; three-decimal display with a rounding marker).
   Concern 3, unbounded numerical imputations, stands as recorded behaviour.
