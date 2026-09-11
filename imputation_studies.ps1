@@ -6,6 +6,9 @@
 #   .\imputation_studies.ps1              # run the six studies (about nineteen hours)
 #   .\imputation_studies.ps1 -DryRun      # only print what would run
 #   .\imputation_studies.ps1 -Compare     # the twelve comparison runs (about two hours)
+#   .\imputation_studies.ps1 -Scheduler plateau -NoPromote
+#                                         # the same six studies under another schedule,
+#                                         # leaving the promoted files alone (exploration)
 #
 # Both modes write to the shared mlflow.db: they are the experiment. The studies are
 # independent, so a subset can run elsewhere with the same seed:
@@ -20,6 +23,7 @@ param(
     [string]$Scheduler = "cosine",
     [int]$CvFolds = 5,
     [switch]$Compare,
+    [switch]$NoPromote,
     [switch]$DryRun
 )
 
@@ -52,13 +56,17 @@ foreach ($base in $Datasets) {
 
         if (-not $Compare) {
             Write-Host ""
-            Write-Host "=== $dataset | reduced study, $Trials trials ===" -ForegroundColor Cyan
-            $start = Get-Date
-            $status = Invoke-Trainer @(
+            Write-Host "=== $dataset | reduced study, $Trials trials, $Scheduler ===" -ForegroundColor Cyan
+            $studyArgs = @(
                 "--dataset_name", $dataset, "--task", "imputation", "--use_optuna",
                 "--search_space", "reduced", "--n_trials", $Trials,
-                "--lr_scheduler", $Scheduler, "--seed", $Seed, "--promote_best"
+                "--lr_scheduler", $Scheduler, "--seed", $Seed
             )
+            # A study promotes its winner unless told not to: a second schedule's study
+            # would otherwise overwrite the file the first one published.
+            if (-not $NoPromote) { $studyArgs += "--promote_best" }
+            $start = Get-Date
+            $status = Invoke-Trainer $studyArgs
             $elapsed = (Get-Date) - $start
             $results += [pscustomobject]@{
                 Dataset = $dataset; Run = "study"; Status = $status
@@ -124,7 +132,11 @@ if ($results.Count -gt 0) {
         Write-Host "Compare in MLflow: tags.run_role = 'parent', tags.task = 'imputation', tags.is_optuna = 'false', tags.lr_scheduler = '$Scheduler', grouped by params.config_source"
         Write-Host "Metric: cv/test/impute/induced/impute_score/mean with ci95_lower / ci95_upper (lower is better; 1.0 is baseline parity)"
     } else {
-        Write-Host "Studies in MLflow: tags.run_role = 'optuna_study', tags.task = 'imputation', tags.search_space = 'reduced'"
-        Write-Host "Promoted files: datasets/hiperparams/<base>/<base>_<variant>.imputation.json (commit them)"
+        Write-Host "Studies in MLflow: tags.run_role = 'optuna_study', tags.task = 'imputation', tags.search_space = 'reduced', tags.lr_scheduler = '$Scheduler'"
+        if ($NoPromote) {
+            Write-Host "Nothing promoted (-NoPromote): the winners are in each study's results directory and on its MLflow run"
+        } else {
+            Write-Host "Promoted files: datasets/hiperparams/<base>/<base>_<variant>.imputation.json (commit them)"
+        }
     }
 }
