@@ -6,8 +6,11 @@ experiments.
 ## Language
 
 **Fold-ranking metric**:
-The classification metric that orders cross-validation folds for diagnostic
-retention. In TRIDENT, it is `f1_macro`.
+The metric that orders cross-validation folds for diagnostic retention, paired
+with the direction that makes a fold the best one. Each task declares its own:
+the classification task ranks by `f1_macro`, higher being better; the imputation
+task ranks by `impute_score`, lower being better. The pair travels together,
+because the selection inverts without the direction.
 _Avoid_: primary score, best metric
 
 **Internal CV interval**:
@@ -18,8 +21,8 @@ _Avoid_: confidence interval, generalization guarantee
 
 **Loss band**:
 The mean and internal CV interval for one loss series at a given training
-epoch. TRIDENT has bands for pre-training and fine-tuning, each with train and
-validation loss.
+epoch. TRIDENT has bands for pre-training and for the task's second stage
+(fine-tuning or the decode stage), each with train and validation loss.
 _Avoid_: loss confidence interval, loss summary
 
 **Single-split run**:
@@ -54,8 +57,9 @@ include only mean and internal CV bounds at each epoch.
 _Avoid_: aggregate run, average fold
 
 **Stage timing**:
-The wall-clock seconds one fold spent in pre-training or fine-tuning, measured
-in the runner around each stage call. It excludes data preparation, plotting,
+The wall-clock seconds one fold spent in pre-training or in the task's second
+stage (fine-tuning or the decode stage), measured in the runner around each
+stage call. It excludes data preparation, plotting,
 and artifact writes, and is only comparable between runs that share the same
 `device`, `gpu_name`, `torch_version`, and `cuda_version` tags. Timings are
 tracked metrics, never fold metrics, so they stay out of the regression
@@ -94,3 +98,45 @@ Macro F1 is the pre-specified measure used to assess ablation effects.
 Accuracy, micro F1, precision, recall, and confusion-derived measures are
 secondary diagnostics and do not independently determine the study conclusion.
 _Avoid_: primary score, co-primary metric
+
+**Self-masked cell**:
+An observed feature cell that TRIDENT's dynamic masking hides behind the mask
+token at run time. Training re-rolls them every epoch; imputation evaluation
+draws them once per fold at the evaluation mask rate. They exist on every
+dataset variant, including `_00nan`.
+_Avoid_: artificial NaN, corrupted cell, dynamic-mask cell
+
+**Induced-missing cell**:
+A feature cell that is missing in a `_20nan` to `_80nan` dataset variant but
+observed in the row-aligned `_00nan` variant of the same base dataset. The
+dataset generator injected it, so its true value is known. Native missingness
+present in `_00nan` itself is never an induced-missing cell.
+_Avoid_: true missing, injected NaN, artificial NaN
+
+**Imputation ground truth**:
+The true value of a scored cell: the variant's own value for a self-masked cell,
+and the `_00nan` sibling's value for an induced-missing cell. Imputation error
+compares the decoder's reconstruction against it on the test fold only; training
+never reads the sibling, and induced-missing cells are presented to the model as
+the mask token when they are scored.
+_Avoid_: original value, clean dataset, target table
+
+**Imputation task**:
+The training task in which the model reconstructs hidden feature values rather
+than predicting a label. It shares pre-training with the classification task and
+replaces classifier fine-tuning with the decode stage. It is chosen per
+invocation, never per dataset, and its runs carry the `task` tag.
+_Avoid_: decode mode, reconstruction mode, decode task
+
+**Decode stage**:
+The second training stage of the imputation task, in which the decoder is
+trained on self-masked cells with masks re-rolled every epoch. It mirrors
+classifier fine-tuning in schedule, checkpoint selection and stage timing, and
+never re-initialises the pretrained encoder.
+_Avoid_: decoder fine-tuning, stage two, imputation fine-tuning
+
+**Decoder**:
+The per-column output heads that map the transformer's output at a hidden cell
+back to a value: a distribution over the column's real categories, or a scalar
+in scaled space. It can never emit a mask, null or placeholder token.
+_Avoid_: reconstruction head, output layer, imputer head
