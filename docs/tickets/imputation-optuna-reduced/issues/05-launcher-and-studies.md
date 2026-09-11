@@ -46,3 +46,17 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
   `--task imputation`, work in progress in the working copy). Different purpose from this
   ticket's launcher, but read it before writing `imputation_studies.ps1` so the two share
   the same shape, and do not overwrite it.
+
+- 2026-09-11, morning: three studies finished (credit-g_20nan 0.7763 in 44.6 min,
+  credit-g_40nan 0.8051 in 42.0 min, kr-vs-kp_20nan 0.6703 in 159 min; 40/40 trials each,
+  `best_trial` tagged, importances logged). In every study the decode learning rate is
+  the dominant knob (0.39 to 0.52) and the worst trials cluster at its low end (median
+  2.4e-4); the mask rate is near irrelevant (0.02 to 0.04). Full numbers land here when
+  the six are done.
+- 2026-09-11, morning: the user asked for the same six studies under `plateau`, to see
+  whether the learning-rate finding depends on the schedule. Queued behind the cosine
+  batch, after ticket 06's `-Compare` runs, as `imputation_studies.ps1 -Scheduler plateau
+  -NoPromote` (new switch, `d69e344`): nothing promoted, so the cosine winners stay the
+  promoted configurations; the plateau studies are told apart by `tags.lr_scheduler =
+  plateau`. Exploration outside ADR 0005's plan; queue log `results/imputation_queue_20260911.*`.
+
