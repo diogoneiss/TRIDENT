@@ -109,6 +109,7 @@ class MlflowTracker:
         extra_tags: Mapping[str, str] | None = None,
         task: str = DEFAULT_TASK,
         is_optuna: bool = False,
+        config_source: str = "defaults",
     ) -> Iterator["MlflowTracker"]:
         setup_mlflow()
         self.experiment_id = get_or_create_experiment(dataset_name)
@@ -136,7 +137,7 @@ class MlflowTracker:
             run_name=f"{prefix}_{dataset_name}_{timestamp}",
             tags=tags,
         ):
-            _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task)
+            _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task, config_source)
             yield self
 
     @contextmanager
@@ -266,6 +267,7 @@ class OptunaTrialTracker(MlflowTracker):
         extra_tags: Mapping[str, str] | None = None,
         task: str = DEFAULT_TASK,
         is_optuna: bool = True,
+        config_source: str = "defaults",
     ) -> Iterator["OptunaTrialTracker"]:
         active = mlflow.active_run()
         if active is None:
@@ -292,7 +294,7 @@ class OptunaTrialTracker(MlflowTracker):
                 is_optuna=is_optuna,
             )
         )
-        _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task)
+        _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task, config_source)
         yield self
 
     def log_artifact(self, path: str, artifact_path: str | None = None) -> None:
@@ -372,11 +374,15 @@ def _log_execution_params(
     seed: int,
     cv_folds: int | None,
     task: str = DEFAULT_TASK,
+    config_source: str = "defaults",
 ) -> None:
     mlflow.log_params(hyperparameters)
     mlflow.log_param("dataset_name", dataset_name)
     mlflow.log_param("seed", seed)
     mlflow.log_param("task", task)
+    # Dense: on comparison parents and Optuna trials alike, so tuned and default runs
+    # are told apart without a new tag (ADR 0005, decision 5).
+    mlflow.log_param("config_source", config_source)
     if cv_folds is not None:
         mlflow.log_param("cv_folds", cv_folds)
 

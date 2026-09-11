@@ -565,6 +565,7 @@ def test_optuna_trial_tracker_logs_a_light_record_into_the_active_trial_run(
         "seed": "42",
         "cv_folds": "2",
         "task": "classification",
+        "config_source": "defaults",
     }
     metrics = trial_run.data.metrics
     assert metrics["cv/test/f1_macro/mean"] == pytest.approx(0.6)
@@ -666,3 +667,63 @@ def test_every_run_says_which_task_it_trained_and_whether_a_search_made_it(
     parent = next(run for run in runs if "mlflow.parentRunId" not in run.data.tags)
     assert parent.data.tags["mlflow.runName"].startswith("impute_vehicle_00nan_")
     assert parent.data.params["task"] == "imputation"
+
+
+def test_every_run_says_where_its_configuration_came_from(tmp_path, mlflow_backend) -> None:
+    """A tuned run and a default run are told apart by the ``config_source`` param.
+
+    Logged on the comparison parent and on every Optuna trial alike, so the value is
+    dense and a filter on it never silently drops a run kind (ADR 0005, decision 5).
+    """
+    parent_tracker = create_tracker(enabled=True)
+    with parent_tracker.parent_run(
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=2,
+        hyperparameters={},
+        lr_scheduler="cosine",
+        environment=_ENVIRONMENT,
+        config_source="datasets/hiperparams/vehicle/vehicle_00nan.imputation.json",
+    ) as active_tracker:
+        records = [
+            _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4, cv_folds=2),
+            _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.6, cv_folds=2),
+        ]
+        active_tracker.finalize_cross_validation(
+            records, summarize_cross_validation(records), _dataset(tmp_path), _artifact_paths(tmp_path)
+        )
+
+    trial_tracker = create_tracker(enabled=True, run_role="optuna_trial")
+    experiment_id = get_or_create_experiment("vehicle_00nan")
+    study, trial = _study_and_trial_runs(experiment_id)
+    try:
+        with trial_tracker.parent_run(
+            dataset_name="vehicle_00nan",
+            seed=42,
+            cv_folds=2,
+            hyperparameters={},
+            lr_scheduler="cosine",
+            environment=_ENVIRONMENT,
+            config_source="override",
+        ) as active_tracker:
+            records = [
+                _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4),
+                _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.8),
+            ]
+            active_tracker.finalize_cross_validation(
+                records, summarize_cross_validation(records), _dataset(tmp_path), _artifact_paths(tmp_path)
+            )
+    finally:
+        mlflow.end_run()
+        mlflow.end_run()
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    parent = next(
+        run
+        for run in _experiment_runs(client)
+        if run.data.tags.get("run_role") == "parent"
+    )
+    assert parent.data.params["config_source"] == (
+        "datasets/hiperparams/vehicle/vehicle_00nan.imputation.json"
+    )
+    assert client.get_run(trial.info.run_id).data.params["config_source"] == "override"

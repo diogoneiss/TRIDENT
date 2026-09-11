@@ -91,13 +91,14 @@ def test_the_study_entry_point_accepts_every_training_flag() -> None:
         [
             "--dataset_name", "credit-g_20nan", "--task", "imputation",
             "--search_space", "reduced", "--lr_scheduler", "cosine", "--disable_mlflow",
-            "--metrics_dir", "scratch", "--n_trials", "3", "--retrain_best",
+            "--metrics_dir", "scratch", "--n_trials", "3", "--retrain_best", "--promote_best",
         ]
     )
 
     assert args.task == "imputation" and args.search_space == "reduced"
     assert args.lr_scheduler == "cosine" and args.disable_mlflow is True
     assert args.metrics_dir == "scratch" and args.n_trials == 3 and args.retrain_best is True
+    assert args.promote_best is True
 
 
 def test_a_search_never_tunes_how_hard_its_own_exam_is() -> None:

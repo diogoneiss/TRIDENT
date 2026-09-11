@@ -271,3 +271,65 @@ def test_a_single_cross_validation_fold_is_refused_with_a_way_forward() -> None:
     # The flag's legal values are untouched, and omitting it stays the split mode.
     assert validate_parsed_args(two).cv_folds == 2
     assert validate_parsed_args(predefined).cv_folds is None
+
+
+def test_an_imputation_run_prefers_its_own_configuration_and_falls_back_to_the_shared_one(
+    tmp_path, monkeypatch
+) -> None:
+    """The shared file names no task, so a promoted imputation configuration lives beside
+    it under a task-keyed name (ADR 0005, decision 5).
+
+    Imputation reads the task-keyed file first, then the shared one, then the defaults, so
+    a variant with no promoted configuration behaves as it did before. Classification
+    never reads the task-keyed file: that is the promise that promoting an imputation
+    result cannot retune a classification run.
+    """
+    monkeypatch.chdir(tmp_path)
+    config_dir = tmp_path / "datasets" / "hiperparams" / "vehicle"
+    config_dir.mkdir(parents=True)
+    shared = config_dir / "vehicle_00nan.json"
+    task_keyed = config_dir / "vehicle_00nan.imputation.json"
+
+    def request(task: str):
+        return resolve_training_request(Namespace(dataset_name="vehicle_00nan", task=task))
+
+    shared.write_text(json.dumps({"DIM": 32}))
+    task_keyed.write_text(json.dumps({"DIM": 64}))
+    assert request("imputation").hyperparameters.dimension == 64
+    assert request("classification").hyperparameters.dimension == 32
+
+    task_keyed.unlink()
+    assert request("imputation").hyperparameters.dimension == 32
+    assert request("classification").hyperparameters.dimension == 32
+
+    shared.unlink()
+    assert request("imputation").hyperparameters.dimension == 128
+    assert request("classification").hyperparameters.dimension == 128
+
+
+def test_every_request_says_where_its_configuration_came_from(tmp_path, monkeypatch) -> None:
+    """A tuned run and a default run look alike in the store unless the run says which
+    file it loaded, so the source travels on the request and is logged as a param.
+
+    The path is relative to the repository and posix-style whatever the platform, so
+    the same configuration reads the same in every store.
+    """
+    monkeypatch.chdir(tmp_path)
+    config_dir = tmp_path / "datasets" / "hiperparams" / "vehicle"
+    config_dir.mkdir(parents=True)
+
+    assert resolve_training_request(Namespace(dataset_name="vehicle_00nan")).config_source == "defaults"
+
+    (config_dir / "vehicle_00nan.json").write_text(json.dumps({"DIM": 32}))
+    (config_dir / "vehicle_00nan.imputation.json").write_text(json.dumps({"DIM": 64}))
+    classification = resolve_training_request(Namespace(dataset_name="vehicle_00nan"))
+    imputation = resolve_training_request(Namespace(dataset_name="vehicle_00nan", task="imputation"))
+    assert classification.config_source == "datasets/hiperparams/vehicle/vehicle_00nan.json"
+    assert imputation.config_source == "datasets/hiperparams/vehicle/vehicle_00nan.imputation.json"
+
+    # A programmatic override (an Optuna trial) wins over any file and says so.
+    overridden = resolve_training_request(
+        Namespace(dataset_name="vehicle_00nan", task="imputation", hyperparams_override={"DIM": 8})
+    )
+    assert overridden.config_source == "override"
+    assert overridden.hyperparameters.dimension == 8

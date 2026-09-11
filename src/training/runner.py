@@ -62,6 +62,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         environment=runtime_environment_tags(device),
         extra_tags=request.runtime.tracking_tags,
         task=task.name,
+        config_source=request.config_source,
     ) as active_tracker:
         for ordinal, fold in enumerate(folds, start=1):
             if request.cv_folds is not None:

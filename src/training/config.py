@@ -18,41 +18,72 @@ from .types import (
 )
 
 
-def load_hyperparameters(args: argparse.Namespace) -> Hyperparameters:
-    hyperparameters = _load_base_hyperparameters(args)
+def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str]:
+    """The configuration a run trains with, and where it came from.
+
+    The source is ``"override"`` (a programmatic mapping, as an Optuna trial passes),
+    the repository-relative posix path of the file that was loaded, or ``"defaults"``.
+    It is logged on every run as the ``config_source`` param so tuned and default runs
+    can be told apart without a new tag (ADR 0005, decision 5).
+    """
+    hyperparameters, source = _load_base_hyperparameters(args)
     # ``--lr_scheduler`` wins over whatever the override mapping or JSON file said,
     # so one invocation can re-run any stored configuration under another schedule.
     lr_scheduler = getattr(args, "lr_scheduler", None)
     if lr_scheduler is not None:
         hyperparameters = dataclasses.replace(hyperparameters, lr_scheduler=lr_scheduler)
-    return hyperparameters
+    return hyperparameters, source
 
 
-def _load_base_hyperparameters(args: argparse.Namespace) -> Hyperparameters:
+def _load_base_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str]:
     override = getattr(args, "hyperparams_override", None)
     if override is not None:
-        return Hyperparameters.from_mapping(override)
+        return Hyperparameters.from_mapping(override), "override"
 
     dataset_name = getattr(args, "dataset_name")
-    base_dataset_name = dataset_name.split("_", 1)[0]
-    hyperparameters_path = Path("datasets/hiperparams") / base_dataset_name / f"{dataset_name}.json"
-    if hyperparameters_path.exists():
-        values = json.loads(hyperparameters_path.read_text())
-        if isinstance(values, Mapping):
-            return Hyperparameters.from_mapping(values)
+    task = getattr(args, "task", None) or DEFAULT_TASK
+    # The shared file names no task, so a promoted imputation configuration lives beside
+    # it under a task-keyed name and is read first; the fallback keeps a variant with no
+    # promoted configuration behaving as before. Classification never reads the
+    # task-keyed file, so promoting an imputation result cannot retune it (ADR 0005).
+    candidates = [hyperparameter_file(dataset_name, task)]
+    if task != DEFAULT_TASK:
+        candidates.append(hyperparameter_file(dataset_name, DEFAULT_TASK))
+    for hyperparameters_path in candidates:
+        if hyperparameters_path.exists():
+            values = json.loads(hyperparameters_path.read_text())
+            if isinstance(values, Mapping):
+                return Hyperparameters.from_mapping(values), hyperparameters_path.as_posix()
 
-    return Hyperparameters()
+    return Hyperparameters(), "defaults"
+
+
+def hyperparameter_file(dataset_name: str, task: str) -> Path:
+    """Where a task's promoted configuration for a dataset variant lives.
+
+    Classification keeps the shared ``<dataset>.json`` every run read before ADR 0005;
+    any other task is keyed into the name, ``<dataset>.<task>.json``, beside it.
+    """
+    base_dataset_name = dataset_name.split("_", 1)[0]
+    suffix = ".json" if task == DEFAULT_TASK else f".{task}.json"
+    return Path("datasets/hiperparams") / base_dataset_name / f"{dataset_name}{suffix}"
 
 
 def logged_hyperparameters(request: TrainingRequest) -> dict[str, object]:
-    """The parameters this run actually used, under their config-file names.
+    """The parameters this run actually used, under their config-file names."""
+    return complete_configuration(request.hyperparameters, request.task)
 
-    Only the ones the run's task consumes: an imputation run has no classifier, so the
+
+def complete_configuration(values: Hyperparameters, task: str) -> dict[str, object]:
+    """A task's full key set with resolved values, under the config-file names.
+
+    Only the ones the task consumes: an imputation run has no classifier, so the
     fine-tuning rates and the label count would describe nothing, and a classification run
     has no decoder. A parameter recorded but never used misleads whoever reads the run
-    later, which is exactly the complaint backlog item C3 makes about ``LABELS``.
+    later, which is exactly the complaint backlog item C3 makes about ``LABELS``. The
+    same key set is what a promoted configuration file holds, so a promoted file names
+    every value the task will train with, held ones included.
     """
-    values = request.hyperparameters
     shared: dict[str, object] = {
         "DIM": values.dimension, "HIDDEN_DIM": values.hidden_dimension,
         "HEADS": values.heads, "LAYERS": values.layers,
@@ -63,7 +94,7 @@ def logged_hyperparameters(request: TrainingRequest) -> dict[str, object]:
         "PROB_MASCARA": values.mask_probability,
         "LR_SCHEDULER": values.lr_scheduler,
     }
-    if request.task == "imputation":
+    if task == "imputation":
         return {
             **shared,
             "EPOCHS_DECODE": values.decode_epochs,
@@ -82,9 +113,10 @@ def logged_hyperparameters(request: TrainingRequest) -> dict[str, object]:
 
 
 def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
+    hyperparameters, config_source = load_hyperparameters(args)
     return TrainingRequest(
         dataset=DatasetSpec.from_name(args.dataset_name, getattr(args, "label_column", None)),
-        hyperparameters=load_hyperparameters(args),
+        hyperparameters=hyperparameters,
         runtime=RuntimeOptions(
             output_dir=Path(getattr(args, "output_dir", "results")),
             metrics_dir=Path(getattr(args, "metrics_dir", "metrics")),
@@ -101,6 +133,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         score_null_path=getattr(args, "score_null_path", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
+        config_source=config_source,
     )
 
 
@@ -219,6 +252,16 @@ def build_training_parser() -> argparse.ArgumentParser:
     parser.add_argument("--use_optuna", action="store_true")
     parser.add_argument("--n_trials", type=int, default=50)
     parser.add_argument("--retrain_best", action="store_true")
+    parser.add_argument(
+        "--promote_best",
+        action="store_true",
+        help=(
+            "After an Optuna study, publish the winning configuration where the task's "
+            "runs read it: datasets/hiperparams/<base>/<dataset>.json for classification, "
+            "<dataset>.imputation.json for imputation (ADR 0005). Without it a study "
+            "writes only inside its own results directory. Independent of --retrain_best."
+        ),
+    )
     parser.add_argument(
         "--search_space",
         type=str,

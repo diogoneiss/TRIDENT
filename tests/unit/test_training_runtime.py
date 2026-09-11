@@ -286,6 +286,8 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         "environment": _ENVIRONMENT,
         "extra_tags": {},
         "task": "classification",
+        # No file and no override behind the minimal request, so the run says so.
+        "config_source": "defaults",
     }
     assert fake_tracker.fold_tracker_ids == pretraining_tracker_ids
     assert fake_tracker.fold_tracker_ids == finetuning_tracker_ids

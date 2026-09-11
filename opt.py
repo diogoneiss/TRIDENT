@@ -1,6 +1,7 @@
 import os
 import json
 import copy
+import dataclasses
 import pandas as pd
 import numpy as np
 import torch
@@ -23,11 +24,15 @@ from src.mlflow_utils import (
     setup_mlflow,
     get_or_create_experiment,
 )
-from src.training.config import build_training_parser, validate_parsed_args
+from src.training.config import (
+    build_training_parser,
+    complete_configuration,
+    hyperparameter_file,
+    validate_parsed_args,
+)
 from src.training.data import PROCESSED_DATASETS, declared_column_types
 from src.training.tracking import execution_tags
-from src.training.types import task_spec
-from src.training.types import DEFAULT_LR_SCHEDULER
+from src.training.types import DEFAULT_LR_SCHEDULER, Hyperparameters, task_spec
 
 # Import components from train.py
 from train import main as train_main
@@ -148,7 +153,6 @@ class ObjectiveFunctionWrapper:
         self.seed = seed
         self.output_dir = output_dir
         self.optuna_dir = optuna_dir  # Directory to store all Optuna results
-        self.base_dataset_name = dataset_name.split('_')[0]
         # Which task the study is optimising, and the metric and direction that go with
         # it. Set by run_hyperparameter_optimization before the study starts.
         self.task = 'classification'
@@ -277,7 +281,7 @@ class ObjectiveFunctionWrapper:
                     self.best_trial_number = trial.number
                     self.best_metrics = metrics
 
-                    # Save the best parameters found so far to datasets/hiperparams
+                    # Save the best parameters found so far inside the study directory
                     self.save_best_params()
 
                 return score
@@ -292,17 +296,16 @@ class ObjectiveFunctionWrapper:
                 raise optuna.TrialPruned() from e
 
     def save_best_params(self):
-        """Save the best parameters found so far, somewhere the other task cannot feel.
+        """Save the best parameters found so far, inside the study's own directory.
 
-        ``datasets/hiperparams/<base>/<dataset>.json`` is read by **both** tasks and names
-        neither, so an imputation study writing there would silently retune every later
-        classification run on that dataset. An imputation study therefore keeps its result
-        inside its own study directory; promoting it is a deliberate copy.
+        The running best used to go straight to ``datasets/hiperparams/<base>/<dataset>.json``
+        for classification, destroying any hand-written file there and leaving a mid-search
+        best behind an interrupted study (backlog I2); for imputation it would also have
+        retuned every later classification run, since that file names no task. Both tasks
+        now keep their result here, and publishing it is the explicit act of
+        ``--promote_best`` at the end of the study (ADR 0005, decision 5).
         """
-        if self.task == 'imputation':
-            save_dir = Path(self.optuna_dir) if self.optuna_dir else Path('.')
-        else:
-            save_dir = Path('datasets/hiperparams') / self.base_dataset_name
+        save_dir = Path(self.optuna_dir) if self.optuna_dir else Path('.')
         save_dir.mkdir(exist_ok=True, parents=True)
 
         save_path = save_dir / f"{self.dataset_name}.json"
@@ -314,6 +317,27 @@ class ObjectiveFunctionWrapper:
             f"to {save_path}"
         )
         return save_path
+
+
+def promote_best_configuration(
+    best_config: dict, task: str, dataset_name: str, lr_scheduler: str
+) -> Path:
+    """Publish a study's winning configuration where the task's runs will find it.
+
+    The file is complete: the task's full key set with resolved values, held knobs
+    included, and ``LR_SCHEDULER`` set to the schedule the study ran under (the trials
+    took it from the command line, so the sampled mapping does not carry it). A file
+    that names every value cannot silently move when a default changes (ADR 0005,
+    decision 5).
+    """
+    resolved = dataclasses.replace(
+        Hyperparameters.from_mapping(best_config), lr_scheduler=lr_scheduler
+    )
+    path = hyperparameter_file(dataset_name, task)
+    path.parent.mkdir(exist_ok=True, parents=True)
+    with open(path, 'w') as f:
+        json.dump(complete_configuration(resolved, task), f, indent=4)
+    return path
 
 
 def run_hyperparameter_optimization(args):
@@ -462,22 +486,17 @@ def run_hyperparameter_optimization(args):
         json.dump(best_config, f, indent=4)
     logger.info(f"Best hyperparameters saved to {best_params_path}")
     
-    # 2. Also save to the standard hiperparams directory for model loading. That file is
-    # read by both tasks and names neither, so an imputation study stays inside its own
-    # study directory (same rule as ``save_best_params``); promoting it is a deliberate
-    # copy until a task-keyed lookup exists.
-    if task.name == 'imputation':
-        logger.info(
-            "Imputation study: not writing datasets/hiperparams, which classification reads"
+    # 2. Publish it where the task's runs will find it, only when asked: the shared file
+    # is read by every classification run and a study must not retune them on its own
+    # (backlog I2, ADR 0005 decision 5).
+    if getattr(args, "promote_best", False):
+        promoted_path = promote_best_configuration(
+            best_config, task.name, args.dataset_name,
+            getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
         )
+        logger.info(f"Promoted for --task {task.name}: {promoted_path}")
     else:
-        base_dataset_name = args.dataset_name.split('_')[0]
-        hiperparams_dir = Path('datasets/hiperparams') / base_dataset_name
-        hiperparams_dir.mkdir(exist_ok=True, parents=True)
-        hiperparams_path = hiperparams_dir / f"{args.dataset_name}.json"
-        with open(hiperparams_path, 'w') as f:
-            json.dump(best_config, f, indent=4)
-        logger.info(f"Saved for model loading: {hiperparams_path}")
+        logger.info("Not promoted: pass --promote_best to publish it under datasets/hiperparams")
     
     # Retrain the model with the best parameters and save results in optuna_dir
     if args.retrain_best:

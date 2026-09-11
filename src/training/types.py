@@ -366,6 +366,10 @@ class TrainingRequest:
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.
     score_search_objective: bool = False
+    # Where the hyperparameters came from: "defaults", "override", or the
+    # repository-relative path of the file that was loaded. Logged on every run as the
+    # ``config_source`` param (ADR 0005, decision 5).
+    config_source: str = "defaults"
 
     def __post_init__(self) -> None:
         if self.task not in TASK_NAMES:

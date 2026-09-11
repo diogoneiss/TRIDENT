@@ -87,6 +87,7 @@ def _optuna_args(**overrides) -> Namespace:
         seed=42,
         output_dir="results",
         retrain_best=False,
+        promote_best=False,
         lr_scheduler=None,
     )
     values.update(overrides)
@@ -353,3 +354,105 @@ def test_disabled_tracking_runs_the_study_without_touching_the_store(
     assert [args.mlflow_run_role for args in stub.calls] == ["optuna_trial", "optuna_trial"]
     client = MlflowClient(tracking_uri=mlflow_backend)
     assert client.get_experiment_by_name("TRIDENT/vehicle") is None
+
+
+def test_a_classification_study_no_longer_writes_the_shared_file_on_its_own(
+    mlflow_backend, monkeypatch
+) -> None:
+    """Backlog I2: the study used to overwrite datasets/hiperparams/<base>/<dataset>.json
+    at every improvement and again at the end, destroying any hand-written file there
+    and leaving a mid-search best behind an interrupted study.
+
+    Now the running best and the final best stay inside the study's own directory for
+    both tasks, and only ``--promote_best`` publishes a result (ADR 0005, decision 5).
+    """
+    stub = _TrainingStub(scores={0: 0.5, 1: 0.7})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(n_trials=2))
+
+    assert not (Path("datasets") / "hiperparams").exists()
+    study_dirs = list((Path("results") / "vehicle_00nan").glob("optuna_*"))
+    assert len(study_dirs) == 1
+    running_best = json.loads((study_dirs[0] / "vehicle_00nan.json").read_text())
+    final_best = json.loads((study_dirs[0] / "best_hyperparameters.json").read_text())
+    assert running_best == final_best
+
+
+def test_promotion_writes_a_complete_imputation_configuration_where_the_task_will_find_it(
+    mlflow_backend, monkeypatch
+) -> None:
+    """``--promote_best`` on an imputation study writes ``<dataset>.imputation.json``, the
+    file an imputation run reads first, and leaves the shared file alone.
+
+    The file is complete: every key the task uses, the held values written out at the
+    defaults they were held at, and ``LR_SCHEDULER`` set to the schedule the study ran
+    under, so the file cannot silently move if a default changes (ADR 0005, decision 5).
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(
+        _optuna_args(task="imputation", n_trials=2, promote_best=True, lr_scheduler="cosine")
+    )
+
+    config_dir = Path("datasets") / "hiperparams" / "vehicle"
+    assert not (config_dir / "vehicle_00nan.json").exists()
+    promoted = json.loads((config_dir / "vehicle_00nan.imputation.json").read_text())
+    assert set(promoted) == {
+        "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
+        "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
+        "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
+    }
+    # Held at the defaults by the reduced profile (vehicle is all numerical, so the loss
+    # balance is held too), and written out rather than left to the reader.
+    assert promoted["DIM"] == 128
+    assert promoted["EPOCHS_PRE"] == 300
+    assert promoted["EPOCHS_DECODE"] == 150
+    assert promoted["LAMBDA_NUM"] == 1.0
+    assert promoted["LR_SCHEDULER"] == "cosine"
+    # The sampled values are the winning trial's (0.4 beats 0.9 when minimising).
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    study = next(
+        run
+        for name, run in _runs_by_name(client).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.metrics["optuna/best_trial_number"] == 1.0
+    assert promoted["LR_DECODE"] == float(study.data.params["best_LR_DECODE"])
+    assert promoted["PROB_MASCARA"] == float(study.data.params["best_PROB_MASCARA"])
+
+
+def test_promotion_writes_a_complete_classification_configuration_to_the_shared_file(
+    mlflow_backend, monkeypatch
+) -> None:
+    """Classification's promotion target is the shared file every classification run
+    read before ADR 0005, and it is complete like imputation's: the sampled mapping
+    carries neither ``LR_SCHEDULER`` (a command-line choice) nor ``LABELS`` (never
+    sampled), so a file made of the sampled keys alone would leave both to the reader.
+    """
+    stub = _TrainingStub(scores={0: 0.5, 1: 0.7})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(n_trials=2, promote_best=True))
+
+    config_dir = Path("datasets") / "hiperparams" / "vehicle"
+    assert not (config_dir / "vehicle_00nan.imputation.json").exists()
+    promoted = json.loads((config_dir / "vehicle_00nan.json").read_text())
+    assert set(promoted) == {
+        "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
+        "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "EPOCH_FINE", "LR_FINE",
+        "WEIGHT_DECAY_FINE", "LABELS", "LR_SCHEDULER",
+    }
+    # No schedule was named, so the file pins the one the study ran under: the legacy
+    # default, spelled out rather than left to whatever the default is later.
+    assert promoted["LR_SCHEDULER"] == "cosine_legacy"
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    study = next(
+        run
+        for name, run in _runs_by_name(client).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.metrics["optuna/best_trial_number"] == 1.0
+    assert promoted["DIM"] == int(study.data.params["best_DIM"])
+    assert promoted["LR_FINE"] == float(study.data.params["best_LR_FINE"])

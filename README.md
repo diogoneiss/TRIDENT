@@ -176,6 +176,7 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--use_optuna`: Enable hyperparameter optimization (mutually exclusive with `--all`)
 - `--n_trials`: Number of optimization trials (default: `50`)
 - `--retrain_best`: Retrain using the best parameters found during search
+- `--promote_best`: Publish the winning configuration where the task's runs read it (see "Configuration System"); independent of `--retrain_best`
 
 ## Tests
 
@@ -196,11 +197,21 @@ The integration test disables MLflow and writes all run artifacts to temporary d
 
 ## Configuration System
 
-TRIDENT supports three configuration modes:
+A run resolves its hyperparameters in this order and logs the source it used as the
+`config_source` param (`override`, the repository-relative path of the file, or `defaults`):
 
-1. **Automatic Optimization**: Hyperparameter search with Optuna
-2. **JSON Configuration**: Load from `datasets/hiperparams/{base_dataset}/{dataset_name}.json`
-3. **Default Values**: Fallback configuration when no custom settings exist
+1. **Programmatic override**: the mapping an Optuna trial or `--retrain_best` passes (`config_source = override`).
+2. **Task-keyed file** (`--task imputation` only): `datasets/hiperparams/{base_dataset}/{dataset_name}.imputation.json`.
+3. **Shared file**: `datasets/hiperparams/{base_dataset}/{dataset_name}.json`, read by both tasks.
+4. **Default values**: the `Hyperparameters` defaults when no file exists.
+
+`--lr_scheduler` overrides `LR_SCHEDULER` from any of these. An Optuna study never writes
+these files on its own: its running best and final best stay inside its results directory
+(`results/{dataset_name}/optuna_{timestamp}/`), and it publishes the winning configuration
+only under `--promote_best`, to the task-keyed file for imputation and the shared file for
+classification. A promoted file is complete: every key the task uses, held values included,
+and `LR_SCHEDULER` set to the schedule the study ran under
+([ADR 0005](docs/adr/0005-reduced-optuna-search-for-imputation.md)).
 
 ### Example Configuration
 
@@ -400,6 +411,9 @@ uv run main.py --dataset_name credit-g_00nan --use_optuna --n_trials 50
 
 # Thorough optimization with retraining
 uv run main.py --dataset_name vehicle_40nan --use_optuna --n_trials 200 --retrain_best
+
+# Publish the winner so later runs of the same task and variant pick it up
+uv run main.py --dataset_name credit-g_20nan --task imputation --use_optuna --n_trials 40 --lr_scheduler cosine --promote_best
 ```
 
 ### Custom Configuration
