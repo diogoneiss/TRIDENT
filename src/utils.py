@@ -58,12 +58,17 @@ def preprocess_table(data, null_token="[NULL]", p_base=0.15, fine_tunning=False)
         dynamic_mask = np.random.rand(*data.shape) < p_dynamic
 
         # Avoid masking values that are already null
-        dynamic_mask[null_matrix.values] = False
+        null_values = null_matrix.to_numpy()
+        dynamic_mask[null_values] = False
 
         # Ensure each row has at least one masked value
         no_mask_rows = ~dynamic_mask.any(axis=1)
+        # One conversion for the whole frame, rather than a pandas row lookup per affected
+        # row: at p_base 0.05 on 45k rows that lookup was 94% of this loop's cost (backlog
+        # P1). The np.random.choice calls below keep their count, order and arguments, so
+        # the seeded draw sequence does not move and published results stand.
         for i in np.where(no_mask_rows)[0]:
-            non_null_indices = np.where(~null_matrix.iloc[i].values)[0]
+            non_null_indices = np.where(~null_values[i])[0]
             if len(non_null_indices) > 0:
                 random_index = np.random.choice(non_null_indices)
                 dynamic_mask[i, random_index] = True

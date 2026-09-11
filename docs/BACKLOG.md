@@ -21,7 +21,7 @@ before anyone touches them, because they change published results.
 | C3 | `LABELS` hyperparameter is logged but never used | Low | No |
 | ~~C5~~ | ~~Numeric precision and scaling: float32 storage, inverse-scaling error~~ -- fixed, see below | Medium | Partly |
 | C4 | Pre-training re-initializes already-initialized layers | Low | Yes |
-| P1 | `preprocess_table` row fallback is a Python loop | Medium | No |
+| P1 | `preprocess_table` row fallback is a Python loop -- **partly fixed**, the rest is protected | Low now | Partly |
 | P2 | Hand-rolled attention instead of fused SDPA | Medium | Yes |
 | I1 | No way to set hyperparameters from the CLI | Medium | No |
 | I2 | Optuna overwrites the dataset's hyperparameter file | Medium | No |
@@ -261,6 +261,35 @@ seeded result.
 
 ### P1. `preprocess_table` falls back to a Python loop per row
 
+**Partly fixed 2026-09-10, without moving a single draw.** The analysis below concluded
+that fixing this "changes the random draw sequence, so seeded results would move". That is
+true of the vectorisation it proposed, but it is not true of the cost. Measured at
+`p_base` 0.05 on 45000 rows, **94% of the loop's time was the pandas row lookup**
+`null_matrix.iloc[i].values`, not the draw: 998 ms against 60 ms for the same lookup
+through numpy.
+
+Hoisting one `null_matrix.to_numpy()` out of the loop leaves the `np.random.choice` calls
+identical in count, order and argument, so the seeded sequence is untouched. Measured on
+one machine, before against after, with the output frames compared by `DataFrame.equals`:
+
+| `p_base` | before | after | speed-up | output identical |
+|---|---|---|---|---|
+| 0.50 (default) | 96 ms | 71 ms | 1.4x | yes |
+| 0.20 (Optuna's floor) | 310 ms | 139 ms | 2.2x | yes |
+| 0.05 | 637 ms | 236 ms | 2.7x | yes |
+
+`tests/unit/test_preprocess_table.py` pins the draw as a fixed literal captured from the
+pre-change implementation, and `vehicle_00nan` passes unedited.
+
+**What is deliberately left, and is protected**: replacing the loop entirely with one
+`argmax` over a random matrix, as suggested below. It would be faster again, but it
+redraws the fallback, so it moves every seeded result and the `vehicle_00nan` baseline
+with them. That makes it a training-behaviour change, needing a flag, an MLflow tag and a
+backfill like [ADR 0003](adr/0003-selectable-learning-rate-schedule.md), and it should not
+be done for speed alone. The cliff that motivated the item is largely flattened without it.
+
+The original analysis is kept below.
+
 After drawing the random mask, `preprocess_table` (`src/utils.py`) guarantees at
 least one masked cell per row by looping in Python over every row that got none:
 
@@ -376,6 +405,9 @@ already does with `create_tracker(enabled)`.
   `optuna_trial` tracking role (see above).
 - **B2**, `--cv_folds 1`, via a parse-time rejection plus a `build_folds` guard for the
   programmatic callers. The `ZeroDivisionError` in the original report was unreachable.
+- **P1**, partly: the pandas row lookup is hoisted out of the fallback loop, 2.2x at
+  Optuna's lowest `PROB_MASCARA`, with the draw sequence untouched. Full vectorisation
+  stays open and is protected.
 - **B3**, invalid `HEADS`/`DIM` pairs, via [ADR 0004](adr/0004-imputation-decoder-task.md)
   (constrained sampling plus `TrialPruned` on failure).
 - **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)
