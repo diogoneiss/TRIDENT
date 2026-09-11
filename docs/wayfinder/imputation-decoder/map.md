@@ -213,11 +213,51 @@ Planning only: this map produces the decisions and the plan, not the implementat
   design routes around them.
 - **MLflow logged-model lifecycle**: already deferred to
   [Ticket 0002](../../tickets/0002-mlflow-logged-model-lifecycle.md).
-- **Mask-versus-null input for the *classifier***: whether classification scores differ
-  when missing cells arrive as `[MASK]` rather than `[NULL]`. This tests the paper's actual
-  claim that null embeddings carry predictive signal, needs no decoder, and surfaced while
-  resolving [ticket 12](issues/12-null-path-diagnostic.md). A separate experiment with its
-  own map.
+- **Mask-versus-null input for the *classifier*** — a future effort, not yet charted.
+  Whether classification scores differ when missing cells arrive as `[MASK]` rather than
+  `[NULL]`. Surfaced while resolving [ticket 12](issues/12-null-path-diagnostic.md).
+
+  **The claim under test.** `README.md` lists "dedicated handling of missing values through
+  learnable `[NULL]` representations" as a headline feature, and the claim is not merely that
+  a placeholder exists but that the learned null embedding carries *predictive signal* for the
+  label. Two arms, sharing seeds, folds and hyperparameters, compared on `f1_macro` across the
+  `_20nan`..`_80nan` ladder: missing cells fed as `[NULL]` (today) against the same cells fed
+  as `[MASK]`. The stake runs both ways — **if the arms tie, the learnable-null story is
+  decoration** and any distinct symbol would serve equally well.
+
+  **Why [ticket 12](issues/12-null-path-diagnostic.md) did not already answer this**, recorded
+  so no future session re-derives it: ticket 12 scored the null path through the *decoder*.
+  `preprocess_table` sets `dynamic_mask[null_matrix.values] = False` (`src/utils.py:61`), so an
+  already-null cell never enters the decode loss and the head at a `[NULL]` position is
+  entirely untrained. Its 8-of-8 result for `[MASK]` therefore measured whether a
+  `[MASK]`-trained readout *transfers* to null positions, not whether the null embedding is
+  informative. The paper's claim is about predicting the **label**, which makes the decoder the
+  wrong instrument for it altogether.
+
+  **The seam already exists**, which is what keeps this cheap: `preprocess_table(data,
+  null_token="[NULL]", ...)` takes the token as a parameter, and `null_matrix` comes from
+  `data.isnull()` rather than from the token string, so swapping the token disturbs neither the
+  row-density adjustment nor the never-mask-a-null rule. Nothing new is built; the experiment
+  runs entirely in the existing embedder → encoder → classifier path.
+
+  **Decisions the effort must settle** (ticket 12 set the precedent for most of them):
+  1. Does the swap apply in pre-training, in the classifier stage, or both? **Resolve this
+     first, because it decides the scope**: a swap that changes the pre-training objective
+     makes the effort far larger than an interview.
+  2. Which datasets and missingness rates, and what is the pre-registered overturn criterion?
+     Precedent: a majority of folds on at least two datasets, at both 20% and 60%.
+  3. A flag off by default, or a throwaway comparison script? Precedent: ticket 12 decision 3
+     chose a `store_true` per-invocation switch, with its reasoning.
+  4. An MLflow tag plus a backfill, per the standing preference recorded in the notes above?
+  5. Does feeding `[MASK]` at classifier time interact with backlog C2, where the literal
+     `"nan"` is a real category sitting next to `[NULL]`?
+
+  **Fix the criterion before any number is seen**, exactly as ticket 12 did.
+
+  **Which skill.** This map's original verdict was a separate `/wayfinder` map. The case for
+  the lighter `/grill-with-docs` interview is that four of the five questions above already
+  carry precedent, so the route is visible and short. Question 1 is the tiebreaker: settle it
+  first and let the answer choose.
 - **The ablations ticket 04 named**: frozen encoder, tied heads (Design B), MAE-style
   decoder (Design C), label-as-context, and the joint / value-only pre-training
   objectives. These are experiments to run once the task exists, not decisions on the
