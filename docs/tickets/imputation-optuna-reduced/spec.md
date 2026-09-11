@@ -15,7 +15,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | # | Ticket | Status | Blocked by |
 |---|---|---|---|
 | 01 | [Search-space profiles](issues/01-search-space-profiles.md) | done (`14ceea6`) | none |
-| 02 | [The search objective on the validation split](issues/02-validation-search-objective.md) | ready-for-agent | 01 |
+| 02 | [The search objective on the validation split](issues/02-validation-search-objective.md) | done (`9a38b90`) | 01 |
 | 03 | [Task-keyed lookup and explicit promotion](issues/03-lookup-and-promotion.md) | ready-for-agent | 02 |
 | 04 | [The importance artifact](issues/04-importance-artifact.md) | ready-for-agent | 03 |
 | 05 | [The launcher and the six studies](issues/05-launcher-and-studies.md) | ready-for-agent | 04 |
