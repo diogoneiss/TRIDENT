@@ -140,3 +140,32 @@ The per-column output heads that map the transformer's output at a hidden cell
 back to a value: a distribution over the column's real categories, or a scalar
 in scaled space. It can never emit a mask, null or placeholder token.
 _Avoid_: reconstruction head, output layer, imputer head
+
+**Search objective**:
+The metric and direction a hyperparameter search ranks its trials by, together
+with the split it is scored on. It is not the fold-ranking metric: the
+imputation task scores its search on the validation split of the trial's
+predefined split, so the test split never chooses hyperparameters and stays
+untouched until the chosen configuration is retrained. The classification
+search scores the test split, as it always has.
+_Avoid_: objective value, trial score, best metric
+
+**Search-space profile**:
+A named choice of which hyperparameters a search samples and which it holds.
+`full` samples every hyperparameter the task uses; `reduced` samples only the
+ones that govern the task's own stage and the corruption it learns from.
+Chosen per study and recorded on the study and its trials.
+_Avoid_: reduced space, tuning mode, search preset
+
+**Held hyperparameter**:
+A hyperparameter a search-space profile does not sample. Every trial runs it at
+the task default rather than at any stored configuration's value, so trials
+differ only in what was sampled.
+_Avoid_: frozen (that word belongs to encoder weights), fixed, constant
+
+**Promoted configuration**:
+A search's best hyperparameters, published where later runs of the same task
+and dataset variant find them without being told. Promotion is a deliberate
+act: finishing a study never promotes on its own, and a promoted imputation
+configuration never changes what a classification run reads.
+_Avoid_: best params file, saved hyperparameters
