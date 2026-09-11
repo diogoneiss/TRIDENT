@@ -87,6 +87,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         fold_ordinal=ordinal,
                         complete_sibling=complete_sibling,
                         score_null_path=request.score_null_path,
+                        score_search_objective=request.score_search_objective,
                     )
                 else:
                     finetuning = train_and_evaluate_classifier(

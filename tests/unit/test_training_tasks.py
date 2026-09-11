@@ -21,6 +21,16 @@ from src.training.types import (
 )
 
 
+def test_each_task_declares_its_search_objective() -> None:
+    """A search ranks its trials by its own objective, which need not be the fold-ranking
+    metric: imputation scores its search on the validation split so the test split never
+    chooses hyperparameters, while classification keeps the test-split macro F1 it always
+    used (ADR 0005, decision 3).
+    """
+    assert task_spec("imputation").search_objective == "validation/impute/masked/impute_score"
+    assert task_spec("classification").search_objective == "f1_macro"
+
+
 def _record(fold: int, metrics: dict[str, float], loss_stage: str = "decode") -> FoldTrackingRecord:
     """One cross-validation fold of an imputation run, logging decode-stage losses."""
     return FoldTrackingRecord(

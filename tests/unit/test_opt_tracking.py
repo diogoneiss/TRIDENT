@@ -38,9 +38,17 @@ def mlflow_backend(tmp_path, monkeypatch) -> Iterator[str]:
 class _TrainingStub:
     """Stand-in for ``train.main`` that records what each trial was asked to do."""
 
-    def __init__(self, scores: dict[int, float], failing: set[int] = frozenset()) -> None:
+    def __init__(
+        self,
+        scores: dict[int, float],
+        failing: set[int] = frozenset(),
+        validation_scores: dict[int, float] | None = None,
+    ) -> None:
         self.scores = scores
         self.failing = failing
+        # An imputation run scores its validation split too when asked; unless a test
+        # says otherwise, that score equals the test one.
+        self.validation_scores = validation_scores or {}
         self.calls: list[Namespace] = []
         self.active_run_ids: list[str | None] = []
 
@@ -54,12 +62,16 @@ class _TrainingStub:
         score = self.scores.get(trial_number, 0.9)
         # The real runner returns the metrics of whichever task the namespace names, so a
         # namespace that forgot its task gets classification metrics and no imputation key.
-        metric = (
-            "impute/masked/impute_score"
-            if getattr(args, "task", None) == "imputation"
-            else "f1_macro"
-        )
-        return {"fold": "single_split", "dataset": args.dataset_name, metric: score}
+        if getattr(args, "task", None) == "imputation":
+            return {
+                "fold": "single_split",
+                "dataset": args.dataset_name,
+                "impute/masked/impute_score": score,
+                "validation/impute/masked/impute_score": self.validation_scores.get(
+                    trial_number, score
+                ),
+            }
+        return {"fold": "single_split", "dataset": args.dataset_name, "f1_macro": score}
 
     @staticmethod
     def _trial_number(active) -> int | None:
@@ -300,6 +312,33 @@ def test_an_imputation_study_records_and_samples_the_reduced_profile_by_default(
         == {"PROB_MASCARA", "LR_DECODE", "WEIGHT_DECAY_DECODE", "DROPOUT"}
         for args in stub.calls
     )
+
+
+def test_an_imputation_trial_is_ranked_by_its_validation_score_not_its_test_score(
+    mlflow_backend, monkeypatch
+) -> None:
+    """The test split never chooses hyperparameters (ADR 0005, decision 3).
+
+    The trial with the lower validation score wins although its test score is the worse
+    of the two; every trial asks the runner for the validation score, and the retrain,
+    which is a normal comparable run, does not.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.2}, validation_scores={0: 0.3, 1: 0.6})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(
+        _optuna_args(task="imputation", n_trials=2, retrain_best=True)
+    )
+
+    study = next(
+        run
+        for name, run in _runs_by_name(MlflowClient(tracking_uri=mlflow_backend)).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.metrics["optuna/best_objective_value"] == pytest.approx(0.3)
+    assert study.data.metrics["optuna/best_trial_number"] == 0.0
+    assert all(args.score_search_objective is True for args in stub.calls[:2])
+    assert getattr(stub.calls[-1], "score_search_objective", False) is False
 
 
 def test_disabled_tracking_runs_the_study_without_touching_the_store(

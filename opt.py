@@ -153,6 +153,10 @@ class ObjectiveFunctionWrapper:
         # it. Set by run_hyperparameter_optimization before the study starts.
         self.task = 'classification'
         self.ranking_metric = 'f1_macro'
+        # What ranks the trials. Not always the ranking metric: the imputation task scores
+        # its search on the validation split so the test split never chooses
+        # hyperparameters (ADR 0005). The direction is the ranking metric's.
+        self.search_objective = 'f1_macro'
         self.direction = 'maximize'
         # Which knobs a trial samples, and whether the table has both column types (the
         # only case in which the loss balance is worth a dimension). Set by
@@ -201,6 +205,10 @@ class ObjectiveFunctionWrapper:
         # on. Without it the runner falls back to classification, trains the wrong stage
         # and never produces the imputation ranking metric the objective then asks for.
         args.task = self.task
+        # Programmatic only, like mlflow_run_role: an imputation trial asks the decode
+        # stage for the validation-split score it is ranked by. A retrain, being a normal
+        # comparable run, never sets it.
+        args.score_search_objective = self.task == 'imputation'
         args.hyperparams_override = params  # Add custom field for hyperparams
         # The schedule is not part of the search space; every trial uses the one
         # chosen on the command line (or the default) so trials stay comparable.
@@ -244,8 +252,8 @@ class ObjectiveFunctionWrapper:
                 # Run the training with these hyperparameters
                 metrics = train_main(args, return_metrics=True)
 
-                # Get the validation and test scores
-                score = metrics[self.ranking_metric]
+                # The task's search objective (for imputation, the validation-split score).
+                score = metrics[self.search_objective]
 
                 # The objective under one key whatever the evaluation mode;
                 # the full metric set is on the run as cv/test/* or test/*.
@@ -342,6 +350,7 @@ def run_hyperparameter_optimization(args):
     task = task_spec(getattr(args, "task", None) or "classification")
     objective.task = task.name
     objective.ranking_metric = task.ranking_metric
+    objective.search_objective = task.search_objective
     objective.direction = task.direction
     objective.best_score = float("-inf") if task.direction == "maximize" else float("inf")
     # Unspecified, the profile follows the task: only imputation defines ``reduced`` so far.
@@ -440,7 +449,7 @@ def run_hyperparameter_optimization(args):
     # Report best parameters
     logger.info("\n\n" + "="*50)
     logger.info(f"Best trial: {study.best_trial.number}")
-    logger.info(f"Best {task.ranking_metric}: {study.best_value:.4f}")
+    logger.info(f"Best {task.search_objective}: {study.best_value:.4f}")
     logger.info("Best hyperparameters:")
     for key, value in best_config.items():
         logger.info(f"  {key}: {value}")

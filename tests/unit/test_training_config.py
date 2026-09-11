@@ -208,6 +208,23 @@ def test_a_reduced_search_space_exists_only_for_imputation_until_someone_defines
     assert unspecified.search_space is None
 
 
+def test_a_search_can_ask_a_request_for_its_validation_score_and_nothing_else_can() -> None:
+    """Programmatic only, like the tracking role: no flag exists, so neither a command line
+    nor a stored configuration can turn it on, and a run that does not mention it never
+    scores its validation split (ADR 0005, decision 3).
+    """
+    parser = build_training_parser()
+    plain = resolve_training_request(
+        parser.parse_args(["--dataset_name", "credit-g_20nan", "--task", "imputation"])
+    )
+    asked = resolve_training_request(
+        Namespace(dataset_name="credit-g_20nan", task="imputation", score_search_objective=True)
+    )
+
+    assert plain.score_search_objective is False
+    assert asked.score_search_objective is True
+
+
 def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
     """A recorded parameter that did nothing misleads whoever reads the run later.
 

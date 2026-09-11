@@ -99,6 +99,8 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         save_model=getattr(args, "save_model", False),
         task=getattr(args, "task", None) or DEFAULT_TASK,
         score_null_path=getattr(args, "score_null_path", False),
+        # Programmatic only (set by opt.py), like ``hyperparams_override``.
+        score_search_objective=getattr(args, "score_search_objective", False),
     )
 
 

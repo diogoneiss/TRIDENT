@@ -119,6 +119,31 @@ def test_the_decode_stage_reports_a_loss_for_every_epoch_it_trained() -> None:
     assert {"decode/train_loss", "decode/val_loss", "decode/learning_rate"} <= logged
 
 
+def test_the_decode_stage_scores_the_validation_split_only_when_asked() -> None:
+    """A search ranks trials on the validation split, so the test split never chooses
+    hyperparameters. Every other run carries no validation score at all, so the
+    cross-validation summary never sees one (ADR 0005, decision 3).
+
+    The validation mask is the one the checkpoint already watches; the score is the
+    masked-population ``impute_score`` on it, logged in its own family.
+    """
+    asked, tracker_asked = _run(score_search_objective=True)
+    unasked, tracker_unasked = _run()
+
+    key = "validation/impute/masked/impute_score"
+    assert key in asked.result.metrics
+    assert key in {event.key for event in tracker_asked.metric_events if event.step is None}
+    # A different split, so a different number: the score is not the test one relabelled.
+    assert asked.result.metrics[key] != asked.result.metrics["impute/masked/impute_score"]
+    assert not any(name.startswith("validation/") for name in unasked.result.metrics)
+    assert not any(
+        "validation/" in event.key for event in tracker_unasked.metric_events
+    )
+    assert not any(
+        event.key.startswith("test/validation/") for event in tracker_asked.metric_events
+    )
+
+
 def test_the_decode_stage_scores_and_lists_every_cell_it_hid() -> None:
     """Two outputs from one pass: numbers that rank the fold, and the cells behind them.
 

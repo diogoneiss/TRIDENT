@@ -40,8 +40,13 @@ def train_and_evaluate_decoder(
     fold_ordinal: int,
     complete_sibling: pd.DataFrame | None = None,
     score_null_path: bool = False,
+    score_search_objective: bool = False,
 ) -> DecodingOutcome:
-    """Train the decoder on this fold and score what it reconstructs on the test split."""
+    """Train the decoder on this fold and score what it reconstructs on the test split.
+
+    ``score_search_objective`` additionally scores the validation split, for a
+    hyper-parameter search that must never rank trials on the test split (ADR 0005).
+    """
     features = dataset.frame.drop(columns=[dataset.label_column])
     train_frame = features.iloc[fold.train_indices].reset_index(drop=True)
     validation_frame = features.iloc[fold.validation_indices].reset_index(drop=True)
@@ -190,13 +195,28 @@ def train_and_evaluate_decoder(
                 }
             )
 
+    # The search objective: the same masked-population score on the fixed validation
+    # mask the checkpoint watched, so a search never ranks trials on the test split. Its
+    # own family, logged and returned only when asked, so no ordinary or cross-validation
+    # run ever carries a validation/ key and the cv/test summariser never sees one.
+    validation_metrics: dict[str, float | int | str] = {}
+    if score_search_objective:
+        validation_cells = _score_population(
+            model, hidden_validation, clean_validation, "masked"
+        )
+        validation_metrics = {
+            f"validation/impute/masked/{name}": value
+            for name, value in score_cells(validation_cells, baselines).metrics.items()
+        }
+        tracker.log_metrics({name: float(value) for name, value in validation_metrics.items()})
+
     tracker.log_metrics({f"test/{name}": float(value) for name, value in metrics.items()})
     return DecodingOutcome(
         model=model,
         result=FoldResult(
             fold=fold_ordinal,
             dataset_name=dataset.frame.attrs.get("dataset_name", ""),
-            metrics=metrics,
+            metrics={**metrics, **validation_metrics},
         ),
         train_losses=train_losses,
         validation_losses=validation_losses,

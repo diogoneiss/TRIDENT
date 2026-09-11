@@ -40,6 +40,11 @@ class TaskSpec:
     # Pre-training is shared, so a task's loss bands are the pre-training pair plus
     # this stage's pair.
     stage: str
+    # What a hyper-parameter search ranks its trials by (ADR 0005). Not necessarily the
+    # fold-ranking metric: the imputation task scores its search on the validation split
+    # so the test split never chooses hyperparameters; classification keeps the
+    # test-split macro F1 it always used. The direction is the ranking metric's.
+    search_objective: str
 
     @property
     def loss_keys(self) -> tuple[str, ...]:
@@ -57,8 +62,14 @@ class TaskSpec:
 
 
 _TASK_SPECS: Mapping[str, TaskSpec] = {
-    "classification": TaskSpec("classification", "f1_macro", "maximize", "finetune"),
-    "imputation": TaskSpec("imputation", "impute/masked/impute_score", "minimize", "decode"),
+    "classification": TaskSpec("classification", "f1_macro", "maximize", "finetune", "f1_macro"),
+    "imputation": TaskSpec(
+        "imputation",
+        "impute/masked/impute_score",
+        "minimize",
+        "decode",
+        "validation/impute/masked/impute_score",
+    ),
 }
 CLASSIFICATION = _TASK_SPECS["classification"]
 IMPUTATION = _TASK_SPECS["imputation"]
@@ -351,6 +362,10 @@ class TrainingRequest:
     # vehicle_00nan regression fixture -- keeps meaning what it meant.
     task: str = DEFAULT_TASK
     score_null_path: bool = False
+    # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
+    # split too, so the search ranks trials on it and never on the test split. No flag
+    # reaches it, so an ordinary run never carries a validation score.
+    score_search_objective: bool = False
 
     def __post_init__(self) -> None:
         if self.task not in TASK_NAMES:
