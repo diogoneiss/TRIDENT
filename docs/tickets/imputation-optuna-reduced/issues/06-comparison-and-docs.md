@@ -40,3 +40,16 @@ tells the two apart in the store.
 - About two hours of GPU time.
 
 ## Comments
+
+- 2026-09-11 (while ticket 05's studies run): the documentation slice landed early in
+  `df440b3`, since it does not depend on the results: `--search_space` in the README flag
+  list; `search_space`, `optuna/importance/*`, the validation-split objective and
+  `config_source` in "MLflow Cross-Validation Comparisons"; a "Tuning it with Optuna"
+  subsection under "The Imputation Task". `--promote_best` and the lookup order were
+  documented by ticket 03 (`a24dcec`), and I2 moved to "Fixed already" there. Left for
+  after the studies: the twelve comparison runs, the table in ADR 0005's status section,
+  the specification-coverage walk and `graphify update .`. Note for the comparison: the
+  user's own schedule sweep writes shared `<dataset>.json` files under
+  `datasets/hiperparams/` while it runs; a "defaults" run that starts while one exists
+  for its dataset reads it, and `config_source` on the run says so, so check that param
+  before building the table.
