@@ -330,9 +330,9 @@
     "semantic_hash": ""
   },
   "docs/BACKLOG.md": {
-    "mtime": 1789088637.7717175,
-    "seen": 1789088666.3390138,
-    "ast_hash": "8e47f8e56df771fcfea180d35610f68f",
+    "mtime": 1789094738.3695571,
+    "seen": 1789094809.9812202,
+    "ast_hash": "5de796c417fcec8e545581f8dfd97015",
     "semantic_hash": ""
   },
   "docs/adr/0003-selectable-learning-rate-schedule.md": {
@@ -678,15 +678,69 @@
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/08-record-adr-and-plan.md": {
-    "mtime": 1789093898.1969025,
-    "seen": 1789093942.0945768,
-    "ast_hash": "d2516502c5ff8a66f7acd510e8ba04bc",
+    "mtime": 1789094774.976292,
+    "seen": 1789094809.9812202,
+    "ast_hash": "686d658201990a9530faa3cd4b175dc7",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/map.md": {
-    "mtime": 1789093894.860229,
-    "seen": 1789093942.0945768,
-    "ast_hash": "f8513f1ca0ac876c84d5f5e3b2a0b95f",
+    "mtime": 1789094785.2988303,
+    "seen": 1789094809.9812202,
+    "ast_hash": "2a8613cd6aad2d9db1751d92b778b3f2",
+    "semantic_hash": ""
+  },
+  "docs/adr/0005-reduced-optuna-search-for-imputation.md": {
+    "mtime": 1789094569.3531387,
+    "seen": 1789094809.9812202,
+    "ast_hash": "1044bfdaa884713e66a64a7d3984569b",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/01-search-space-profiles.md": {
+    "mtime": 1789094669.6219275,
+    "seen": 1789094809.9812202,
+    "ast_hash": "17488ba684d852aafcd903cc1af35241",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/02-validation-search-objective.md": {
+    "mtime": 1789094679.0930278,
+    "seen": 1789094809.9812202,
+    "ast_hash": "74dc8758b2b84b2c0670c542a30da7b1",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md": {
+    "mtime": 1789094688.2473395,
+    "seen": 1789094809.9812202,
+    "ast_hash": "5670c8c08f4432eee29869d8d704d20d",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/04-importance-artifact.md": {
+    "mtime": 1789094694.0792282,
+    "seen": 1789094809.9812202,
+    "ast_hash": "b750ed85d32b46fdf52cc6272af90dce",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/05-launcher-and-studies.md": {
+    "mtime": 1789094702.978448,
+    "seen": 1789094809.9812202,
+    "ast_hash": "aeb2f387be33beb023a118f681941849",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/issues/06-comparison-and-docs.md": {
+    "mtime": 1789094711.2609794,
+    "seen": 1789094809.9812202,
+    "ast_hash": "ecff09c79f9171b738debdc0efb2f95a",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-reduced/spec.md": {
+    "mtime": 1789094658.1899598,
+    "seen": 1789094809.9812202,
+    "ast_hash": "8c2657f4b37ae8bb91d61175cc5fdb7b",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/plan.md": {
+    "mtime": 1789094648.1097236,
+    "seen": 1789094809.9812202,
+    "ast_hash": "b0e41a9a7eb629fd4768d0a201da77d2",
     "semantic_hash": ""
   }
 }
