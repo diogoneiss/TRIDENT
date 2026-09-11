@@ -35,4 +35,137 @@ torch = [
 [dependency-groups]
 dev = [
     "pytest>=8.0",
+    # Pinned: the charting baseline and this configuration were measured on a specific
+    # mypy, and an unpinned one already produced two different error counts for the same
+    # tree (7 against 13). The gate is only a gate if its verdict is reproducible.
+    "mypy==2.3.1",
+    # Official stubs from the scipy org, versioned {scipy_version}.{stubs_version}.
+    # scikit-learn has no equivalent; see stubs/ and ADR 0006.
+    "scipy-stubs",
 ]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+# src/ carries an __init__.py, but pytest puts the repository root on the path, so mypy
+# still needs these to resolve `src.X` to one module name rather than two.
+explicit_package_bases = true
+namespace_packages = true
+# Hand-written stubs for scikit-learn only. Config-file-relative on purpose: mypy_path is
+# otherwise resolved against the working directory, and a bare Windows path would split on
+# its drive-letter colon.
+mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
+
+# tqdm ships no stubs and typing it is not this effort's business; see docs/BACKLOG.md.
+[[tool.mypy.overrides]]
+module = ["tqdm.*"]
+ignore_missing_imports = true
+
+# ----------------------------------------------------------------------------------------
+# The strictness ramp (ADR 0006, ticket 02).
+#
+# Seventeen of twenty-eight files pass `strict = true` today and are held there by the gate
+# in tests/unit/test_typing_gate.py. The blocks below are the eleven that do not, each
+# relaxing the minimum set of flags its own errors require -- never `strict = false`, so a
+# module gives up only what it actually owes.
+#
+# This list is the ramp inventory: one execution ticket per block, delete the block, fix
+# that module, both integration fixtures still green. Counts are from mypy 2.3.1 on
+# 2026-09-11 and are a starting budget, not a contract.
+#
+# Two of these are pure cascade -- finetuning and pretraining are clean in themselves and
+# only report calls into untyped model code -- so annotating models.py and transformer.py
+# should retire four blocks, not two. Start there.
+# ----------------------------------------------------------------------------------------
+
+# 49 errors. 27 are `"Args" has no attribute ...`: the Optuna trial namespace is built
+# dynamically, so the fix is a real type for it (a dataclass), not an annotation. Biggest
+# block and the one where defects have historically hidden -- see the previous effort's
+# ticket 07, where an untyped trial namespace silently trained classification models.
+[[tool.mypy.overrides]]
+module = ["opt"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_any_generics = false
+warn_return_any = false
+disable_error_code = ["attr-defined", "arg-type", "assignment", "index"]
+
+# 18 errors, all missing annotations and the internal calls they cascade into. Pure torch
+# tensor plumbing; annotating `forward` and friends should clear the whole block.
+[[tool.mypy.overrides]]
+module = ["src.transformer"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+# 12 errors: 9 missing annotations on nn.Module methods, plus generics and one Any return.
+# Retiring this block also removes most of the cascade in finetuning, pretraining and
+# decoding.
+[[tool.mypy.overrides]]
+module = ["src.models"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_any_generics = false
+warn_return_any = false
+
+# 14 errors, and the only block whose errors are mostly *substantive* rather than missing
+# annotations: 9 arg-type and 3 assignment, all revealed by the new sklearn stubs. A
+# `splitter` variable reassigned across four splitter types wants one `BaseCrossValidator`
+# annotation; `LabelEncoder.classes_` and `split()` return ndarray where the dataclasses
+# declare Sequence; `.values` is `ndarray | ExtensionArray` under pandas-stubs. Highest
+# value per error in the ramp.
+[[tool.mypy.overrides]]
+module = ["src.training.data"]
+disallow_untyped_calls = false
+warn_return_any = false
+disable_error_code = ["arg-type", "assignment"]
+
+# 10 errors, mixed annotations and cascade into models.py.
+[[tool.mypy.overrides]]
+module = ["src.training.decoding"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+disallow_any_generics = false
+warn_return_any = false
+disable_error_code = ["call-overload"]
+
+# 7 errors, mostly bare generics on the tag/param dictionary builders. Ticket 07 narrows
+# these signatures anyway, so the two jobs should land together.
+[[tool.mypy.overrides]]
+module = ["src.mlflow_utils"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_any_generics = false
+warn_return_any = false
+
+# 7 errors, missing annotations on the embedder's forward path.
+[[tool.mypy.overrides]]
+module = ["src.embedder"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+warn_return_any = false
+
+# 6 errors: 4 unannotated defs (the whole module) plus the calls they cascade into.
+[[tool.mypy.overrides]]
+module = ["src.utils"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disallow_untyped_calls = false
+
+# 4 errors: 3 unannotated defs, plus `mlflow.data.from_pandas` missing from mlflow's own
+# stubs at tracking.py:157 -- an upstream gap, not a local one.
+[[tool.mypy.overrides]]
+module = ["src.training.tracking"]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+disable_error_code = ["attr-defined"]
+
+# 4 errors each, and both are pure cascade: these modules are clean in themselves and only
+# report calls into untyped model code. Annotating models.py and transformer.py should
+# retire both blocks with no edit to either file.
+[[tool.mypy.overrides]]
+module = ["src.training.finetuning", "src.training.pretraining"]
+disallow_untyped_calls = false

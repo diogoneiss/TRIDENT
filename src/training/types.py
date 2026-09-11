@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Protocol, Sequence
+from typing import Any, Mapping, Protocol, Sequence, TypeAlias
 
 # Learning-rate schedule names accepted by ``Hyperparameters.lr_scheduler`` and
 # the ``--lr_scheduler`` flag. ``cosine_legacy`` is the schedule every run before
@@ -255,9 +255,15 @@ class PretrainingOutcome:
     validation_losses: Sequence[float]
 
 
+# How a fold identifies itself. Ordinarily its 1-based number, but the single-split path
+# reports the literal ``"single_split"`` (``finetuning.py``), so anything keyed by fold has
+# to admit both.
+FoldKey: TypeAlias = int | str
+
+
 @dataclass(frozen=True)
 class FoldResult:
-    fold: int | str
+    fold: FoldKey
     dataset_name: str
     metrics: dict[str, float | int | str]
 
@@ -305,7 +311,7 @@ class LossBand:
 class CrossValidationSummary:
     metrics: Mapping[str, MetricSummary]
     loss_bands: Mapping[str, Sequence[LossBand]]
-    diagnostic_roles: Mapping[int, str]
+    diagnostic_roles: Mapping[FoldKey, str]
     # Wall-clock stage timings summarized across folds, keyed without the
     # ``time/`` prefix (``pretrain_seconds``, ``finetune_seconds``,
     # ``total_seconds``). Empty when the folds logged no timing events.

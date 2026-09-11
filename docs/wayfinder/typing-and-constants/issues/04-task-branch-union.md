@@ -57,6 +57,13 @@ else:
     assert_never(request.task)
 ```
 
+**The two halves land in different tickets.** [Ticket 08](08-configure-the-checker.md)
+declares the union, because that is what clears the error mypy reports today.
+**`assert_never` cannot land there**: the branch currently tests `task.name == "imputation"`
+where `task.name` is `str`, so after both comparisons mypy still sees `str`, not `Never`,
+and the call would itself be a type error. Exhaustiveness narrowing requires the branch to
+test an enum, so it arrives with ticket 03's enum conversion during plan execution.
+
 **The `is` comparison is contingent, and the execution ticket must check it.** Today the
 guard is `task.name == "imputation"` where `task` is a `TaskSpec`, so what `request.task`
 actually holds — a `TaskSpec`, a `Task` member, or a plain `str` straight from argparse —

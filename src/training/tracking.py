@@ -21,6 +21,7 @@ from src.training.summary import fold_timings_for_tracking
 from src.training.types import (
     DEFAULT_TASK,
     CrossValidationSummary,
+    FoldKey,
     FoldResult,
     FoldTrackingRecord,
     LoggedArtifact,
@@ -214,11 +215,17 @@ class MlflowTracker:
     def _log_diagnostic_children(
         self,
         records: Sequence[FoldTrackingRecord],
-        diagnostic_roles: Mapping[int, str],
+        diagnostic_roles: Mapping[FoldKey, str],
     ) -> None:
         records_by_fold = {record.result.fold: record for record in records}
         for fold, role in diagnostic_roles.items():
             record = records_by_fold[fold]
+            # Diagnostic children exist only for a cross-validated parent, whose folds are
+            # numbered; the single-split path reports ``"single_split"`` and never reaches
+            # here. Asserted rather than branched: a string arriving here already raised
+            # ``TypeError`` on the arithmetic below, so this states the invariant without
+            # changing which inputs succeed.
+            assert isinstance(fold, int)
             tags = build_fold_tags(fold - 1, self.cv_folds)
             tags.update({"dataset": record.result.dataset_name, "run_role": role})
             if self.lr_scheduler is not None:

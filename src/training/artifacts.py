@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
+from sklearn.preprocessing import StandardScaler
 
 from .summary import final_metrics_for_tracking, fold_timings_for_tracking
 from .types import (
@@ -228,7 +229,7 @@ class ArtifactWriter:
         seed: int,
         fold: int,
         sample_rows: int = 10,
-        scaler: object = None,
+        scaler: StandardScaler | None = None,
         numerical_columns: Sequence[str] = (),
     ) -> tuple[Path, Path]:
         """A readable sample of what the model filled in, and the full record behind it.
@@ -295,8 +296,15 @@ class ArtifactWriter:
 
 
 def _to_original_units(
-    ledger: pd.DataFrame, column: str, scaler: object, numerical_columns: Sequence[str]
-) -> list:
+    ledger: pd.DataFrame,
+    column: str,
+    scaler: StandardScaler | None,
+    numerical_columns: Sequence[str],
+    # ``Any`` rather than ``object``: the list is assigned straight into a pandas column,
+    # and pandas declares its own value union that ``object`` is too wide for. The cells
+    # really are heterogeneous -- a float for a numerical column, a category label
+    # otherwise -- so this is the honest width, not a concession.
+) -> list[Any]:
     """Numbers as a person would recognise them; categories are already readable."""
     values = []
     order = list(numerical_columns)
@@ -314,9 +322,13 @@ def _to_original_units(
             continue
         # inverse_transform wants a whole row, so undo this one column by hand.
         index = order.index(cell["column"])
-        values.append(
-            float(cell[column]) * float(scaler.scale_[index]) + float(scaler.mean_[index])
-        )
+        scale, mean = scaler.scale_, scaler.mean_
+        # Built with the with_mean/with_std defaults, so both are arrays by the time a
+        # fitted scaler reaches here. Asserted rather than folded into the guard above:
+        # widening that guard would send the column down the "already readable" path and
+        # silently change the artifact's contents.
+        assert scale is not None and mean is not None
+        values.append(float(cell[column]) * float(scale[index]) + float(mean[index]))
     return values
 
 
@@ -408,7 +420,10 @@ def _to_builtin(value: Any) -> Any:
         return value.item()
     if isinstance(value, np.ndarray):
         return value.tolist()
-    if is_dataclass(value):
+    # ``is_dataclass`` is true for the class object as well as an instance, and ``asdict``
+    # only accepts an instance. The class case never reaches here in practice; excluding it
+    # states that rather than letting it through to a runtime TypeError.
+    if is_dataclass(value) and not isinstance(value, type):
         return _to_builtin(asdict(value))
     if isinstance(value, dict):
         return {str(key): _to_builtin(item) for key, item in value.items()}

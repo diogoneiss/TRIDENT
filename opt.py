@@ -368,9 +368,13 @@ def log_param_importances(study) -> dict[str, float]:
     return ranked
 
 
-def run_hyperparameter_optimization(args):
+def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     """
     Run hyperparameter optimization with Optuna
+
+    Annotated ahead of the rest of this module: ``main.py`` is checked strictly and calling
+    an unannotated function from strict code is itself an error, so the seam has to be typed
+    even while the body is still covered by an override. See ADR 0006.
     """
     logger.info(f"Starting hyperparameter optimization for {args.dataset_name}")
     logger.info(f"Number of trials: {args.n_trials}")

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Command-line entry point for TRIDENT."""
 
+import argparse
 import copy
 import logging
 import time
+from typing import Any
 
 from src.training.cli import parse_args, run_from_namespace
 
@@ -22,7 +24,7 @@ def _format_duration(seconds: float) -> str:
     return f"{int(hours)}h {int(minutes)}m {secs:.0f}s"
 
 
-def run_all(args) -> None:
+def run_all(args: argparse.Namespace) -> None:
     """Run training sequentially on every discovered dataset."""
     from src.training.discovery import discover_datasets
     from src.training.types import task_spec
@@ -34,7 +36,7 @@ def run_all(args) -> None:
     total = len(datasets)
     logger.info("Batch run: %d dataset(s) queued — %s", total, ", ".join(datasets))
 
-    results: list[dict] = []
+    results: list[dict[str, Any]] = []
 
     for index, dataset_name in enumerate(datasets, start=1):
         logger.info(

@@ -73,7 +73,11 @@ result.
    `src/training/data.py` (a `splitter` variable reassigned across four splitter types,
    `ndarray` versus `Sequence[int]` dataclass fields, `.values` returning
    `ndarray | ExtensionArray`). The originally-known four:
-   - `runner.py:93` — the declared union and `assert_never`, per ticket 04.
+   - `runner.py:93` — **the declared union only**, per ticket 04. Not `assert_never`:
+     today the branch tests `task.name == "imputation"` where `task.name` is `str`, so
+     after both comparisons mypy still sees `str`, not `Never`, and `assert_never(...)`
+     would itself be a type error. Exhaustiveness narrowing needs the branch on an enum,
+     so the check lands with ticket 03's enum conversion during plan execution.
    - `summary.py:234-235` — fold keys typed `int | str` reaching a `dict[int, str]`.
    - `artifacts.py:318` — `StandardScaler` as `object`; resolved by ticket 05's choice.
      If ticket 05 chose `ignore_missing_imports`, note honestly in the resolution that this
@@ -85,6 +89,30 @@ result.
    counts. The baseline's 136/17 was taken with `--ignore-missing-imports`; the true
    numbers will differ, and the map's **Not yet specified** patch about the ramp order
    graduates on these numbers.
+
+## Two corrections to the numbers above, made before execution
+
+**The override list is an output of this ticket, not the number 3 from ticket 02.** The
+gate runs `strict = true`, so every unrelaxed file reports its *strict* errors — from the
+charting baseline that is roughly 136 − 79 ≈ **57**, not the 22 default-mode errors in step
+5 (which are largely a subset). Reconcile it this way: write the configuration at step 3,
+**run it, and let the measured tree decide the override list**. Where the strict errors are
+missing `-> None` and `no-any-return`, annotate them — that is not mass annotation and it
+keeps the file strict. Where a file needs design decisions, relax it and record the
+override. Ticket 02's three files are the expectation, not the budget.
+
+**Expect coupling between relaxed and strict modules.** `main.py:97` reports
+`[no-untyped-call]` *because* `opt.py` is untyped, so relaxing `opt.py` leaves `main.py`
+red. Same shape at `decoding.py` → `models.py`. Two honest fixes: annotate the handful of
+functions in the relaxed module that strict callers actually touch (cleanest — it types the
+seam, which is where it matters), or set `disallow_untyped_calls = false` on the *callers*.
+Prefer the first. Note that `strict` is not itself a per-module option; an override must
+list the individual flags it turns off.
+
+**Annotations follow runtime, never the reverse.** `FoldSplit.*_indices` holds ndarrays
+today, so widen the annotation; do not wrap in `list()` to satisfy a `Sequence[int]`
+declaration. The two `np.asarray` calls at `data.py:191` and `:209` are the only runtime
+touch this ticket should make, and the fixtures prove them.
 
 ## Acceptance
 

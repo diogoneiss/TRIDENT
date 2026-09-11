@@ -2,6 +2,7 @@
 
 import time
 
+import pandas as pd
 import torch
 
 from src.utils import set_global_seed
@@ -16,18 +17,32 @@ from .imputation_metrics import mean_mode_baselines, score_cells
 from .pretraining import train_pretrainer
 from .summary import compute_cv_summary, stage_timing_metrics, summarize_cross_validation
 from .tracking import create_tracker
-from .types import FoldResult, TrainingRequest, TrainingResult, task_spec
+from .types import (
+    DecodingOutcome,
+    FinetuningOutcome,
+    FoldKey,
+    FoldResult,
+    FoldSplit,
+    PreparedDataset,
+    TrainingRequest,
+    TrainingResult,
+    task_spec,
+)
 
 
-def _per_column_scores(dataset, fold, scored_cells) -> dict[str, object]:
+def _per_column_scores(
+    dataset: PreparedDataset, fold: FoldSplit, scored_cells: pd.DataFrame
+) -> dict[str, pd.DataFrame]:
     """Each population's per-column errors, against this fold's own naive baseline."""
     features = dataset.frame.drop(columns=[dataset.label_column])
     train_frame = features.iloc[fold.train_indices].reset_index(drop=True)
     baselines = mean_mode_baselines(
         train_frame, dataset.numerical_columns, dataset.categorical_columns
     )
+    # ``groupby`` keys are pandas scalars, not necessarily ``str``; the population column
+    # holds strings, so naming that explicitly costs nothing and states the assumption.
     return {
-        population: score_cells(group, baselines).per_column
+        str(population): score_cells(group, baselines).per_column
         for population, group in scored_cells.groupby("population", sort=True)
     }
 
@@ -51,7 +66,9 @@ def run_training(request: TrainingRequest) -> TrainingResult:
     results: list[FoldResult] = []
     records = []
     # Per-column errors, gathered per fold and written once on the parent.
-    per_column: dict[int | str, dict[str, object]] = {}
+    # Narrowed from ``object`` now that ``_per_column_scores`` states what it returns; this
+    # is what ``write_per_column_imputation`` has always required.
+    per_column: dict[FoldKey, dict[str, pd.DataFrame]] = {}
 
     with tracker.parent_run(
         dataset_name=request.dataset.dataset_name,
@@ -76,6 +93,10 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                 )
                 pretraining_seconds = time.perf_counter() - pretraining_started
                 finetuning_started = time.perf_counter()
+                # The two tasks produce different outcomes; the union states the contract
+                # that already holds at runtime. Exhaustiveness (``assert_never``) waits on
+                # the task enum, which cannot narrow a ``str`` comparison.
+                finetuning: FinetuningOutcome | DecodingOutcome
                 if task.name == "imputation":
                     finetuning = train_and_evaluate_decoder(
                         dataset=dataset,
@@ -122,7 +143,11 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     )
                     fold_tracker.log_artifact(str(pretraining_plot), artifact_path="plots")
                     fold_tracker.log_artifact(str(finetuning_plot), artifact_path="plots")
-                if task.name == "imputation":
+                # Narrowed on the outcome type rather than the task name: ``scored_cells``
+                # belongs to the decode stage's outcome, and the decoder is exactly what
+                # the imputation branch above produced. Same runs take this path as before,
+                # but the attribute access is now checked instead of merely correlated.
+                if isinstance(finetuning, DecodingOutcome):
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""
                     preview_path, ledger_path = artifacts.write_imputation_preview(
                         f"imputation{suffix}",

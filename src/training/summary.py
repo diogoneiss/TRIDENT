@@ -12,6 +12,7 @@ from scipy.stats import t
 from src.training.types import (
     CLASSIFICATION,
     CrossValidationSummary,
+    FoldKey,
     FoldTrackingRecord,
     LoggedMetric,
     LossBand,
@@ -218,7 +219,9 @@ def _student_t_interval(
     return value_array, mean, standard_deviation, margin
 
 
-def _diagnostic_roles(records: Sequence[FoldTrackingRecord], task: TaskSpec) -> Mapping[int, str]:
+def _diagnostic_roles(
+    records: Sequence[FoldTrackingRecord], task: TaskSpec
+) -> Mapping[FoldKey, str]:
     # ``sign`` orients the fold-ranking metric so that a smaller key is always worse;
     # ties still resolve to the lowest fold number for both roles.
     sign = 1.0 if task.direction == "maximize" else -1.0
