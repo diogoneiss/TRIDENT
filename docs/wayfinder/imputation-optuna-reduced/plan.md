@@ -203,7 +203,7 @@ def test_promotion_writes_a_complete_configuration_where_the_task_will_find_it()
 
 - [ ] **Step 4: Verify, then a real promotion**
 
-Unit suite and both fixtures. Then a two-trial reduced study on `credit-g_20nan --promote_best` against a scratch store **and a scratch cwd copy of `datasets/hiperparams/`** is not possible (the path is relative to the repo), so run it in the repo, confirm `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json` appears with the complete key set, then delete it: the real promoted files come from task 5. Document the lookup order in `README.md` ("Configuration System") and mark I2 fixed in `docs/BACKLOG.md`.
+Unit suite and both fixtures. Then a two-trial reduced study on `credit-g_20nan --promote_best` against a scratch tracking store. The promoted path is relative to the repository, so the file lands in the real `datasets/hiperparams/`: confirm `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json` appears with the complete key set, then delete it, because the real promoted files come from task 5. Document the lookup order in `README.md` ("Configuration System") and mark I2 fixed in `docs/BACKLOG.md`.
 
 - [ ] **Step 5: Commit**
 
