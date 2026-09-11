@@ -456,3 +456,54 @@ def test_promotion_writes_a_complete_classification_configuration_to_the_shared_
     assert study.data.metrics["optuna/best_trial_number"] == 1.0
     assert promoted["DIM"] == int(study.data.params["best_DIM"])
     assert promoted["LR_FINE"] == float(study.data.params["best_LR_FINE"])
+
+
+def test_a_finished_study_ranks_the_knobs_it_sampled(mlflow_backend, monkeypatch) -> None:
+    """A study says which of the knobs it sampled moved the objective, so the reduction
+    can be checked against what the search actually found (ADR 0005, decision 6).
+
+    fANOVA importances land on the study parent as one metric per sampled knob (they sum
+    to one) and as an ``importance.json`` artifact. Vehicle is all numerical, so the
+    reduced profile samples four knobs and the loss balance is not among them.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4, 2: 0.7})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=3))
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    study = next(
+        run
+        for name, run in _runs_by_name(client).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    importances = {
+        key.removeprefix("optuna/importance/"): value
+        for key, value in study.data.metrics.items()
+        if key.startswith("optuna/importance/")
+    }
+    assert set(importances) == {"PROB_MASCARA", "LR_DECODE", "WEIGHT_DECAY_DECODE", "DROPOUT"}
+    assert sum(importances.values()) == pytest.approx(1.0, abs=1e-6)
+    assert all(value >= 0.0 for value in importances.values())
+    artifacts = {info.path for info in client.list_artifacts(study.info.run_id)}
+    assert "importance.json" in artifacts
+
+
+def test_a_study_too_small_to_rank_still_finishes(mlflow_backend, monkeypatch) -> None:
+    """One trial gives fANOVA nothing to rank. The study still records its best and
+    promotes if asked; it logs no importance and does not fail after the trial ran.
+    """
+    stub = _TrainingStub(scores={0: 0.9})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=1))
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    study = next(
+        run
+        for name, run in _runs_by_name(client).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.metrics["optuna/best_trial_number"] == 0.0
+    assert not any(key.startswith("optuna/importance/") for key in study.data.metrics)
+    assert {info.path for info in client.list_artifacts(study.info.run_id)} == set()

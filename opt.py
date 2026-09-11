@@ -71,6 +71,12 @@ class _DisabledMlflow:
     def set_tag(self, *args, **kwargs):
         return None
 
+    def log_dict(self, *args, **kwargs):
+        return None
+
+    def log_artifact(self, *args, **kwargs):
+        return None
+
 
 def define_search_space(
     trial, task: str = 'classification', profile: str = 'full', mixed_columns: bool = True
@@ -340,6 +346,28 @@ def promote_best_configuration(
     return path
 
 
+def log_param_importances(study) -> dict[str, float]:
+    """Rank the knobs the study sampled and record the ranking on the study parent.
+
+    fANOVA importances (``optuna.importance.get_param_importances``, the default
+    evaluator) go on the active MLflow run as one ``optuna/importance/<knob>`` metric per
+    sampled knob and as an ``importance.json`` artifact, so the reduction can be checked
+    against what the search found (ADR 0005, decision 6). Only sampled knobs are ranked;
+    a study too small to rank warns and returns an empty mapping rather than failing
+    after every trial has run.
+    """
+    try:
+        importances = optuna.importance.get_param_importances(study)
+    except (ValueError, RuntimeError) as error:
+        logger.warning(f"Skipping hyperparameter importances: {error}")
+        return {}
+    ranked = {knob: float(value) for knob, value in importances.items()}
+    if ranked:
+        mlflow.log_metrics({f"optuna/importance/{knob}": value for knob, value in ranked.items()})
+        mlflow.log_dict(ranked, "importance.json")
+    return ranked
+
+
 def run_hyperparameter_optimization(args):
     """
     Run hyperparameter optimization with Optuna
@@ -448,6 +476,11 @@ def run_hyperparameter_optimization(args):
 
         # Run the optimization
         study.optimize(objective, n_trials=args.n_trials)
+
+        # Which sampled knobs moved the objective, on the study parent.
+        importances = log_param_importances(study)
+        for knob, value in importances.items():
+            logger.info(f"Importance of {knob}: {value:.3f}")
 
         # The configuration the winning trial actually trained with, not Optuna's record
         # of what it sampled (the study's own best params hold ``HEAD_DIM``, not ``DIM``).
