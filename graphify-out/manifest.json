@@ -60,15 +60,15 @@
     "semantic_hash": "a3c0ceb7175a131645e12b7d002a9b7f"
   },
   "src/training/config.py": {
-    "mtime": 1789077363.5980992,
-    "seen": 1789080377.344404,
-    "ast_hash": "0fc77e0ac99c2973c69fc1f54ffc39f5",
+    "mtime": 1789088258.8579302,
+    "seen": 1789088666.3390138,
+    "ast_hash": "6890a6c44f0aa2675a2c4a9e5a053a8f",
     "semantic_hash": ""
   },
   "src/training/data.py": {
-    "mtime": 1789086607.9719312,
-    "seen": 1789087238.6892393,
-    "ast_hash": "4439fc4c5862a7dc6c95455c1b0cdc41",
+    "mtime": 1789088331.164277,
+    "seen": 1789088666.3390138,
+    "ast_hash": "3c0fc97ab69f7538f38fe0cddc8ae84f",
     "semantic_hash": ""
   },
   "src/training/discovery.py": {
@@ -120,9 +120,9 @@
     "semantic_hash": "3f14341d65f1c443198022aae419d65e"
   },
   "src/utils.py": {
-    "mtime": 1788919437.766887,
-    "seen": 1788997371.4334493,
-    "ast_hash": "32018eda73110ad9e172f3ecc9f34c72",
+    "mtime": 1789088501.203992,
+    "seen": 1789088666.3390138,
+    "ast_hash": "c10834dbe49adb8ec669df0059947eac",
     "semantic_hash": ""
   },
   "start_mlflow.ps1": {
@@ -150,15 +150,15 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1789077352.974501,
-    "seen": 1789080377.344404,
-    "ast_hash": "de5224e8deccc53612e6a229eebe4795",
+    "mtime": 1789088233.6952882,
+    "seen": 1789088666.3390138,
+    "ast_hash": "67107e2dcff7ab9a35f9ab6c085092d1",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
-    "mtime": 1789069261.060245,
-    "seen": 1789080377.344404,
-    "ast_hash": "c601a6d3681bf139fb15714afc320bf9",
+    "mtime": 1789088288.742198,
+    "seen": 1789088666.3390138,
+    "ast_hash": "c34b72a04aa58bf85539624b08d0fc68",
     "semantic_hash": ""
   },
   "tests/unit/test_training_metrics.py": {
@@ -336,9 +336,9 @@
     "semantic_hash": ""
   },
   "docs/BACKLOG.md": {
-    "mtime": 1789087137.4646645,
-    "seen": 1789087238.6892393,
-    "ast_hash": "a7c91bf0ab5c19a609ad618701048d60",
+    "mtime": 1789088637.7717175,
+    "seen": 1789088666.3390138,
+    "ast_hash": "8e47f8e56df771fcfea180d35610f68f",
     "semantic_hash": ""
   },
   "docs/adr/0003-selectable-learning-rate-schedule.md": {
@@ -630,9 +630,15 @@
     "semantic_hash": ""
   },
   "docs/tickets/0004-imputation-preview-precision.md": {
-    "mtime": 1789087137.470183,
-    "seen": 1789087238.6892393,
-    "ast_hash": "38344f81d49ac906efbbaef1eb268e87",
+    "mtime": 1789087339.508335,
+    "seen": 1789088666.3390138,
+    "ast_hash": "fed6c42a68c74d01e69b905cfb2b14a4",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_preprocess_table.py": {
+    "mtime": 1789088466.9844067,
+    "seen": 1789088666.3390138,
+    "ast_hash": "2cef8e9ff9d84bdd95708c56d6fc6331",
     "semantic_hash": ""
   }
 }
