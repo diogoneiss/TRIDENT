@@ -43,3 +43,10 @@ Ordinary and cross-validation runs never carry a `validation/` key.
 - `optuna/objective_value` keeps logging the objective under one key whatever the task.
 
 ## Comments
+
+- 2026-09-11 (from ticket 01): `_TrainingStub` in `tests/unit/test_opt_tracking.py` keys the
+  metric it returns on `args.task` and returns `impute/masked/impute_score` for imputation.
+  Moving the objective to a `validation/` key changes what the stub must return and what
+  `test_an_imputation_study_trains_the_imputation_task_in_every_trial` relies on; plan that
+  red rather than meeting it by surprise. The fixture also fabricates a vehicle table
+  header because a study reads the header before its first trial.
