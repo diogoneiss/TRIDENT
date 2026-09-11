@@ -1,956 +1,836 @@
 {
   "datasets/generate_splits.py": {
-    "mtime": 1782783124.4325697,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140051.373799,
+    "seen": 1789142482.320545,
     "ast_hash": "06c9dce79f25154b5ef5652961aea611",
     "semantic_hash": "06c9dce79f25154b5ef5652961aea611"
   },
   "main.py": {
-    "mtime": 1789079150.384167,
-    "seen": 1789080377.344404,
-    "ast_hash": "ee8b94adb7b32f672846eb5af5852a62",
+    "mtime": 1789141484.5071728,
+    "seen": 1789142482.320545,
+    "ast_hash": "2958ee973b755316bffc4e78f59fdf53",
     "semantic_hash": ""
   },
   "opt.py": {
-    "mtime": 1789099182.9260604,
-    "seen": 1789099681.984489,
-    "ast_hash": "0cef1249aec5f1f9c685d9e47bec1fe3",
+    "mtime": 1789141586.029778,
+    "seen": 1789142482.320545,
+    "ast_hash": "fc423ae4cd9efa1f80af202201cb4b12",
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1785810331.2433085,
-    "seen": 1788830054.7408123,
-    "ast_hash": "8706a5e0c3438bcae242336f5e9ad951",
-    "semantic_hash": "8706a5e0c3438bcae242336f5e9ad951"
+    "mtime": 1789142339.0684652,
+    "seen": 1789142482.320545,
+    "ast_hash": "78346f52ad80e8410956dfa1c2bb1188",
+    "semantic_hash": ""
   },
   "src/embedder.py": {
-    "mtime": 1789066224.5165124,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.5248685,
+    "seen": 1789142482.320545,
     "ast_hash": "63789bc3479da8460f6dae4d631f93c2",
     "semantic_hash": ""
   },
   "src/mlflow_utils.py": {
-    "mtime": 1789095373.4247246,
-    "seen": 1789095972.6288188,
-    "ast_hash": "abfb4be106ba87ea000ee9ff3588d531",
+    "mtime": 1789140052.5268698,
+    "seen": 1789142482.320545,
+    "ast_hash": "b6529d73e6453ce71d72ae04248426ec",
     "semantic_hash": ""
   },
   "src/models.py": {
-    "mtime": 1789077893.057978,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.529395,
+    "seen": 1789142482.320545,
     "ast_hash": "cf67840731421344369cf434457adb3f",
     "semantic_hash": ""
   },
   "src/training/__init__.py": {
-    "mtime": 1785722332.2853637,
-    "seen": 1788830054.7408123,
-    "ast_hash": "53e248c9aaab05ea361d7ffe5fef7498",
-    "semantic_hash": "53e248c9aaab05ea361d7ffe5fef7498"
+    "mtime": 1789140052.530397,
+    "seen": 1789142482.320545,
+    "ast_hash": "7fb49aa12d405012f664fa558f2f85de",
+    "semantic_hash": ""
   },
   "src/training/artifacts.py": {
-    "mtime": 1789087137.4546652,
-    "seen": 1789087238.6892393,
-    "ast_hash": "9673b4adbbce707ccaac3fe670c5094e",
+    "mtime": 1789141558.9141195,
+    "seen": 1789142482.320545,
+    "ast_hash": "86fa56072e2fcc52604a4c4bd5431f2b",
     "semantic_hash": ""
   },
   "src/training/cli.py": {
-    "mtime": 1785844525.8876505,
-    "seen": 1788830054.7408123,
-    "ast_hash": "a3c0ceb7175a131645e12b7d002a9b7f",
-    "semantic_hash": "a3c0ceb7175a131645e12b7d002a9b7f"
+    "mtime": 1789141469.775875,
+    "seen": 1789142482.320545,
+    "ast_hash": "077a9f0b4a0c7717a8d8d41f10b183d4",
+    "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1789098164.1963048,
-    "seen": 1789099046.9141364,
+    "mtime": 1789141901.1245162,
+    "seen": 1789142482.320545,
     "ast_hash": "de8a4a2f6ff5dd375e30d330506dc43d",
     "semantic_hash": ""
   },
   "src/training/data.py": {
-    "mtime": 1789095260.340582,
-    "seen": 1789095972.6288188,
+    "mtime": 1789140052.5384,
+    "seen": 1789142482.320545,
     "ast_hash": "21106d018a7aaf8af9e6205747d2d34d",
     "semantic_hash": ""
   },
   "src/training/discovery.py": {
-    "mtime": 1785844488.1776018,
-    "seen": 1788830054.7408123,
-    "ast_hash": "8d50840f2787462bfba38a34bafb7d87",
-    "semantic_hash": "8d50840f2787462bfba38a34bafb7d87"
+    "mtime": 1789140052.546942,
+    "seen": 1789142482.320545,
+    "ast_hash": "c3e250a9bb02428ecba0b477e90a9316",
+    "semantic_hash": ""
   },
   "src/training/finetuning.py": {
-    "mtime": 1788997002.5048568,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140052.5509367,
+    "seen": 1789142482.320545,
     "ast_hash": "974fe3a188672a8fa4cb6b07a20e3eba",
     "semantic_hash": ""
   },
   "src/training/pretraining.py": {
-    "mtime": 1788997002.5042565,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140052.5569353,
+    "seen": 1789142482.320545,
     "ast_hash": "8fe5ec03a293ba9fdd742d801a6846e7",
     "semantic_hash": ""
   },
   "src/training/runner.py": {
-    "mtime": 1789097721.8894203,
-    "seen": 1789099046.9141364,
-    "ast_hash": "53c77537eca2ca3ee13a94078aab8b03",
+    "mtime": 1789141664.7054741,
+    "seen": 1789142482.320545,
+    "ast_hash": "ee3f6f66efa37ecdf686cb12094b2906",
     "semantic_hash": ""
   },
   "src/training/summary.py": {
-    "mtime": 1789063006.1140697,
-    "seen": 1789080377.344404,
-    "ast_hash": "8b8d601dfa5e2cb6dc46b311a1017045",
+    "mtime": 1789140662.9617848,
+    "seen": 1789142482.320545,
+    "ast_hash": "051abe45b70638d86caca95a7531a52c",
     "semantic_hash": ""
   },
   "src/training/tracking.py": {
-    "mtime": 1789097721.8884366,
-    "seen": 1789099046.9141364,
-    "ast_hash": "d762bce039966210771b7530ed12b7f0",
+    "mtime": 1789140677.5861635,
+    "seen": 1789142482.320545,
+    "ast_hash": "b03203b98c381a05f7d41ef7df6388ee",
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1789097661.1112342,
-    "seen": 1789099046.9141364,
-    "ast_hash": "50bdf00e94156bf9851edb9b5cea2a58",
+    "mtime": 1789140636.4914513,
+    "seen": 1789142482.320545,
+    "ast_hash": "f050233fe7d6f0f35e3cf0d1a07bae2e",
     "semantic_hash": ""
   },
   "src/transformer.py": {
-    "mtime": 1782783124.4345703,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140052.5744681,
+    "seen": 1789142482.320545,
     "ast_hash": "3f14341d65f1c443198022aae419d65e",
     "semantic_hash": "3f14341d65f1c443198022aae419d65e"
   },
   "src/utils.py": {
-    "mtime": 1789088501.203992,
-    "seen": 1789088666.3390138,
+    "mtime": 1789140052.5764635,
+    "seen": 1789142482.320545,
     "ast_hash": "c10834dbe49adb8ec669df0059947eac",
     "semantic_hash": ""
   },
   "start_mlflow.ps1": {
-    "mtime": 1783047855.794899,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140052.578462,
+    "seen": 1789142482.320545,
     "ast_hash": "87f5c59b278d02dd97c6c5658793a7d4",
     "semantic_hash": "87f5c59b278d02dd97c6c5658793a7d4"
   },
   "tests/fixtures/vehicle_00nan_regression.json": {
-    "mtime": 1785727407.3946948,
-    "seen": 1788830054.7408123,
-    "ast_hash": "c560a31c46b2b3f8ef55145244d83222",
-    "semantic_hash": "c560a31c46b2b3f8ef55145244d83222"
+    "mtime": 1789140052.584466,
+    "seen": 1789142482.320545,
+    "ast_hash": "26e82f576cd2eab7f6196c384da3dcd1",
+    "semantic_hash": ""
   },
   "tests/integration/test_vehicle_regression.py": {
-    "mtime": 1785726739.8684258,
-    "seen": 1788830054.7408123,
-    "ast_hash": "48aae04636df9e5525cb4ffb5ab44ffb",
-    "semantic_hash": "48aae04636df9e5525cb4ffb5ab44ffb"
+    "mtime": 1789140052.5939946,
+    "seen": 1789142482.320545,
+    "ast_hash": "d146077055164368d0ef54e96ffd8a87",
+    "semantic_hash": ""
   },
   "tests/unit/test_training_artifacts.py": {
-    "mtime": 1789008392.8515475,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.6245868,
+    "seen": 1789142482.320545,
     "ast_hash": "e509b0c2b60667a9c81693f70b62866e",
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1789097639.5460234,
-    "seen": 1789099046.9141364,
-    "ast_hash": "f1db9795f3cfe77b3a863b82681e1ff3",
+    "mtime": 1789140052.6255848,
+    "seen": 1789142482.320545,
+    "ast_hash": "66125372e0c3dca82cd4b432089e9f6b",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
-    "mtime": 1789095232.2087097,
-    "seen": 1789095972.6288188,
+    "mtime": 1789140052.628589,
+    "seen": 1789142482.320545,
     "ast_hash": "7cf3fbec0686438f11d5dfe6df8650fd",
     "semantic_hash": ""
   },
   "tests/unit/test_training_metrics.py": {
-    "mtime": 1788919457.4114022,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140052.6345868,
+    "seen": 1789142482.320545,
     "ast_hash": "3f96ed5e093c8219e5430fa42a36b965",
     "semantic_hash": ""
   },
   "tests/unit/test_training_runtime.py": {
-    "mtime": 1789098294.0322063,
-    "seen": 1789099046.9141364,
+    "mtime": 1789140052.637589,
+    "seen": 1789142482.320545,
     "ast_hash": "2a9c506cce3a9feabb1440eb9772460a",
     "semantic_hash": ""
   },
   "tests/unit/test_training_summary.py": {
-    "mtime": 1789008392.8769557,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.6435986,
+    "seen": 1789142482.320545,
     "ast_hash": "4167a8eda818f0d3b53d128ed2f05917",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tracking.py": {
-    "mtime": 1789097760.4745078,
-    "seen": 1789099046.9141364,
+    "mtime": 1789140052.6495898,
+    "seen": 1789142482.320545,
     "ast_hash": "1d7e680a4163ad0db94810ec15908c6c",
     "semantic_hash": ""
   },
   "train.py": {
-    "mtime": 1785726014.3721483,
-    "seen": 1788830054.7408123,
-    "ast_hash": "9bc80a6cf772ac1ccdb1cc97b7d91cde",
-    "semantic_hash": "9bc80a6cf772ac1ccdb1cc97b7d91cde"
+    "mtime": 1789141472.294654,
+    "seen": 1789142482.320545,
+    "ast_hash": "a4ed15bf918a2e740944142dfd2b97ae",
+    "semantic_hash": ""
   },
   ".superpowers/sdd/2026-08-02-training-refactor/task-3-report.md": {
-    "mtime": 1785727793.351813,
-    "seen": 1788830054.7408123,
-    "ast_hash": "c60c9709883a04e8ed59c16974dce4f0",
-    "semantic_hash": "c60c9709883a04e8ed59c16974dce4f0"
+    "mtime": 1789140051.2900028,
+    "seen": 1789142482.320545,
+    "ast_hash": "ea67ca2870d71bc4c5b5ea917d08e48d",
+    "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1789080030.1375537,
-    "seen": 1789080377.344404,
-    "ast_hash": "ac86337481c77fc2c082101e8186f912",
+    "mtime": 1789142452.0093753,
+    "seen": 1789142482.320545,
+    "ast_hash": "550e8c7e6f52cdc3d544784148d24427",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1789091934.624309,
-    "seen": 1789092097.115098,
-    "ast_hash": "900a8f78d09dee6f4a62f25b5eb20177",
+    "mtime": 1789140051.2970033,
+    "seen": 1789142482.320545,
+    "ast_hash": "bc9201c0d0657017e7011bbf6f175e37",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789102635.3367083,
-    "seen": 1789178625.5771992,
-    "ast_hash": "84b93b8bb3aba0739293e3d84499208b",
+    "mtime": 1789140417.90909,
+    "seen": 1789142482.320545,
+    "ast_hash": "8e912fea294f7757e0b220ac60dd89c0",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
-    "mtime": 1782783124.3995712,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140051.3009992,
+    "seen": 1789142482.320545,
     "ast_hash": "3cb1b350defa2a2f28abd670b9d20cf7",
     "semantic_hash": "3cb1b350defa2a2f28abd670b9d20cf7"
   },
   "datasets/categorical_columns/electricity.txt": {
-    "mtime": 1782783124.4005709,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140051.3009992,
+    "seen": 1789142482.320545,
     "ast_hash": "628b7db04235f228d40adc671413a8c8",
     "semantic_hash": "628b7db04235f228d40adc671413a8c8"
   },
   "datasets/categorical_columns/kr-vs-kp.txt": {
-    "mtime": 1782783124.4005709,
-    "seen": 1788830054.7408123,
+    "mtime": 1789140051.3019996,
+    "seen": 1789142482.320545,
     "ast_hash": "8c9f6dac7adf714cef40f1d6000ceeca",
     "semantic_hash": "8c9f6dac7adf714cef40f1d6000ceeca"
   },
   "docs/adr/0001-training-package-with-compatibility-facade.md": {
-    "mtime": 1785720938.5604231,
-    "seen": 1788830054.7408123,
-    "ast_hash": "cc3007401963d472e161b86a34789f6f",
-    "semantic_hash": "cc3007401963d472e161b86a34789f6f"
+    "mtime": 1789140051.383615,
+    "seen": 1789142482.320545,
+    "ast_hash": "75140871b185c64a28ee480854b0401a",
+    "semantic_hash": ""
   },
   "docs/adr/0002-curated-cross-validation-mlflow-runs.md": {
-    "mtime": 1785801147.120573,
-    "seen": 1788830054.7408123,
-    "ast_hash": "0456948629e73e5022bf00479c5bff70",
-    "semantic_hash": "0456948629e73e5022bf00479c5bff70"
+    "mtime": 1789140051.3848991,
+    "seen": 1789142482.320545,
+    "ast_hash": "ba036ab0bdb69ddef87765e39c71988c",
+    "semantic_hash": ""
   },
   "docs/plan-all-cli-flag.md": {
-    "mtime": 1785844425.5289528,
-    "seen": 1788830054.7408123,
-    "ast_hash": "f1c097528a3ac992810e6c45b80d93b9",
-    "semantic_hash": "f1c097528a3ac992810e6c45b80d93b9"
+    "mtime": 1789140051.399002,
+    "seen": 1789142482.320545,
+    "ast_hash": "3e19bcb629b64b7235f4e8f021761e76",
+    "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-02-training-refactor.md": {
-    "mtime": 1785721249.0234115,
-    "seen": 1788830054.7408123,
-    "ast_hash": "841963d5dbb1648e93746ba6a63ee399",
-    "semantic_hash": "841963d5dbb1648e93746ba6a63ee399"
+    "mtime": 1789140051.405005,
+    "seen": 1789142482.320545,
+    "ast_hash": "10159a9ae4ec7724242539d3bb1870e1",
+    "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md": {
-    "mtime": 1785813317.4299061,
-    "seen": 1788830054.7408123,
-    "ast_hash": "b41f59542ad71de3583ba04fca820008",
-    "semantic_hash": "b41f59542ad71de3583ba04fca820008"
+    "mtime": 1789140051.4105332,
+    "seen": 1789142482.320545,
+    "ast_hash": "811fb449cc7405f81c47ab3eba456b66",
+    "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-02-training-refactor-design.md": {
-    "mtime": 1785720933.9311528,
-    "seen": 1788830054.7408123,
-    "ast_hash": "f0736253b7e2deeb752f7045276cb5ad",
-    "semantic_hash": "f0736253b7e2deeb752f7045276cb5ad"
+    "mtime": 1789140051.417094,
+    "seen": 1789142482.320545,
+    "ast_hash": "8eab4cb80b75fcc2c67c355ad77ca108",
+    "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-08-03-curated-mlflow-cross-validation-design.md": {
-    "mtime": 1785801338.1423488,
-    "seen": 1788830054.7408123,
-    "ast_hash": "f54f6efd642fe683d4b3aaf05800ec8b",
-    "semantic_hash": "f54f6efd642fe683d4b3aaf05800ec8b"
+    "mtime": 1789140051.4190946,
+    "seen": 1789142482.320545,
+    "ast_hash": "e16c1f70013a05ed84038ec5846b813e",
+    "semantic_hash": ""
   },
   "docs/tickets/0001-training-refactor.md": {
-    "mtime": 1785727408.7139146,
-    "seen": 1788830054.7408123,
-    "ast_hash": "f444a42132c72548ac29a402344a2ea2",
-    "semantic_hash": "f444a42132c72548ac29a402344a2ea2"
+    "mtime": 1789140051.4260974,
+    "seen": 1789142482.320545,
+    "ast_hash": "7b5450a59f1b5b2232d3cf70bf60b838",
+    "semantic_hash": ""
   },
   "docs/tickets/0002-mlflow-logged-model-lifecycle.md": {
-    "mtime": 1785801182.7392933,
-    "seen": 1788830054.7408123,
-    "ast_hash": "724d1b926dc0a440250b74b9756eaeff",
-    "semantic_hash": "724d1b926dc0a440250b74b9756eaeff"
+    "mtime": 1789140051.4290912,
+    "seen": 1789142482.320545,
+    "ast_hash": "6c361f45d6b025c953bf64d81860d84b",
+    "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1788997336.59413,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140051.2949998,
+    "seen": 1789142482.320545,
     "ast_hash": "6865b00027105c8796d7d49708925c95",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
-    "mtime": 1789080070.1512542,
-    "seen": 1789080377.344404,
-    "ast_hash": "7980eb02e73bc436f6522e5bc2a2f5dd",
+    "mtime": 1789140051.3767948,
+    "seen": 1789142482.320545,
+    "ast_hash": "fade7dd85516df962c807e45a9ae9660",
     "semantic_hash": ""
   },
   "docs/tickets/0003-training-loop-performance.md": {
-    "mtime": 1788922268.52275,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140051.4316247,
+    "seen": 1789142482.320545,
     "ast_hash": "ce5e9e4a5c4576c8c55b76c52dba3b69",
     "semantic_hash": ""
   },
   "scripts/backfill_lr_scheduler_tag.py": {
-    "mtime": 1788997179.5136092,
-    "seen": 1788997371.4334493,
-    "ast_hash": "e19955b251f07ef9c4e589d926ce24ff",
+    "mtime": 1789140417.9899044,
+    "seen": 1789142482.320545,
+    "ast_hash": "09f92af1df16fa2db2e56a8b84806adf",
     "semantic_hash": ""
   },
   "src/training/schedulers.py": {
-    "mtime": 1788996905.0573418,
-    "seen": 1788997371.4334493,
-    "ast_hash": "ec71caf7c1a41dcaf678974ec4a608c8",
+    "mtime": 1789140052.5619404,
+    "seen": 1789142482.320545,
+    "ast_hash": "c3a6ceebb661bb7a6d08bec37f3b8917",
     "semantic_hash": ""
   },
   "tests/unit/test_backfill_lr_scheduler_tag.py": {
-    "mtime": 1788997179.5146084,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140052.5975192,
+    "seen": 1789142482.320545,
     "ast_hash": "7c767039853c4ca427cf44b4efc47917",
     "semantic_hash": ""
   },
   "tests/unit/test_training_schedulers.py": {
-    "mtime": 1788997179.5146084,
-    "seen": 1788997371.4334493,
+    "mtime": 1789140052.6395886,
+    "seen": 1789142482.320545,
     "ast_hash": "f94a79990ad41be7e0b1619124be2fd0",
     "semantic_hash": ""
   },
   "docs/BACKLOG.md": {
-    "mtime": 1789178591.5007882,
-    "seen": 1789178625.5771992,
-    "ast_hash": "391ac7625968a758e9a6691290496a34",
+    "mtime": 1789140051.3798056,
+    "seen": 1789142482.320545,
+    "ast_hash": "67a6b70c5781c41edaad34f70d65dfe9",
     "semantic_hash": ""
   },
   "docs/adr/0003-selectable-learning-rate-schedule.md": {
-    "mtime": 1788997301.8669505,
-    "seen": 1788997371.4334493,
-    "ast_hash": "a0463f5a3507b6a3d57b4d4e2b3e2983",
+    "mtime": 1789140051.3894536,
+    "seen": 1789142482.320545,
+    "ast_hash": "c2cb1a4d7db17725515a5a1199f6cfa7",
     "semantic_hash": ""
   },
   "experiment.ps1": {
-    "mtime": 1789004302.5897799,
-    "seen": 1789007173.2127626,
+    "mtime": 1789140051.5799563,
+    "seen": 1789142482.320545,
     "ast_hash": "fdeab692110cccab6e843d5ed69b50f4",
     "semantic_hash": ""
   },
   "src/training/environment.py": {
-    "mtime": 1789008392.83455,
-    "seen": 1789080377.344404,
-    "ast_hash": "4b73698690b4b01c2f49640af7d5e137",
+    "mtime": 1789140052.5479338,
+    "seen": 1789142482.320545,
+    "ast_hash": "5359ffee9546e52bb3ef2f97f7fed886",
     "semantic_hash": ""
   },
   "tests/unit/test_training_environment.py": {
-    "mtime": 1789008392.8415349,
-    "seen": 1789080377.344404,
-    "ast_hash": "1107a79d60701bf85a2e1e16433b0859",
+    "mtime": 1789140052.6325917,
+    "seen": 1789142482.320545,
+    "ast_hash": "92c9a855782a0aacedb9183223b62726",
     "semantic_hash": ""
   },
   "tests/unit/test_opt_tracking.py": {
-    "mtime": 1789099158.5074759,
-    "seen": 1789099681.984489,
-    "ast_hash": "be1d21cadf2f55b27571c603bcdef50d",
+    "mtime": 1789140052.6195865,
+    "seen": 1789142482.320545,
+    "ast_hash": "cf1e420e6917a67f610c367fea379511",
     "semantic_hash": ""
   },
   "scripts/__init__.py": {
-    "mtime": 1789079508.2544985,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.5133371,
+    "seen": 1789142482.320545,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "scripts/backfill_run_tags.py": {
-    "mtime": 1789079502.7898347,
-    "seen": 1789080377.344404,
-    "ast_hash": "d30bb63750f3fc019acfd7ee2aeef022",
+    "mtime": 1789140418.0335138,
+    "seen": 1789142482.320545,
+    "ast_hash": "81b85a61ff40e0442f9cc66f6a96009b",
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1789178367.3633828,
-    "seen": 1789178625.5771992,
-    "ast_hash": "fab58b17e1a97342aba983811627dcb8",
+    "mtime": 1789140052.5419345,
+    "seen": 1789142482.320545,
+    "ast_hash": "eb02e0b7551bc354edcea094761b440f",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
-    "mtime": 1789067818.267522,
-    "seen": 1789080377.344404,
-    "ast_hash": "96eb62e4c4399c78c01a0e5736be337e",
+    "mtime": 1789140052.5539353,
+    "seen": 1789142482.320545,
+    "ast_hash": "9964d4e7f4c61b38323bb66e43ec3d7c",
     "semantic_hash": ""
   },
   "tests/fixtures/credit-g_20nan_imputation_regression.json": {
-    "mtime": 1789079928.0309002,
-    "seen": 1789080377.344404,
+    "mtime": 1789140052.5824633,
+    "seen": 1789142482.320545,
     "ast_hash": "32f156e1ee5efd5865c68ce3cafdb9b8",
     "semantic_hash": ""
   },
   "tests/integration/test_credit_g_imputation_regression.py": {
-    "mtime": 1789079944.311757,
-    "seen": 1789080377.344404,
-    "ast_hash": "73fd4fec32f477fc679ddb06b35db1b1",
+    "mtime": 1789140052.5904644,
+    "seen": 1789142482.320545,
+    "ast_hash": "0446e461ad2ff651532813a733020e84",
     "semantic_hash": ""
   },
   "tests/unit/test_backfill_run_tags.py": {
-    "mtime": 1789079472.5762403,
-    "seen": 1789080377.344404,
-    "ast_hash": "ca640136012555114eed697174a35f2e",
+    "mtime": 1789140052.5995204,
+    "seen": 1789142482.320545,
+    "ast_hash": "17a67df1287912642085940fe8bae9eb",
     "semantic_hash": ""
   },
   "tests/unit/test_decoder_model.py": {
-    "mtime": 1789067210.5899487,
-    "seen": 1789080377.344404,
-    "ast_hash": "9c640bb7492491d43a39feee553c99d7",
+    "mtime": 1789140052.602519,
+    "seen": 1789142482.320545,
+    "ast_hash": "bda095449a17793c00e4ed1ef4b72def",
     "semantic_hash": ""
   },
   "tests/unit/test_embedder.py": {
-    "mtime": 1789066200.4756968,
-    "seen": 1789080377.344404,
-    "ast_hash": "96fa171739d964d4b67ff3c2cd69ae0f",
+    "mtime": 1789140052.6055212,
+    "seen": 1789142482.320545,
+    "ast_hash": "53e80912775241d1268b3daa4d3905e8",
     "semantic_hash": ""
   },
   "tests/unit/test_imputation_artifacts.py": {
-    "mtime": 1789086687.3516977,
-    "seen": 1789087238.6892393,
+    "mtime": 1789140052.6090631,
+    "seen": 1789142482.320545,
     "ast_hash": "b20bfd5b2cf0e70018922c1410170cd5",
     "semantic_hash": ""
   },
   "tests/unit/test_imputation_metrics.py": {
-    "mtime": 1789067784.576106,
-    "seen": 1789080377.344404,
-    "ast_hash": "5693adcf4c5f9ecfbaa5a8760f29a888",
+    "mtime": 1789140052.6120586,
+    "seen": 1789142482.320545,
+    "ast_hash": "52bb80e9fbe5c8d1457af43511c46abe",
     "semantic_hash": ""
   },
   "tests/unit/test_opt_search_space.py": {
-    "mtime": 1789098143.4088807,
-    "seen": 1789099046.9141364,
+    "mtime": 1789140052.6175885,
+    "seen": 1789142482.320545,
     "ast_hash": "42307ed4d45ea78828126c9b945e61c0",
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1789178312.742739,
-    "seen": 1789178625.5771992,
-    "ast_hash": "bf310261881733ac4b21c6888ed30c7d",
+    "mtime": 1789140052.6315904,
+    "seen": 1789142482.320545,
+    "ast_hash": "4d495ad51a95bb35f3f65fdbdfb4d34d",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
-    "mtime": 1789096376.7830725,
-    "seen": 1789096968.408068,
-    "ast_hash": "24a773cfb4e912e29ef00cd9a3d111d2",
+    "mtime": 1789140052.6465895,
+    "seen": 1789142482.320545,
+    "ast_hash": "832bcbf4fe65f4702856f8038079cf6a",
     "semantic_hash": ""
   },
   "docs/adr/0004-imputation-decoder-task.md": {
-    "mtime": 1789083024.3502398,
-    "seen": 1789087238.6892393,
-    "ast_hash": "c42850b478cc3023fc24581701ac6813",
+    "mtime": 1789140051.3924568,
+    "seen": 1789142482.320545,
+    "ast_hash": "7c70494c18305eb6c7ad638e57848a2a",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/01-ranking-contract.md": {
-    "mtime": 1789063973.449988,
-    "seen": 1789080377.344404,
-    "ast_hash": "028c665dc078ac6dfba21729f73cde0b",
+    "mtime": 1789140051.4386253,
+    "seen": 1789142482.320545,
+    "ast_hash": "9867757ad6e36b3bbae4965d4f638d32",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/02-request-and-cli.md": {
-    "mtime": 1789077512.6723826,
-    "seen": 1789080377.344404,
-    "ast_hash": "ad03b526a54f2ef53940a9e50f8568d6",
+    "mtime": 1789140051.4406195,
+    "seen": 1789142482.320545,
+    "ast_hash": "738c00e12856fc0cfd6c188163f8983e",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/03-imputation-metrics.md": {
-    "mtime": 1789067910.3495057,
-    "seen": 1789080377.344404,
-    "ast_hash": "e1a12e386e3762049b6d5b103e6b1d49",
+    "mtime": 1789140051.4446914,
+    "seen": 1789142482.320545,
+    "ast_hash": "801d971d54ba0ea3c4ee9b488da6432b",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/04-decoder-model.md": {
-    "mtime": 1789067380.5766091,
-    "seen": 1789080377.344404,
-    "ast_hash": "45709d893260034524741941f7d35531",
+    "mtime": 1789140051.446695,
+    "seen": 1789142482.320545,
+    "ast_hash": "cfcf937e7295c924a4d832bd7538f541",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/05-evaluation-data-support.md": {
-    "mtime": 1789069412.3528104,
-    "seen": 1789080377.344404,
-    "ast_hash": "9492a415083ba4129664d7bd1e46ca5f",
+    "mtime": 1789140051.4526916,
+    "seen": 1789142482.320545,
+    "ast_hash": "277af1e793cd40768f6f966f440fa333",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/06-decode-stage.md": {
-    "mtime": 1789078253.269251,
-    "seen": 1789080377.344404,
-    "ast_hash": "b944a94bc4eec9e43a4a2d118cb200d9",
+    "mtime": 1789140051.4557002,
+    "seen": 1789142482.320545,
+    "ast_hash": "1ddae4c64f99c33b928f4ef00eaf3d68",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/07-imputation-artifacts.md": {
-    "mtime": 1789078580.2400043,
-    "seen": 1789080377.344404,
-    "ast_hash": "051cb9bbc586db07eafea1275a16ff03",
+    "mtime": 1789140051.457694,
+    "seen": 1789142482.320545,
+    "ast_hash": "386285f22dbdd09479ec98aa236f0a54",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/08-runner-and-mlflow-identity.md": {
-    "mtime": 1789079443.154532,
-    "seen": 1789080377.344404,
-    "ast_hash": "c17dd0b9fd8ca0409accab9513fb21e5",
+    "mtime": 1789140051.460221,
+    "seen": 1789142482.320545,
+    "ast_hash": "d282c2841bbee5d0ddb20d4577dc5ad2",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/09-tag-backfill.md": {
-    "mtime": 1789083024.3522375,
-    "seen": 1789087238.6892393,
-    "ast_hash": "4bac1bc70fb74062fdc7cd84aa714b16",
+    "mtime": 1789140051.4622214,
+    "seen": 1789142482.320545,
+    "ast_hash": "efee59765f1ec369a458b92ef97140fb",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/10-optuna-imputation.md": {
-    "mtime": 1789079882.036146,
-    "seen": 1789080377.344404,
-    "ast_hash": "2830d9577eeeeb66c8c4b9aa56882d2b",
+    "mtime": 1789140051.465222,
+    "seen": 1789142482.320545,
+    "ast_hash": "7e06b1c77f77741b962a2a39673984f9",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/11-fixture-and-docs.md": {
-    "mtime": 1789080371.7233603,
-    "seen": 1789080377.344404,
-    "ast_hash": "f8625c91cee4c227159b11bc4ec9c8a2",
+    "mtime": 1789140051.468222,
+    "seen": 1789142482.320545,
+    "ast_hash": "cc4bd3804566f43254cf69692d43d36b",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/spec.md": {
-    "mtime": 1789083024.3978233,
-    "seen": 1789087238.6892393,
-    "ast_hash": "63c3b617d1b0ca9786ede66a6b74e5a9",
+    "mtime": 1789140051.4722219,
+    "seen": 1789142482.320545,
+    "ast_hash": "f437c4a97bd54da983b72c25785c1b72",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/01-imputation-evaluation-protocol.md": {
-    "mtime": 1789033260.4286933,
-    "seen": 1789080377.344404,
-    "ast_hash": "8c5d6feae640f010923e788f47e80352",
+    "mtime": 1789140051.5067644,
+    "seen": 1789142482.320545,
+    "ast_hash": "dc205e14a05dcf5ef9cc7d488bd76ff1",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/02-masked-cell-decoder-heads.md": {
-    "mtime": 1789033117.3962264,
-    "seen": 1789080377.344404,
-    "ast_hash": "92232da73e57187029d425a7a6e584e4",
+    "mtime": 1789140051.5082998,
+    "seen": 1789142482.320545,
+    "ast_hash": "84f2cc74b02118f000d7bdd0fad5b7f1",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/03-imputation-ground-truth.md": {
-    "mtime": 1789034368.219904,
-    "seen": 1789080377.344404,
-    "ast_hash": "6f6a4982f1ab31ab494e6d3e3410aae0",
+    "mtime": 1789140051.5102966,
+    "seen": 1789142482.320545,
+    "ast_hash": "6b46fb020095172f49105680554ccd71",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/04-decoder-architecture-and-stage.md": {
-    "mtime": 1789035061.3639662,
-    "seen": 1789080377.344404,
-    "ast_hash": "af9ea2753d6ba8d928cbfb9cacc86946",
+    "mtime": 1789140051.5122914,
+    "seen": 1789142482.320545,
+    "ast_hash": "541d6094fe9027928965c45fe3ccf843",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/05-loss-and-error-metrics.md": {
-    "mtime": 1789036479.3663158,
-    "seen": 1789080377.344404,
-    "ast_hash": "c17b55a4beb6fff5833b9482f598d088",
+    "mtime": 1789140051.515294,
+    "seen": 1789142482.320545,
+    "ast_hash": "8b69ade8ad8215fc1e953925f4ce4f8c",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/06-mlflow-run-identity.md": {
-    "mtime": 1789037842.3031812,
-    "seen": 1789080377.344404,
-    "ast_hash": "845152d016c715bd5ffa1438d45feab9",
+    "mtime": 1789140051.5168238,
+    "seen": 1789142482.320545,
+    "ast_hash": "fdfec4bfd0e0c745e01d76d49dcd9797",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/07-imputation-preview-artifact.md": {
-    "mtime": 1789040347.2140317,
-    "seen": 1789080377.344404,
-    "ast_hash": "a23488da0d927930c35aa4046da6bc37",
+    "mtime": 1789140051.5198233,
+    "seen": 1789142482.320545,
+    "ast_hash": "fe05e2531b7807dedfe2c154c5363a9b",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/08-cli-and-hyperparameter-surface.md": {
-    "mtime": 1789059207.6573565,
-    "seen": 1789080377.344404,
-    "ast_hash": "5918438facbcb84449097e18ee20fc11",
+    "mtime": 1789140051.5248222,
+    "seen": 1789142482.320545,
+    "ast_hash": "defadde036843fb4ce608c4be4c979fb",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/09-isolation-strategy.md": {
-    "mtime": 1789059207.6793566,
-    "seen": 1789080377.344404,
-    "ast_hash": "b3ba01b1f808599b98d6d6809683c064",
+    "mtime": 1789140051.5278234,
+    "seen": 1789142482.320545,
+    "ast_hash": "9b243794587c59ce2127e75ac57e70eb",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/10-record-adr-and-plan.md": {
-    "mtime": 1789061826.8331625,
-    "seen": 1789080377.344404,
-    "ast_hash": "d56aeb0060c36544410b3a54466c8c4c",
+    "mtime": 1789140051.5318308,
+    "seen": 1789142482.320545,
+    "ast_hash": "35000441f70f9e36228ef146c2aaa9b9",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/11-multi-rate-evaluation.md": {
-    "mtime": 1789055935.8118534,
-    "seen": 1789080377.344404,
-    "ast_hash": "33266df00cfc12e0af113191d8e740ae",
+    "mtime": 1789140051.5348296,
+    "seen": 1789142482.320545,
+    "ast_hash": "bfc9daaff1e47ad78a6dbd204bb0b234",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/12-null-path-diagnostic.md": {
-    "mtime": 1789080264.4536977,
-    "seen": 1789080377.344404,
-    "ast_hash": "07ac27187e0543a9c2f97903f5cd833e",
+    "mtime": 1789140051.5378227,
+    "seen": 1789142482.320545,
+    "ast_hash": "ee80251c0c3faff576a4718159c11f79",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/13-optuna-for-imputation.md": {
-    "mtime": 1789059740.6347032,
-    "seen": 1789080377.344404,
-    "ast_hash": "049d0621c4b95e271c96075d1298735a",
+    "mtime": 1789140051.5398247,
+    "seen": 1789142482.320545,
+    "ast_hash": "0a7c04bdd3fff5069da456df8fb79dfb",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/14-imputation-regression-fixture.md": {
-    "mtime": 1789060353.0264814,
-    "seen": 1789080377.344404,
-    "ast_hash": "dc29710921c43d2d130b6e218bf36bfe",
+    "mtime": 1789140051.5428202,
+    "seen": 1789142482.320545,
+    "ast_hash": "f59da74c51caa947b13cb9c929ceb6f7",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/map.md": {
-    "mtime": 1789084645.2085712,
-    "seen": 1789087238.6892393,
+    "mtime": 1789140051.5438187,
+    "seen": 1789142482.320545,
     "ast_hash": "49be233416821a9480e3d29567621ea5",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/plan.md": {
-    "mtime": 1789064063.9116182,
-    "seen": 1789080377.344404,
-    "ast_hash": "f3e247321feb7ecd7add0430b60be815",
+    "mtime": 1789140051.547827,
+    "seen": 1789142482.320545,
+    "ast_hash": "18feca019830326b3e6983f28de69140",
     "semantic_hash": ""
   },
   "docs/tickets/0004-imputation-preview-precision.md": {
-    "mtime": 1789087339.508335,
-    "seen": 1789088666.3390138,
+    "mtime": 1789140051.434624,
+    "seen": 1789142482.320545,
     "ast_hash": "fed6c42a68c74d01e69b905cfb2b14a4",
     "semantic_hash": ""
   },
   "tests/unit/test_preprocess_table.py": {
-    "mtime": 1789088466.9844067,
-    "seen": 1789088666.3390138,
-    "ast_hash": "2cef8e9ff9d84bdd95708c56d6fc6331",
+    "mtime": 1789140052.6215868,
+    "seen": 1789142482.320545,
+    "ast_hash": "6c21b8285a608d9007e66a66d1d3cb8f",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/01-held-set-and-ranges.md": {
-    "mtime": 1789092281.1551719,
-    "seen": 1789093942.0945768,
-    "ast_hash": "4e0b55de1014aeca963cce734b41bd98",
+    "mtime": 1789140051.552362,
+    "seen": 1789142482.320545,
+    "ast_hash": "6ba769b820ac80111efc72184e7afd7c",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/02-search-objective-on-validation.md": {
-    "mtime": 1789092023.9650598,
-    "seen": 1789092097.115098,
-    "ast_hash": "c4fbeaf1fca5e2bb1e834ea621e3afe4",
+    "mtime": 1789140051.554356,
+    "seen": 1789142482.320545,
+    "ast_hash": "034c7fb5f48086c15eb95e7fff5c18ec",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/03-study-protocol.md": {
-    "mtime": 1789093786.7269564,
-    "seen": 1789093942.0945768,
-    "ast_hash": "fb920cb1d51b698b435ff6e8f8ae294d",
+    "mtime": 1789140051.557896,
+    "seen": 1789142482.320545,
+    "ast_hash": "a7f1a9edb9f83b3f43686af19abd8221",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/04-promoted-configuration-lookup.md": {
-    "mtime": 1789092043.661855,
-    "seen": 1789092097.115098,
-    "ast_hash": "ccada520ae9428c8cbb9004fe7c764ee",
+    "mtime": 1789140051.56089,
+    "seen": 1789142482.320545,
+    "ast_hash": "c2f2caf9496f6e5178cb3235207ce505",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/05-search-space-profile-flag.md": {
-    "mtime": 1789092052.977435,
-    "seen": 1789092097.115098,
-    "ast_hash": "e56df5ac71993ed4fef1fbed555aaa5a",
+    "mtime": 1789140051.5638862,
+    "seen": 1789142482.320545,
+    "ast_hash": "accb8641fcd0ebb039c31d9ae2e04fe3",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/06-importance-and-comparison.md": {
-    "mtime": 1789093801.405172,
-    "seen": 1789093942.0945768,
-    "ast_hash": "817ad5b1dbd6e09e545ae89088b7e9d8",
+    "mtime": 1789140051.566434,
+    "seen": 1789142482.320545,
+    "ast_hash": "87ccc0371e09efbfae0d95bee59a1360",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/07-repair-optuna-path.md": {
-    "mtime": 1789093882.1744444,
-    "seen": 1789093942.0945768,
-    "ast_hash": "5f96811af4418c8e5dbf45f5cf502fae",
+    "mtime": 1789140051.5694208,
+    "seen": 1789142482.320545,
+    "ast_hash": "9fb95c9eddea38845c1c13401752f139",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/issues/08-record-adr-and-plan.md": {
-    "mtime": 1789094774.976292,
-    "seen": 1789094809.9812202,
-    "ast_hash": "686d658201990a9530faa3cd4b175dc7",
+    "mtime": 1789140051.5724218,
+    "seen": 1789142482.320545,
+    "ast_hash": "4a447615268ddd9e80369301d0666cb8",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/map.md": {
-    "mtime": 1789094785.2988303,
-    "seen": 1789094809.9812202,
-    "ast_hash": "2a8613cd6aad2d9db1751d92b778b3f2",
+    "mtime": 1789140051.574962,
+    "seen": 1789142482.320545,
+    "ast_hash": "ab9db367b0a584e17676220c476f3eaf",
     "semantic_hash": ""
   },
   "docs/adr/0005-reduced-optuna-search-for-imputation.md": {
-    "mtime": 1789094569.3531387,
-    "seen": 1789094809.9812202,
-    "ast_hash": "1044bfdaa884713e66a64a7d3984569b",
+    "mtime": 1789140051.3969977,
+    "seen": 1789142482.320545,
+    "ast_hash": "09e7d873ad28c7c7a86e77a54c2ffc2e",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/01-search-space-profiles.md": {
-    "mtime": 1789095959.2691064,
-    "seen": 1789095972.6288188,
-    "ast_hash": "7aca53148d33df01e1b9e1913b7fe1b2",
+    "mtime": 1789140051.4772222,
+    "seen": 1789142482.320545,
+    "ast_hash": "432a93942ad5666c83acb69811dae7ab",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/02-validation-search-objective.md": {
-    "mtime": 1789096944.86805,
-    "seen": 1789096968.408068,
-    "ast_hash": "cbc65d173cf6ef99b6e85130f7e691ed",
+    "mtime": 1789140051.482223,
+    "seen": 1789142482.320545,
+    "ast_hash": "d83a7ff4c52bf9984146ec525c71d6c1",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md": {
-    "mtime": 1789099032.838902,
-    "seen": 1789099046.9141364,
+    "mtime": 1789140051.488221,
+    "seen": 1789142482.320545,
     "ast_hash": "fae3138c51e5f5791e9dd88d6432a9f5",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/04-importance-artifact.md": {
-    "mtime": 1789099672.4225438,
-    "seen": 1789099681.984489,
+    "mtime": 1789140051.4922233,
+    "seen": 1789142482.320545,
     "ast_hash": "1b453dd75738f758715fbadf0e651599",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/05-launcher-and-studies.md": {
-    "mtime": 1789173521.0717313,
-    "seen": 1789178625.5771992,
-    "ast_hash": "df18e9c0c430eca2c1ee994d2f1a6c1d",
+    "mtime": 1789140051.495222,
+    "seen": 1789142482.320545,
+    "ast_hash": "378c1341bc60f3111c562949bcb1b751",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/06-comparison-and-docs.md": {
-    "mtime": 1789178619.65702,
-    "seen": 1789178625.5771992,
-    "ast_hash": "af2bf5dffd2be15691bb359fb27ad0f5",
+    "mtime": 1789140051.4972253,
+    "seen": 1789142482.320545,
+    "ast_hash": "3e4b4962cd8a9536d406bd8fbad36f00",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/spec.md": {
-    "mtime": 1789173521.07273,
-    "seen": 1789178625.5771992,
-    "ast_hash": "b486bca69662bf984e678b830dcc8386",
+    "mtime": 1789140051.500764,
+    "seen": 1789142482.320545,
+    "ast_hash": "ff7df5c61e7c1eb2555afe6528e60027",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-optuna-reduced/plan.md": {
-    "mtime": 1789094911.1779215,
-    "seen": 1789095972.6288188,
-    "ast_hash": "54342a71dd4d774092e9855eb152ebf1",
+    "mtime": 1789140051.5779657,
+    "seen": 1789142482.320545,
+    "ast_hash": "54d846a3401fe0ffdaa5f629829ff9db",
     "semantic_hash": ""
   },
   "experiment_imputation.ps1": {
-    "mtime": 1789097123.3458085,
-    "seen": 1789099046.9141364,
-    "ast_hash": "3b722efa75eddf29628fceecfc96013d",
+    "mtime": 1789140051.5819628,
+    "seen": 1789142482.320545,
+    "ast_hash": "fdeab692110cccab6e843d5ed69b50f4",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/01-python-floor.md": {
+    "mtime": 1789140060.390646,
+    "seen": 1789142482.320545,
+    "ast_hash": "62e489fb0e7725ce47842a9f9613f48d",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/02-checker-and-gate.md": {
+    "mtime": 1789140060.3956435,
+    "seen": 1789142482.320545,
+    "ast_hash": "23813f557a75b4114b981fa4072dc1ea",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/03-name-families-and-homes.md": {
+    "mtime": 1789140060.3886502,
+    "seen": 1789142482.320545,
+    "ast_hash": "ffec34e3fa5d87c52d175fd1936f2b19",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/04-task-branch-union.md": {
+    "mtime": 1789140342.1008894,
+    "seen": 1789142482.320545,
+    "ast_hash": "ceedbc6de89b449402b02bcd559f3bcf",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/05-third-party-stubs.md": {
+    "mtime": 1789140060.4016457,
+    "seen": 1789142482.320545,
+    "ast_hash": "d8e2aa45d68cc3f124fcc5aae00623b4",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/06-hyperparameter-schema.md": {
+    "mtime": 1789140060.398646,
+    "seen": 1789142482.320545,
+    "ast_hash": "10fbbd6a1e343e5c3b3e9bdda00aebf3",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/07-enforcing-the-convention.md": {
+    "mtime": 1789140060.3926444,
+    "seen": 1789142482.320545,
+    "ast_hash": "0186b03b20eabf01776ad03210f9bf0a",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md": {
+    "mtime": 1789142431.693291,
+    "seen": 1789142482.320545,
+    "ast_hash": "a6f11402bd79447715536528688cbc90",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/issues/09-record-adr-and-plan.md": {
+    "mtime": 1789140060.393643,
+    "seen": 1789142482.320545,
+    "ast_hash": "9fa13fb7b41c147b36e91912de576ee6",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/typing-and-constants/map.md": {
+    "mtime": 1789142442.707558,
+    "seen": 1789142482.320545,
+    "ast_hash": "48de9e2ef2bf84818c16bd55cd69b055",
     "semantic_hash": ""
   },
   "imputation_studies.ps1": {
-    "mtime": 1789121413.52026,
-    "seen": 1789178625.5771992,
-    "ast_hash": "9b1db352584a50e626780c08a25dfdbb",
+    "mtime": 1789140417.9517744,
+    "seen": 1789142482.320545,
+    "ast_hash": "add4afa1367613dd2e4eb5d0a62ac0f9",
     "semantic_hash": ""
   },
-  "datasets/hiperparams/credit-g/credit-g_20nan.imputation.json": {
-    "mtime": 1789102497.9368687,
-    "seen": 1789178625.5771992,
-    "ast_hash": "85d23313fe448478ac159bb748c43e7f",
+  "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md": {
+    "mtime": 1789140060.3831174,
+    "seen": 1789142482.320545,
+    "ast_hash": "528c885c07ce5ea4575cc1b7290965cc",
     "semantic_hash": ""
   },
-  "datasets/hiperparams/credit-g/credit-g_40nan.imputation.json": {
-    "mtime": 1789105031.5077598,
-    "seen": 1789178625.5771992,
-    "ast_hash": "b86860e418a014cdbfbe855114bf4965",
+  "src/__init__.py": {
+    "mtime": 1789140586.207449,
+    "seen": 1789142482.320545,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
-  "datasets/hiperparams/kr-vs-kp/kr-vs-kp_20nan.imputation.json": {
-    "mtime": 1789114583.9738352,
-    "seen": 1789178625.5771992,
-    "ast_hash": "08fffdc03606ade2016601b276250838",
-    "semantic_hash": ""
-  },
-  "datasets/hiperparams/spambase/spambase_20nan.imputation.json": {
-    "mtime": 1789149663.2333455,
-    "seen": 1789178625.5771992,
-    "ast_hash": "ba6b6eee952d3dcda92648ab0b57d6f3",
-    "semantic_hash": ""
-  },
-  "datasets/hiperparams/spambase/spambase_40nan.imputation.json": {
-    "mtime": 1789173422.8627987,
-    "seen": 1789178625.5771992,
-    "ast_hash": "e7d41827d9ee281180fae795cd7fd7e2",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/01-decode-stage.md": {
-    "mtime": 1789143043.6294441,
-    "seen": 1789178625.5771992,
-    "ast_hash": "becc6ce2d120d49c65dbc71b2f1c1e8a",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/01-decode-stage.verdict.md": {
-    "mtime": 1789143043.6364515,
-    "seen": 1789178625.5771992,
-    "ast_hash": "3abcc1ab4374b42d55f686dc74fe868a",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/02-decoder-model.md": {
-    "mtime": 1789143043.641989,
-    "seen": 1789178625.5771992,
-    "ast_hash": "81aff5d2cf374b357938be1040dbc888",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/02-decoder-model.verdict.md": {
-    "mtime": 1789143043.645995,
-    "seen": 1789178625.5771992,
-    "ast_hash": "538695a9162bba93f782f4d8be2909d4",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/03-imputation-metrics.md": {
-    "mtime": 1789143043.6539824,
-    "seen": 1789178625.5771992,
-    "ast_hash": "f80a5cb60eb3c5e67516fce373f505b2",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/03-imputation-metrics.verdict.md": {
-    "mtime": 1789143043.6589818,
-    "seen": 1789178625.5771992,
-    "ast_hash": "42cfbb469297183d55f3504e78100a5b",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/04-ground-truth-protocol.md": {
-    "mtime": 1789143043.6669962,
-    "seen": 1789178625.5771992,
-    "ast_hash": "d08db704d17d58782fca736a3069671e",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/04-ground-truth-protocol.verdict.md": {
-    "mtime": 1789143043.6709795,
-    "seen": 1789178625.5771992,
-    "ast_hash": "cb6b0662a386a7feee1a8094e3f4258d",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/05-embedder-tokens.md": {
-    "mtime": 1789143043.6765468,
-    "seen": 1789178625.5771992,
-    "ast_hash": "c7a55bb097e751833483af2c49a59b8a",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/05-embedder-tokens.verdict.md": {
-    "mtime": 1789143043.682546,
-    "seen": 1789178625.5771992,
-    "ast_hash": "a655068e46b73b38a8a8e6d5fa339e0e",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/06-artifacts-tracking.md": {
-    "mtime": 1789143043.6855423,
-    "seen": 1789178625.5771992,
-    "ast_hash": "18d1c6426a176e6841e93188cecc0568",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/06-artifacts-tracking.verdict.md": {
-    "mtime": 1789143043.692549,
-    "seen": 1789178625.5771992,
-    "ast_hash": "01b9a11520a3b02a25b661bb68bb1868",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/07-optuna-imputation.md": {
-    "mtime": 1789143043.698085,
-    "seen": 1789178625.5771992,
-    "ast_hash": "89c8fd6f4ed9c450d4a6aa202435767b",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/07-optuna-imputation.verdict.md": {
-    "mtime": 1789143043.7051065,
-    "seen": 1789178625.5771992,
-    "ast_hash": "500ceac145fd2d9bcb17646c63c50df9",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/08-experimentation-design.md": {
-    "mtime": 1789143043.711084,
-    "seen": 1789178625.5771992,
-    "ast_hash": "f94b1bf14436d39168c83d03f3544ea3",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/08-experimentation-design.verdict.md": {
-    "mtime": 1789143043.714084,
-    "seen": 1789178625.5771992,
-    "ast_hash": "ac68143ce28096163d522e73cfec3ffc",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/09-test-adequacy.md": {
-    "mtime": 1789143043.7226474,
-    "seen": 1789178625.5771992,
-    "ast_hash": "c36e271e241abef3ccf03a56908ec3fc",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/09-test-adequacy.verdict.md": {
-    "mtime": 1789143043.7276447,
-    "seen": 1789178625.5771992,
-    "ast_hash": "70377c3849d13e1411038629f8a7a5b7",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/10-config-plumbing.md": {
-    "mtime": 1789143043.7326477,
-    "seen": 1789178625.5771992,
-    "ast_hash": "b6a37b4f798561ca52024234aa85efa8",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/10-config-plumbing.verdict.md": {
-    "mtime": 1789143043.7396443,
-    "seen": 1789178625.5771992,
-    "ast_hash": "5b013083f7cb47daf98c760c2b368b38",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/11-documentation-contract.md": {
-    "mtime": 1789143043.7446668,
-    "seen": 1789178625.5771992,
-    "ast_hash": "f401737c2f4a1027e2af6f2beacacc13",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/11-documentation-contract.verdict.md": {
-    "mtime": 1789143043.7536473,
-    "seen": 1789178625.5771992,
-    "ast_hash": "12b15510f228c75777472133e43d5da1",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/12-reproducibility-provenance.md": {
-    "mtime": 1789143043.7616503,
-    "seen": 1789178625.5771992,
-    "ast_hash": "0d00e91b6b2cf45031822f54ed49f28b",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/12-reproducibility-provenance.verdict.md": {
-    "mtime": 1789143043.768645,
-    "seen": 1789178625.5771992,
-    "ast_hash": "e9db02c356fe72a8236ffa16888ef4c7",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/13-pretraining-transfer.md": {
-    "mtime": 1789143043.7756476,
-    "seen": 1789178625.5771992,
-    "ast_hash": "bc70dc780de5a5b7e6c53bc0da8fb8f0",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/13-pretraining-transfer.verdict.md": {
-    "mtime": 1789143043.7806437,
-    "seen": 1789178625.5771992,
-    "ast_hash": "4add395a5ff8003e60d82a403e531bb1",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/AUDIT.md": {
-    "mtime": 1789143043.7836447,
-    "seen": 1789178625.5771992,
-    "ast_hash": "8f14b5cdb713de78667e5c4824f23ea2",
-    "semantic_hash": ""
-  },
-  "docs/reviews/imputation-critique/CONSOLIDATED.md": {
-    "mtime": 1789143043.789683,
-    "seen": 1789178625.5771992,
-    "ast_hash": "75d5411b91b8cc226c7f67bf86449a16",
+  "tests/unit/test_typing_gate.py": {
+    "mtime": 1789140727.2816727,
+    "seen": 1789142482.320545,
+    "ast_hash": "17a0f16cd8fd52d9410dd34034d9b77b",
     "semantic_hash": ""
   }
 }
