@@ -9,8 +9,8 @@ reader can tell a recorded value from an inferred one.
 
 Usage (dry run by default, honours ``MLFLOW_TRACKING_URI``):
 
-    uv run --python 3.10 python scripts/backfill_lr_scheduler_tag.py
-    uv run --python 3.10 python scripts/backfill_lr_scheduler_tag.py --apply
+    uv run --python 3.11 python scripts/backfill_lr_scheduler_tag.py
+    uv run --python 3.11 python scripts/backfill_lr_scheduler_tag.py --apply
 
 Runs that already carry the tag are never touched, so the script is idempotent.
 """

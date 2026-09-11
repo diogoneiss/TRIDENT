@@ -181,17 +181,17 @@ Exactly one of `--dataset_name` or `--all` is required.
 
 ## Tests
 
-Use the project wrapper with Python 3.10:
+Use the project wrapper with Python 3.11:
 
 ```bash
 # Fast unit tests
-uv run --python 3.10 pytest -m "not integration"
+uv run --python 3.11 pytest -m "not integration"
 
 # Short end-to-end regression test: two folds of vehicle_00nan
-uv run --python 3.10 pytest -m integration
+uv run --python 3.11 pytest -m integration
 
 # Entire suite
-uv run --python 3.10 pytest
+uv run --python 3.11 pytest
 ```
 
 The integration test disables MLflow and writes all run artifacts to temporary directories. Its checked-in baseline validates per-fold and mean accuracy, micro F1, and macro F1 against a small two-epoch pre-training/fine-tuning run.

@@ -13,9 +13,9 @@ no marker, because anyone can re-derive it.
 
 Usage (a dry run by default, honouring ``MLFLOW_TRACKING_URI``):
 
-    uv run --python 3.10 python scripts/backfill_run_tags.py --tag task \\
+    uv run --python 3.11 python scripts/backfill_run_tags.py --tag task \\
         --value classification --marker task_backfilled
-    uv run --python 3.10 python scripts/backfill_run_tags.py --tag is_optuna --value false
+    uv run --python 3.11 python scripts/backfill_run_tags.py --tag is_optuna --value false
 
 Add ``--apply`` to write. Runs that already carry the tag are never touched, so the
 script is idempotent; deleted runs are reported rather than written, because MLflow

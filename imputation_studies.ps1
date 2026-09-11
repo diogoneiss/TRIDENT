@@ -40,7 +40,7 @@ function Get-PromotedPath([string]$dataset) {
 }
 
 function Invoke-Trainer([string[]]$trainerArgs) {
-    $uvArgs = @("run", "--python", "3.10", "python", "main.py") + $trainerArgs
+    $uvArgs = @("run", "--python", "3.11", "python", "main.py") + $trainerArgs
     Write-Host "uv $($uvArgs -join ' ')"
     if ($DryRun) { return "DRY" }
     & uv @uvArgs
