@@ -188,13 +188,17 @@ no edit to either file, so those two tickets clear four blocks.
 Totals moved as fixes landed: 147 strict errors at first run → **135** after the fixes
 below → **0** with the overrides in place.
 
-### What the checker found on its first run
+### What the checker found
 
-Four defects, none of which any existing test could see:
+Four defects, none of which any existing test could see. Note the order of discovery on the
+first one, because it is the argument for the whole effort in miniature:
 
 1. **`runner.py` read `finetuning.scored_cells`** — an attribute only `DecodingOutcome`
    carries — guarded by `task.name == "imputation"`, a string compare nothing could
-   verify. Correct today because the branches align; silently wrong the moment they drift.
+   verify. **The checker's first run did not report this**; it reported only the
+   *undeclared* union at `:93`. Declaring the union — a one-line annotation — is what
+   surfaced the attribute access, as `union-attr` at `:140` and `:149`. Stating a type the
+   program already obeyed immediately exposed a place where nothing checked that it did. Correct today because the branches align; silently wrong the moment they drift.
    This is the same shape as the previous effort's ticket 07, where a missing `task` on the
    trial namespace meant every imputation trial silently trained a classifier. Now narrowed
    on `isinstance(finetuning, DecodingOutcome)`, so the access is checked rather than
@@ -220,6 +224,14 @@ Four defects, none of which any existing test could see:
   which is what the original bare `list` meant and what the heterogeneous cells actually
   are. The research's recommendation was right about the *scaler*; the return width was an
   over-tightening introduced here, not by it.
+- **The runtime touches are not the ones step 5 predicted.** It named the two `np.asarray`
+  calls at `data.py:191` and `:209` as "the only runtime touch this ticket should make".
+  Those were **not** made — `data.py` went onto the ramp instead, so its nine errors are
+  behind `disable_error_code`. Three other runtime touches *were* made, all
+  behaviour-neutral and fixture-proven: two `assert`s stating invariants
+  (`artifacts.py`'s scaler, `tracking.py`'s integer fold) and `str(population)` on a
+  `groupby` key in `_per_column_scores`. A reader following step 5 literally will look for
+  `asarray` calls that are not there.
 
 ### The gate
 

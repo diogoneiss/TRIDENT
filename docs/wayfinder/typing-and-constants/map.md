@@ -165,10 +165,12 @@ replacement are execution, launched from the plan.
 - [02. The checker, the strictness ramp and the gate](issues/02-checker-and-gate.md):
   mypy, gated by a unit test inside `pytest -m "not integration"` because that is the
   ritual `AGENTS.md` already imposes; `strict = true` globally with
-  `[[tool.mypy.overrides]]` relaxing `opt.py`, `src/transformer.py` and `src/models.py`,
-  so the ramp is one execution ticket per deleted override. Scope is all of `src/` plus
-  `main.py`, `opt.py`, `train.py` and `scripts/`; `tests/` is checked but not
-  annotation-gated.
+  `[[tool.mypy.overrides]]` relaxing the modules that cannot meet it yet, so the ramp is
+  one execution ticket per deleted override. Scope is all of `src/` plus `main.py`,
+  `opt.py`, `train.py` and `scripts/`; `tests/` is checked but not annotation-gated.
+  **The ramp turned out to be eleven blocks, not the three this ticket expected** — ticket
+  08 measured it against the real configuration, which is why the override list was left as
+  that ticket's output rather than fixed here.
 - [03. Five StrEnums, and where constants live](issues/03-name-families-and-homes.md):
   `Task`, `LrScheduler`, `SearchSpace`, `RunRole` and `ColumnKind` become `StrEnum`s and
   the existing name tuples are **derived** from them (`TASK_NAMES = tuple(Task)`) rather
