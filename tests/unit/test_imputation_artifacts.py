@@ -134,3 +134,115 @@ def test_a_wide_row_is_split_so_the_preview_stays_readable(tmp_path) -> None:
         assert f"field_{index}" in text
     widest = max(line.count("|") for line in text.splitlines() if line.startswith("| actual"))
     assert widest <= 8  # a leading label plus at most six cells
+
+
+def _identity_scaler() -> StandardScaler:
+    """Fitted so a scaled value and its original unit are the same number.
+
+    Keeps a rendering test about rendering: no scaling arithmetic stands between the
+    value written into the ledger and the text the preview is asserted on.
+    """
+    scaler = StandardScaler()
+    scaler.fit(pd.DataFrame({"amount": [-1.0, 1.0]}))
+    return scaler
+
+
+def _row(preview: str, label: str) -> str:
+    return next(line for line in preview.splitlines() if line.startswith(f"| {label} |"))
+
+
+def test_the_preview_rounds_to_three_decimals_and_prints_a_vanishing_value_as_zero(
+    tmp_path,
+) -> None:
+    """Ticket 0004: `1.144e-09` reads as a real measurement when it means zero.
+
+    `spambase` is 77% exact zeros and float32 leaves each one a hair off zero, so the
+    old `.4g` format filled the preview with scientific-notation noise that made the
+    artifact hard to trust at a glance. Three decimals is the agreed display precision;
+    anything too small to show at it is zero rather than a tiny number.
+    """
+    writer = _writer(tmp_path)
+    cells = pd.DataFrame(
+        [
+            {"row": 0, "column": "amount", "kind": "numerical", "population": "masked",
+             "actual": 1.144e-09, "imputed": 123.4567891, "confidence": float("nan")},
+        ]
+    )
+
+    preview_path, ledger_path = writer.write_imputation_preview(
+        "imputation_fold_1", cells, seed=42, fold=1, sample_rows=10,
+        scaler=_identity_scaler(), numerical_columns=["amount"],
+    )
+
+    preview = preview_path.read_text(encoding="utf-8")
+    # A rounding marker may or may not be attached; this test is about the number.
+    assert _row(preview, "actual").replace("*", "") == "| actual | 0.000 |"
+    assert "123.457" in _row(preview, "imputed")
+    assert "1.144e-09" not in preview
+
+    # The ledger is the full record behind the preview, so it keeps what was scored.
+    ledger = pd.read_csv(ledger_path)
+    assert float(ledger["actual_original_units"].iloc[0]) == pytest.approx(1.144e-09)
+
+
+def test_a_number_the_preview_had_to_round_is_marked_and_an_exact_one_is_not(
+    tmp_path,
+) -> None:
+    """Ticket 0004: three decimals is a lossy view, so the preview says where it lost.
+
+    Without a marker a reader cannot tell `0.500` that is exactly a half from `0.500`
+    that is really 0.4999994, which is the difference between a number they can quote
+    and one they have to look up. Marking is decided per cell by whether the rendered
+    text reads back as the value it came from, so it never decorates an exact number.
+    """
+    writer = _writer(tmp_path)
+    cells = pd.DataFrame(
+        [
+            {"row": 0, "column": "amount", "kind": "numerical", "population": "masked",
+             "actual": 0.5, "imputed": 123.4567891, "confidence": float("nan")},
+        ]
+    )
+
+    preview_path, _ = writer.write_imputation_preview(
+        "imputation_fold_1", cells, seed=42, fold=1, sample_rows=10,
+        scaler=_identity_scaler(), numerical_columns=["amount"],
+    )
+
+    preview = preview_path.read_text(encoding="utf-8")
+    assert _row(preview, "actual") == "| actual | 0.500 |"
+    assert _row(preview, "imputed") == "| imputed | 123.457* |"
+    # A marker nobody can decode is just noise, so the legend travels with it.
+    assert "*" in preview and "ledger" in preview.lower()
+
+
+def test_a_truth_the_run_knows_exactly_is_shown_exactly(tmp_path) -> None:
+    """Ticket 0004: the preview must not re-derive a number the run already knows.
+
+    Inverting the scaler from the scaled value amplifies its float32 rounding by the
+    column's `scale_`, which on `kc2`'s widest column is a tenth of a unit. The scaled
+    value here is a hair off -1.0 and the scaler is 500 wide, so re-deriving it would
+    print 500.100 where the dataset plainly holds 500. The decode stage carries the exact
+    number across in `actual_original`, and the preview prefers it.
+    """
+    writer = _writer(tmp_path)
+    cells = pd.DataFrame(
+        [
+            {"row": 0, "column": "amount", "kind": "numerical", "population": "masked",
+             "actual": -0.9998, "imputed": -0.5, "confidence": float("nan"),
+             "actual_original": 500.0},
+        ]
+    )
+
+    preview_path, ledger_path = writer.write_imputation_preview(
+        "imputation_fold_1", cells, seed=42, fold=1, sample_rows=10,
+        scaler=_scaler(), numerical_columns=["amount"],
+    )
+
+    preview = preview_path.read_text(encoding="utf-8")
+    assert _row(preview, "actual") == "| actual | 500.000 |"
+    assert "500.100" not in preview
+
+    ledger = pd.read_csv(ledger_path)
+    assert float(ledger["actual_original_units"].iloc[0]) == 500.0
+    # The imputed side has no exact counterpart: float32 is the model's real precision.
+    assert float(ledger["imputed_original_units"].iloc[0]) == pytest.approx(750.0)

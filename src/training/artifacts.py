@@ -254,6 +254,8 @@ class ArtifactWriter:
         ledger["imputed_original_units"] = _to_original_units(
             ledger, "imputed", scaler, numerical_columns
         )
+        # It has done its job above, and `actual_original_units` now says the same thing.
+        ledger = ledger.drop(columns=["actual_original"], errors="ignore")
         ledger_path = directory / f"{name}_cells.csv"
         ledger.to_csv(ledger_path, index=False)
 
@@ -298,7 +300,15 @@ def _to_original_units(
     """Numbers as a person would recognise them; categories are already readable."""
     values = []
     order = list(numerical_columns)
+    # The decode stage carries a known truth across at full precision. Preferring it beats
+    # re-deriving one, which amplifies the scaled value's float32 rounding by the column's
+    # ``scale_`` -- a tenth of a unit on kc2's widest column (ticket 0004). A prediction
+    # has no such counterpart, so ``imputed`` falls through to the arithmetic below.
+    exact_column = f"{column}_original"
     for _, cell in ledger.iterrows():
+        if exact_column in ledger.columns and not pd.isna(cell[exact_column]):
+            values.append(cell[exact_column])
+            continue
         if cell["kind"] != "numerical" or scaler is None or cell["column"] not in order:
             values.append(cell[column])
             continue
@@ -320,7 +330,9 @@ def _render_preview(previewed: pd.DataFrame, dataset_name: str) -> str:
         f"# Imputation preview: {dataset_name}",
         "",
         "One block per sampled row. `model saw` distinguishes a cell hidden for scoring",
-        "from one the dataset was already missing. Values are in original units.",
+        "from one the dataset was already missing. Values are in original units,",
+        "shown to three decimals; `*` marks a number too long to show exactly, whose",
+        "full value is in the cell ledger beside this file.",
         "",
     ]
     if previewed.empty:
@@ -358,9 +370,31 @@ def _render_preview(previewed: pd.DataFrame, dataset_name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+# The preview's display precision (ticket 0004). `.4g` used to print an exact zero that
+# had round-tripped through float32 as `1.144e-09`, which reads as a real measurement
+# rather than the zero it means, and `spambase` is 77% exact zeros.
+_DISPLAY_DECIMALS = 3
+# Anything below half a unit in the last shown place cannot survive the rounding, so it
+# is zero here. Snapping it also keeps a small negative from printing as `-0.000`.
+_ZERO_EPSILON = 5e-4
+# Trails a shortened number. A digit followed by `*` can only ever close emphasis in
+# markdown, never open it, so the tables render as written.
+_ROUNDED_MARKER = "*"
+
+
 def _show(value: object, width: int = 18) -> str:
-    text = f"{value:.4g}" if isinstance(value, float) else str(value)
-    return text if len(text) <= width else text[: width - 2] + ".."
+    if not isinstance(value, (float, np.floating)):
+        text = str(value)
+        return text if len(text) <= width else text[: width - 2] + ".."
+    number = float(value)
+    shown = 0.0 if abs(number) < _ZERO_EPSILON else number
+    text = f"{shown:.{_DISPLAY_DECIMALS}f}"
+    if len(text) > width:
+        # Clipping loses more than rounding does, so the marker belongs here too.
+        return text[: width - 3] + ".." + _ROUNDED_MARKER
+    # The marker earns its place only where the text is not the number. A reader who
+    # sees none can quote the value; one who sees it knows to open the ledger instead.
+    return text if float(text) == number else text + _ROUNDED_MARKER
 
 
 def _write_json(path: Path, payload: object) -> None:

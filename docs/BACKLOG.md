@@ -19,7 +19,7 @@ before anyone touches them, because they change published results.
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
 | C2 | `"nan"` is a real category next to `[NULL]` | Low today | Yes |
 | C3 | `LABELS` hyperparameter is logged but never used | Low | No |
-| C5 | Numeric precision and scaling: float32 storage, inverse-scaling error, and unbounded numerical imputations | Medium | Partly |
+| ~~C5~~ | ~~Numeric precision and scaling: float32 storage, inverse-scaling error~~ -- fixed, see below | Medium | Partly |
 | C4 | Pre-training re-initializes already-initialized layers | Low | Yes |
 | P1 | `preprocess_table` row fallback is a Python loop | Medium | No |
 | P2 | Hand-rolled attention instead of fused SDPA | Medium | Yes |
@@ -162,7 +162,39 @@ dataset changes nothing but implies otherwise.
 Suggested fix: drop the field, or validate it against the dataset and fail loudly
 on a mismatch.
 
-### C5. Numeric precision and scaling — needs research
+### C5. Numeric precision and scaling
+
+**Fixed 2026-09-10** by [ticket 0004](tickets/0004-imputation-preview-precision.md),
+for concerns 1 and 2. The research framing below was wrong about concern 1: it is not a
+dtype question but a **provenance** one, and asking it the right way dissolved the
+float64 cost question entirely.
+
+`split_numeric_and_special` downcasts to float32 at `src/utils.py:123`, which is correct,
+because the model's parameters are float32. The defect was that the *displayed* truth was
+then read back out of that tensor (`src/training/decoding.py`) when the exact value was
+still available upstream. Preparation now keeps the numerical columns as they stand before
+scaling (`PreparedDataset.raw_numerical`), the decode stage carries the exact number across
+in `actual_original`, and the preview prefers it. Nothing wants float64 in the tensor; the
+`imputed` side stays float32 because that is the model's real output precision.
+
+Measured on a real `kc2_20nan` run, the widest column `e` (`scale_` 123,433) was displayed
+as `870848.556` where the dataset holds `870848.580`. Two of its 21 columns moved at the
+display precision.
+
+Concern 2 is fixed by the display rules chosen with it: three decimals, anything below
+`5e-4` printed as `0.000`, and a `*` marking any number the rendering had to shorten, with
+a legend pointing at the cell ledger for the full value.
+
+**Concern 3 stands as recorded, not fixed**: clamping was rejected deliberately, and
+rounding to three decimals shows `-38.55` as `-38.550`, still negative and, being exact at
+that precision, unmarked -- the marker signals shortening, never implausibility. The interaction
+with C1 was checked and is none: display inverts through whatever scaler produced the
+scaled space, while C1 is about scoring fairness.
+
+Scoring never moved -- `scored_cells["actual"]` and `["imputed"]` are what the metrics
+read and they are untouched -- so `credit-g_20nan` and `vehicle_00nan` both pass unedited.
+
+The original analysis is kept below.
 
 Three related concerns surfaced while reading a real imputation preview
 (`spambase_20nan`). None is a wrong number today, but together they decide how far the
@@ -329,6 +361,9 @@ already does with `create_tracker(enabled)`.
   `optuna_trial` tracking role (see above).
 - **B3**, invalid `HEADS`/`DIM` pairs, via [ADR 0004](adr/0004-imputation-decoder-task.md)
   (constrained sampling plus `TrialPruned` on failure).
+- **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)
+  (exact truth retained before scaling; three-decimal display with a rounding marker).
+  Concern 3, unbounded numerical imputations, stands as recorded behaviour.
 
 These came out of the same review and are done, in
 [ticket 0003](tickets/0003-training-loop-performance.md):

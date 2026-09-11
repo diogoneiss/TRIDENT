@@ -312,7 +312,7 @@ with the baselines learned from the **training** fold and applied to the same sc
 
 | File | What it holds |
 |---|---|
-| `imputation_fold_N_preview.md` | A fixed-seed sample of rows, each as three lines: what was true, what the model saw, what it filled in. Original units |
+| `imputation_fold_N_preview.md` | A fixed-seed sample of rows, each as three lines: what was true, what the model saw, what it filled in. Original units, three decimals, `*` on any number the display had to shorten. A truth comes from the frame before scaling, so it is exact wherever the dataset carries three decimals or fewer, and marked where it carries more (`electricity`, `biodeg`); an imputation is the model's float32 output, so it is nearly always marked |
 | `imputation_fold_N_cells.csv` | Every scored cell, a superset of the preview, with both scalings, the model's confidence and an `in_preview` flag |
 | `metrics/per_column_imputation.csv` | Per-column errors for every fold, long form, on the parent run |
 

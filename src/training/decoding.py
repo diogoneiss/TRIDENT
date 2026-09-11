@@ -132,7 +132,14 @@ def train_and_evaluate_decoder(
     hidden_test = embedder.encode(
         evaluation_mask(test_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal), device
     )
-    cells = _score_population(model, hidden_test, embedder.encode(_clean(test_frame), device), "masked")
+    raw_variant = (
+        dataset.raw_numerical.iloc[fold.test_indices].reset_index(drop=True)
+        if dataset.raw_numerical is not None
+        else None
+    )
+    cells = _score_population(
+        model, hidden_test, embedder.encode(_clean(test_frame), device), "masked", raw_variant
+    )
 
     metrics: dict[str, float | int | str] = {}
     scored = score_cells(cells, baselines)
@@ -218,6 +225,9 @@ def _score_induced_missing(
 
     truth = complete_sibling.iloc[fold.test_indices].reset_index(drop=True)
     truth = truth[[column for column in test_frame.columns]].copy()
+    # The sibling as it is stored, kept before the scaling below overwrites it: this is
+    # the only place an induced cell's true value exists, the variant holding a gap.
+    raw_truth = truth.copy()
     if dataset.scaler is not None and len(dataset.numerical_columns):
         # Into the same scaled space the variant lives in, using the variant's own scaler.
         truth[list(dataset.numerical_columns)] = dataset.scaler.transform(
@@ -231,7 +241,7 @@ def _score_induced_missing(
         # Point the selection at the gaps explicitly.
         encoded = _select(encoded, torch.tensor(test_frame.isna().to_numpy(), device=device))
     return _score_population(
-        model, encoded, embedder.encode(_clean(truth), device), population
+        model, encoded, embedder.encode(_clean(truth), device), population, raw_truth
     )
 
 
@@ -246,7 +256,7 @@ def _already_missing(frame: pd.DataFrame) -> int:
     return int(frame.isna().to_numpy().sum())
 
 
-def _score_population(model, hidden, truth, population: str) -> pd.DataFrame:
+def _score_population(model, hidden, truth, population: str, raw_truth=None) -> pd.DataFrame:
     """One row per cell the model was asked to fill, with the truth beside its guess."""
     embedder = model.embedder
     with torch.no_grad():
@@ -267,6 +277,7 @@ def _score_population(model, hidden, truth, population: str) -> pd.DataFrame:
             {
                 "row": row, "column": column, "kind": CATEGORICAL, "population": population,
                 "actual": str(a), "imputed": str(p), "confidence": float(c),
+                "actual_original": str(a),
             }
             for row, a, p, c in zip(where, actual, imputed, confidence)
         )
@@ -281,6 +292,7 @@ def _score_population(model, hidden, truth, population: str) -> pd.DataFrame:
             {
                 "row": row, "column": column, "kind": NUMERICAL, "population": population,
                 "actual": float(a), "imputed": float(p), "confidence": float("nan"),
+                "actual_original": _exact(raw_truth, row, column),
             }
             for row, a, p in zip(
                 where,
@@ -291,8 +303,22 @@ def _score_population(model, hidden, truth, population: str) -> pd.DataFrame:
 
     return pd.DataFrame(
         rows,
-        columns=["row", "column", "kind", "population", "actual", "imputed", "confidence"],
+        columns=[
+            "row", "column", "kind", "population",
+            "actual", "imputed", "confidence", "actual_original",
+        ],
     )
+
+
+def _exact(raw_truth, row: int, column: str) -> float:
+    """The number the frame holds before scaling; NaN when it was not kept.
+
+    ``actual`` stays in the scaled float32 space the metrics compare in. This is the
+    same cell as a person would read it, and it never reaches a metric.
+    """
+    if raw_truth is None or column not in raw_truth.columns:
+        return float("nan")
+    return float(raw_truth.at[row, column])
 
 
 def _clean(frame: pd.DataFrame) -> pd.DataFrame:

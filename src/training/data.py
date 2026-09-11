@@ -50,8 +50,11 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
     feature_columns.remove(spec.label_column)
     numerical_columns = [column for column in feature_columns if column not in categorical_columns]
     scaler = None
+    raw_numerical = None
     if numerical_columns:
         scaler = StandardScaler()
+        # Before, not after: fit_transform overwrites these columns in place.
+        raw_numerical = frame[numerical_columns].copy()
         frame[numerical_columns] = scaler.fit_transform(frame[numerical_columns])
 
     frame.attrs["dataset_name"] = spec.dataset_name
@@ -65,6 +68,7 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
         source_path=dataset_path,
         splits_path=splits_path,
         scaler=scaler,
+        raw_numerical=raw_numerical,
     )
 
 

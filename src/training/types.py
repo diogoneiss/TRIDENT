@@ -224,6 +224,11 @@ class PreparedDataset:
     # a credit amount rather than a z-score. Retaining it does not move when scaling
     # happens; ``None`` when the dataset has no numerical columns.
     scaler: Any = None
+    # ``frame``'s numerical columns as they were before scaling overwrote them, kept so a
+    # preview can report a known truth exactly instead of one that round-tripped through
+    # the model's float32 (ticket 0004). ``None`` when the dataset has no numerical
+    # columns. Retaining it does not move when scaling happens.
+    raw_numerical: Any = None
 
 
 @dataclass(frozen=True)

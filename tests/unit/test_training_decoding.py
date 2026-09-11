@@ -41,11 +41,13 @@ def _dataset(rows: int = 36) -> PreparedDataset:
     frame = _complete_frame(rows)
     frame.loc[frame.index % 5 == 0, "size"] = np.nan
     frame.loc[frame.index % 7 == 0, "colour"] = np.nan
+    raw_numerical = frame[NUMERICAL].copy()
     scaler = StandardScaler()
     frame[NUMERICAL] = scaler.fit_transform(frame[NUMERICAL])
     frame.attrs["dataset_name"] = "toy_20nan"
     return PreparedDataset(
         frame=frame,
+        raw_numerical=raw_numerical,
         label_column="class",
         categorical_columns=CATEGORICAL,
         numerical_columns=NUMERICAL,
@@ -217,3 +219,45 @@ def test_the_null_path_diagnostic_asks_the_same_cells_through_the_other_token() 
     through_mask = asked.scored_cells["population"] == "induced"
     through_null = asked.scored_cells["population"] == "induced_null_token"
     assert int(through_null.sum()) == int(through_mask.sum())
+
+
+def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
+    """Ticket 0004: a known truth should not be reported at the model's precision.
+
+    The scored table's `actual` stays in the scaled float32 space the metrics compare in,
+    but the original-unit truth beside it is read from the frame before scaling, so it is
+    exact. The two populations take it from different places, which is the part that can
+    be silently wrong: a masked cell's truth is the variant's own value, while an induced
+    cell's is the sibling's, because the variant holds nothing but a gap there.
+
+    Expectations come from the raw frames directly rather than from any inverse scaling,
+    so a value that round-tripped through float32 cannot satisfy them.
+    """
+    dataset = _dataset()
+    fold = _fold(len(dataset.frame))
+    outcome, _ = _run(dataset=dataset, sibling=_complete_frame())
+    scored = outcome.scored_cells
+
+    variant_truth = dataset.raw_numerical.iloc[fold.test_indices].reset_index(drop=True)
+    masked = scored[(scored["population"] == "masked") & (scored["kind"] == "numerical")]
+    assert len(masked) > 0
+    for _, cell in masked.iterrows():
+        assert cell["actual_original"] == variant_truth.loc[cell["row"], cell["column"]]
+
+    sibling_truth = _complete_frame().iloc[fold.test_indices].reset_index(drop=True)
+    induced = scored[(scored["population"] == "induced") & (scored["kind"] == "numerical")]
+    assert len(induced) > 0
+    for _, cell in induced.iterrows():
+        assert cell["actual_original"] == sibling_truth.loc[cell["row"], cell["column"]]
+
+    # `actual` still holds the scaled value the metrics compare in. Scaling it back only
+    # approximates the exact column, which is the float32 gap this ticket is about.
+    sizes = masked[masked["column"] == "size"]
+    index = list(dataset.numerical_columns).index("size")
+    rescaled = (
+        sizes["actual"].astype(float) * dataset.scaler.scale_[index]
+        + dataset.scaler.mean_[index]
+    )
+    assert rescaled.to_numpy() == pytest.approx(
+        sizes["actual_original"].astype(float).to_numpy(), abs=1e-5
+    )
