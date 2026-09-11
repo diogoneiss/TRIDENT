@@ -40,3 +40,9 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
 - This ticket and ticket 06 are the only ones that write to the shared `mlflow.db`.
 
 ## Comments
+
+- 2026-09-11 (from ticket 02): the user is adapting a copy of `experiment.ps1` as
+  `experiment_imputation.ps1` at the repository root (a schedule sweep with
+  `--task imputation`, work in progress in the working copy). Different purpose from this
+  ticket's launcher, but read it before writing `imputation_studies.ps1` so the two share
+  the same shape, and do not overwrite it.
