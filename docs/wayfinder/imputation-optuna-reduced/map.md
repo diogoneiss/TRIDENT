@@ -40,7 +40,7 @@ study. The six studies and the comparison runs are execution, launched from the 
   `docs/adr/0004-imputation-decoder-task.md` decision 13 (what this effort amends) and
   the previous map's [ticket 13](../imputation-decoder/issues/13-optuna-for-imputation.md).
   Code: `opt.py`, `src/training/config.py` (`_load_base_hyperparameters`),
-  `src/training/decoding.py`, `src/training/tracking.py` (`_execution_tags`,
+  `src/training/decoding.py`, `src/training/tracking.py` (`execution_tags`, promoted from `_execution_tags` by ticket 07,
   `OptunaTrialTracker`), tests `tests/unit/test_opt_search_space.py` and
   `tests/unit/test_opt_tracking.py`. For codebase questions run
   `graphify query "<question>"` first.
@@ -72,7 +72,7 @@ study. The six studies and the comparison runs are execution, launched from the 
     finished imputation study still overwrites `datasets/hiperparams/<base>/<dataset>.json`
     (only the per-trial `save_best_params` honours ticket 13 decision 5). The study parent
     builds its tags with `build_run_tags` directly and carries neither `task` nor
-    `is_optuna`, although `_execution_tags` in `src/training/tracking.py` already sets
+    `is_optuna`, although the helper now named `execution_tags` in `src/training/tracking.py` already set
     both for every other run kind. The final log line says "Best F1 macro" whatever the
     task. `tests/unit/test_opt_search_space.py` exercises `define_search_space` only,
     which is why all of this shipped green.
