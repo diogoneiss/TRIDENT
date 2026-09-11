@@ -48,9 +48,9 @@
     "semantic_hash": "53e248c9aaab05ea361d7ffe5fef7498"
   },
   "src/training/artifacts.py": {
-    "mtime": 1789079126.3559735,
-    "seen": 1789080377.344404,
-    "ast_hash": "3fc38fe397f6281f77982fb9f2e277cf",
+    "mtime": 1789087137.4546652,
+    "seen": 1789087238.6892393,
+    "ast_hash": "9673b4adbbce707ccaac3fe670c5094e",
     "semantic_hash": ""
   },
   "src/training/cli.py": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "src/training/data.py": {
-    "mtime": 1789069273.1952548,
-    "seen": 1789080377.344404,
-    "ast_hash": "1a4e0ec09cbe01294f58421a21666e45",
+    "mtime": 1789086607.9719312,
+    "seen": 1789087238.6892393,
+    "ast_hash": "4439fc4c5862a7dc6c95455c1b0cdc41",
     "semantic_hash": ""
   },
   "src/training/discovery.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1789077820.3250537,
-    "seen": 1789080377.344404,
-    "ast_hash": "2989b82ad349f60817f7fdbd92f1057b",
+    "mtime": 1789086607.9709191,
+    "seen": 1789087238.6892393,
+    "ast_hash": "af260063b6f9e07e0c82a3c2e5b8ae38",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789080030.135966,
-    "seen": 1789080377.344404,
-    "ast_hash": "4b7506c2adb7a2b8ad5e0cec224db227",
+    "mtime": 1789087137.459666,
+    "seen": 1789087238.6892393,
+    "ast_hash": "0641fa0ca1219f6a02bede08c5961d7d",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -336,9 +336,9 @@
     "semantic_hash": ""
   },
   "docs/BACKLOG.md": {
-    "mtime": 1789080030.140069,
-    "seen": 1789080377.344404,
-    "ast_hash": "2774eae00a8c1462d8d855dc674688ca",
+    "mtime": 1789087137.4646645,
+    "seen": 1789087238.6892393,
+    "ast_hash": "a7c91bf0ab5c19a609ad618701048d60",
     "semantic_hash": ""
   },
   "docs/adr/0003-selectable-learning-rate-schedule.md": {
@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1789078091.2208774,
-    "seen": 1789080377.344404,
-    "ast_hash": "2eef10ec00f44a8a44db69f7cbeb5b8d",
+    "mtime": 1789086623.2177024,
+    "seen": 1789087238.6892393,
+    "ast_hash": "28a8652109a6a7b96415392210e03811",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_imputation_artifacts.py": {
-    "mtime": 1789078471.6237462,
-    "seen": 1789080377.344404,
-    "ast_hash": "9d41ef739da6edb0b108aa45bdbf5a00",
+    "mtime": 1789086687.3516977,
+    "seen": 1789087238.6892393,
+    "ast_hash": "b20bfd5b2cf0e70018922c1410170cd5",
     "semantic_hash": ""
   },
   "tests/unit/test_imputation_metrics.py": {
@@ -444,9 +444,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1789078068.6331608,
-    "seen": 1789080377.344404,
-    "ast_hash": "2a99a6fa52126323980361e878323317",
+    "mtime": 1789086654.885113,
+    "seen": 1789087238.6892393,
+    "ast_hash": "82d976d864a2919d9549d4801a36e686",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
@@ -456,9 +456,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0004-imputation-decoder-task.md": {
-    "mtime": 1789080264.451699,
-    "seen": 1789080377.344404,
-    "ast_hash": "d3549171308eb7a1226f394b9140b6ca",
+    "mtime": 1789083024.3502398,
+    "seen": 1789087238.6892393,
+    "ast_hash": "c42850b478cc3023fc24581701ac6813",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/01-ranking-contract.md": {
@@ -510,9 +510,9 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/09-tag-backfill.md": {
-    "mtime": 1789079562.4877188,
-    "seen": 1789080377.344404,
-    "ast_hash": "6012c17ae659f519bc252d9771dd07c5",
+    "mtime": 1789083024.3522375,
+    "seen": 1789087238.6892393,
+    "ast_hash": "4bac1bc70fb74062fdc7cd84aa714b16",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/10-optuna-imputation.md": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/spec.md": {
-    "mtime": 1789080371.7536445,
-    "seen": 1789080377.344404,
-    "ast_hash": "284685d0370d14b0da231952f0719e99",
+    "mtime": 1789083024.3978233,
+    "seen": 1789087238.6892393,
+    "ast_hash": "63c3b617d1b0ca9786ede66a6b74e5a9",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/01-imputation-evaluation-protocol.md": {
@@ -618,15 +618,21 @@
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/map.md": {
-    "mtime": 1789061839.7955463,
-    "seen": 1789080377.344404,
-    "ast_hash": "f86fee5242865f70390cb952ab1d8568",
+    "mtime": 1789084645.2085712,
+    "seen": 1789087238.6892393,
+    "ast_hash": "49be233416821a9480e3d29567621ea5",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/plan.md": {
     "mtime": 1789064063.9116182,
     "seen": 1789080377.344404,
     "ast_hash": "f3e247321feb7ecd7add0430b60be815",
+    "semantic_hash": ""
+  },
+  "docs/tickets/0004-imputation-preview-precision.md": {
+    "mtime": 1789087137.470183,
+    "seen": 1789087238.6892393,
+    "ast_hash": "38344f81d49ac906efbbaef1eb268e87",
     "semantic_hash": ""
   }
 }
