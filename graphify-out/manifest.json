@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "opt.py": {
-    "mtime": 1789079733.822094,
-    "seen": 1789080377.344404,
-    "ast_hash": "205945a14caae3dc3d0d79533c7edeaf",
+    "mtime": 1789093339.1858628,
+    "seen": 1789093942.0945768,
+    "ast_hash": "0f43c4448f7d6937140435de30601603",
     "semantic_hash": ""
   },
   "pyproject.toml": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "src/training/tracking.py": {
-    "mtime": 1789078796.1294477,
-    "seen": 1789080377.344404,
-    "ast_hash": "3035b0b866e558c2c606bc31d4f54793",
+    "mtime": 1789092807.5727038,
+    "seen": 1789093942.0945768,
+    "ast_hash": "d4b04ca5267469c729a8a5217184a004",
     "semantic_hash": ""
   },
   "src/training/types.py": {
@@ -204,9 +204,9 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1789060901.7983234,
-    "seen": 1789080377.344404,
-    "ast_hash": "47b41de808bb07a6f38caaedf2ac112e",
+    "mtime": 1789091934.624309,
+    "seen": 1789092097.115098,
+    "ast_hash": "900a8f78d09dee6f4a62f25b5eb20177",
     "semantic_hash": ""
   },
   "README.md": {
@@ -305,12 +305,6 @@
     "ast_hash": "ce5e9e4a5c4576c8c55b76c52dba3b69",
     "semantic_hash": ""
   },
-  "datasets/hiperparams/vehicle/vehicle_00nan.json": {
-    "mtime": 1789001826.9273877,
-    "seen": 1789007173.2127626,
-    "ast_hash": "04ecde12df7182a9db06a237f6311b11",
-    "semantic_hash": ""
-  },
   "scripts/backfill_lr_scheduler_tag.py": {
     "mtime": 1788997179.5136092,
     "seen": 1788997371.4334493,
@@ -366,9 +360,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_opt_tracking.py": {
-    "mtime": 1789079789.844407,
-    "seen": 1789080377.344404,
-    "ast_hash": "b1ab7bf1f7559e955809d2bec95be8e0",
+    "mtime": 1789093235.1191967,
+    "seen": 1789093942.0945768,
+    "ast_hash": "cb3616d20128871c091f0e0748048886",
     "semantic_hash": ""
   },
   "scripts/__init__.py": {
@@ -639,6 +633,60 @@
     "mtime": 1789088466.9844067,
     "seen": 1789088666.3390138,
     "ast_hash": "2cef8e9ff9d84bdd95708c56d6fc6331",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/01-held-set-and-ranges.md": {
+    "mtime": 1789092281.1551719,
+    "seen": 1789093942.0945768,
+    "ast_hash": "4e0b55de1014aeca963cce734b41bd98",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/02-search-objective-on-validation.md": {
+    "mtime": 1789092023.9650598,
+    "seen": 1789092097.115098,
+    "ast_hash": "c4fbeaf1fca5e2bb1e834ea621e3afe4",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/03-study-protocol.md": {
+    "mtime": 1789093786.7269564,
+    "seen": 1789093942.0945768,
+    "ast_hash": "fb920cb1d51b698b435ff6e8f8ae294d",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/04-promoted-configuration-lookup.md": {
+    "mtime": 1789092043.661855,
+    "seen": 1789092097.115098,
+    "ast_hash": "ccada520ae9428c8cbb9004fe7c764ee",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/05-search-space-profile-flag.md": {
+    "mtime": 1789092052.977435,
+    "seen": 1789092097.115098,
+    "ast_hash": "e56df5ac71993ed4fef1fbed555aaa5a",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/06-importance-and-comparison.md": {
+    "mtime": 1789093801.405172,
+    "seen": 1789093942.0945768,
+    "ast_hash": "817ad5b1dbd6e09e545ae89088b7e9d8",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/07-repair-optuna-path.md": {
+    "mtime": 1789093882.1744444,
+    "seen": 1789093942.0945768,
+    "ast_hash": "5f96811af4418c8e5dbf45f5cf502fae",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/issues/08-record-adr-and-plan.md": {
+    "mtime": 1789093898.1969025,
+    "seen": 1789093942.0945768,
+    "ast_hash": "d2516502c5ff8a66f7acd510e8ba04bc",
+    "semantic_hash": ""
+  },
+  "docs/wayfinder/imputation-optuna-reduced/map.md": {
+    "mtime": 1789093894.860229,
+    "seen": 1789093942.0945768,
+    "ast_hash": "f8513f1ca0ac876c84d5f5e3b2a0b95f",
     "semantic_hash": ""
   }
 }
