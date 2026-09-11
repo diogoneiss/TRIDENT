@@ -206,6 +206,14 @@ replacement are execution, launched from the plan.
   **Contingent on a measurement the execution ticket must take first**: how many tag writes
   funnel through helpers versus calling `mlflow.set_tag` directly. A wide surface reopens
   this rather than bolting a grep rule onto the remainder.
+- [08. Configure the checker and make it green](issues/08-configure-the-checker.md): the
+  execution carve-out, done in `d99d5d7` (floor to 3.11, torch cu121 verified on the GPU),
+  `30cef72` (`src/__init__.py`) and `3fa848d` (mypy, stubs, ramp, gate). **17 of 28 files
+  pass `strict = true`**; eleven override blocks are the ramp inventory, each relaxing only
+  the flags its module owes. The checker found four defects on its first run, the sharpest
+  being `runner.py` reading `DecodingOutcome.scored_cells` behind a string compare nothing
+  could verify — the same shape as the Optuna defect that silently trained classifiers.
+  Both fixtures pass unedited; the gate was proven to fail before being trusted.
 
 ## Not yet specified
 
