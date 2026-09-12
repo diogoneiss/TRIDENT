@@ -53,3 +53,14 @@ tells the two apart in the store.
   `datasets/hiperparams/` while it runs; a "defaults" run that starts while one exists
   for its dataset reads it, and `config_source` on the run says so, so check that param
   before building the table.
+
+- 2026-09-11 23:xx: the comparison's promoted run on kr-vs-kp_40nan failed in fold 4
+  (`KeyError: 't'` in the label encoder while scoring the induced population). Cause: the
+  variant's vocabulary for `spcop` is only `f`, the sibling's truth holds the dataset's one
+  `t` at row 2891, and seed 42's fold 4 is the first split to put that row in a test fold.
+  Fixed test-first in `1cb0864` (backlog B5): such a cell is a miss by construction and no
+  longer crashes the fold. The queued defaults run for the same pair started before the
+  fix and fails the same way; both runs of that pair are rerun after the queue restores
+  the promoted file, and the two `FAILED` parents stay in the store (filter on status).
+  credit-g and kr-vs-kp_20nan pairs completed before the failure.
+

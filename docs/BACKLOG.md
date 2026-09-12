@@ -16,6 +16,7 @@ before anyone touches them, because they change published results.
 | ~~B2~~ | ~~`--cv_folds 1` fails with an error naming `n_splits`~~ -- fixed, see below | Medium | No |
 | ~~B3~~ | ~~Optuna proposes head counts that crash, scored as 0.0~~ — fixed, see below | Medium | No |
 | ~~B4~~ | ~~Optuna with MLflow enabled scored every trial 0.0~~ — fixed, see below | High | No |
+| ~~B5~~ | ~~An induced cell whose category the variant never shows crashed the fold~~ — fixed, see below | Medium | No |
 | C1 | Scaler and encoders fit on the whole dataset before splitting | High | Yes |
 | C2 | `"nan"` is a real category next to `[NULL]` | Low today | Yes |
 | C3 | `LABELS` hyperparameter is logged but never used | Low | No |
@@ -445,6 +446,13 @@ here rather than done so the two imputation runs already tracked keep their key.
   both tasks, and `--promote_best` publishes a complete configuration, task-keyed
   (`<dataset>.imputation.json`) for imputation and the shared file for classification.
   Every run logs a `config_source` param.
+- **B5**, an induced cell whose true category the variant never shows: kr-vs-kp's
+  `spcop` is `f` everywhere but once, the 40nan generator took that one `t`, and the
+  embedder (fit on the variant) raised `KeyError` on the sibling's truth, crashing fold 4
+  of the 5-fold comparison under seed 42 (the predefined split never holds that row, so
+  forty single-split trials had passed). Since `1cb0864` such a cell is scored as a miss,
+  which it is by construction, with a warning naming the column and values; every
+  other cell encodes as before and both fixtures pass unedited.
 - **C5**, concerns 1 and 2, via [ticket 0004](tickets/0004-imputation-preview-precision.md)
   (exact truth retained before scaling; three-decimal display with a rounding marker).
   Concern 3, unbounded numerical imputations, stands as recorded behaviour.
