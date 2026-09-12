@@ -1,0 +1,19 @@
+{
+    "DIM": 128,
+    "HIDDEN_DIM": 16,
+    "HEADS": 16,
+    "LAYERS": 2,
+    "DIM_FEED": 32,
+    "DROPOUT": 0.2,
+    "EPOCHS_PRE": 300,
+    "BATCH": 256,
+    "LR_PRE": 0.00034,
+    "WEIGHT_DECAY_PRE": 0.005,
+    "PROB_MASCARA": 0.2,
+    "LR_SCHEDULER": "cosine",
+    "EPOCHS_DECODE": 150,
+    "LR_DECODE": 0.0017418753352176958,
+    "WEIGHT_DECAY_DECODE": 0.003901166304560284,
+    "LAMBDA_NUM": 1.0,
+    "EVAL_MASK_RATE": 0.2
+}
