@@ -1,6 +1,6 @@
 # 06. The comparison and the documentation
 
-Status: ready-for-agent
+Status: done (`4cec3bd`; README slice `df440b3`) on `feat/imputation-task`, 2026-09-12
 Blocked by: 05
 Plan task: 6. ADR 0005 decision 6 (second half). Wayfinder ticket 06.
 
@@ -19,18 +19,18 @@ tells the two apart in the store.
 
 ## Acceptance criteria
 
-- [ ] Twelve parents with `is_optuna = false`, `task = imputation`, `lr_scheduler = cosine`,
+- [x] Twelve parents with `is_optuna = false`, `task = imputation`, `lr_scheduler = cosine`,
       `evaluation_mode = cross_validation`, six with `config_source` naming the promoted
       file and six with `defaults`.
-- [ ] A table in ADR 0005's status section, dated: per pair,
+- [x] A table in ADR 0005's status section, dated: per pair,
       `cv/test/impute/induced/impute_score/mean` with `ci95_lower` / `ci95_upper` and
       `cv/test/impute/masked/impute_score/mean`, promoted against default, and whether the
       promoted interval excludes the default mean.
-- [ ] `README.md`: `--search_space`, `--promote_best`, the lookup order, `search_space` and
+- [x] `README.md`: `--search_space`, `--promote_best`, the lookup order, `search_space` and
       `config_source` in "MLflow Cross-Validation Comparisons", and a note that a study's
       `optuna/best_objective_value` is a validation-split score.
-- [ ] `docs/BACKLOG.md`: I2 in "Fixed already" (if ticket 03 did not already move it).
-- [ ] `graphify update .` run; ADR 0005's seven decisions each have a test or a recorded
+- [x] `docs/BACKLOG.md`: I2 in "Fixed already" (if ticket 03 did not already move it).
+- [x] `graphify update .` run; ADR 0005's seven decisions each have a test or a recorded
       run; commit.
 
 ## Constraints
@@ -70,4 +70,25 @@ tells the two apart in the store.
   defaults 0.756 [0.721, 0.791], so on this pair the promoted configuration is not better
   and the intervals overlap. The spambase pairs are still running in the queue; the table
   is built once they finish.
+
+- 2026-09-12 02:26, the comparison done; table and reading recorded in ADR 0005's status
+  section (`4cec3bd`). Twelve finished parents in the store (plus the two `FAILED`
+  kr-vs-kp_40nan parents from before the fix): six with `config_source` naming the
+  promoted file, six `defaults`, all `is_optuna = false`, `task = imputation`,
+  `lr_scheduler = cosine`, `evaluation_mode = cross_validation`, seed 42. No pair's
+  promoted interval excludes the default mean; the reduced search did not beat the
+  defaults on the induced benchmark. `graphify update .` last ran after the decoding fix
+  (`39b4ba9`); no code changed since. I2 was closed by ticket 03.
+
+  Specification coverage, ADR 0005's seven decisions:
+
+  | Decision | Where it is pinned |
+  |---|---|
+  | 1, profiles and `--search_space` | `test_opt_search_space.py` (profile keys, entry-point flags), `test_opt_tracking.py` (reduced by default, `search_space` tag), `test_training_config.py` (reduced refused for classification) |
+  | 2, held set, ranges, column mix, `HEAD_DIM` | `test_opt_search_space.py` (`LR_DECODE` exceeds the default, `LAMBDA_NUM` conditional), `test_training_data.py` (declared column types), `test_opt_tracking.py` (recorded config = trained config) |
+  | 3, validation-split objective | `test_training_tasks.py`, `test_training_decoding.py` (scored only when asked), `test_opt_tracking.py` (ranked by validation score), `test_training_config.py` (programmatic field) |
+  | 4, the study protocol | the six recorded study runs (ticket 05; `search_space = reduced`, 40 trials, `cosine`, seed 42, `best_trial` tagged) |
+  | 5, lookup, promotion, `config_source` | `test_training_config.py`, `test_training_tracking.py`, `test_opt_tracking.py` (no write without the flag; complete promoted files for both tasks) |
+  | 6, importance and comparison | `test_opt_tracking.py` (importances, too-small study) and the twelve recorded comparison runs with the table above |
+  | 7, the repair | `test_opt_tracking.py` (task on namespaces, study tags, seeded sampler, trained config on the trial) since `161fc92` |
 
