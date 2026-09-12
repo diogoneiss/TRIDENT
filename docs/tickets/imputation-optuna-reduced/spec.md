@@ -18,7 +18,7 @@ Branch: `feat/imputation-task`. Commit after each ticket; commit only that ticke
 | 02 | [The search objective on the validation split](issues/02-validation-search-objective.md) | done (`9a38b90`) | 01 |
 | 03 | [Task-keyed lookup and explicit promotion](issues/03-lookup-and-promotion.md) | done (`a24dcec`) | 02 |
 | 04 | [The importance artifact](issues/04-importance-artifact.md) | done (`6cc6873`) | 03 |
-| 05 | [The launcher and the six studies](issues/05-launcher-and-studies.md) | in-progress (launcher `d039c47`; studies running) | 04 |
+| 05 | [The launcher and the six studies](issues/05-launcher-and-studies.md) | done (`fcaadfb`; launcher `d039c47`) | 04 |
 | 06 | [The comparison and the documentation](issues/06-comparison-and-docs.md) | ready-for-agent (README slice in `df440b3`) | 05 |
 
 The four code tickets are serialised because every one edits `opt.py`; two sessions on
