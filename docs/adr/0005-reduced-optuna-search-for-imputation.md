@@ -15,6 +15,40 @@ space and its ranges). Closes backlog item I2 when execution ticket 03 lands; le
 open and out of scope. Records the repair of the shipped Optuna path (commit `161fc92`),
 which also fixed `--retrain_best` for both tasks.
 
+### Outcome (2026-09-12)
+
+The six reduced studies ran on 2026-09-11 (40 trials each, `cosine`, seed 42; execution
+ticket 05; promoted files in `fcaadfb`), followed by the paired 5-fold comparison of
+decision 6 (ticket 06): per pair, one run reading the promoted file and one with it
+moved aside, both `--task imputation --cv_folds 5 --lr_scheduler cosine --seed 42`, told
+apart by `params.config_source`. Headline `cv/test/impute/induced/impute_score/mean` with
+its 95% interval; lower is better, 1.0 is baseline parity; companion masked mean.
+
+| Pair | Promoted, induced [CI] | Defaults, induced [CI] | Promoted, masked | Defaults, masked | Promoted interval excludes default mean |
+|---|---|---|---|---|---|
+| credit-g_20nan | 0.913 [0.868, 0.958] | 0.895 [0.868, 0.921] | 0.926 | 0.896 | no |
+| credit-g_40nan | 0.968 [0.940, 0.995] | 0.962 [0.941, 0.983] | 0.965 | 0.974 | no |
+| kr-vs-kp_20nan | 0.603 [0.559, 0.646] | 0.615 [0.584, 0.646] | 0.660 | 0.673 | no |
+| kr-vs-kp_40nan | 0.778 [0.734, 0.822] | 0.756 [0.721, 0.791] | 0.802 | 0.775 | no |
+| spambase_20nan | 0.886 [0.859, 0.913] | 0.887 [0.859, 0.914] | 0.879 | 0.882 | no |
+| spambase_40nan | 0.930 [0.909, 0.952] | 0.927 [0.897, 0.957] | 0.931 | 0.921 | no |
+
+**The reduced search did not beat the defaults on the induced benchmark.** No pair
+separates; the promoted point estimate is worse on four pairs and better by at most
+0.012 on the other two. The studies themselves say why: the decode learning rate
+dominates the sampled space (first in five studies of six, 0.39 to 0.80), but the losses
+all sit below 5e-4 and everything from about 1e-3 to 1e-2 is a plateau, so the default
+1e-3 was already on it and the search had little to gain; the mask rate is near
+irrelevant. On credit-g the validation-split objective also chose configurations that
+generalise worse than the defaults (masked 0.926 against 0.896 at 20nan), which is what a
+thousand-row validation split affords. The protocol is single-seed and paired, so seed
+variability is not quantified. The promoted files remain as the record of the studies;
+whether later `--task imputation` runs should keep reading them is a separate decision.
+Per-study winners and importances are on
+[execution ticket 05](../tickets/imputation-optuna-reduced/issues/05-launcher-and-studies.md).
+Running the comparison also surfaced backlog B5 (an induced cell whose category the
+variant never shows crashed a fold), fixed in `1cb0864`.
+
 ## Context
 
 ADR 0004 gave the imputation task an Optuna study that samples fifteen hyperparameters:
