@@ -286,3 +286,26 @@ def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() 
     assert rescaled.to_numpy() == pytest.approx(
         sizes["actual_original"].astype(float).to_numpy(), abs=1e-5
     )
+
+
+def test_an_induced_cell_whose_category_the_variant_never_shows_is_scored_as_a_miss() -> None:
+    """kr-vs-kp's `spcop` is `f` everywhere but once, and the 40nan generator took that
+    one `t`, so the variant's vocabulary lacks it while the sibling's truth holds it at an
+    induced cell. The head can never produce a category its embedder never saw, so the
+    cell counts as a miss instead of crashing the fold (fold 4 of a 5-fold run did).
+    """
+    dataset = _dataset()
+    sibling = _complete_frame()
+    # Row 28 is a gap in the variant (index % 7 == 0) and sits in the test fold.
+    sibling.loc[28, "colour"] = "violet"
+
+    outcome, _ = _run(dataset=dataset, sibling=sibling)
+
+    cells = outcome.scored_cells
+    induced_colour = cells[(cells["population"] == "induced") & (cells["column"] == "colour")]
+    unseen = induced_colour[induced_colour["actual"] == "violet"]
+    assert len(unseen) == 1
+    assert unseen.iloc[0]["imputed"] != "violet"
+    assert unseen.iloc[0]["actual_original"] == "violet"
+    # Rows 28 and 35 are the variant's colour gaps in the test fold: both are scored.
+    assert outcome.result.metrics["impute/induced/n_cat_cells"] == 2

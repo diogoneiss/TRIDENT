@@ -12,6 +12,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 
+from src.embedder import as_category_strings
 from src.models import TridentDecoder
 from src.utils import preprocess_table
 
@@ -260,9 +261,41 @@ def _score_induced_missing(
         # [NULL] cells are not [MASK] cells, so nothing would be selected for scoring.
         # Point the selection at the gaps explicitly.
         encoded = _select(encoded, torch.tensor(test_frame.isna().to_numpy(), device=device))
-    return _score_population(
-        model, encoded, embedder.encode(_clean(truth), device), population, raw_truth
+    # A category the variant never shows (the generator took its every occurrence) is
+    # outside the embedder's vocabulary, so the head can never produce it and the encoder
+    # cannot even index it. Such a cell is a miss by construction: its truth is encoded
+    # as [NULL], which no prediction ever equals, and its recorded value is put back on
+    # the scored cell so the artifact and the metrics see what was really there.
+    encodable_truth, unseen = _within_vocabulary(_clean(truth), embedder)
+    scored = _score_population(
+        model, encoded, embedder.encode(encodable_truth, device), population, raw_truth
     )
+    for (row, column), value in unseen.items():
+        hit = (scored["row"] == row) & (scored["column"] == column)
+        scored.loc[hit, ["actual", "actual_original"]] = value
+    return scored
+
+
+def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dict]:
+    """The frame with every category the embedder never saw replaced by ``[NULL]``,
+    and the (row, column) -> value map of what was replaced."""
+    frame = frame.copy()
+    unseen: dict[tuple[int, str], str] = {}
+    for column in embedder.categorical_columns:
+        known = set(embedder.label_encoders[column].classes_)
+        values = as_category_strings(frame[column])
+        outside = [row for row, value in enumerate(values) if value not in known]
+        if not outside:
+            continue
+        for row in outside:
+            unseen[(row, column)] = str(values[row])
+        frame.iloc[outside, frame.columns.get_loc(column)] = "[NULL]"
+        print(
+            f"Warning: {len(outside)} induced cell(s) in '{column}' hold categories the "
+            f"variant never shows ({sorted(set(values[row] for row in outside))}); scored "
+            "as misses, since the decoder cannot produce them."
+        )
+    return frame, unseen
 
 
 def _select(encoded, positions: torch.Tensor):
