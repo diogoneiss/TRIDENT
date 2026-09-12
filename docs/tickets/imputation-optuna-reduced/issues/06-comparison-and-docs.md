@@ -64,3 +64,10 @@ tells the two apart in the store.
   the promoted file, and the two `FAILED` parents stay in the store (filter on status).
   credit-g and kr-vs-kp_20nan pairs completed before the failure.
 
+- 2026-09-12 00:20: the kr-vs-kp_40nan pair rerun with the fix (`1cb0864`) completed both
+  5-fold runs; the warning named the one `spcop` cell in fold 4 of each. Preliminary, on
+  `cv/test/impute/induced/impute_score/mean`: promoted 0.778 [0.734, 0.822] against
+  defaults 0.756 [0.721, 0.791], so on this pair the promoted configuration is not better
+  and the intervals overlap. The spambase pairs are still running in the queue; the table
+  is built once they finish.
+
