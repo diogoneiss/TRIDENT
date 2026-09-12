@@ -89,3 +89,25 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
 
   The queued runner started ticket 06's comparison at 21:37 and follows it with the
   plateau replication of the six studies (no promotion), per the earlier comment.
+
+- 2026-09-12 14:56: the four cheap plateau studies are done and reach a **better**
+  validation objective than their cosine twins on every one of them (credit-g_20nan
+  0.750 against 0.776, credit-g_40nan 0.782 against 0.805, kr-vs-kp_20nan 0.637 against
+  0.670, kr-vs-kp_40nan 0.587 against 0.648; lower is better). The clean cosine picture
+  of the decode rate dissolves: the plateau winners scatter from 3.2e-4 to 8.3e-3, on
+  kr-vs-kp_20nan the winner is at the bottom of the range, and on kr-vs-kp_40nan the
+  worst eight trials have a *higher* median rate than the best eight. A schedule that
+  adapts the rate during training makes its starting value matter less, which is the
+  expected direction. spambase is still running; due about 23:00.
+
+  Since the cosine batch showed validation gains not carrying to the induced benchmark,
+  the user asked for the same paired comparison under plateau, queued behind the batch
+  (scratch `queue_plateau_compare.ps1`, log `results/imputation_plateau_compare.*`). The
+  plateau studies promoted nothing, so each plateau winner is staged as a complete
+  configuration (the shipped `complete_configuration`, `LR_SCHEDULER` pinned to plateau)
+  and swapped into the task-keyed path for the duration of its pair, with the committed
+  cosine file restored in a `finally` afterwards. If it dies mid-pair,
+  `git checkout -- datasets/hiperparams` restores the cosine winners. The twelve runs
+  also give the plateau-versus-cosine comparison at the defaults for free, since the
+  cosine defaults runs are already in the store.
+
