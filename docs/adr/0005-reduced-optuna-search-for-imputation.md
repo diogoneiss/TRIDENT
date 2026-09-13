@@ -49,6 +49,18 @@ Per-study winners and importances are on
 Running the comparison also surfaced backlog B5 (an induced cell whose category the
 variant never shows crashed a fold), fixed in `1cb0864`.
 
+**Replicated under another schedule (2026-09-13).** At the user's request the six studies
+and the twelve comparison runs were repeated end to end under `plateau` (no promotion;
+`tags.lr_scheduler = plateau`). Tuning helps no more there: better on two pairs, worse on
+three, tied on one, with exactly one interval separating out of twelve such comparisons.
+The plateau studies beat the cosine studies on the *search objective* by 0.023 to 0.062 on
+four pairs, and that advantage leaves no trace on the induced benchmark, where the two
+schedules land within 0.013 of each other at the defaults. So decision 3's
+validation-split objective is a poor proxy for the benchmark this work is judged on: it is
+the part of this ADR the evidence argues against, and the thing to revisit before another
+search is run. Table and reading on
+[execution ticket 05](../tickets/imputation-optuna-reduced/issues/05-launcher-and-studies.md).
+
 ## Context
 
 ADR 0004 gave the imputation task an Optuna study that samples fifteen hyperparameters:

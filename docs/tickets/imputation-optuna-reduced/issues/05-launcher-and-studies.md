@@ -143,3 +143,43 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
   Caveat carried from the cosine batch: these are validation-split objectives, and the
   cosine batch's validation gains did not carry to the induced test benchmark.
 
+- 2026-09-13 03:19, the plateau comparison done: twelve more 5-fold runs, same protocol
+  as ADR 0005's, `--lr_scheduler plateau` throughout. The plateau studies promoted
+  nothing, so each plateau winner was staged as a complete configuration and swapped into
+  the task-keyed path for the duration of its pair; the committed cosine files were
+  restored after each pair and are byte-identical at the end. `cv/test/impute/induced/impute_score/mean`
+  with its 95% interval; lower is better.
+
+  | Pair | Cosine, tuned | Cosine, defaults | Plateau, tuned | Plateau, defaults |
+  |---|---|---|---|---|
+  | credit-g_20nan | 0.913 [0.868, 0.958] | 0.895 [0.868, 0.921] | 0.907 [0.859, 0.954] | 0.901 [0.868, 0.934] |
+  | credit-g_40nan | 0.968 [0.940, 0.995] | 0.962 [0.941, 0.983] | **0.928 [0.915, 0.942]** | 0.949 [0.920, 0.978] |
+  | kr-vs-kp_20nan | 0.603 [0.559, 0.646] | 0.615 [0.584, 0.646] | 0.619 [0.581, 0.656] | 0.612 [0.587, 0.637] |
+  | kr-vs-kp_40nan | 0.778 [0.734, 0.822] | 0.756 [0.721, 0.791] | 0.755 [0.712, 0.798] | 0.753 [0.700, 0.805] |
+  | spambase_20nan | 0.886 [0.859, 0.913] | 0.887 [0.859, 0.914] | 0.890 [0.870, 0.910] | 0.883 [0.861, 0.905] |
+  | spambase_40nan | 0.930 [0.909, 0.952] | 0.927 [0.897, 0.957] | 0.924 [0.892, 0.955] | 0.930 [0.907, 0.952] |
+
+  **Does tuning help under plateau?** No more than under cosine. Of the six pairs the
+  tuned configuration is better on two, worse on three and tied on one. Exactly one cell
+  in the whole effort separates: credit-g_40nan under plateau, where the tuned interval
+  [0.915, 0.942] excludes the default mean 0.949, in favour of tuning, and the masked
+  metric agrees (0.942 against 0.954). That is one separation out of twelve tuned-versus-
+  default comparisons at 95%, which is about what chance alone produces, so it should be
+  replicated on another seed before being believed.
+
+  **Does plateau beat cosine?** Not on this benchmark. At the defaults the two schedules
+  land within 0.013 of each other on every pair, plateau ahead on four and behind on two,
+  no pair separating. Yet the plateau *studies* beat the cosine studies on the validation
+  objective by 0.023 to 0.062 on four of the six pairs. A gap that large in the quantity
+  the search optimises leaves no trace in the quantity we care about.
+
+  **The lesson worth keeping.** The search objective (masked cells, validation split) is a
+  poor proxy for the induced benchmark (the cells a generator actually removed, test
+  folds). It is now wrong twice over: it ranked configurations that did not beat the
+  defaults, and it ranked a schedule that is not better either. Ranking trials on it is
+  ADR 0005 decision 3, and this is the evidence against that decision rather than against
+  its implementation. Before another search is run on these datasets, the objective is the
+  thing to revisit: score the induced population on the validation split, or widen the
+  fold count so the ranking signal exceeds the noise. Recorded as fog rather than
+  actioned; no ADR is amended on one exploration.
+
