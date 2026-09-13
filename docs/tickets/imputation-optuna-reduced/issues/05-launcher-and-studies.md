@@ -111,3 +111,35 @@ uv run --python 3.10 python main.py --dataset_name <base>_<variant> --task imput
   also give the plateau-versus-cosine comparison at the defaults for free, since the
   cosine defaults runs are already in the store.
 
+- 2026-09-12 22:52, the plateau replication complete: six studies, 40 of 40 trials each,
+  `tags.lr_scheduler = plateau`, nothing promoted. Total 1226 min, within a minute of the
+  cosine batch's 1227.
+
+  | Pair | Objective, cosine | Objective, plateau | Winner LR_DECODE, cosine | Winner LR_DECODE, plateau | Top knob, plateau |
+  |---|---|---|---|---|---|
+  | credit-g_20nan | 0.7763 | **0.7503** | 2.54e-3 | 3.82e-3 | LR_DECODE 0.54 |
+  | credit-g_40nan | 0.8051 | **0.7820** | 8.71e-3 | 1.30e-3 | LAMBDA_NUM 0.39 |
+  | kr-vs-kp_20nan | 0.6703 | **0.6374** | 1.74e-3 | 3.24e-4 | PROB_MASCARA 0.35 |
+  | kr-vs-kp_40nan | 0.6480 | **0.5866** | 1.70e-3 | 8.26e-3 | LR_DECODE 0.39 |
+  | spambase_20nan | 0.8993 | 0.8995 | 1.33e-3 | 2.08e-3 | DROPOUT 0.38 |
+  | spambase_40nan | 0.8996 | 0.8999 | 1.08e-3 | 9.88e-4 | LR_DECODE 0.71 |
+
+  Lower is better; bold marks the better of the two. Plateau reaches a better validation
+  objective on the four small pairs, by 0.023 to 0.062, and ties on spambase (0.0002 and
+  0.0003 the other way, far inside trial-to-trial noise). Every one of those four gaps is
+  larger than any promoted-versus-default difference the cosine comparison measured,
+  which is why the comparison under plateau is worth its two hours.
+
+  On the rates, the cosine finding does **not** replicate. Under cosine every study put
+  its worst trials at the bottom of the range and its winner above the default 1e-3.
+  Under plateau the winners scatter from 3.24e-4 to 8.26e-3; kr-vs-kp_20nan wins at the
+  very bottom of the range, and on kr-vs-kp_40nan the worst eight trials have a higher
+  median rate (5.2e-3) than the best eight (4.5e-3), reversing the cosine ordering.
+  The rate also stops being the first knob on three pairs (the loss balance, the mask
+  rate and dropout take the top spot). A schedule that reduces the rate on plateau makes
+  the starting value matter less, which is the expected direction and the reason the
+  cosine studies' one clean finding should not be stated as a property of the task.
+
+  Caveat carried from the cosine batch: these are validation-split objectives, and the
+  cosine batch's validation gains did not carry to the induced test benchmark.
+
