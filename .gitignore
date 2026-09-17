@@ -18,6 +18,12 @@ __pycache__/
 results/
 datasets/processed_datasets/
 metrics/
+# ...but not the sklearn type stubs. `metrics/` above is unanchored, so it matched
+# `stubs/sklearn/metrics/` too and silently dropped that stub from the first commit of
+# `stubs/` -- the tree looked complete locally and the typing gate failed on a fresh
+# checkout. Re-include the directory (git cannot re-include a file whose parent
+# directory is excluded).
+!stubs/**/metrics/
 
 # MLflow tracking (SQLite backend + artifact store)
 mlflow.db
