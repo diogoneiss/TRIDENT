@@ -289,7 +289,13 @@ def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dic
             continue
         for row in outside:
             unseen[(row, column)] = str(values[row])
-        frame.iloc[outside, frame.columns.get_loc(column)] = "[NULL]"
+        # ``get_loc`` returns a slice or a boolean mask when column labels repeat, and
+        # ``iloc`` needs the positional int. Feature names are unique, so this always is
+        # one; asserting states that rather than leaving ``iloc`` to fail obscurely if a
+        # duplicated column ever reaches here.
+        position = frame.columns.get_loc(column)
+        assert isinstance(position, int)
+        frame.iloc[outside, position] = "[NULL]"
         print(
             f"Warning: {len(outside)} induced cell(s) in '{column}' hold categories the "
             f"variant never shows ({sorted(set(values[row] for row in outside))}); scored "
