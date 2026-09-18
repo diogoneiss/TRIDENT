@@ -16,13 +16,17 @@ Findings whose verdict was `severity: none` are in §5, not dropped.
 >
 > **Revised again 2026-09-18 — addendum §8.** Nine further runs plus a second overnight
 > batch: the typing refactor is bit-identical (§8.1); a five-seed noise floor exists
-> (§8.2: one run carries ±0.013 to ±0.027); the search leaves up to a median 0.036 on its
-> own split by mis-ranking its trials — an upper bound until a best-induced trial is re-run
-> five-fold — and no validation-side statistic recovers it (§8.3, §8.8);
+> (§8.2: one run carries ±0.013 to ±0.027); the search mis-ranks its own trials by a median
+> 0.036 on the study split, of which about a fifth survives five-fold for the single-split-best
+> trial (§8.14: ≈0.016 on `credit-g_20nan`, inside noise on `credit-g_40nan`; that trial is
+> not distinguishable from the defaults) — and no validation-side statistic recovers it
+> (§8.3, §8.8);
 > `full` and `reduced` are disjoint profiles, not nested (§8.4); D-1 reproduces at HEAD to
 > the cell (§8.9); the one 95% separation does not replicate (§8.10); and the **committed
-> `credit-g_20nan` promoted file scores worse than the defaults at both seeds** (§8.11;
-> `credit-g_40nan` leans the same way but sits inside noise).
+> `credit-g_20nan` promoted file scores worse than the defaults** (§8.11: Welch p ≈ 0.01,
+> paired p ≈ 0.008, three of three shared seeds); `credit-g_40nan` leans the same way on four
+> of four seeds but stays "hold" (p ≈ 0.04, fragile to any one seed, reached past the
+> pre-stated stopping seed).
 
 ---
 

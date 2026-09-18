@@ -310,7 +310,7 @@ and 0.0283, i.e. inside those envelopes.
 > is unremarkable, and the "67x" becomes 2.8 SD. A difference of two runs is a scale, not a
 > standard deviation, and should not have been used as one.
 
-## 8.3 The decisive measurement: mis-selection costs more than the question being asked
+## 8.3 Mis-selection on the study's own split — and, in §8.14, how little of it survives five-fold
 
 For every study in the store, the induced score of the trial the objective picked, against
 the best induced score among that study's own 40 trials:
@@ -348,9 +348,13 @@ This reframes F-07-1, with one honest limit. Trials are scored on the study's si
 predefined split (`build_folds` with `cv_folds=None`), while the comparison runs use
 five-fold KFold; so the 0.036 is a **min-of-40 on one split** and carries the selection bias
 of a minimum. It is an upper bound on recoverable regret, not a measured gain, until one
-best-induced trial is re-run five-fold — the one control neither night ran. Within that
-limit the reading stands: the search is not failing to *find* better configurations in its
-own trials; it is failing to *promote* them.
+best-induced trial is re-run five-fold — the one control neither night ran. **That control has now been run (§8.14):** on `credit-g` about a fifth of the single-split gap
+survives five-fold — a realised gain of roughly 0.016 on `credit-g_20nan` and an amount inside
+noise on `credit-g_40nan`, not 0.036. The "find but do not promote" reading therefore shrinks
+to its measured size. On `credit-g_20nan` the best-induced trial sits at the defaults (+0.0001
+over two seeds) while the promoted file is measurably worse (+0.013, p ≈ 0.01, §8.11); on
+`credit-g_40nan` the two configurations are not distinguishable from each other and both
+trend worse than the defaults.
 
 §8.8 tests the obvious remedy and rules it out.
 
@@ -473,10 +477,17 @@ This is a negative result with a precise scope: every candidate is a function of
 masked validation cells on the same split, so the sweep tests **statistic choice only**. It
 cannot distinguish "the validation split does not predict the induced population" from "the
 target — a min-of-40 on one fixed split — is a selection-biased minimum no selector could
-reach" (§8.3's limit). So the prescription that follows — score the induced population on
-validation, or widen the folds, as ticket 05 proposed — is the hypothesis §8.3 needs,
-**untested here**, and the control that would test it is the same one §8.3 asks for: re-run
-one study's best-induced trial five-fold and see how much of the 0.036 survives. What *is*
+reach" (§8.3's limit). The control has now been run (§8.14), with one candidate: the trial that is best on the
+study's single split. Re-run five-fold it recovers about 0.016 on `credit-g_20nan` and an
+amount indistinguishable from zero on `credit-g_40nan` (two seeds each), and it is not
+distinguishable from the defaults. That is a **realised gain of one trial, not a ceiling**:
+the single-split ranking is itself noisy (its 0.036-0.054 advantage collapsed to 0.002-0.018),
+so among the 40 trials another, near-tied on the single split, could do better five-fold —
+on `credit-g_20nan` the five best single-split induced scores lie within 0.008 of each other.
+A true bound over selectors would need all 40 trials scored five-fold, which has not been run.
+The prescription (score the induced population on validation, or widen the folds, as ticket
+05 proposed) therefore stands as the hypothesis it was, with this much added: on `credit-g`
+the one candidate tried lands at the defaults. What *is*
 established: an earlier draft of §8.3 recommended "stop selecting on
 `validation/impute/masked/impute_score` alone"; that recommendation is **withdrawn** —
 swapping the statistic does nothing.
@@ -533,46 +544,66 @@ established."** Combined with §8.3 (the search leaves ~0.036 on the table by mi
 its own trials) the picture is consistent: whatever the promoted configuration gains over
 the defaults is smaller than what the selector loses.
 
-## 8.11 The committed `credit-g_20nan` promoted file loses to the defaults at both seeds
+## 8.11 The committed `credit-g_20nan` promoted file loses to the defaults; `credit-g_40nan` leans the same way
 
 The cosine winners are the configurations actually committed in `datasets/hiperparams/`
 (`fcaadfb`). §3 had them tuned-versus-defaults at seed 42 only. The defaults arm was
 re-run at seed 420 (file moved aside, restored after) to pair with §8.1's tuned seed-420
 runs:
 
-The defaults arm's own seed spread is in the store too (cosine, seeds 42/420: `credit-g_20nan`
-SD 0.0032, `credit-g_40nan` SD 0.0093 — smaller than the tuned arm's on every pair), so the
-right yardstick for a *difference* of two runs is
-σ_diff = sqrt(SD_tuned² + SD_defaults²) = 0.0073 and 0.0166:
+The defaults arm was run at three seeds on `credit-g_20nan` (7/42/420: SD 0.0032) and four
+on `credit-g_40nan` (7/13/42/420: SD 0.0070) — smaller than the tuned arm's on both pairs —
+so the right yardstick for a *difference* of two runs is
+σ_diff = sqrt(SD_tuned² + SD_defaults²) = 0.0073 and 0.0155:
 
 | pair | seed | tuned (promoted file) | defaults | tuned − defaults | in σ_diff |
 |---|---|---|---|---|---|
 | credit-g_20nan | 42 | 0.9128 | 0.8947 | **+0.0181** | **+2.5** |
 | credit-g_20nan | 420 | 0.9125 | 0.8992 | **+0.0133** | +1.8 |
-| credit-g_40nan | 42 | 0.9677 | 0.9621 | +0.0056 | +0.3 |
-| credit-g_40nan | 420 | 0.9772 | 0.9489 | +0.0283 | +1.7 |
+| credit-g_40nan | 42 | 0.9677 | 0.9621 | +0.0056 | +0.4 |
+| credit-g_40nan | 420 | 0.9772 | 0.9489 | +0.0283 | +1.8 |
 
-Lower is better, so every row favours the **defaults** — four of four in the same direction,
-but only one individually at two σ_diff or more. The evidence is uneven across the pairs:
-`credit-g_20nan` replicates almost exactly (0.018 → 0.013; Welch t = 3.06 on 5 tuned vs 2
-defaults seeds), while `credit-g_40nan`'s two gaps disagree by 0.023 (0.006 vs 0.028; Welch
-t = 1.71) and its seed-42 gap is the one §8.2 already calls uninterpretable. Under plateau (§8.10) the same protocol leaned the other
+Lower is better, so every row favours the **defaults** — and with the defaults arm at three
+and four seeds the comparison no longer rests on individual rows:
+
+| pair | tuned (n = 5) | defaults | difference | Welch t | df | p < 0.05? |
+|---|---|---|---|---|---|---|
+| credit-g_20nan | 0.9082 | 0.8956 (n = 3: 0.8930, 0.8947, 0.8992) | **+0.0126** | **3.64** | ~5.9 | yes (crit 2.45) |
+| credit-g_40nan | 0.9709 | 0.9529 (n = 4: 0.9462, 0.9544, 0.9621, 0.9489) | **+0.0180** | **2.53** | ~6.1 | yes, just (crit 2.45, p ≈ 0.045) |
+
+Per-seed gaps in σ_diff: `credit-g_20nan` +2.2 / +2.5 / +1.8 at seeds 7 / 42 / 420;
+`credit-g_40nan` +1.6 / +2.2 / +0.4 / +1.8 at 7 / 13 / 42 / 420. Every one of the seven
+shared-seed comparisons favours the defaults. `credit-g_40nan` went from p ≈ 0.06 at three
+defaults seeds to p ≈ 0.045 at four — it clears the threshold, but this has to be
+read with two disclosures. First, the third defaults seed was the pre-stated stopping point
+("a fourth would settle it either way") and gave p ≈ 0.058; the fourth was added after that,
+and only then did p cross 0.05. Second, the result is one-seed-fragile: dropping any single
+seed from either arm leaves p > 0.05 in seven of nine variants. The paired-by-seed test —
+which §3 said was the right instrument, since both arms share the CV split — is stronger
+(`credit-g_20nan` mean +0.0158, t = 11.4 on 2 df, p ≈ 0.008; `credit-g_40nan` mean +0.0231,
+t = 3.78 on 3 df, p ≈ 0.033) but inherits the same fragility for `credit-g_40nan`. Under plateau (§8.10) the same protocol leaned the other
 way by a smaller, non-significant margin — but plateau winners were never promoted; the
 cosine winners are what a `--task imputation` run on `credit-g` **loads today**.
 
 For `credit-g_20nan` this upgrades F-07-1 from "the promoted configuration is not
 evidence-backed" to **"the evidence points against it"**: a run that reads the promoted file
-scores measurably worse than one that finds no file, at both seeds. The immediate,
+scores measurably worse than one that finds no file, at every seed tried (p ≈ 0.01 Welch,
+≈ 0.008 paired). For `credit-g_40nan` the evidence label stays **hold**: consistent sign on
+four of four shared seeds, p ≈ 0.044 Welch / 0.033 paired, fragile to any one seed, and
+reached after extending past the pre-stated stopping seed. The immediate,
 reversible action is to stop reading that file — `git rm` of
-`datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`, or a deliberate defaults run
-— until a selector that survives §8.8 exists. For `credit-g_40nan` the same direction is
-suggested but not established; hold it pending a third defaults seed. Mis-promotion is thus
+`datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`, or a deliberate defaults run —
+until a selector that survives §8.8 exists. Removing `credit-g_40nan.imputation.json` as well
+is defensible, but on a different ground: not "shown worse" but **"no evidence supports the
+file, and removal is reversible"** — every comparison leans against it and nothing in its
+study's forty trials has been shown better than the defaults (§8.14). Mis-promotion is thus
 not only a missed gain (§8.3's bound) but, on at least one pair, an active loss of ~0.013 to
 ~0.018.
 
-Caveat carried honestly: two pairs, four comparisons; a sign test on 4/4 is p = 0.0625
-one-sided. The consistent sign and `credit-g_20nan`'s replication carry the conclusion, not
-the individual magnitudes.
+Caveat carried honestly: two pairs of one dataset, seven shared-seed comparisons, Welch
+tests on ~6 df each. The consistent sign across all seven and the two Welch tests carry
+the conclusion; no single row does, and nothing here says anything about `kr-vs-kp` or
+`spambase`, where the sign runs the other way on at least one pair (§8.12).
 
 ## 8.12 The sign of tuned-versus-defaults follows the winner's rank
 
@@ -581,6 +612,18 @@ the individual magnitudes.
 the defaults at seed 42 by −0.0119: 2.8 times that SD, but with 2 df the reference is
 t(2) = 4.30 — the threshold §8.10 applies to itself — and the defaults arm exists at one
 seed only, so the √2 bound gives 2.0. Suggestive, in the tuning direction, not established.
+
+*2026-09-18, second defaults seed (420):* defaults 0.6146 / 0.6156 against tuned 0.6074
+(n = 3, SD 0.0043); difference −0.0077. The Welch test gives t = −3.07 on ~2.2 df (p ≈ 0.08),
+but that rests on a defaults SD of 0.0007 estimated on **one degree of freedom** — the same
+n = 2 artifact §8.2 corrected — whose 95% interval runs from 0.0003 to 0.024. With any
+plausible defaults SD the test is weaker: 0.0032 (the `credit-g_20nan` defaults) gives
+p ≈ 0.11, the tuned arm's own 0.0043 gives p ≈ 0.17; paired on the two shared seeds,
+p ≈ 0.16. The per-seed gaps are −0.0119 (42) and −0.0071 (420): same direction, smaller on
+replication, as in §8.10 (§8.11's `credit-g` rows show no such shrinkage — `credit-g_40nan`
+grew from +0.006 to +0.028). Standing, stated plainly: the tuning-wins pair is
+sign-consistent and **not significant** (p ≈ 0.08-0.17); the defaults-win `credit-g_20nan` is
+significant (p ≈ 0.01); `credit-g_40nan` is in between (p ≈ 0.04, fragile).
 
 Put this beside what §2 established about which trial each promotion actually took — and,
 rather than three pairs, all twelve seed-42 (rank, gap) pairs from §2 and §3:
@@ -631,6 +674,87 @@ rows "at two SD" became one) and a false claim that the defaults spread was unme
 §8.12's 2-df SD used as if 4-df and a "not a property of the schedule" extrapolated from
 three pairs that the six plateau pairs contradict.
 
+**Second pass (2026-09-18, after batches 4 and 5; two verifiers, statistics and arguments).**
+Every number in §8.11, §8.12's second-seed paragraph and §8.14 re-derived to the digit,
+including the trial identities and the 17-parameter match of the staged runs to their source
+trials. Corrected in this version: §8.11's escalation of `credit-g_40nan` from "hold" to
+`git rm` on a p ≈ 0.044 reached after a fourth defaults seed was added past the pre-stated
+third (p ≈ 0.058), and fragile to any one seed — restored to "hold", with removal grounded
+as "no evidence supports the file" rather than "shown worse"; §8.12's Welch t = −3.07 built
+on a one-degree-of-freedom defaults SD (the n = 2 artifact again), a "magnitude halved"
+pattern that `credit-g_40nan` contradicts, and a stale "same standing" sentence
+contradicting §8.11; §8.14(a)'s "does beat, four of four" where the `credit-g_40nan` rows
+are 0.1-0.3 of the two-run sigma; §8.14(b)'s "even a perfect selector would not beat the
+defaults" (paired p ≈ 0.41, detectable effect ≈ 0.03 — absence of evidence); §8.3's "both
+roughly as good as the defaults", which contradicted §8.11 in the same document; and §8.8's
+"ceiling", which is the wrong direction — one trial's realised gain is a lower bound on what
+a five-fold selector could recover. The verifiers also noted, and this version records, that
+the paired-by-seed test is *stronger* than the Welch test used (p ≈ 0.008 / 0.033), so the
+Welch choice was conservative, and that the staged runs share `config_source` with the
+promoted file.
+
+## 8.14 The control: what the best trial is worth once it is scored the way the comparison is
+
+§8.3's 0.036 is a min-of-40 on each study's single predefined split; §8.8's prescription
+assumed most of it could be recovered by a better selector. The test is direct: stage each
+`credit-g` cosine study's best-**induced** trial (the trial a perfect selector would have
+promoted) into the task-keyed file, run it five-fold at seeds 42 and 420, and compare it
+with the promoted file and the defaults under the identical protocol. Staged configs:
+`credit-g_20nan` trial `52176d70` (LR_DECODE 3.18e-3, single-split induced 0.8950 against the
+promoted pick's 0.9485), `credit-g_40nan` trial `df2b6776` (LR_DECODE 5.16e-3, 0.9206 against
+0.9562). Files restored by `git checkout` after each pair. Provenance note for anyone
+re-deriving from the store: the four staged runs carry `config_source` = the promoted file's
+path (that is where the config was staged), so only `LR_DECODE` (0.003181 / 0.005160 against
+the promoted 0.002539 / 0.008706) separates them from promoted-file runs; a query filtering on
+`config_source` alone will mix them into §8.11's tuned arm.
+
+| pair | seed | defaults | best-induced trial | promoted file | best − promoted | single-split gap | survives | best − defaults |
+|---|---|---|---|---|---|---|---|---|
+| credit-g_20nan | 42 | 0.8947 | 0.8999 | 0.9128 | −0.0129 | 0.0535 | 24% | +0.0053 |
+| credit-g_20nan | 420 | 0.8992 | 0.8942 | 0.9125 | −0.0184 | 0.0535 | 34% | −0.0050 |
+| credit-g_40nan | 42 | 0.9621 | 0.9617 | 0.9677 | −0.0060 | 0.0357 | 17% | −0.0004 |
+| credit-g_40nan | 420 | 0.9489 | 0.9748 | 0.9772 | −0.0024 | 0.0357 | 7% | +0.0259 |
+
+Two results, both against earlier drafts of this addendum.
+
+**(a) The best trial lands below the promoted one on all four runs — decisively on one pair,
+inside noise on the other.** On `credit-g_20nan` by 0.013-0.018 (1.8-2.5 σ_diff at both
+seeds); on `credit-g_40nan` by 0.002-0.006, which is 0.1-0.3 of that pair's two-run sigma,
+so its 17% and 7% "survives" figures divide noise by a real number and carry no precision.
+Pooled, four of four in direction, paired t = −2.78 on 3 df, p ≈ 0.07. On the two studies
+controlled, roughly a fifth of the single-split gap survives (mean 20.5%), and four fifths
+of "the 0.036 left on the table" was the selection bias of a minimum over forty noisy
+single-split scores. The realised gain of this one trial is about **0.016 on `credit-g_20nan`**
+and unresolved on `credit-g_40nan` — the same size as the tuned-versus-defaults gaps, not
+twice them.
+
+**(b) No evidence, at two seeds, that the best-induced trial beats the defaults.** Best-induced
+minus defaults is +0.0053, −0.0050, −0.0004, +0.0259: two of four worse, mean +0.006, paired
+t = 0.95 on 3 df, p ≈ 0.41, 95% interval −0.015 to +0.028; with n = 4 and this noise the
+smallest detectable gain is about 0.03, so a real 0.01 advantage either way would be
+invisible here. The mean is also carried by one row (`credit-g_40nan` seed 420, where the
+defaults arm posted its best draw); without it the mean is 0.000. This is absence of
+evidence, not evidence of absence: on the two studies controlled, the reduced space has not
+*shown* anything better than the defaults — it has not been shown to lack it either. Per
+pair: `credit-g_20nan`'s best-induced trial sits at the defaults (+0.0001) while its promoted
+file is significantly worse (§8.11); `credit-g_40nan`'s two configurations are not
+distinguishable from each other.
+
+What this settles: §8.3's reframing survives in direction and shrinks in size; §8.8's
+prescription gets a measured lower bound of one candidate (≈0.016 on `credit-g_20nan`), not
+a ceiling; §8.11's `git rm` of the `credit-g_20nan` file stands and is the whole of the
+established actionable content for this dataset. On `kr-vs-kp_20nan` the same control turns out to be already in the store, for a reason
+worth stating: the study's best-induced trial (`8ff4c4e4`, induced 0.6043) **is** the
+promoted trial — the lucky half of the tie at objective 0.6703 (§8.3) — so "what a perfect
+selector would have promoted" and "what was promoted" coincide, and their five-fold runs are
+§8.12's tuned arm: 0.6027 / 0.6085 against defaults 0.6146 / 0.6156. The single-split induced
+argmin *is* the promoted trial, so the §8.14 control for this pair is already §8.12's tuned
+arm, and no further gain over the promotion is available from re-selecting among these 40
+trials on the single split (the next-best single-split trials sit 0.019 behind). Whether a
+five-fold ranking of the 40 would pick a different trial is the same open question as on
+`credit-g`. The 0.0552 single-split gap on this pair is between the two tied trials, not
+between the best and the objective's choice in general.
+
 ## 8.7 What is still open
 
 - `r420_kk20` (`kr-vs-kp_20nan`, reduced, seed 420) **completed**: 40 trials, 24 distinct
@@ -644,12 +768,13 @@ three pairs that the six plateau pairs contradict.
 - `full42_kk20` **completed** (48 min): 40 trials, 25 distinct objectives, rho 0.724,
   winner rank 11/40, cost 0.0264; winner at `EPOCHS_PRE = 20` with objective 0.6484
   against the reduced winner's 0.6703 at 300 (§8.4, §8.5).
-- **Still unmeasured after two nights:** a five-fold re-run of one study's best-induced
-  trial — the control that bounds how much of §8.3's 0.036 is recoverable at all and that
-  §8.8's prescription rests on; a third defaults seed on `credit-g_40nan` (§8.11) and a
-  second on `kr-vs-kp_20nan` (§8.12); and any plateau comparison beyond `credit-g_40nan`.
-  None of these needs a code change. (An earlier draft listed "the defaults arm's own seed
-  spread" here; it is in the store at 2-3 seeds per pair and is used in §8.11.)
+- **Run on 2026-09-18 (batch 4):** the five-fold re-run of each `credit-g` study's
+  best-induced trial at two seeds (§8.14); a third defaults seed on `credit-g_40nan`
+  (§8.11); a second defaults seed on `kr-vs-kp_20nan` (§8.12). A fourth defaults seed on
+  `credit-g_40nan` and a third on `credit-g_20nan` (batch 5) are in §8.11.
+- **Still unmeasured:** any plateau comparison beyond `credit-g_40nan`; the `credit-g`
+  controls of §8.14 on a third dataset (`spambase`); and everything that needs a code change
+  (§6). The `kr-vs-kp_20nan` best-induced control is already answered by the store (§8.14).
 - A `full` profile whose epoch ranges include the task defaults, without which the
   reduction remains untested (this is F-08-2's residue, sharpened).
 - One empty `credit-g_40nan` study parent exists in the store from a duplicate process
