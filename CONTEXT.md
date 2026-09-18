@@ -47,7 +47,8 @@ _Avoid_: dataset metadata, data log
 **Experiment family**:
 The MLflow experiment containing every variant of one base dataset, named
 `TRIDENT/<base_dataset>`. Tags identify a particular dataset variant and its
-evaluation mode.
+evaluation mode. It is the home of every run that trains on the dataset and the
+source of truth for it; a mirror experiment only reflects it.
 _Avoid_: global experiment, per-variant experiment
 
 **CV summary**:
@@ -169,3 +170,21 @@ and dataset variant find them without being told. Promotion is a deliberate
 act: finishing a study never promotes on its own, and a promoted imputation
 configuration never changes what a classification run reads.
 _Avoid_: best params file, saved hyperparameters
+
+**Mirror experiment**:
+A derived MLflow experiment that gathers, for one task, a mirror run of every
+run from every experiment family, so that datasets can be read side by side in
+one table. Every run is mirrored, diagnostic fold runs and Optuna runs included,
+and nesting is preserved: a mirror run's parent is the mirror run of its
+source's parent. There is one per task. It is never a run's home: nothing
+trains into it, and the experiment family stays the source of truth.
+_Avoid_: global experiment, aggregate experiment, all-datasets experiment
+
+**Mirror run**:
+A copy of one source run inside a mirror experiment, carrying the source's
+parameters, tags, metrics and dataset lineage but not its artifacts, and
+pointing back at the source by its run id. It is derived: nothing logs into it
+directly, it is rewritten whenever the source changes, and it goes when the
+source is deleted. Every run states whether it is one, so a query across
+experiments can keep source runs and mirror runs apart.
+_Avoid_: replica, copy, duplicate run, shadow run

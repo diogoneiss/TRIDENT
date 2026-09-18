@@ -171,7 +171,7 @@ def _stub_training_runtime(monkeypatch, tmp_path, cv_folds: int | None):
     monkeypatch.setattr(runner, "prepare_dataset", lambda spec: dataset)
     monkeypatch.setattr(runner, "build_folds", lambda *args: folds)
     monkeypatch.setattr(
-        runner, "create_tracker", lambda enabled, run_role="parent": fake_tracker
+        runner, "create_tracker", lambda enabled, run_role="parent", **_: fake_tracker
     )
     monkeypatch.setattr(runner, "runtime_environment_tags", lambda device: dict(_ENVIRONMENT))
     monkeypatch.setattr(runner, "train_pretrainer", train_pretrainer)

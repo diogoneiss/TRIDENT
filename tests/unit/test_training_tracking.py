@@ -664,6 +664,9 @@ def test_every_run_says_which_task_it_trained_and_whether_a_search_made_it(
     for run in runs:
         assert run.data.tags["task"] == "imputation"
         assert run.data.tags["is_optuna"] == "false"
+        # Dense for the same reason (ADR 0006, decision 3): a copied ``run_role`` is
+        # indistinguishable from its source unless every run says which side it is on.
+        assert run.data.tags["is_mirror"] == "false"
     parent = next(run for run in runs if "mlflow.parentRunId" not in run.data.tags)
     assert parent.data.tags["mlflow.runName"].startswith("impute_vehicle_00nan_")
     assert parent.data.params["task"] == "imputation"

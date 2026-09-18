@@ -17,6 +17,7 @@ from mlflow.tracking import MlflowClient
 from contextlib import nullcontext
 
 from src.mlflow_utils import (
+    IS_MIRROR_TAG,
     IS_OPTUNA_TAG,
     LR_SCHEDULER_TAG,
     SEARCH_SPACE_TAG,
@@ -31,7 +32,7 @@ from src.training.config import (
     validate_parsed_args,
 )
 from src.training.data import PROCESSED_DATASETS, declared_column_types
-from src.training.tracking import execution_tags
+from src.training.tracking import execution_tags, mirror_root_safely
 from src.training.types import DEFAULT_LR_SCHEDULER, Hyperparameters, task_spec
 
 # Import components from train.py
@@ -245,6 +246,7 @@ class ObjectiveFunctionWrapper:
             # runner sets its own would otherwise be a run of no known task.
             TASK_TAG: self.task,
             IS_OPTUNA_TAG: "true",
+            IS_MIRROR_TAG: "false",
             SEARCH_SPACE_TAG: self.profile,
         }
 
@@ -506,6 +508,10 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     best_trial_run_id = objective.trial_run_ids.get(study.best_trial.number)
     if best_trial_run_id is not None and not getattr(args, "disable_mlflow", False):
         MlflowClient().set_tag(best_trial_run_id, "best_trial", "true")
+    # The study is a root run, so it mirrors itself and every trial once it has closed
+    # and the winner is tagged (ADR 0006, decision 4). A trial never mirrors on its own.
+    if not getattr(args, "disable_mlflow", False) and not getattr(args, "disable_mirror", False):
+        mirror_root_safely(study_run_id)
     
     # Report best parameters
     logger.info("\n\n" + "="*50)

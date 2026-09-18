@@ -61,7 +61,9 @@ def run_training(request: TrainingRequest) -> TrainingResult:
     folds = build_folds(dataset.frame, dataset.label_column, request.cv_folds, request.seed)
     artifacts = ArtifactWriter(request.runtime.output_dir, request.runtime.metrics_dir, request.dataset.dataset_name)
     tracker = create_tracker(
-        request.runtime.tracking_enabled, request.runtime.tracking_run_role
+        request.runtime.tracking_enabled,
+        request.runtime.tracking_run_role,
+        mirror_runs=request.runtime.mirror_runs,
     )
     results: list[FoldResult] = []
     records = []

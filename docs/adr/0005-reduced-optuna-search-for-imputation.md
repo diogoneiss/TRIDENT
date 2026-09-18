@@ -236,7 +236,9 @@ Every trial carries `optuna/objective_value` under the same rule.
 per pair; `params.config_source` separates the promoted run from the default one.
 Headline `cv/test/impute/induced/impute_score/mean` with `ci95_lower` / `ci95_upper`,
 companion `cv/test/impute/masked/impute_score/mean`. Classification comparisons are
-unchanged.
+unchanged. Since [ADR 0006](0006-mirror-experiments-per-task.md) every run has a mirror
+in `TRIDENT/mirror/<task>`; add `tags.is_mirror = 'false'` to any query that spans
+experiments, or each run is counted twice.
 
 ## Considered options
 

@@ -219,6 +219,40 @@ def test_every_run_a_study_opens_says_which_task_and_that_a_search_made_it(
     assert study.data.tags["is_optuna"] == "true"
     assert all(trial.data.tags["task"] == "imputation" for trial in trials)
     assert all(trial.data.tags["is_optuna"] == "true" for trial in trials)
+    assert study.data.tags["is_mirror"] == "false"
+    assert all(trial.data.tags["is_mirror"] == "false" for trial in trials)
+
+
+def test_a_finished_study_mirrors_itself_and_its_trials(mlflow_backend, monkeypatch) -> None:
+    """The study is a root, so it mirrors the whole tree when it closes (ADR 0006,
+    decision 4); a trial never mirrors on its own, or its parent would not exist yet."""
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2))
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    sources = _runs_by_name(client)
+    mirror_experiment = client.get_experiment_by_name("TRIDENT/mirror/imputation")
+    assert mirror_experiment is not None
+    mirrors = {run.data.tags["source_run_id"]: run for run in client.search_runs([mirror_experiment.experiment_id])}
+    assert set(mirrors) == {run.info.run_id for run in sources.values()}
+    study = next(run for name, run in sources.items() if name.startswith("optuna_vehicle_00nan_"))
+    for name, source in sources.items():
+        if name.startswith("optuna_trial_"):
+            assert mirrors[source.info.run_id].data.tags["mlflow.parentRunId"] == mirrors[study.info.run_id].info.run_id
+    assert mirrors[study.info.run_id].data.tags["is_mirror"] == "true"
+
+
+def test_a_study_asked_for_no_mirror_gets_none(mlflow_backend, monkeypatch) -> None:
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2, disable_mirror=True))
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    assert client.get_experiment_by_name("TRIDENT/mirror/imputation") is None
+    assert len(_runs_by_name(client)) == 3  # the study and its trials still exist
 
 
 def test_a_finished_imputation_study_leaves_the_shared_config_alone(

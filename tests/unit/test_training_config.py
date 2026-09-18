@@ -99,6 +99,25 @@ def test_hyperparameters_reject_unknown_scheduler() -> None:
         Hyperparameters.from_mapping({"LR_SCHEDULER": "linear"})
 
 
+def test_mirroring_is_on_unless_a_run_asks_for_it_off() -> None:
+    """ADR 0006, decision 4: default on by the user's explicit decision; ``--disable_mirror``
+    and a tracking-disabled run both turn it off."""
+    parser = build_training_parser()
+
+    default = resolve_training_request(parser.parse_args(["--dataset_name", "vehicle_00nan"]))
+    disabled = resolve_training_request(
+        parser.parse_args(["--dataset_name", "vehicle_00nan", "--disable_mirror"])
+    )
+    untracked = resolve_training_request(
+        parser.parse_args(["--dataset_name", "vehicle_00nan", "--disable_mlflow"])
+    )
+
+    assert default.runtime.mirror_runs is True
+    assert disabled.runtime.mirror_runs is False
+    assert untracked.runtime.mirror_runs is False
+    assert resolve_training_request(Namespace(dataset_name="vehicle_00nan")).runtime.mirror_runs is True
+
+
 def test_legacy_namespace_defaults_to_parent_tracking_without_extra_tags() -> None:
     request = resolve_training_request(Namespace(dataset_name="vehicle_00nan"))
 

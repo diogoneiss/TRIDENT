@@ -121,6 +121,9 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
             output_dir=Path(getattr(args, "output_dir", "results")),
             metrics_dir=Path(getattr(args, "metrics_dir", "metrics")),
             tracking_enabled=not getattr(args, "disable_mlflow", False),
+            mirror_runs=not (
+                getattr(args, "disable_mlflow", False) or getattr(args, "disable_mirror", False)
+            ),
             # Programmatic only (set by opt.py), like ``hyperparams_override``.
             tracking_run_role=getattr(args, "mlflow_run_role", None) or "parent",
             tracking_tags=dict(getattr(args, "mlflow_tags", None) or {}),
@@ -215,6 +218,11 @@ def build_training_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output_dir", type=str, default="results")
     parser.add_argument("--metrics_dir", type=str, default="metrics")
     parser.add_argument("--disable_mlflow", action="store_true")
+    parser.add_argument(
+        "--disable_mirror",
+        action="store_true",
+        help="Do not mirror the finished run into TRIDENT/mirror/<task> (ADR 0006).",
+    )
     parser.add_argument("--plot_losses", action="store_true")
     parser.add_argument("--save_model", action="store_true")
     parser.add_argument("--seed", type=int, default=42)

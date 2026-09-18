@@ -31,6 +31,9 @@ DEFAULT_TRACKING_URI = "sqlite:///mlflow.db"
 
 # Top-level experiment prefix so all TRIDENT experiments are grouped together
 EXPERIMENT_PREFIX = "TRIDENT"
+# Where the mirror experiments live (ADR 0006): one per task, ``TRIDENT/mirror/<task>``,
+# holding a mirror run of every run in every experiment family.
+MIRROR_EXPERIMENT_PREFIX = f"{EXPERIMENT_PREFIX}/mirror"
 
 # Tag recording which learning-rate schedule a run trained with (ADR 0003).
 # Runs created before the tag existed are backfilled by
@@ -50,6 +53,13 @@ IS_OPTUNA_TAG = "is_optuna"
 # Which search-space profile a study sampled (ADR 0005). Sparse: only Optuna runs carry
 # it, and the dense is_optuna tag already gates any filter on it, so no backfill.
 SEARCH_SPACE_TAG = "search_space"
+# Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
+# every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
+# query could not tell the copy from its source otherwise. Backfilled as "false" onto
+# runs recorded before the tag existed by ``scripts/mirror_runs.py``.
+IS_MIRROR_TAG = "is_mirror"
+# The run a mirror run copies; its unique key inside the mirror experiment.
+SOURCE_RUN_ID_TAG = "source_run_id"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:
@@ -112,6 +122,30 @@ def get_or_create_experiment(dataset_name: str) -> str:
 
     experiment_id = mlflow.create_experiment(experiment_name)
     return experiment_id
+
+
+def mirror_experiment_name(task: str) -> str:
+    """The mirror experiment for a task, e.g. ``TRIDENT/mirror/imputation``."""
+    return f"{MIRROR_EXPERIMENT_PREFIX}/{task}"
+
+
+def is_mirror_experiment(experiment_name: str) -> bool:
+    """Whether an experiment holds mirror runs, so it is never mirrored itself."""
+    return experiment_name.startswith(f"{MIRROR_EXPERIMENT_PREFIX}/")
+
+
+def get_or_create_mirror_experiment(task: str) -> str:
+    """Return the experiment_id of the task's mirror experiment, creating it if absent.
+
+    Separate from ``get_or_create_experiment``, whose ``split("_")[0]`` on a dataset name
+    cannot produce ``TRIDENT/mirror/<task>``. The task is the literal value of the
+    ``task`` tag, so the experiment name and the tag can never disagree.
+    """
+    experiment_name = mirror_experiment_name(task)
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if experiment is not None:
+        return str(experiment.experiment_id)
+    return str(mlflow.create_experiment(experiment_name))
 
 
 # ---------------------------------------------------------------------------

@@ -212,6 +212,10 @@ class RuntimeOptions:
     # Extra tags merged onto the top-level run, e.g. the study that produced a
     # retrained configuration.
     tracking_tags: Mapping[str, str] = field(default_factory=dict)
+    # Mirror the finished run tree into ``TRIDENT/mirror/<task>`` (ADR 0006). On by the
+    # user's explicit decision; ``--disable_mirror`` turns it off, and so does disabling
+    # tracking, since there is then nothing to mirror.
+    mirror_runs: bool = True
 
     def __post_init__(self) -> None:
         if self.tracking_run_role not in TRACKING_RUN_ROLES:

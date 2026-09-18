@@ -2,12 +2,15 @@
 
 from contextlib import contextmanager
 import datetime
+import logging
 from pathlib import Path
 from typing import Iterator, Mapping, Sequence
 
 import mlflow
+from mlflow.tracking import MlflowClient
 
 from src.mlflow_utils import (
+    IS_MIRROR_TAG,
     IS_OPTUNA_TAG,
     LR_SCHEDULER_TAG,
     TASK_TAG,
@@ -17,6 +20,7 @@ from src.mlflow_utils import (
     parse_missingness_percent,
     setup_mlflow,
 )
+from src.training.mirroring import mirror_run_tree
 from src.training.summary import fold_timings_for_tracking
 from src.training.types import (
     DEFAULT_TASK,
@@ -30,6 +34,8 @@ from src.training.types import (
     PreparedDataset,
     TrackingArtifactPaths,
 )
+
+logger = logging.getLogger(__name__)
 
 # Total training wall-clock for one parent run, whatever its evaluation mode.
 TRAINING_SECONDS_KEY = "time/training_seconds"
@@ -90,12 +96,13 @@ class DisabledTracker:
 class MlflowTracker:
     """Log one comparison parent and only selected diagnostic fold runs."""
 
-    def __init__(self) -> None:
+    def __init__(self, mirror_runs: bool = True) -> None:
         self.experiment_id: str | None = None
         self.cv_folds: int | None = None
         self.lr_scheduler: str | None = None
         self.task: str = DEFAULT_TASK
         self.is_optuna: bool = False
+        self.mirror_runs = mirror_runs
 
     @contextmanager
     def parent_run(
@@ -137,9 +144,14 @@ class MlflowTracker:
             experiment_id=self.experiment_id,
             run_name=f"{prefix}_{dataset_name}_{timestamp}",
             tags=tags,
-        ):
+        ) as run:
             _log_execution_params(hyperparameters, dataset_name, seed, cv_folds, task, config_source)
             yield self
+        # Only reached when the block above closed normally: an exception through the
+        # ``yield`` skips it, so a failed run is left to ``scripts/mirror_runs.py``. The
+        # diagnostic children are logged by then, so the whole tree goes at once.
+        if self.mirror_runs:
+            mirror_root_safely(run.info.run_id)
 
     @contextmanager
     def fold_run(
@@ -232,6 +244,7 @@ class MlflowTracker:
                 tags[LR_SCHEDULER_TAG] = self.lr_scheduler
             tags[TASK_TAG] = self.task
             tags[IS_OPTUNA_TAG] = _flag(self.is_optuna)
+            tags[IS_MIRROR_TAG] = _flag(False)
             with mlflow.start_run(
                 experiment_id=self.experiment_id,
                 run_name=f"{role}_fold_{fold}",
@@ -362,6 +375,8 @@ def execution_tags(
             # without a gap silently swallowing runs.
             TASK_TAG: task,
             IS_OPTUNA_TAG: _flag(is_optuna),
+            # A run that trains is never a mirror; the mirror of it says "true" (ADR 0006).
+            IS_MIRROR_TAG: _flag(False),
             # Hardware and library descriptors (device, gpu_name, ...) so
             # the ``time/`` metrics are only compared within one environment.
             **(environment or {}),
@@ -420,12 +435,24 @@ def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]
     }
 
 
-def create_tracker(enabled: bool, run_role: str = "parent"):
+def mirror_root_safely(run_id: str) -> None:
+    """Mirror a finished root run's tree; a failure is a warning, never a failed training.
+
+    The run stays intact in its family, unmirrored, and the script repairs it later.
+    """
+    try:
+        mirror_run_tree(MlflowClient(), run_id)
+    except Exception as error:  # noqa: BLE001 - anything here must not reach the trainer
+        logger.warning(f"Run {run_id} was not mirrored (scripts/mirror_runs.py repairs it): {error}")
+
+
+def create_tracker(enabled: bool, run_role: str = "parent", mirror_runs: bool = True):
     """Return an MLflow-backed tracker only when tracking has been requested."""
     if not enabled:
         return DisabledTracker()
     if run_role == "optuna_trial":
+        # A trial is nested under its study, which mirrors the whole tree when it closes.
         return OptunaTrialTracker()
     if run_role == "parent":
-        return MlflowTracker()
+        return MlflowTracker(mirror_runs=mirror_runs)
     raise ValueError(f"Unknown tracking run role {run_role!r}")
