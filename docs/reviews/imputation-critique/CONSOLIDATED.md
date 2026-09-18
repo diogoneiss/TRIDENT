@@ -6,6 +6,24 @@ Every item below is attributed to the critique file that produced it and the ver
 that survived or corrected it. Severities are **after** adversarial review, not as claimed.
 Findings whose verdict was `severity: none` are in §5, not dropped.
 
+> **Revised 2026-09-15 — see [`ADDENDUM-2026-09-15-optuna-results.md`](ADDENDUM-2026-09-15-optuna-results.md).**
+> Twelve Optuna studies and twenty-four five-fold comparison runs now exist, where this
+> report had five studies and no comparison. The addendum revises §1's characterisation of
+> the search objective, §3.3, and §4's comparison subsection, and adds five findings to the
+> ledger that the new runs speak to. **F-07-1's conclusion is upheld and its argument
+> replaced**; nothing in this report is withdrawn. The text below is left as written on
+> 2026-09-11.
+>
+> **Revised again 2026-09-18 — addendum §8.** Nine further runs plus a second overnight
+> batch: the typing refactor is bit-identical (§8.1); a five-seed noise floor exists
+> (§8.2: one run carries ±0.013 to ±0.027); the search leaves up to a median 0.036 on its
+> own split by mis-ranking its trials — an upper bound until a best-induced trial is re-run
+> five-fold — and no validation-side statistic recovers it (§8.3, §8.8);
+> `full` and `reduced` are disjoint profiles, not nested (§8.4); D-1 reproduces at HEAD to
+> the cell (§8.9); the one 95% separation does not replicate (§8.10); and the **committed
+> `credit-g_20nan` promoted file scores worse than the defaults at both seeds** (§8.11;
+> `credit-g_40nan` leans the same way but sits inside noise).
+
 ---
 
 ## 1. Verdict
@@ -579,6 +597,15 @@ on rows shaped like the scoring view, or score the induced population one gap at
 the row's other gaps left as `[NULL]` — which is also what a deployed imputer would see.
 
 ### 3.3 The search cannot identify a winner, and the winner it publishes is selection-biased
+
+> **Revised 2026-09-15 — [addendum §2](ADDENDUM-2026-09-15-optuna-results.md).** The
+> `rho = +0.124` below is the weakest of the twelve studies now available; the Fisher-z
+> means are 0.442 (cosine) and 0.524 (plateau), and ten of twelve clear the noise floor.
+> The objective is **not** noise — but selection is still near chance (mean winner rank
+> 17.3 and 15.2 against 20.5), because the correlation lives entirely in the bad tail:
+> restricted to the twenty best-by-objective trials it averages -0.029 and +0.076. The
+> proxy is an effective filter and a useless ranker, and promotion uses it as a ranker.
+> The selection-bias half of this section is unchanged.
 
 **Severity: critical (F-07-1), high (F-07-2).** Sources: `07-optuna-imputation.md` F-07-1,
 F-07-2, F-07-6, F-07-7; `03-imputation-metrics.md` F-03-3; `08-experimentation-design.md`
@@ -1427,6 +1454,12 @@ check is guarded by `if (-not $DryRun -and ...)`. Make that `Test-Path` uncondit
 spending the GPU time.
 
 ### `imputation_studies.ps1 -Compare` — the twelve comparison runs (none has been run)
+
+> **Revised 2026-09-15 — [addendum §3](ADDENDUM-2026-09-15-optuna-results.md).** The
+> parenthetical is superseded: **twenty-four** comparison runs now exist, twelve under
+> cosine and twelve under plateau. Across the twelve tuned-versus-default comparisons
+> **exactly one separates at 95%** — about what chance produces. Every "cannot support"
+> item below still stands, and item 1 is precisely the caveat the new table inherits.
 
 **Can support:** "On these six tables, with this one missingness draw, this one 5-fold partition
 at seed 42, under the cosine schedule, the promoted configuration's mean induced `impute_score`
