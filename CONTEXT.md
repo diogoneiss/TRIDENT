@@ -134,6 +134,13 @@ The lowest score any baseline imputer reached on one population of one run: the 
 claim that the decoder beats the baselines has to clear. Never above 1.0, since the
 mean/mode baseline sits there. Runs log it as their best baseline.
 _Avoid_: KNN bar, best baseline, reference score
+
+**Gap to the bar**:
+The model's score minus the baseline bar, fold by fold on the same folds; negative
+where the model beats the bar. Also read in percent of the bar's mean, which puts
+variants of different difficulty on one scale. Runs log it as their gap to the best
+baseline.
+_Avoid_: margin, lift, improvement over baseline
 _Avoid_: reference imputer, naive imputer, external imputer, benchmark imputer
 
 **Imputation task**:

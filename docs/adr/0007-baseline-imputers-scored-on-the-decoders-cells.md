@@ -27,6 +27,12 @@ also logs its best baseline under `baseline/best` and names it in the tag
 `best_baseline/<population>` (decision 8), which reverses the option rejected below;
 and the backfill was applied (*Consequences*, *Outcome*).
 
+**Amended a fourth time 2026-09-28**, at the user's request, to give a comparison or a
+search one number to sort and minimise: every cross-validated run also logs the
+model's gap to its best baseline, absolute and in percent of the bar (decision 9), and
+the backfill wrote it onto every run that already carried a best baseline
+(*Consequences*).
+
 ## Context
 
 `impute_score` says how the decoder compares with filling the column mean or mode, and
@@ -144,6 +150,27 @@ Facts established while planning, all against scikit-learn 1.9.0 as pinned by `u
    Diagnostic children carry no `best`: their fold values are the named baseline's.
    Classification summaries carry nothing of it.
 
+9. **The gap to the best baseline, logged.** The same summary logs, per population,
+   `impute/<population>/gap_to_best_baseline/impute_score`: on each fold, the model's
+   `impute_score` minus the best baseline's on that fold, summarised into the usual
+   seven statistics. Negative means the model beats the bar, so lower stays better,
+   as for every imputation score. Paired fold by fold, its interval is the gap's own,
+   narrower than two marginal intervals set side by side; its mean is exactly the
+   difference of the two logged means. Beside it,
+   `impute/<population>/gap_to_best_baseline_pct/impute_score` divides every fold's gap
+   by the bar's cross-validated mean, so its mean is the gap of the means over the
+   bar's mean, the number the two logged means give by hand, and its interval is the
+   absolute one rescaled. **Each fold divided by its own bar was rejected:** the mean
+   of such ratios is not a ratio of means, and on `kc2_20nan`, whose bar ranges from
+   0.37 to 0.80 across folds, the folds' percentages average +2.6% where the means
+   are 2.1% apart in the model's favour, a sign no search should be steered by. A bar
+   whose mean is 0 leaves no percentage, and none is logged. Only `impute_score` gets a
+   gap, as asked; the key leaves room for another metric. The keys stay out of the
+   `baseline/` namespace, where `gap_to_best_baseline` would read as a baseline's name.
+   Like `best`, it lives on the cross-validated parent (and in `cv_summary.json`) only:
+   single-split runs and Optuna trials choose no best baseline, so they carry no gap,
+   and the search objective is untouched.
+
 ## How to compare
 
 On a `_20nan`..`_80nan` variant, read `cv/test/impute/induced/impute_score/mean` beside
@@ -152,7 +179,10 @@ with the tag `best_baseline/impute/induced` naming it: the lowest mean over
 `mean_mode`, `knn5`, `knn10` and `hgb`, chosen per run and per population, same folds,
 same cells. All are lower-is-better with 1.0 at mean/mode parity, so the bar is
 never above 1.0; the model does something no baseline does only where its number is
-below it. Choosing the best baseline after seeing its test score favours the
+below it. `cv/test/impute/induced/gap_to_best_baseline/impute_score/mean` is that
+difference in one column (negative where the model is below the bar), its `ci95_upper`
+below 0 is the paired reading of a win, and `..._pct/...` puts variants of different
+difficulty on one scale. Choosing the best baseline after seeing its test score favours the
 baselines, so the bar errs against the model, which is the safe direction for a claim
 that the model beats them. The KNN bar of the first amendment is the same choice
 restricted to `knn5` and `knn10`.
@@ -210,7 +240,18 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
   ties in a fold and moved a logged score by 3e-5, failing the check; the script now
   leaves it at the default a live run uses and checks to 1e-9. A second pass derived
   `baseline/best` for all 22 runs from their logged statistics, without recomputing.
-  The store was copied before each pass.
+  The store was copied before each pass. A third pass (decision 9) gives every run
+  with a best baseline its gap to it, from each fold's own numbers: the model's from the
+  run's `metrics/raw_fold_metrics.csv`, a baseline the run did not log live (`knn10`
+  and `hgb` on the 2026-09-24/25 runs) from the recomputation cache. It writes only
+  where those fold values average to the run's own logged model and `baseline/best`
+  means within 1e-9, tags the run `best_baseline_gap_backfilled=true` (not
+  `baselines_backfilled`: two of the runs logged their baselines live) and re-mirrors
+  it. **Applied 2026-09-28** to all 24 runs with a best baseline, none refused; each
+  planned percentage matched the hand calculation from the logged means to 2e-14, and
+  none disagreed in sign with its absolute gap. The superseded electricity run of
+  2026-09-25 got a gap, as it got a best, from its own defective induced numbers.
+- Fourteen more keys per scored population on a CV parent, seven for each gap.
 - `CONTEXT.md` fixes the terms *baseline imputer* and *baseline bar*.
 - Seven statistics per metric of the best baseline on each population of a parent run
   (35 on a mixed table), and one tag per population.
