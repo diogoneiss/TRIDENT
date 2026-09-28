@@ -152,3 +152,64 @@ def test_imputation_manifest_ranks_folds_under_the_impute_score_name(tmp_path) -
         {"fold": 1, "role": "worst_fold", "impute_score": 0.9},
         {"fold": 2, "role": "best_fold", "impute_score": 0.4},
     ]
+
+
+def test_the_summary_copies_the_best_baseline_under_its_own_name() -> None:
+    """One metric to read beside the model's: per population, the baseline whose mean
+    ``impute_score`` over the folds is lowest, every statistic of every metric of *that*
+    baseline copied under ``baseline/best``, and which one it was. The copy is the chosen
+    baseline's own numbers, never the best of each metric taken separately: here knn5
+    has the lower RMSE but hgb the lower score, and hgb's RMSE is what ``best`` carries.
+    """
+    folds = {
+        1: {
+            "impute/masked/impute_score": 0.9,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/knn5/impute_score": 0.8,
+            "impute/masked/baseline/hgb/impute_score": 0.85,
+            "impute/masked/baseline/mean_mode/rmse_num_z": 1.0,
+            "impute/masked/baseline/knn5/rmse_num_z": 0.1,
+            "impute/masked/baseline/hgb/rmse_num_z": 0.6,
+            "impute/induced/impute_score": 1.1,
+            "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/knn5/impute_score": 1.2,
+        },
+        2: {
+            "impute/masked/impute_score": 0.7,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/knn5/impute_score": 1.0,
+            "impute/masked/baseline/hgb/impute_score": 0.85,
+            "impute/masked/baseline/mean_mode/rmse_num_z": 1.0,
+            "impute/masked/baseline/knn5/rmse_num_z": 0.2,
+            "impute/masked/baseline/hgb/rmse_num_z": 0.8,
+            "impute/induced/impute_score": 1.3,
+            "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/knn5/impute_score": 1.1,
+        },
+    }
+
+    summary = summarize_cross_validation([_record(fold, metrics) for fold, metrics in folds.items()], IMPUTATION)
+
+    assert summary.best_baselines == {"impute/masked": "hgb", "impute/induced": "mean_mode"}
+    best_score = summary.metrics["impute/masked/baseline/best/impute_score"]
+    assert (best_score.mean, best_score.minimum, best_score.maximum) == (
+        pytest.approx(0.85), pytest.approx(0.85), pytest.approx(0.85)
+    )
+    assert summary.metrics["impute/masked/baseline/best/rmse_num_z"].mean == pytest.approx(0.7)
+    assert summary.metrics["impute/induced/baseline/best/impute_score"].mean == pytest.approx(1.0)
+    assert summary.metrics["impute/masked/baseline/best/impute_score"] == summary.metrics[
+        "impute/masked/baseline/hgb/impute_score"
+    ]
+
+
+def test_a_classification_summary_names_no_best_baseline() -> None:
+    """Nothing about baselines appears in a task that has none."""
+    records = [
+        _record(1, {"f1_macro": 0.4, "accuracy": 0.6}, loss_stage="finetune"),
+        _record(2, {"f1_macro": 0.8, "accuracy": 0.9}, loss_stage="finetune"),
+    ]
+
+    summary = summarize_cross_validation(records, task_spec("classification"))
+
+    assert summary.best_baselines == {}
+    assert not any("/baseline/" in key for key in summary.metrics)

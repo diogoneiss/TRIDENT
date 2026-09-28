@@ -320,6 +320,9 @@ class CrossValidationSummary:
     # ``time/`` prefix (``pretrain_seconds``, ``finetune_seconds``,
     # ``total_seconds``). Empty when the folds logged no timing events.
     timings: Mapping[str, MetricSummary] = field(default_factory=dict)
+    # Per scored population (``impute/induced``), the baseline imputer whose mean
+    # ``impute_score`` over the folds was lowest (ADR 0007). Empty for classification.
+    best_baselines: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

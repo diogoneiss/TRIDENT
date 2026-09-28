@@ -413,6 +413,11 @@ def _log_summary_metrics(summary: CrossValidationSummary) -> None:
     """Log the final CV statistics and timings; shared by parents and trials."""
     for metric_name, statistics in summary.metrics.items():
         mlflow.log_metrics(_summary_metrics(f"cv/test/{metric_name}", statistics))
+    # Which baseline the copied ``baseline/best`` statistics belong to (ADR 0007).
+    if summary.best_baselines:
+        mlflow.set_tags(
+            {f"best_baseline/{population}": name for population, name in summary.best_baselines.items()}
+        )
 
     for timing_name, statistics in summary.timings.items():
         mlflow.log_metrics(_summary_metrics(f"cv/time/{timing_name}", statistics))

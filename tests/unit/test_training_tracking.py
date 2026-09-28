@@ -1,3 +1,4 @@
+from dataclasses import replace
 import json
 from pathlib import Path
 from typing import Iterator
@@ -303,6 +304,38 @@ def test_finalize_cross_validation_logs_parent_lineage_summary_and_selected_chil
     assert _artifact_files(client, child_by_fold["3"].info.run_id) == {
         "diagnostics/fold_3.txt"
     }
+
+
+def test_finalize_cross_validation_tags_the_parent_with_each_populations_best_baseline(
+    tmp_path, mlflow_backend
+) -> None:
+    """The copied ``baseline/best`` numbers say how good the best baseline was; the tag
+    says which one it was, so a table can be filtered or grouped by it."""
+    tracker = create_tracker(enabled=True)
+    with tracker.parent_run(
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=2,
+        hyperparameters={},
+        lr_scheduler="cosine",
+        environment=_ENVIRONMENT,
+    ) as active_tracker:
+        records = [
+            _buffered_record(active_tracker, tmp_path, fold=1, f1_macro=0.4, cv_folds=2),
+            _buffered_record(active_tracker, tmp_path, fold=2, f1_macro=0.6, cv_folds=2),
+        ]
+        summary = replace(
+            summarize_cross_validation(records),
+            best_baselines={"impute/induced": "hgb", "impute/masked": "knn10"},
+        )
+        active_tracker.finalize_cross_validation(
+            records, summary, _dataset(tmp_path), _artifact_paths(tmp_path)
+        )
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    parent = next(run for run in _experiment_runs(client) if "mlflow.parentRunId" not in run.data.tags)
+    assert parent.data.tags["best_baseline/impute/induced"] == "hgb"
+    assert parent.data.tags["best_baseline/impute/masked"] == "knn10"
 
 
 def test_finalize_cross_validation_replays_one_diagnostic_child_for_a_tie(

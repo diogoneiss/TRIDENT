@@ -1,5 +1,6 @@
 """Metric aggregation helpers."""
 
+import re
 from math import isfinite, sqrt
 from numbers import Real
 from pathlib import Path
@@ -65,13 +66,54 @@ def summarize_cross_validation(
         key: _summarize_metric([float(metrics[key]) for metrics in final_metrics])
         for key in metric_keys
     }
+    best_baselines = _best_baselines(metrics)
+    metrics.update(_best_baseline_copies(metrics, best_baselines))
     loss_bands = _summarize_loss_bands(records, task)
     return CrossValidationSummary(
         metrics=metrics,
         loss_bands=loss_bands,
         diagnostic_roles=_diagnostic_roles(records, task),
         timings=_summarize_timings(records),
+        best_baselines=best_baselines,
     )
+
+
+# The name the best baseline's copied statistics are logged under (ADR 0007).
+BEST_BASELINE = "best"
+_BASELINE_SCORE = re.compile(r"(.+)/baseline/([^/]+)/impute_score")
+
+
+def _best_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
+    """Per population, the baseline whose mean ``impute_score`` over the folds is lowest.
+
+    Chosen once per run, on the cross-validated mean, so every fold's numbers come from
+    the same baseline; a tie goes to the name that sorts first.
+    """
+    scores: dict[str, list[tuple[float, str]]] = {}
+    for key, statistics in metrics.items():
+        match = _BASELINE_SCORE.fullmatch(key)
+        if match is None or match.group(2) == BEST_BASELINE:
+            continue
+        scores.setdefault(match.group(1), []).append((float(statistics.mean), match.group(2)))
+    return {population: min(entries)[1] for population, entries in sorted(scores.items())}
+
+
+def _best_baseline_copies(
+    metrics: Mapping[str, MetricSummary], best_baselines: Mapping[str, str]
+) -> dict[str, MetricSummary]:
+    """Every metric of each population's best baseline again, under ``baseline/best``.
+
+    The chosen baseline's own numbers, never the best of each metric taken separately,
+    so ``best`` reads as one imputer the model can be set beside.
+    """
+    copies: dict[str, MetricSummary] = {}
+    for population, name in best_baselines.items():
+        prefix = f"{population}/baseline/{name}/"
+        for key, statistics in metrics.items():
+            metric = key[len(prefix):]
+            if key.startswith(prefix) and "/" not in metric:
+                copies[f"{population}/baseline/{BEST_BASELINE}/{metric}"] = statistics
+    return copies
 
 
 def final_metrics_for_tracking(record: FoldTrackingRecord) -> dict[str, float | int | str]:
