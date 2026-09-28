@@ -22,6 +22,11 @@ reached, in place of the KNN bar (*How to compare*); the per-column artifact car
 every baseline's errors (decision 7); and `scripts/backfill_baseline_imputers.py`
 brings runs recorded before these amendments up to the current set (*Consequences*).
 
+**Amended a third time 2026-09-28**, at the user's request: every cross-validated run
+also logs its best baseline under `baseline/best` and names it in the tag
+`best_baseline/<population>` (decision 8), which reverses the option rejected below;
+and the backfill was applied (*Consequences*, *Outcome*).
+
 ## Context
 
 `impute_score` says how the decoder compares with filling the column mean or mode, and
@@ -128,12 +133,24 @@ Facts established while planning, all against scikit-learn 1.9.0 as pinned by `u
    the mode's accuracy on the same cells. The extra-rate populations are not in the file,
    as the model's own rows for them never were.
 
+8. **The best baseline, logged.** The cross-validation summary picks, per scored
+   population, the baseline whose mean `impute_score` over the folds is lowest (a tie
+   to the name that sorts first), copies every statistic of every metric of *that*
+   baseline under `impute/<population>/baseline/best/<metric>` (so the parent carries
+   `cv/test/impute/induced/baseline/best/impute_score/mean`), and tags the parent
+   `best_baseline/<population>` with its name. It copies one imputer's numbers, never
+   the best of each metric taken separately, and it is chosen once per run, on the
+   cross-validated mean, so every statistic describes the same baseline on every fold.
+   Diagnostic children carry no `best`: their fold values are the named baseline's.
+   Classification summaries carry nothing of it.
+
 ## How to compare
 
 On a `_20nan`..`_80nan` variant, read `cv/test/impute/induced/impute_score/mean` beside
-the **baseline bar**: the lowest `cv/test/impute/induced/baseline/<name>/impute_score/mean`
-over `mean_mode`, `knn5`, `knn10` and `hgb`, chosen per run and per population, same
-folds, same cells. All are lower-is-better with 1.0 at mean/mode parity, so the bar is
+the **baseline bar**, logged as `cv/test/impute/induced/baseline/best/impute_score/mean`
+with the tag `best_baseline/impute/induced` naming it: the lowest mean over
+`mean_mode`, `knn5`, `knn10` and `hgb`, chosen per run and per population, same folds,
+same cells. All are lower-is-better with 1.0 at mean/mode parity, so the bar is
 never above 1.0; the model does something no baseline does only where its number is
 below it. Choosing the best baseline after seeing its test score favours the
 baselines, so the bar errs against the model, which is the safe direction for a claim
@@ -163,16 +180,19 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
 - **A single KNN at `k = 10`**, the stronger size on most variants. Rejected in the
   amendment: `k = 5` is the better bar on the small, low-missingness tables (`biodeg`,
   `kc2` at 20-40%), and logging both costs one more transform.
-- **A derived `baseline/knn_best` metric.** Rejected: which size is better is a per-run
-  question, and the fold-level logger could only answer it fold by fold, mixing
-  neighbourhoods across the folds of one run. The choice is made when reading.
+- **A derived `baseline/knn_best` metric.** Rejected at first: which size is better is
+  a per-run question, and the fold-level logger could only answer it fold by fold,
+  mixing neighbourhoods across the folds of one run. **Reversed 2026-09-28** at the
+  user's request, generalised to every baseline and computed by the cross-validation
+  summary, where the per-run choice is available, which removes the objection
+  (decision 8).
 
 ## Consequences
 
 - Twenty more keys per scored population per fold (`test/...`), 140 per population on a
   CV parent. On `credit-g_20nan` without extra rates: 40 fold keys, 280 parent keys.
-- `stubs/sklearn/impute`, `stubs/sklearn/ensemble` and `set_config` in the root stub bring
-  the hand-written scikit-learn stubs to seventeen symbols.
+- `stubs/sklearn/impute` and `stubs/sklearn/ensemble` bring the hand-written
+  scikit-learn stubs to sixteen symbols.
 - The baselines depend only on the dataset, the seed, the fold count and
   `EVAL_MASK_RATE`, never on the model, so they can be recomputed for every existing
   imputation run without training. `scripts/backfill_baseline_imputers.py` does that for
@@ -180,13 +200,20 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
   ones, and writes the missing ones where a live run would have (the seven statistics
   on the parent at step 0, each diagnostic child's fold value), tags the tree
   `baselines_backfilled=true` and re-mirrors it. It writes a run only if its
-  recomputation reproduces, within 1e-6, every baseline mean the run already logged (a
+  recomputation reproduces, within 1e-9, every baseline mean the run already logged (a
   legacy `knn` checked as `knn5`), so the electricity run scored before the spelling fix
-  is refused on its own numbers. Dry run by default. **Not yet applied:** its first dry
-  run, on 2026-09-27, was stopped for lack of memory before it had written anything,
-  cache included; the script now takes the smallest tables first and caps
-  scikit-learn's working memory.
+  is refused on its own numbers. Dry run by default. **Applied 2026-09-28**: 21 run
+  trees written and re-mirrored, each reproducing every baseline it had logged to
+  machine precision (2.2e-16 at worst), the 2026-09-25 electricity run refused. One
+  correction on the way: a first pass capped scikit-learn's working memory, which on
+  `letter` (integer features, many tied distances) changed which neighbour won 13
+  ties in a fold and moved a logged score by 3e-5, failing the check; the script now
+  leaves it at the default a live run uses and checks to 1e-9. A second pass derived
+  `baseline/best` for all 22 runs from their logged statistics, without recomputing.
+  The store was copied before each pass.
 - `CONTEXT.md` fixes the terms *baseline imputer* and *baseline bar*.
+- Seven statistics per metric of the best baseline on each population of a parent run
+  (35 on a mixed table), and one tag per population.
 
 ## Outcome (2026-09-24/25 and 27: 22 five-fold runs with the change, seed 42, cosine)
 
@@ -201,55 +228,44 @@ before this change; they are the outliers, not the new runs. Both regression fix
 passed unedited, and `baseline/mean_mode/impute_score` logged exactly 1.0 on every fold
 of every run.
 
-**The bar and the model.** `cv/test/impute/<population>/.../impute_score/mean`, lower is
-better, 1.0 is mean/mode parity; 95% intervals are the summary's own (Student-t over the
-five folds). The **KNN bar** is the lower of `knn5` and `knn10`, chosen per run and per
-population, and is bold where it beats the model; the stored runs have no `hgb` yet,
-so this table reads the KNN bar until the backfill gives them the full baseline bar. For the runs of 2026-09-24/25, `knn5`
-is the logged `knn` and `knn10` was computed offline on the same folds and cells; the
-`electricity_20nan` row is the rerun of 2026-09-27 with both sizes logged and the induced
-truth spelt correctly (see below). "promoted" is the variant's `*.imputation.json`,
-otherwise the defaults. The mean/mode column is the naive bar in absolute units on the
-induced cells: pooled RMSE in scaled space, then categorical accuracy.
+**The bar and the model, after the backfill.** `cv/test/impute/<population>/.../impute_score/mean`,
+lower is better, 1.0 is mean/mode parity, 95% intervals the summary's own. The **best
+baseline** column is `baseline/best` as every run now logs it (decision 8): the baseline
+with the lowest mean, its interval, bold where it is disjoint from the model's and below.
+Every number is logged in the store: `knn10` and `hgb` of the 2026-09-24/25 runs by the
+backfill of 2026-09-28, the `electricity_20nan` row is the rerun of 2026-09-27.
 
-| variant | config | induced: model | knn5 | knn10 | induced: KNN bar | mean/mode RMSE, acc | masked: model | masked: KNN bar |
+| variant | config | induced: model | knn5 | knn10 | hgb | induced: best baseline | masked: model | masked: best baseline |
 |---|---|---|---|---|---|---|---|---|
-| `credit-g_20nan` | promoted | 0.913 [0.868, 0.958] | 1.014 | 0.955 | k=10: 0.955 [0.911, 0.999] | 1.025, 0.590 | 0.926 | **k=10: 0.923** |
-| `credit-g_40nan` | promoted | 0.968 [0.940, 0.995] | 1.043 | 0.987 | k=10: 0.987 [0.958, 1.016] | 1.041, 0.579 | 0.965 | k=10: 1.031 |
-| `credit-g_60nan` | defaults | 1.012 [0.983, 1.041] | 1.121 | 1.053 | k=10: 1.053 [1.035, 1.072] | 0.986, 0.591 | 1.012 | k=10: 1.047 |
-| `credit-g_80nan` | defaults | 1.024 [1.008, 1.040] | 1.100 | 1.048 | k=10: 1.048 [1.024, 1.071] | 0.961, 0.586 | 0.995 | k=10: 1.062 |
-| `kr-vs-kp_20nan` | promoted | 0.603 [0.559, 0.646] | 0.721 | 0.695 | k=10: 0.695 [0.665, 0.724] | –, 0.811 | 0.660 | k=10: 0.738 |
-| `kr-vs-kp_40nan` | promoted | 0.778 [0.734, 0.822] | 0.927 | 0.883 | k=10: 0.883 [0.860, 0.906] | –, 0.813 | 0.802 | k=10: 0.903 |
-| `kr-vs-kp_60nan` | defaults | 0.904 [0.871, 0.936] | 1.064 | 1.004 | k=10: 1.004 [0.985, 1.023] | –, 0.812 | 0.869 | k=10: 1.009 |
-| `kr-vs-kp_80nan` | defaults | 1.008 [0.945, 1.071] | 1.155 | 1.075 | k=10: 1.075 [1.043, 1.107] | –, 0.813 | 1.048 | k=10: 1.084 |
-| `spambase_20nan` | promoted | 0.886 [0.859, 0.913] | 0.995 | 0.939 | k=10: 0.939 [0.934, 0.944] | 0.986, – | 0.879 | k=10: 0.939 |
-| `spambase_40nan` | promoted | 0.930 [0.909, 0.952] | 1.020 | 0.974 | k=10: 0.974 [0.938, 1.010] | 1.027, – | 0.930 | k=10: 0.992 |
-| `spambase_60nan` | defaults | 0.962 [0.937, 0.988] | 1.083 | 1.032 | k=10: 1.032 [1.022, 1.042] | 1.175, – | 0.912 | k=10: 1.041 |
-| `spambase_80nan` | defaults | 1.015 [0.988, 1.042] | 1.095 | 1.046 | k=10: 1.046 [1.035, 1.057] | 1.158, – | 0.987 | k=10: 1.075 |
-| `vehicle_20nan` | defaults | 0.484 [0.421, 0.548] | 0.508 | 0.499 | k=10: 0.499 [0.440, 0.559] | 1.002, – | 0.486 | k=10: 0.500 |
-| `vehicle_60nan` | defaults | 0.677 [0.585, 0.769] | 0.779 | 0.731 | k=10: 0.731 [0.651, 0.810] | 1.051, – | 0.680 | k=10: 0.743 |
-| `biodeg_20nan` | defaults | 0.674 [0.509, 0.839] | 0.725 | 0.744 | k=5: 0.725 [0.573, 0.876] | 1.318, – | 0.596 | k=5: 0.675 |
-| `biodeg_60nan` | defaults | 0.899 [0.842, 0.955] | 0.979 | 0.929 | k=10: 0.929 [0.923, 0.936] | 1.010, – | 0.829 | k=10: 0.940 |
-| `kc2_20nan` | defaults | 0.586 [0.476, 0.696] | 0.608 | 0.633 | k=5: 0.608 [0.405, 0.810] | 1.045, – | 0.541 | k=5: 0.553 |
-| `kc2_60nan` | defaults | 0.754 [0.605, 0.902] | 0.748 | 0.742 | **k=10: 0.742 [0.533, 0.951]** | 1.149, – | 0.596 | k=10: 0.715 |
-| `pendigits_20nan` | defaults | 0.399 [0.384, 0.414] | 0.358 | 0.348 | **k=10: 0.348 [0.339, 0.357]** | 1.002, – | 0.435 | **k=10: 0.407** |
-| `letter_20nan` | defaults | 0.515 [0.507, 0.522] | 0.484 | 0.473 | **k=10: 0.473 [0.468, 0.478]** | 0.993, – | 0.551 | **k=10: 0.544** |
-| `electricity_20nan` | defaults | 0.669 [0.620, 0.718] | 0.910 | 0.862 | k=10: 0.862 [0.844, 0.881] | 0.956, 0.145 | 0.710 | k=10: 0.904 |
+| `credit-g_20nan` | promoted | 0.913 [0.868, 0.958] | 1.014 | 0.955 | 0.936 | hgb 0.936 [0.912, 0.959] | 0.926 | knn10 0.923 |
+| `credit-g_40nan` | promoted | 0.968 [0.940, 0.995] | 1.043 | 0.987 | 0.958 | hgb 0.958 [0.907, 1.008] | 0.965 | mean_mode 1.000 |
+| `credit-g_60nan` | defaults | 1.012 [0.983, 1.041] | 1.121 | 1.053 | 1.048 | mean_mode 1.000 [1.000, 1.000] | 1.012 | mean_mode 1.000 |
+| `credit-g_80nan` | defaults | 1.024 [1.008, 1.040] | 1.100 | 1.048 | 1.113 | **mean_mode 1.000 [1.000, 1.000]** | 0.995 | mean_mode 1.000 |
+| `kr-vs-kp_20nan` | promoted | 0.603 [0.559, 0.646] | 0.721 | 0.695 | 0.612 | hgb 0.612 [0.565, 0.659] | 0.660 | hgb 0.677 |
+| `kr-vs-kp_40nan` | promoted | 0.778 [0.734, 0.822] | 0.927 | 0.883 | 0.772 | hgb 0.772 [0.746, 0.797] | 0.802 | hgb 0.787 |
+| `kr-vs-kp_60nan` | defaults | 0.904 [0.871, 0.936] | 1.064 | 1.004 | 0.903 | hgb 0.903 [0.888, 0.918] | 0.869 | hgb 0.863 |
+| `kr-vs-kp_80nan` | defaults | 1.008 [0.945, 1.071] | 1.155 | 1.075 | 1.073 | mean_mode 1.000 [1.000, 1.000] | 1.048 | mean_mode 1.000 |
+| `spambase_20nan` | promoted | 0.886 [0.859, 0.913] | 0.995 | 0.939 | 0.865 | hgb 0.865 [0.834, 0.897] | 0.879 | hgb 0.874 |
+| `spambase_40nan` | promoted | 0.930 [0.909, 0.952] | 1.020 | 0.974 | 0.936 | hgb 0.936 [0.903, 0.970] | 0.930 | hgb 0.957 |
+| `spambase_60nan` | defaults | 0.962 [0.937, 0.988] | 1.083 | 1.032 | 0.987 | hgb 0.987 [0.976, 0.998] | 0.912 | hgb 1.000 |
+| `spambase_80nan` | defaults | 1.015 [0.988, 1.042] | 1.095 | 1.046 | 1.041 | mean_mode 1.000 [1.000, 1.000] | 0.987 | mean_mode 1.000 |
+| `vehicle_20nan` | defaults | 0.484 [0.421, 0.548] | 0.508 | 0.499 | 0.471 | hgb 0.471 [0.425, 0.518] | 0.486 | knn10 0.500 |
+| `vehicle_60nan` | defaults | 0.677 [0.585, 0.769] | 0.779 | 0.731 | 0.696 | hgb 0.696 [0.627, 0.765] | 0.680 | hgb 0.692 |
+| `biodeg_20nan` | defaults | 0.674 [0.509, 0.839] | 0.725 | 0.744 | 0.644 | hgb 0.644 [0.452, 0.837] | 0.596 | hgb 0.607 |
+| `biodeg_60nan` | defaults | 0.899 [0.842, 0.955] | 0.979 | 0.929 | 0.864 | hgb 0.864 [0.842, 0.887] | 0.829 | hgb 0.847 |
+| `kc2_20nan` | defaults | 0.586 [0.476, 0.696] | 0.608 | 0.633 | 0.746 | knn5 0.608 [0.405, 0.810] | 0.541 | knn5 0.553 |
+| `kc2_60nan` | defaults | 0.754 [0.605, 0.902] | 0.748 | 0.742 | 0.840 | knn10 0.742 [0.533, 0.951] | 0.596 | knn10 0.715 |
+| `pendigits_20nan` | defaults | 0.399 [0.384, 0.414] | 0.358 | 0.348 | 0.365 | **knn10 0.348 [0.339, 0.357]** | 0.435 | knn10 0.407 |
+| `letter_20nan` | defaults | 0.515 [0.507, 0.522] | 0.484 | 0.473 | 0.500 | **knn10 0.473 [0.468, 0.478]** | 0.551 | knn10 0.544 |
+| `electricity_20nan` | defaults | 0.669 [0.620, 0.718] | 0.910 | 0.862 | 0.593 | hgb 0.593 [0.547, 0.640] | 0.710 | hgb 0.666 |
 
-On the induced population the model is below the KNN bar on 18 of 21 variants, with
-disjoint intervals on 6 of them (`kr-vs-kp` at 20/40/60%, `spambase` at 20/60%,
-`electricity_20nan`) and overlapping ones on the other 12; KNN is lower on the remaining
-3, with disjoint intervals on 2. Two readings survive the stronger bar. On every mixed or categorical table
-(credit-g, kr-vs-kp, spambase, electricity) the decoder stays below KNN at every
-missingness level, though on credit-g the margin shrinks to within the intervals once
-`k = 10` is allowed (`credit-g_20nan` 0.913 against 0.955). On the two large, clean
-numerical tables KNN wins with disjoint intervals, and by more at `k = 10`:
-`pendigits_20nan` 0.348 against the model's 0.399 and `letter_20nan` 0.473 against 0.515
-on the induced cells. KNN is also lower on the masked cells of both (0.407 vs 0.435,
-disjoint; 0.544 vs 0.551, within the intervals), where at `k = 5` the model had still won
-letter's masked cells. A plain neighbour lookup is the stronger imputer where rows are near-duplicates of
-each other, which is what the bar is for. `kc2_60nan` is the one small table where the bar
-sits below the model (0.742 vs 0.754), well inside both intervals.
+The stronger bar changes the verdict. On the induced population the model is below the
+best baseline on 6 of 21 variants (`credit-g_20nan`, `kc2_20nan`, `kr-vs-kp_20nan`, `spambase_40nan`, `spambase_60nan`, `vehicle_60nan`),
+never with disjoint intervals; a baseline is below the model with disjoint intervals on
+3 (`credit-g_80nan` by the mean/mode fill, `pendigits_20nan` and `letter_20nan` by
+`knn10`). `hgb` sets the bar on 13 of 21; at 80% missingness, and on `credit-g_60nan`,
+nothing beats filling the column mean or mode; KNN holds it on `kc2`, `pendigits` and
+`letter` (`knn5` on `kc2_20nan`, `knn10` elsewhere). Before `hgb` existed, the KNN bar alone put the model below it on 18 of 21.
 
 **A defect the baselines exposed on `electricity_20nan`, fixed 2026-09-27.** The
 variant's only categorical column, `day`, holds NaN, so pandas reads it as `float64` and

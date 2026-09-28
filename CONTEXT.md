@@ -132,7 +132,7 @@ training fold alone and never rank a fold.
 **Baseline bar**:
 The lowest score any baseline imputer reached on one population of one run: the bar a
 claim that the decoder beats the baselines has to clear. Never above 1.0, since the
-mean/mode baseline sits there.
+mean/mode baseline sits there. Runs log it as their best baseline.
 _Avoid_: KNN bar, best baseline, reference score
 _Avoid_: reference imputer, naive imputer, external imputer, benchmark imputer
 
