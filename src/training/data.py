@@ -3,9 +3,11 @@
 import json
 from collections import Counter
 from pathlib import Path
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 from sklearn.model_selection import KFold, ShuffleSplit, StratifiedKFold, StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 
@@ -107,6 +109,25 @@ def load_complete_sibling(spec: DatasetSpec) -> pd.DataFrame | None:
     sibling = pd.read_csv(complete)
     _assert_row_aligned(pd.read_csv(variant), sibling, spec.dataset_name)
     return sibling
+
+
+def in_variant_dtypes(
+    truth: pd.DataFrame, variant: pd.DataFrame, categorical_columns: Sequence[str]
+) -> pd.DataFrame:
+    """The sibling's categories, spelt the way the variant spells them.
+
+    A category written as a number is read as integers where the column is complete and
+    as floats where it has gaps, so the sibling says ``"3"`` for the day the variant and
+    its vocabulary call ``"3.0"``. Left alone, every induced cell of such a column looked
+    like a category the variant never shows and was scored a miss (electricity's ``day``,
+    all four variants). Only numeric-to-numeric differences are aligned; a column of words
+    is spelt the same in both files already.
+    """
+    for column in categorical_columns:
+        wanted, held = variant[column].dtype, truth[column].dtype
+        if wanted != held and is_numeric_dtype(wanted) and is_numeric_dtype(held):
+            truth[column] = truth[column].astype(wanted)
+    return truth
 
 
 def _assert_row_aligned(variant: pd.DataFrame, complete: pd.DataFrame, name: str) -> None:

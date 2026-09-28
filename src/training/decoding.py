@@ -6,20 +6,17 @@ and selects its checkpoint on a validation mask that never changes so that the l
 only when the model does. See ADR 0004.
 """
 
-from typing import Sequence
-
 import numpy as np
 import pandas as pd
 import torch
 import torch.optim as optim
-from pandas.api.types import is_numeric_dtype
 from tqdm import tqdm
 
 from src.embedder import as_category_strings
 from src.models import TridentDecoder
 from src.utils import preprocess_table
 
-from .data import evaluation_mask
+from .data import evaluation_mask, in_variant_dtypes
 from .imputation_baselines import fit_baseline_imputers, score_baselines
 from .imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch
@@ -278,7 +275,7 @@ def _score_induced_missing(
     population = "induced" if as_mask else "induced_null_token"
 
     truth = complete_sibling.iloc[fold.test_indices].reset_index(drop=True)
-    truth = _in_variant_dtypes(
+    truth = in_variant_dtypes(
         truth[[column for column in test_frame.columns]].copy(),
         test_frame,
         dataset.categorical_columns,
@@ -311,25 +308,6 @@ def _score_induced_missing(
         hit = (scored["row"] == row) & (scored["column"] == column)
         scored.loc[hit, ["actual", "actual_original"]] = value
     return scored
-
-
-def _in_variant_dtypes(
-    truth: pd.DataFrame, variant: pd.DataFrame, categorical_columns: Sequence[str]
-) -> pd.DataFrame:
-    """The sibling's categories, spelt the way the variant spells them.
-
-    A category written as a number is read as integers where the column is complete and
-    as floats where it has gaps, so the sibling says ``"3"`` for the day the variant and
-    its vocabulary call ``"3.0"``. Left alone, every induced cell of such a column looked
-    like a category the variant never shows and was scored a miss (electricity's ``day``,
-    all four variants). Only numeric-to-numeric differences are aligned; a column of words
-    is spelt the same in both files already.
-    """
-    for column in categorical_columns:
-        wanted, held = variant[column].dtype, truth[column].dtype
-        if wanted != held and is_numeric_dtype(wanted) and is_numeric_dtype(held):
-            truth[column] = truth[column].astype(wanted)
-    return truth
 
 
 def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dict]:
