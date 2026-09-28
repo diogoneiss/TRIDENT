@@ -470,6 +470,11 @@ def _stub_stages(monkeypatch, tmp_path, folds=1, scores=(0.5,)):
                 [{"row": 0, "column": "feature", "kind": "numerical", "population": "masked",
                   "actual": 0.0, "imputed": score, "confidence": float("nan")}]
             ),
+            baseline_per_column={
+                "masked": pd.DataFrame(
+                    [{"column": "feature", "metric": "baseline/knn5/rmse_num_z", "value": 0.25}]
+                )
+            },
         )
 
     monkeypatch.setattr(runner, "train_and_evaluate_classifier", classifier)
@@ -520,6 +525,24 @@ def test_an_imputation_run_leaves_a_preview_and_a_ledger_for_every_fold(
     assert len(list(results.rglob("*_preview.md"))) == 2
     assert len(list(results.rglob("*_cells.csv"))) == 2
     assert len(list(results.rglob("per_column_imputation.csv"))) == 1
+
+
+def test_the_per_column_table_carries_each_baselines_errors_beside_the_models(
+    monkeypatch, tmp_path
+) -> None:
+    """The decode stage hands its baselines' per-column errors to the runner, which must
+    write them into the same long-form file as the model's, fold and population kept, or
+    they are computed and silently dropped."""
+    _stub_stages(monkeypatch, tmp_path, folds=2, scores=(0.9, 0.4))
+
+    run_training(_minimal_request(tmp_path / "run", "imputation", cv_folds=2))
+
+    table = pd.read_csv(next((tmp_path / "run" / "results").rglob("per_column_imputation.csv")))
+    baseline = table[table["metric"] == "baseline/knn5/rmse_num_z"]
+    assert sorted(baseline["fold"].tolist()) == [1, 2]
+    assert set(baseline["population"]) == {"masked"}
+    assert baseline["value"].tolist() == [0.25, 0.25]
+    assert "rmse_num_z" in set(table["metric"])
 
 
 def test_a_classification_run_writes_no_imputation_artifacts(monkeypatch, tmp_path) -> None:

@@ -351,6 +351,9 @@ class DecodingOutcome:
     train_losses: Sequence[float]
     validation_losses: Sequence[float]
     scored_cells: Any
+    # Per population (``masked``, ``induced``), every baseline imputer's per-column errors
+    # in long form (``column``, ``metric``, ``value``), for the per-column artifact.
+    baseline_per_column: Mapping[str, Any] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

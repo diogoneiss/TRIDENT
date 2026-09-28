@@ -162,12 +162,11 @@ def train_and_evaluate_decoder(
     metrics.update({f"impute/masked/{name}": value for name, value in scored.metrics.items()})
     # Scored here, while ``cells`` holds the masked population alone: the induced cells
     # are appended to it further down.
+    masked_baselines = score_baselines(baseline_imputers, test_frame, cells, baselines)
     metrics.update(
-        {
-            f"impute/masked/{name}": value
-            for name, value in score_baselines(baseline_imputers, test_frame, cells, baselines).items()
-        }
+        {f"impute/masked/{name}": value for name, value in masked_baselines.metrics.items()}
     )
+    baseline_per_column = {"masked": masked_baselines.per_column}
     # Nominal is what was asked for; realised is what the masking helper actually hid,
     # which falls as missingness rises because it never hides an already-missing cell.
     eligible = int(hidden_test.masked_positions.numel() - _already_missing(test_frame))
@@ -192,7 +191,9 @@ def train_and_evaluate_decoder(
         metrics.update(
             {
                 f"{prefix}/{name}": value
-                for name, value in score_baselines(baseline_imputers, test_frame, at_rate, baselines).items()
+                for name, value in score_baselines(
+                    baseline_imputers, test_frame, at_rate, baselines
+                ).metrics.items()
             }
         )
 
@@ -207,12 +208,11 @@ def train_and_evaluate_decoder(
         )
         # The induced cells are the frame's own gaps, so the mask adds nothing here; one
         # code path for both populations all the same.
+        induced_baselines = score_baselines(baseline_imputers, test_frame, induced, baselines)
         metrics.update(
-            {
-                f"impute/induced/{name}": value
-                for name, value in score_baselines(baseline_imputers, test_frame, induced, baselines).items()
-            }
+            {f"impute/induced/{name}": value for name, value in induced_baselines.metrics.items()}
         )
+        baseline_per_column["induced"] = induced_baselines.per_column
         if score_null_path:
             # The same gaps, left as the [NULL] the variant stores rather than swapped to
             # [MASK]. The head was never trained at a null position, so this measures
@@ -254,6 +254,7 @@ def train_and_evaluate_decoder(
         train_losses=train_losses,
         validation_losses=validation_losses,
         scored_cells=cells,
+        baseline_per_column=baseline_per_column,
     )
 
 

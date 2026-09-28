@@ -80,12 +80,12 @@ def test_the_mean_mode_baseline_scores_at_parity() -> None:
     imputer.fit(train)
 
     numerical_only = _cells(test, [(0, "size"), (3, "weight"), (7, "size"), (12, "weight")])
-    assert score_baselines([imputer], test, numerical_only, naive)[
+    assert score_baselines([imputer], test, numerical_only, naive).metrics[
         "baseline/mean_mode/impute_score"
     ] == 1.0
 
     mixed = _cells(test, [(0, "size"), (1, "colour"), (5, "shape"), (9, "weight"), (14, "colour")])
-    assert score_baselines([imputer], test, mixed, naive)[
+    assert score_baselines([imputer], test, mixed, naive).metrics[
         "baseline/mean_mode/impute_score"
     ] == pytest.approx(1.0, abs=1e-12)
 
@@ -124,7 +124,7 @@ def test_knn_beats_the_mean_where_a_column_follows_the_others() -> None:
     naive_imputer.fit(train)
     cells = _cells(test, [(row, column) for row in range(0, 20, 3) for column in ("weight", "shape")])
 
-    metrics = score_baselines([naive_imputer, knn], test, cells, naive)
+    metrics = score_baselines([naive_imputer, knn], test, cells, naive).metrics
 
     assert metrics["baseline/knn5/impute_score"] < 0.5
     assert metrics["baseline/mean_mode/impute_score"] == pytest.approx(1.0, abs=1e-12)
@@ -159,7 +159,7 @@ def test_cells_are_hidden_by_a_mask_and_the_frame_is_never_rewritten() -> None:
     for imputer in _fitted(train):
         filled = imputer.impute(test, np.zeros(test.shape, dtype=bool) | (test.index.to_numpy()[:, None] % 2 == 0))
         assert set(filled["colour"]) <= {str(value) for value in range(1, 8)}, imputer.name
-        metrics = score_baselines([imputer], test, cells, naive)
+        metrics = score_baselines([imputer], test, cells, naive).metrics
         assert metrics[f"baseline/{imputer.name}/acc_cat"] > 0.0, imputer.name
 
     assert test.equals(before)
@@ -177,7 +177,7 @@ def test_the_scored_cells_table_is_left_untouched() -> None:
     cells["imputed"] = ["7.5", "purple", "hexagon", "-3.0"]
     before = cells.copy()
 
-    score_baselines(_fitted(train), test, cells, naive)
+    score_baselines(_fitted(train), test, cells, naive).metrics
 
     assert cells.equals(before)
 
@@ -196,14 +196,14 @@ def test_a_baseline_never_reads_the_truth_of_the_cell_it_fills() -> None:
     hidden[4, test.columns.get_loc("shape")] = True
 
     fills_before = [imputer.impute(test, hidden).loc[4, ["weight", "shape"]].tolist() for imputer in imputers]
-    metrics_before = score_baselines(imputers, test, cells, naive)
+    metrics_before = score_baselines(imputers, test, cells, naive).metrics
 
     perturbed = test.copy()
     perturbed.loc[4, "weight"] = 1e6
     perturbed.loc[4, "shape"] = "hexagon"
     fills_after = [imputer.impute(perturbed, hidden).loc[4, ["weight", "shape"]].tolist() for imputer in imputers]
     perturbed_cells = _cells(perturbed, positions)
-    metrics_after = score_baselines(imputers, perturbed, perturbed_cells, naive)
+    metrics_after = score_baselines(imputers, perturbed, perturbed_cells, naive).metrics
 
     assert fills_after == fills_before
     # The fills did not move, so only the truth did: every error grew or stayed.
@@ -232,7 +232,7 @@ def test_a_row_hidden_entirely_falls_back_to_the_training_mean_and_mode() -> Non
     for column in CATEGORICAL_COLUMNS:
         assert filled.loc[6, column] == naive[column]
     cells = _cells(test, [(6, column) for column in test.columns])
-    metrics = score_baselines([knn], test, cells, naive)
+    metrics = score_baselines([knn], test, cells, naive).metrics
     assert all(np.isfinite(value) for value in metrics.values())
 
 
@@ -294,7 +294,7 @@ def test_a_table_of_one_kind_produces_only_that_kinds_keys() -> None:
         test[NUMERICAL_COLUMNS],
         _cells(test, [(0, "size"), (2, "weight")]),
         mean_mode_baselines(train, NUMERICAL_COLUMNS, []),
-    )
+    ).metrics
     assert set(metrics) == {
         f"baseline/{name}/{metric}"
         for name in ("mean_mode", "knn5", "hgb")
@@ -313,7 +313,7 @@ def test_a_table_of_one_kind_produces_only_that_kinds_keys() -> None:
         test[CATEGORICAL_COLUMNS],
         _cells(test, [(0, "colour"), (2, "shape")]),
         mean_mode_baselines(train, [], CATEGORICAL_COLUMNS),
-    )
+    ).metrics
     assert set(metrics) == {
         f"baseline/{name}/{metric}"
         for name in ("mean_mode", "knn5", "hgb")
@@ -339,7 +339,7 @@ def test_scoring_baselines_leaves_both_global_random_streams_untouched() -> None
     numpy_before = np.random.get_state()
     torch_before = torch.get_rng_state().clone()
 
-    score_baselines(imputers, test, cells, naive)
+    score_baselines(imputers, test, cells, naive).metrics
 
     numpy_after = np.random.get_state()
     assert numpy_after[1].tolist() == numpy_before[1].tolist() and numpy_after[2] == numpy_before[2]
@@ -359,7 +359,7 @@ def test_a_category_only_the_truth_holds_is_a_miss_not_a_crash() -> None:
     cells = _cells(test, [(0, "colour"), (3, "size")])
     cells.loc[cells["column"] == "colour", ["actual", "actual_original"]] = "violet"
 
-    metrics = score_baselines(_fitted(train), test, cells, naive)
+    metrics = score_baselines(_fitted(train), test, cells, naive).metrics
 
     for name in ("mean_mode", "knn5", "hgb"):
         assert metrics[f"baseline/{name}/acc_cat"] == 0.0
@@ -388,7 +388,9 @@ def test_an_empty_population_scores_nothing_and_runs_no_imputer() -> None:
     _, test = _split(_frame())
     spy = _Spy()
 
-    assert score_baselines([spy], test, _cells(test, []), {}) == {}
+    scored = score_baselines([spy], test, _cells(test, []), {})
+    assert scored.metrics == {}
+    assert scored.per_column.empty
     assert spy.calls == 0
 
 
@@ -510,3 +512,30 @@ def test_gradient_boosting_falls_back_to_a_constant_where_there_is_nothing_to_le
 
     assert set(filled["colour"]) == {"red"}
     assert filled["level"].tolist() == [0.0] * 9
+
+
+def test_each_baseline_reports_its_errors_column_by_column() -> None:
+    """The per-column artifact exists to say which column a fold struggled with, and an
+    accuracy of 0.93 means nothing until the mode's accuracy on the same column sits
+    beside it (0.938 on credit-g's ``foreign_worker``, a loss). So every baseline's
+    errors come back per column as well, under its own name, without the counts the
+    model's own rows already carry.
+
+    The naive RMSE of ``size`` is recomputed here from the training mean and the truths.
+    """
+    train, test = _split(_frame())
+    naive = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
+    cells = _cells(test, [(0, "size"), (3, "size"), (8, "size"), (1, "colour"), (5, "colour"), (4, "weight")])
+
+    scored = score_baselines(_fitted(train), test, cells, naive)
+
+    rows = scored.per_column
+    assert set(rows.columns) == {"column", "metric", "value"}
+    sizes = cells[cells["column"] == "size"]["actual"].to_numpy(dtype=float)
+    expected = float(np.sqrt(np.mean((naive["size"] - sizes) ** 2)))
+    size_rmse = rows[(rows["column"] == "size") & (rows["metric"] == "baseline/mean_mode/rmse_num_z")]
+    assert size_rmse["value"].tolist() == [pytest.approx(expected)]
+    for name in ("mean_mode", "knn5", "hgb"):
+        assert f"baseline/{name}/acc_cat" in set(rows.loc[rows["column"] == "colour", "metric"])
+        assert f"baseline/{name}/rmse_num_z" in set(rows.loc[rows["column"] == "weight", "metric"])
+    assert not rows["metric"].str.contains("n_num_cells|n_cat_cells").any()

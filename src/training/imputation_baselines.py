@@ -23,7 +23,7 @@ from sklearn.impute import KNNImputer
 
 from src.embedder import as_category_strings
 
-from .imputation_metrics import NUMERICAL, mean_mode_baselines, score_cells
+from .imputation_metrics import NUMERICAL, ImputationScores, mean_mode_baselines, score_cells
 
 # The counts are the model's own; repeating them under every baseline would only crowd
 # the tracking store.
@@ -338,16 +338,17 @@ def score_baselines(
     frame: pd.DataFrame,
     cells: pd.DataFrame,
     baselines: Mapping[str, float | str],
-) -> dict[str, float]:
+) -> ImputationScores:
     """Each baseline imputer's error on the scored cells, keyed ``baseline/<name>/<metric>``.
 
     The cells are hidden from the imputers exactly as they were hidden from the model, the
     fill is read back at the same (row, column) positions, and it is scored by the same
     ``score_cells`` with the same naive denominators. The scored table is left untouched:
-    it goes on to the cell ledger and the per-column artifact.
+    it goes on to the cell ledger and the per-column artifact. The same errors come back
+    column by column in ``per_column``, long form, for that artifact.
     """
     if cells.empty:
-        return {}
+        return ImputationScores(metrics={}, per_column=pd.DataFrame(columns=["column", "metric", "value"]))
     rows = cells["row"].to_numpy(dtype=int)
     columns = frame.columns.get_indexer(pd.Index(cells["column"]))
     if (columns < 0).any():
@@ -358,6 +359,7 @@ def score_baselines(
     kinds = cells["kind"].to_numpy()
 
     metrics: dict[str, float] = {}
+    per_column: list[pd.DataFrame] = []
     for imputer in imputers:
         filled = imputer.impute(frame, hidden)
         if not filled.columns.equals(frame.columns):
@@ -374,4 +376,9 @@ def score_baselines(
                 if name not in _COUNTS
             }
         )
-    return metrics
+        errors = scored.per_column[~scored.per_column["metric"].isin(_COUNTS)]
+        per_column.append(errors.assign(metric=f"baseline/{imputer.name}/" + errors["metric"]))
+    return ImputationScores(
+        metrics=metrics,
+        per_column=pd.concat(per_column, ignore_index=True)[["column", "metric", "value"]],
+    )

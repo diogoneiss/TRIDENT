@@ -1,6 +1,7 @@
 """Typed orchestration for TRIDENT training."""
 
 import time
+from typing import Mapping
 
 import pandas as pd
 import torch
@@ -31,9 +32,13 @@ from .types import (
 
 
 def _per_column_scores(
-    dataset: PreparedDataset, fold: FoldSplit, scored_cells: pd.DataFrame
+    dataset: PreparedDataset,
+    fold: FoldSplit,
+    scored_cells: pd.DataFrame,
+    baseline_rows: Mapping[str, pd.DataFrame],
 ) -> dict[str, pd.DataFrame]:
-    """Each population's per-column errors, against this fold's own naive baseline."""
+    """Each population's per-column errors, against this fold's own naive baseline, with
+    every baseline imputer's per-column errors on the same cells beneath the model's."""
     features = dataset.frame.drop(columns=[dataset.label_column])
     train_frame = features.iloc[fold.train_indices].reset_index(drop=True)
     baselines = mean_mode_baselines(
@@ -42,7 +47,10 @@ def _per_column_scores(
     # ``groupby`` keys are pandas scalars, not necessarily ``str``; the population column
     # holds strings, so naming that explicitly costs nothing and states the assumption.
     return {
-        str(population): score_cells(group, baselines).per_column
+        str(population): pd.concat(
+            [score_cells(group, baselines).per_column, baseline_rows.get(str(population))],
+            ignore_index=True,
+        )
         for population, group in scored_cells.groupby("population", sort=True)
     }
 
@@ -162,7 +170,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     fold_tracker.log_artifact(str(preview_path), artifact_path="imputation")
                     fold_tracker.log_artifact(str(ledger_path), artifact_path="imputation")
                     per_column[ordinal] = _per_column_scores(
-                        dataset, fold, finetuning.scored_cells
+                        dataset, fold, finetuning.scored_cells, finetuning.baseline_per_column
                     )
                 if request.save_model:
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""
