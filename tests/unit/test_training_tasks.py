@@ -202,6 +202,56 @@ def test_the_summary_copies_the_best_baseline_under_its_own_name() -> None:
     ]
 
 
+def test_the_summary_logs_the_models_gap_to_the_best_baseline_fold_by_fold() -> None:
+    """How far the model is from the bar, as a number to sort and minimise: per fold, the
+    model's ``impute_score`` minus the chosen baseline's on that same fold, and the same
+    gap as a percentage of the bar's mean. Negative means the model beats the bar.
+
+    Worked by hand for the masked population, where knn5 is best (mean 0.9 against 1.0):
+    gaps 0.9 - 0.8 = 0.1 and 0.7 - 1.0 = -0.3, mean -0.1, the difference of the means;
+    paired sd 0.2828. Over the bar's mean of 0.9 they are 11.1% and -33.3%, mean -11.1%,
+    the gap of the means over the bar's mean. Dividing each fold by its own bar instead
+    would give 12.5% and -30.0%, mean -8.75%: a different number from the one the two
+    logged means give, and one whose sign can differ from the gap's.
+    """
+    folds = {
+        1: {
+            "impute/masked/impute_score": 0.9,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/knn5/impute_score": 0.8,
+            "impute/induced/impute_score": 0.4,
+            "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/hgb/impute_score": 0.0,
+        },
+        2: {
+            "impute/masked/impute_score": 0.7,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/knn5/impute_score": 1.0,
+            "impute/induced/impute_score": 0.6,
+            "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/hgb/impute_score": 0.0,
+        },
+    }
+
+    summary = summarize_cross_validation([_record(fold, metrics) for fold, metrics in folds.items()], IMPUTATION)
+
+    gap = summary.metrics["impute/masked/gap_to_best_baseline/impute_score"]
+    assert (gap.mean, gap.minimum, gap.maximum) == (pytest.approx(-0.1), pytest.approx(-0.3), pytest.approx(0.1))
+    assert gap.std == pytest.approx(0.2828427)
+    assert gap.fold_count == 2
+    percent = summary.metrics["impute/masked/gap_to_best_baseline_pct/impute_score"]
+    assert (percent.mean, percent.minimum, percent.maximum) == (
+        pytest.approx(-100 / 9), pytest.approx(-100 / 3), pytest.approx(100 / 9)
+    )
+    model_mean = summary.metrics["impute/masked/impute_score"].mean
+    bar_mean = summary.metrics["impute/masked/baseline/best/impute_score"].mean
+    assert percent.mean == pytest.approx(100 * (model_mean - bar_mean) / bar_mean)
+    # A bar at 0 leaves no percentage to take: the absolute gap is logged, the
+    # percentage is not, rather than an infinite one.
+    assert summary.metrics["impute/induced/gap_to_best_baseline/impute_score"].mean == pytest.approx(0.5)
+    assert "impute/induced/gap_to_best_baseline_pct/impute_score" not in summary.metrics
+
+
 def test_a_classification_summary_names_no_best_baseline() -> None:
     """Nothing about baselines appears in a task that has none."""
     records = [
@@ -212,4 +262,4 @@ def test_a_classification_summary_names_no_best_baseline() -> None:
     summary = summarize_cross_validation(records, task_spec("classification"))
 
     assert summary.best_baselines == {}
-    assert not any("/baseline/" in key for key in summary.metrics)
+    assert not any("baseline" in key for key in summary.metrics)

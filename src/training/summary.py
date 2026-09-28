@@ -68,6 +68,7 @@ def summarize_cross_validation(
     }
     best_baselines = _best_baselines(metrics)
     metrics.update(_best_baseline_copies(metrics, best_baselines))
+    metrics.update(best_baseline_gaps(final_metrics, best_baselines))
     loss_bands = _summarize_loss_bands(records, task)
     return CrossValidationSummary(
         metrics=metrics,
@@ -114,6 +115,41 @@ def _best_baseline_copies(
             if key.startswith(prefix) and "/" not in metric:
                 copies[f"{population}/baseline/{BEST_BASELINE}/{metric}"] = statistics
     return copies
+
+
+# The model's distance from the best baseline (ADR 0007), logged beside the model's own
+# metrics rather than under ``baseline/``, where it would read as a baseline's name.
+GAP_TO_BEST_BASELINE = "gap_to_best_baseline"
+GAP_TO_BEST_BASELINE_PCT = "gap_to_best_baseline_pct"
+
+
+def best_baseline_gaps(
+    fold_metrics: Sequence[Mapping[str, float | int | str]], best_baselines: Mapping[str, str]
+) -> dict[str, MetricSummary]:
+    """Per population, the model's ``impute_score`` minus its best baseline's, fold by fold.
+
+    Paired on each fold, so the interval is the gap's own rather than two marginal ones
+    set side by side; negative means the model beats the bar, so lower stays better. The
+    percentage divides every fold's gap by the bar's cross-validated mean, so its mean is
+    the gap of the means over the bar's mean, exactly what the two logged means give by
+    hand, and it always has the absolute gap's sign. Dividing each fold by its own bar
+    would not: on ``kc2_20nan`` the folds' percentages average +2.6% where the means are
+    2.1% apart in the model's favour. A bar whose mean is 0 leaves no percentage to take.
+    """
+    gaps: dict[str, MetricSummary] = {}
+    for population, name in best_baselines.items():
+        model_key = f"{population}/impute_score"
+        baseline_key = f"{population}/baseline/{name}/impute_score"
+        if not all(model_key in fold and baseline_key in fold for fold in fold_metrics):
+            continue
+        differences = [float(fold[model_key]) - float(fold[baseline_key]) for fold in fold_metrics]
+        gaps[f"{population}/{GAP_TO_BEST_BASELINE}/impute_score"] = _summarize_metric(differences)
+        bar = float(np.mean([float(fold[baseline_key]) for fold in fold_metrics]))
+        if bar > 0:
+            gaps[f"{population}/{GAP_TO_BEST_BASELINE_PCT}/impute_score"] = _summarize_metric(
+                [100.0 * difference / bar for difference in differences]
+            )
+    return gaps
 
 
 def final_metrics_for_tracking(record: FoldTrackingRecord) -> dict[str, float | int | str]:
