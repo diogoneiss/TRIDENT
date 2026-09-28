@@ -64,6 +64,10 @@ SOURCE_RUN_ID_TAG = "source_run_id"
 # finished, by ``scripts/backfill_baseline_imputers.py``, rather than by the run itself.
 # Sparse: only runs the backfill wrote to carry it.
 BASELINES_BACKFILLED_TAG = "baselines_backfilled"
+# Marks a run whose gap to its best baseline (ADR 0007, decision 9) was written after it
+# finished, by the same script. Its own marker, because two runs whose baselines were
+# logged live got the gap backfilled all the same. Sparse, like the tag above.
+BEST_BASELINE_GAP_BACKFILLED_TAG = "best_baseline_gap_backfilled"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:

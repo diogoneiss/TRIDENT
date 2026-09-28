@@ -27,6 +27,17 @@ population, the lowest mean ``impute_score`` names the baseline, all its statist
 copied under ``baseline/best``, and the tag ``best_baseline/<population>`` names it,
 exactly as a live run's summary does.
 
+A third pass gives every run with a best baseline but no gap to it the model's gap, as
+the summary computes it live: per fold, the model's ``impute_score`` minus the best
+baseline's, and that gap as a percentage of the best baseline's cross-validated mean,
+each summarised into seven statistics under ``gap_to_best_baseline`` and
+``gap_to_best_baseline_pct``. The fold
+values come from the run's own ``metrics/raw_fold_metrics.csv``, and a baseline the run
+did not log live (``knn10``, ``hgb`` on runs of 2026-09-24/25) from ``--cache`` or a
+recomputation. They are trusted only where their means reproduce, within 1e-9, the
+model's and ``baseline/best``'s logged means; each run written is tagged
+``best_baseline_gap_backfilled=true`` and re-mirrored.
+
 ``--cache`` keeps each run's recomputed folds as JSON so a dry run and the ``--apply``
 after it pay for the imputers once; ``--run <id>`` (repeatable) restricts the pass. Runs
 are taken smallest dataset first, so on a machine short of memory the cache fills as far
@@ -43,6 +54,7 @@ import argparse
 import json
 import re
 import sys
+import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -54,10 +66,17 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from mlflow.entities import Metric, Run  # noqa: E402
+from mlflow.exceptions import MlflowException  # noqa: E402
 from mlflow.tracking import MlflowClient  # noqa: E402
 
 from src.embedder import as_category_strings  # noqa: E402
-from src.mlflow_utils import BASELINES_BACKFILLED_TAG, IS_MIRROR_TAG, TASK_TAG, setup_mlflow  # noqa: E402
+from src.mlflow_utils import (  # noqa: E402
+    BASELINES_BACKFILLED_TAG,
+    BEST_BASELINE_GAP_BACKFILLED_TAG,
+    IS_MIRROR_TAG,
+    TASK_TAG,
+    setup_mlflow,
+)
 from src.training.data import (  # noqa: E402
     PROCESSED_DATASETS,
     build_folds,
@@ -77,7 +96,13 @@ from src.training.mirroring import mirror_run_tree  # noqa: E402
 
 # The summariser's and the tracker's own helpers, so a backfilled statistic is computed and
 # named exactly as a live run's is.
-from src.training.summary import BEST_BASELINE, _summarize_metric  # noqa: E402
+from src.training.summary import (  # noqa: E402
+    BEST_BASELINE,
+    GAP_TO_BEST_BASELINE,
+    GAP_TO_BEST_BASELINE_PCT,
+    _summarize_metric,
+    best_baseline_gaps,
+)
 from src.training.tracking import _summary_metrics  # noqa: E402
 from src.training.types import DatasetSpec, PreparedDataset  # noqa: E402
 
@@ -161,11 +186,8 @@ def apply_plan(client: MlflowClient, plan: RunPlan) -> None:
     """Write a plan where a live run would have: step 0, the run's own id, tagged."""
     if plan.refused is not None or not plan.parent:
         return
-    stamp = int(time.time() * 1000)
     for run_id, metrics in [(plan.run_id, plan.parent), *plan.children.items()]:
-        entries = [Metric(key, float(value), stamp, 0) for key, value in sorted(metrics.items())]
-        for start in range(0, len(entries), _METRICS_PER_BATCH):
-            client.log_batch(run_id, metrics=entries[start : start + _METRICS_PER_BATCH])
+        _write_at_step_zero(client, run_id, metrics)
         client.set_tag(run_id, BASELINES_BACKFILLED_TAG, "true")
 
 
@@ -203,6 +225,84 @@ def plan_best(logged: Mapping[str, float]) -> tuple[dict[str, float], dict[str, 
         metrics.update({target + key[len(source):]: value for key, value in logged.items() if key.startswith(source)})
         tags[f"best_baseline/{population}"] = best
     return metrics, tags
+
+
+def _fold_value(fold: Mapping[str, float], key: str) -> float | None:
+    """A fold's value for ``key``, read under a baseline's old name where the fold predates
+    its current one."""
+    if key in fold:
+        return float(fold[key])
+    for old, new in LEGACY_NAMES.items():
+        legacy = key.replace(f"/baseline/{new}/", f"/baseline/{old}/")
+        if legacy != key and legacy in fold:
+            return float(fold[legacy])
+    return None
+
+
+def plan_gap(
+    logged: Mapping[str, float],
+    best_baselines: Mapping[str, str],
+    rows: Mapping[int, Mapping[str, float]],
+) -> tuple[dict[str, float], str | None]:
+    """The gap-to-best-baseline statistics a run lacks, or why it will not get them.
+
+    ``best_baselines`` is what the run's ``best_baseline/<population>`` tags name, and
+    ``rows`` each fold's values, keyed as in ``raw_fold_metrics.csv``. The model's and the
+    best baseline's fold values must average to the run's own logged means, or nothing is
+    planned: they would be some other folds' numbers.
+    """
+    pending = {
+        population: name
+        for population, name in best_baselines.items()
+        if f"cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean" not in logged
+    }
+    ordered = [rows[fold] for fold in sorted(rows)]
+    folds: list[dict[str, float]] = [{} for _ in ordered]
+    for population, name in sorted(pending.items()):
+        checks = {
+            f"{population}/impute_score": f"cv/test/{population}/impute_score/mean",
+            f"{population}/baseline/{name}/impute_score": (
+                f"cv/test/{population}/baseline/{BEST_BASELINE}/impute_score/mean"
+            ),
+        }
+        for key, logged_mean in checks.items():
+            found = [_fold_value(fold, key) for fold in ordered]
+            values = [value for value in found if value is not None]
+            if not values or len(values) < len(found):
+                return {}, f"no fold value for {key}"
+            if logged_mean not in logged:
+                return {}, f"{logged_mean} is not logged"
+            if abs(float(np.mean(values)) - logged[logged_mean]) > TOLERANCE:
+                return {}, f"{key}: fold mean {float(np.mean(values)):.6f}, logged {logged[logged_mean]:.6f}"
+            for fold, value in zip(folds, values):
+                fold[key] = value
+    metrics: dict[str, float] = {}
+    for key, statistics in best_baseline_gaps(folds, pending).items():
+        metrics.update(_summary_metrics(f"cv/test/{key}", statistics))
+    return metrics, None
+
+
+def _fold_rows(client: MlflowClient, run_id: str) -> dict[int, dict[str, float]]:
+    """Each fold's final metrics as the run kept them in ``metrics/raw_fold_metrics.csv``;
+    empty when the run has no such artifact."""
+    with tempfile.TemporaryDirectory() as scratch:
+        try:
+            path = client.download_artifacts(run_id, "metrics/raw_fold_metrics.csv", scratch)
+        except (MlflowException, OSError):
+            return {}
+        frame = pd.read_csv(path)
+    return {
+        int(row["fold"]): {str(key): float(value) for key, value in row.items() if key not in ("fold", "dataset")}
+        for row in frame.to_dict("records")
+    }
+
+
+def _write_at_step_zero(client: MlflowClient, run_id: str, metrics: Mapping[str, float]) -> None:
+    """Log metrics where a live run's summary puts them: step 0, in batches MLflow accepts."""
+    stamp = int(time.time() * 1000)
+    entries = [Metric(key, float(value), stamp, 0) for key, value in sorted(metrics.items())]
+    for start in range(0, len(entries), _METRICS_PER_BATCH):
+        client.log_batch(run_id, metrics=entries[start : start + _METRICS_PER_BATCH])
 
 
 def _cells(
@@ -458,15 +558,58 @@ def main(argv: list[str] | None = None) -> int:
             continue
         print(f"[{mode}] best baseline for {run.info.run_name}: {tags}", flush=True)
         if args.apply:
-            stamp = int(time.time() * 1000)
-            entries = [Metric(key, float(value), stamp, 0) for key, value in sorted(metrics.items())]
-            for start in range(0, len(entries), _METRICS_PER_BATCH):
-                client.log_batch(run.info.run_id, metrics=entries[start : start + _METRICS_PER_BATCH])
+            _write_at_step_zero(client, run.info.run_id, metrics)
             for key, value in {**tags, BASELINES_BACKFILLED_TAG: "true"}.items():
                 client.set_tag(run.info.run_id, key, value)
             mirror_run_tree(client, run.info.run_id)
         best_written += 1
     print(f"[{mode}] {best_written} run(s) given a best baseline")
+
+    # Third pass: the model's gap to its best baseline, from each fold's own numbers.
+    gap_written = gap_refused = 0
+    for run in _imputation_parents(client, args.run):
+        current = client.get_run(run.info.run_id) if args.apply else run
+        logged = current.data.metrics
+        best = {
+            key[len("best_baseline/"):]: value
+            for key, value in current.data.tags.items()
+            if key.startswith("best_baseline/")
+        }
+        if not any(f"cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean" not in logged for population in best):
+            continue
+        name = run.info.run_name or run.info.run_id
+        rows = _fold_rows(client, run.info.run_id)
+        if rows and any(
+            _fold_value(fold, f"{population}/baseline/{baseline}/impute_score") is None
+            for population, baseline in best.items()
+            for fold in rows.values()
+        ):
+            # A baseline the run never logged live: its fold values are the recomputed ones.
+            try:
+                recomputed = _recompute_cached(run, args.cache, budget)
+            except _BudgetSpent:
+                print(f"[{mode}] fold budget spent inside {name}; the cache holds every fold so far, rerun to resume", flush=True)
+                return 0
+            rows = {fold: {**recomputed.get(fold, {}), **values} for fold, values in rows.items()}
+        metrics, refusal = plan_gap(logged, best, rows)
+        if refusal is not None:
+            gap_refused += 1
+            print(f"[{mode}] gap REFUSED {name}: {refusal}", flush=True)
+            continue
+        gaps = ", ".join(
+            f"{population} {metrics[f'cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean']:+.4f}"
+            f" ({metrics.get(f'cv/test/{population}/{GAP_TO_BEST_BASELINE_PCT}/impute_score/mean', float('nan')):+.1f}%)"
+            f" vs {best[population]}"
+            for population in sorted(best)
+            if f"cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean" in metrics
+        )
+        print(f"[{mode}] gap to best baseline for {name}: {gaps}", flush=True)
+        if args.apply:
+            _write_at_step_zero(client, run.info.run_id, metrics)
+            client.set_tag(run.info.run_id, BEST_BASELINE_GAP_BACKFILLED_TAG, "true")
+            mirror_run_tree(client, run.info.run_id)
+        gap_written += 1
+    print(f"[{mode}] {gap_written} run(s) given their gap to the best baseline, {gap_refused} refused")
     return 0
 
 

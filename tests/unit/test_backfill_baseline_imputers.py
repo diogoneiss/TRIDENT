@@ -160,3 +160,45 @@ def test_the_best_baseline_is_derived_from_what_the_run_logged() -> None:
     assert legacy_tags == {"best_baseline/impute/induced": "knn5"}
 
     assert backfill.plan_best({**logged, **metrics}) == ({}, {})
+
+
+def _gap_rows() -> dict[int, dict[str, float]]:
+    """Two folds as ``raw_fold_metrics.csv`` holds them for a run of 2026-09-24: the
+    model, the mean/mode and the k = 5 baseline under its old name ``knn``."""
+    return {
+        1: {"impute/induced/impute_score": 0.9, "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/knn/impute_score": 0.8},
+        2: {"impute/induced/impute_score": 0.7, "impute/induced/baseline/mean_mode/impute_score": 1.0,
+            "impute/induced/baseline/knn/impute_score": 1.0},
+    }
+
+
+def test_the_gap_to_the_best_baseline_is_backfilled_from_each_folds_own_numbers() -> None:
+    """A run recorded before the gap existed gets it as a live run's summary computes it,
+    from the fold values the run kept, reading its old ``knn`` where the tag names
+    ``knn5``. The fold values are trusted only where their means are the run's own
+    logged means, and a run already carrying the gap is left alone."""
+    logged = {
+        "cv/test/impute/induced/impute_score/mean": 0.8,
+        "cv/test/impute/induced/baseline/best/impute_score/mean": 0.9,
+    }
+    best = {"impute/induced": "knn5"}
+
+    metrics, refused = backfill.plan_gap(logged, best, _gap_rows())
+
+    assert refused is None
+    assert metrics["cv/test/impute/induced/gap_to_best_baseline/impute_score/mean"] == pytest.approx(-0.1)
+    assert metrics["cv/test/impute/induced/gap_to_best_baseline/impute_score/std"] == pytest.approx(0.2828427)
+    assert metrics["cv/test/impute/induced/gap_to_best_baseline_pct/impute_score/mean"] == pytest.approx(
+        100 * (0.8 - 0.9) / 0.9
+    )
+    assert len(metrics) == 14
+
+    assert backfill.plan_gap({**logged, **metrics}, best, _gap_rows()) == ({}, None)
+
+    elsewhere = {**logged, "cv/test/impute/induced/impute_score/mean": 0.81}
+    metrics, refused = backfill.plan_gap(elsewhere, best, _gap_rows())
+    assert metrics == {} and refused is not None and "impute/induced/impute_score" in refused
+
+    metrics, refused = backfill.plan_gap(logged, {"impute/induced": "hgb"}, _gap_rows())
+    assert metrics == {} and refused is not None and "hgb" in refused
