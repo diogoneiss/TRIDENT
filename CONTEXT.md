@@ -125,14 +125,15 @@ _Avoid_: original value, clean dataset, target table
 **Baseline imputer**:
 A fixed imputer scored on exactly the cells the decoder is scored on, so that its
 error sits beside the model's on every scored population: the mean/mode baseline,
-which the fold-ranking score divides by, and two KNN baselines, a plain tabular
-imputer at two neighbourhood sizes. All learn from the training fold alone and never
-rank a fold.
+which the fold-ranking score divides by, and three learned baselines: KNN at two
+neighbourhood sizes and one gradient-boosting model per column. All learn from the
+training fold alone and never rank a fold.
 
-**KNN bar**:
-The better of the two KNN baselines' scores on one population of one run: the bar a
-claim that the decoder beats a plain tabular imputer has to clear.
-_Avoid_: best KNN, KNN baseline (for the chosen one), reference score
+**Baseline bar**:
+The lowest score any baseline imputer reached on one population of one run: the bar a
+claim that the decoder beats the baselines has to clear. Never above 1.0, since the
+mean/mode baseline sits there.
+_Avoid_: KNN bar, best baseline, reference score
 _Avoid_: reference imputer, naive imputer, external imputer, benchmark imputer
 
 **Imputation task**:

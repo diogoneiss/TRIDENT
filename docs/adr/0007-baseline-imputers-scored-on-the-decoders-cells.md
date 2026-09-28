@@ -15,6 +15,13 @@ neighbourhood sizes, `knn5` and `knn10`, and a comparison reads the better of th
 integer-coded categorical column is spelt the way the variant spells it, which fixes
 every induced categorical score on electricity (*Outcome*).
 
+**Amended again 2026-09-27**, on the user's go-ahead for the deferred follow-ups: a
+third learned baseline, `hgb`, one gradient-boosting model per column (decisions 1, 2,
+3, 5 and 6); a comparison reads the **baseline bar**, the lowest score any baseline
+reached, in place of the KNN bar (*How to compare*); the per-column artifact carries
+every baseline's errors (decision 7); and `scripts/backfill_baseline_imputers.py`
+brings runs recorded before these amendments up to the current set (*Consequences*).
+
 ## Context
 
 `impute_score` says how the decoder compares with filling the column mean or mode, and
@@ -43,14 +50,15 @@ Facts established while planning, all against scikit-learn 1.9.0 as pinned by `u
 
 1. **A pure module, `src/training/imputation_baselines.py`, fully under the strict mypy
    gate.** A `BaselineImputer` protocol (`name`, `fit(frame)`, `impute(frame, hidden)`)
-   takes a boolean mask of the cells to hide and never writes into the frame. Two
-   implementations, `MeanModeImputer` and `KnnImputer`, and `score_baselines`, which hides
+   takes a boolean mask of the cells to hide and never writes into the frame. Three
+   implementations, `MeanModeImputer`, `KnnImputer` and `GradientBoostingImputer`, and
+   `score_baselines`, which hides
    the scored cells, reads each baseline's fill back at the same `(row, column)`
    positions, and scores it through the same `score_cells` with the same naive
    denominators. The scored-cell table is copied, never mutated: it goes on to the cell
    ledger and the per-column artifact with the model's guesses in it.
 
-2. **The two recipes.** The mean/mode baseline is `mean_mode_baselines` itself, so its
+2. **The recipes.** The mean/mode baseline is `mean_mode_baselines` itself, so its
    `impute_score` is 1.0 by construction (a unit test pins that exactly on a table of
    one kind, within an ulp on a mixed one). The KNN baselines are `KNNImputer(n_neighbors=k,
    weights="uniform", keep_empty_features=True)` at `k = 5` and at `k = 10`, each its own
@@ -64,12 +72,30 @@ Facts established while planning, all against scikit-learn 1.9.0 as pinned by `u
    deliberate and makes the baseline slightly conservative; on `kr-vs-kp`'s `spcop` it is
    one cell. A training categorical column with no observed value is refused by name.
 
+   The gradient-boosting baseline, `hgb`, trains one `HistGradientBoostingRegressor` or
+   `HistGradientBoostingClassifier` (scikit-learn defaults, `random_state = 0`) per
+   column, on the training rows where that column is observed, with every other column
+   as a feature: numbers as scaled, categories as their index in the training fold's
+   vocabulary, declared categorical to the booster. It fills a hidden cell in a single
+   pass from the rest of its row, with every other hidden or missing cell entering as a
+   gap the booster routes natively; nothing is iterated, so no fill feeds another. Each
+   model also trains on a copy of its rows with a fifth of the feature cells hidden
+   (the evaluation mask's default rate, from a seeded stream of its own): a booster
+   that never saw a feature missing sends every gap in it down whichever branch held
+   more rows, which on a complete training fold, as on a `_00nan` variant, means the
+   rule it learned is not applied at all; a unit test on a step function pins the
+   difference (-3 instead of 3 without the copy). A feature with no observed value is
+   left out of that column's model, and a column with no observed value, one observed
+   value or nothing to learn from is filled with a constant (zero, that value, or its
+   mean or commonest category).
+
 3. **Metric keys.** `impute/<population>/baseline/<name>/<metric>` with `<name>` in
-   `mean_mode`, `knn5`, `knn10` and `<metric>` in `rmse_num_z`, `mae_num_z`, `acc_cat`,
-   `macro_f1_cat`, `impute_score`. The cell counts are the model's own and are not
-   repeated. The 21 runs recorded on 2026-09-24/25, before the amendment, carry the
-   `k = 5` baseline under the name `knn` and have no `knn10`. Presence per kind mirrors the model's keys, so the fold-parity rule holds
-   wherever it held before. Tracking prefixes `test/` per fold and the CV parent wraps
+   `mean_mode`, `knn5`, `knn10`, `hgb` and `<metric>` in `rmse_num_z`, `mae_num_z`,
+   `acc_cat`, `macro_f1_cat`, `impute_score`. The cell counts are the model's own and
+   are not repeated. The 21 runs recorded on 2026-09-24/25 logged the `k = 5` baseline
+   under the name `knn`; the backfill script adds the current names beside it. Presence
+   per kind mirrors the model's keys, so the fold-parity rule holds wherever it held
+   before. Tracking prefixes `test/` per fold and the CV parent wraps
    `cv/test/.../<statistic>`, as for every other metric; nothing is registered anywhere.
 
 4. **Populations.** Scored on the masked population, on every extra-rate population, and
@@ -79,27 +105,40 @@ Facts established while planning, all against scikit-learn 1.9.0 as pinned by `u
    constant). An empty population yields no key, exactly as it yields no model score. An
    Optuna trial computes the baselines on its test populations like any other run.
 
-5. **No configuration key and no flag.** The two sizes, 5 and 10, with uniform weights
-   are a constant in the module (`KNN_NEIGHBOURS`). A baseline is a fixed bar; a tunable one would be a second model, and a key
-   would enter `complete_configuration` and every promoted file.
+5. **No configuration key and no flag.** The two KNN sizes (`KNN_NEIGHBOURS`), the
+   booster's seed (`BOOSTING_SEED`) and its training-time hiding rate are constants in
+   the module. A baseline is a fixed bar; a tunable one would be a second model, and a
+   key would enter `complete_configuration` and every promoted file.
 
 6. **Cost.** One `fit` per baseline per fold and one `transform` per KNN baseline per
-   scored population (two since the amendment), none of it on
+   scored population. The booster's fit is the dearest, one model per column: 24 s per
+   fold on `spambase` (57 columns), 12 s on `credit-g` (13 multi-class columns), 9 s on
+   `kr-vs-kp`, 3 to 4 s elsewhere including `electricity`; its fills take under half a
+   second. None of it runs on
    the GPU and none of it touching the global numpy or torch streams, so every seeded
    result and both regression fixtures are unchanged. The ranking metric, the search
    objective, promotion and the classification task are untouched.
 
+7. **Per-column errors.** `metrics/per_column_imputation.csv` carries, for the masked and
+   induced populations, every baseline's errors column by column as rows beneath the
+   model's: the same `column`, `metric`, `value` layout with the metric named
+   `baseline/<name>/<metric>` and the counts left out. Rows rather than columns, because
+   the file is long-form and its columns are pinned by a unit test. This answers the half
+   of F-06-2 the pooled metrics could not: an `acc_cat` of 0.93 on a column now sits beside
+   the mode's accuracy on the same cells. The extra-rate populations are not in the file,
+   as the model's own rows for them never were.
+
 ## How to compare
 
 On a `_20nan`..`_80nan` variant, read `cv/test/impute/induced/impute_score/mean` beside
-the **KNN bar**: the lower of `cv/test/impute/induced/baseline/knn5/impute_score/mean` and
-`.../baseline/knn10/impute_score/mean`, chosen per run and per population, same folds,
-same cells. All are lower-is-better with 1.0 at mean/mode parity; the model is doing
-something a plain tabular imputer does not only where its number is below that bar.
-Choosing the better neighbourhood after seeing its test score favours the baseline, so
-the bar errs against the model, which is the safe direction for a claim that the model
-beats it. For the runs of 2026-09-24/25, `knn` is `knn5` and `knn10` was computed offline
-on the same folds and cells (the offline `knn5` reproduces the logged `knn` to 1e-8).
+the **baseline bar**: the lowest `cv/test/impute/induced/baseline/<name>/impute_score/mean`
+over `mean_mode`, `knn5`, `knn10` and `hgb`, chosen per run and per population, same
+folds, same cells. All are lower-is-better with 1.0 at mean/mode parity, so the bar is
+never above 1.0; the model does something no baseline does only where its number is
+below it. Choosing the best baseline after seeing its test score favours the
+baselines, so the bar errs against the model, which is the safe direction for a claim
+that the model beats them. The KNN bar of the first amendment is the same choice
+restricted to `knn5` and `knn10`.
 `cv/test/impute/induced/baseline/mean_mode/rmse_num_z/mean` and
 `.../baseline/mean_mode/acc_cat/mean` are the bar itself in absolute units. On any variant
 the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_score` must be
@@ -110,15 +149,16 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
 - **`IterativeImputer` (MICE-style) as the stronger baseline.** Rejected: linear on a
   one-hot matrix, stochastic (a `random_state` to discipline on every run), behind an
   experimental import, and not obviously stronger than KNN on mixed tables.
-- **A missForest-style imputer, one `HistGradientBoosting` model per column.** Deferred:
-  it is the strongest cheap tabular imputer, handles gaps and categories natively, and
-  fits the same protocol as a third implementation without touching the decode stage. It
-  costs one model per column per fold, needs `sklearn.ensemble` stubs and an explicit
-  integer `random_state`, and the user chose KNN as the first bar. See the follow-up.
+- **A missForest-style imputer, one `HistGradientBoosting` model per column.** Deferred
+  at first, when the user chose KNN as the first bar; adopted in the second amendment as
+  `hgb`. **Iterating it as missForest does** (fill, refit on the fills, repeat) was
+  rejected: it multiplies the dearest fit by the number of rounds and turns the baseline
+  transductive-leaning; a single pass with native gaps, trained on a copy with hidden
+  cells, recovers the rule a hidden neighbour would have given.
 - **Logging only the naive errors.** Rejected: answers the review's finding but not the
   question a reader asks, which is whether the bar is low.
-- **Baseline rows in `per_column_imputation.csv`.** Deferred: the artifact's columns are
-  pinned by a unit test and the review's request for it is separate from this one.
+- **Baseline columns in `per_column_imputation.csv`.** Rejected in favour of rows
+  (decision 7): the file is long-form and its columns are pinned by a unit test.
 - **A configuration key for `k`.** Rejected, decision 5.
 - **A single KNN at `k = 10`**, the stronger size on most variants. Rejected in the
   amendment: `k = 5` is the better bar on the small, low-missingness tables (`biodeg`,
@@ -129,14 +169,24 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
 
 ## Consequences
 
-- Fifteen more keys per scored population per fold (`test/...`), 105 per population on a
-  CV parent. On `credit-g_20nan` without extra rates: 30 fold keys, 210 parent keys.
-- `stubs/sklearn/impute/__init__.pyi` is the fourteenth hand-written scikit-learn stub.
+- Twenty more keys per scored population per fold (`test/...`), 140 per population on a
+  CV parent. On `credit-g_20nan` without extra rates: 40 fold keys, 280 parent keys.
+- `stubs/sklearn/impute`, `stubs/sklearn/ensemble` and `set_config` in the root stub bring
+  the hand-written scikit-learn stubs to seventeen symbols.
 - The baselines depend only on the dataset, the seed, the fold count and
   `EVAL_MASK_RATE`, never on the model, so they can be recomputed for every existing
-  imputation run without training. A backfill of the seed-42 runs in the store is a
-  follow-up, not part of this change.
-- A `CONTEXT.md` entry fixes the term *baseline imputer*.
+  imputation run without training. `scripts/backfill_baseline_imputers.py` does that for
+  every finished imputation parent that logged baselines but lacks some of the current
+  ones, and writes the missing ones where a live run would have (the seven statistics
+  on the parent at step 0, each diagnostic child's fold value), tags the tree
+  `baselines_backfilled=true` and re-mirrors it. It writes a run only if its
+  recomputation reproduces, within 1e-6, every baseline mean the run already logged (a
+  legacy `knn` checked as `knn5`), so the electricity run scored before the spelling fix
+  is refused on its own numbers. Dry run by default. **Not yet applied:** its first dry
+  run, on 2026-09-27, was stopped for lack of memory before it had written anything,
+  cache included; the script now takes the smallest tables first and caps
+  scikit-learn's working memory.
+- `CONTEXT.md` fixes the terms *baseline imputer* and *baseline bar*.
 
 ## Outcome (2026-09-24/25 and 27: 22 five-fold runs with the change, seed 42, cosine)
 
@@ -154,7 +204,8 @@ of every run.
 **The bar and the model.** `cv/test/impute/<population>/.../impute_score/mean`, lower is
 better, 1.0 is mean/mode parity; 95% intervals are the summary's own (Student-t over the
 five folds). The **KNN bar** is the lower of `knn5` and `knn10`, chosen per run and per
-population, and is bold where it beats the model. For the runs of 2026-09-24/25, `knn5`
+population, and is bold where it beats the model; the stored runs have no `hgb` yet,
+so this table reads the KNN bar until the backfill gives them the full baseline bar. For the runs of 2026-09-24/25, `knn5`
 is the logged `knn` and `knn10` was computed offline on the same folds and cells; the
 `electricity_20nan` row is the rerun of 2026-09-27 with both sizes logged and the induced
 truth spelt correctly (see below). "promoted" is the variant's `*.imputation.json`,
