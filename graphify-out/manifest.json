@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "src/mlflow_utils.py": {
-    "mtime": 1789694423.0701766,
-    "seen": 1789695328.6180518,
-    "ast_hash": "e5e783ed74126f03e3e5c345d890d8b5",
+    "mtime": 1790560198.5737205,
+    "seen": 1790561829.5137799,
+    "ast_hash": "b5eae8ef6e3683b852bd995d96bd7397",
     "semantic_hash": ""
   },
   "src/models.py": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "src/training/data.py": {
-    "mtime": 1789095260.340582,
-    "seen": 1789693767.0144424,
-    "ast_hash": "21106d018a7aaf8af9e6205747d2d34d",
+    "mtime": 1790560090.4671814,
+    "seen": 1790561829.5137799,
+    "ast_hash": "e10598f4260bad6d98eafb69958432ff",
     "semantic_hash": ""
   },
   "src/training/discovery.py": {
@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "src/training/runner.py": {
-    "mtime": 1789694858.675124,
-    "seen": 1789695328.6180518,
-    "ast_hash": "3cb6a68c08a798b3aefec3588ce7fde2",
+    "mtime": 1790559483.0903199,
+    "seen": 1790561829.5137799,
+    "ast_hash": "b52f4cec63ec93ac99bf5d759288a468",
     "semantic_hash": ""
   },
   "src/training/summary.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1789694858.6703615,
-    "seen": 1789695328.6180518,
-    "ast_hash": "89223539844ad009941c71b07216dc2a",
+    "mtime": 1790559483.0883253,
+    "seen": 1790561829.5137799,
+    "ast_hash": "cabc22157d06a7b61db120501310fff2",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_runtime.py": {
-    "mtime": 1789694858.6761236,
-    "seen": 1789695328.6190517,
-    "ast_hash": "cfdaa0c9edd694f743a527aef63bee26",
+    "mtime": 1790559405.8076334,
+    "seen": 1790561829.5137799,
+    "ast_hash": "73c5074d2808e945ab92d934e2246273",
     "semantic_hash": ""
   },
   "tests/unit/test_training_summary.py": {
@@ -198,21 +198,21 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1790299885.3878493,
-    "seen": 1790300006.429236,
-    "ast_hash": "1e1d828fa2879bfb2391fe8242f3899f",
+    "mtime": 1790561566.7050967,
+    "seen": 1790561829.5137799,
+    "ast_hash": "0931fb3d4931162faaf3b064291a0fe1",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1790549563.133193,
-    "seen": 1790549696.9180639,
-    "ast_hash": "cd77857f0d4d2957b2ca6fa21bcd63a7",
+    "mtime": 1790559340.3293755,
+    "seen": 1790561829.5137799,
+    "ast_hash": "82137f21e14822768cfc67b91ae03db1",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790549563.1321955,
-    "seen": 1790549696.9180639,
-    "ast_hash": "f80e39670acec6b63ffe2aba16b15910",
+    "mtime": 1790559340.3293755,
+    "seen": 1790561829.5137799,
+    "ast_hash": "8cb38dac626c0e837f841f4d8144557d",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1790549455.5204017,
-    "seen": 1790549696.9180639,
-    "ast_hash": "848c6acfd659627825ff5f532c7320a2",
+    "mtime": 1790560075.127392,
+    "seen": 1790561829.5137799,
+    "ast_hash": "44b959bfdba0d63a0796f35eb7f8d992",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1790549427.7846036,
-    "seen": 1790549696.9180639,
-    "ast_hash": "9317cdd9703f4eca6544b1b8a3e1d2d6",
+    "mtime": 1790559405.8066251,
+    "seen": 1790561829.5137799,
+    "ast_hash": "d2f3fbc5ac7f1c7487c1036c644f57e7",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
@@ -1080,21 +1080,33 @@
     "semantic_hash": ""
   },
   "src/training/imputation_baselines.py": {
-    "mtime": 1790549400.8926187,
-    "seen": 1790549696.9180639,
-    "ast_hash": "5bb47237540989581d504da518ae5882",
+    "mtime": 1790559551.9105675,
+    "seen": 1790561829.5137799,
+    "ast_hash": "ed6c6a7770ab7307c864a8d3376dd9cf",
     "semantic_hash": ""
   },
   "tests/unit/test_imputation_baselines.py": {
-    "mtime": 1790549400.8926187,
-    "seen": 1790549696.9180639,
-    "ast_hash": "4548bd9b5c5c17ad397b7a2968548824",
+    "mtime": 1790559405.804628,
+    "seen": 1790561829.5137799,
+    "ast_hash": "c0f15780b3157c855542b8c992da70bc",
     "semantic_hash": ""
   },
   "docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md": {
-    "mtime": 1790557875.0198686,
-    "seen": 1790557895.7573662,
-    "ast_hash": "8c26aec7723e8d36f96e092fc58049ed",
+    "mtime": 1790561566.704097,
+    "seen": 1790561829.5137799,
+    "ast_hash": "5ad271bc9fe4649560c891a9dee6581d",
+    "semantic_hash": ""
+  },
+  "scripts/backfill_baseline_imputers.py": {
+    "mtime": 1790561504.671106,
+    "seen": 1790561829.5137799,
+    "ast_hash": "4fbf78c13f943ef78dff5c1816355a3d",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_backfill_baseline_imputers.py": {
+    "mtime": 1790560137.2719712,
+    "seen": 1790561829.5137799,
+    "ast_hash": "97f12d5f2b1a9d2c09820123052e7e4a",
     "semantic_hash": ""
   }
 }
