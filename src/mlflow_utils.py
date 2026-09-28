@@ -60,6 +60,10 @@ SEARCH_SPACE_TAG = "search_space"
 IS_MIRROR_TAG = "is_mirror"
 # The run a mirror run copies; its unique key inside the mirror experiment.
 SOURCE_RUN_ID_TAG = "source_run_id"
+# Marks a run some of whose baseline-imputer metrics (ADR 0007) were written after it
+# finished, by ``scripts/backfill_baseline_imputers.py``, rather than by the run itself.
+# Sparse: only runs the backfill wrote to carry it.
+BASELINES_BACKFILLED_TAG = "baselines_backfilled"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:
