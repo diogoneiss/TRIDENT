@@ -65,3 +65,46 @@ decoder loses?
 - `full` trains 20 to 60 epochs per stage against the defaults' 300 and 150, so a
   difference from the defaults mixes search space and training budget (§8.4).
 - One seed. No claim about seed variance.
+
+## Outcome (interim, 2026-09-28 07:41)
+
+The batch ran detached from 00:51. Two studies finished in the night; the queue is still
+running (the `letter_20nan` retrain started at 07:10; `electricity_20nan` and the rest
+had not started). A study started at 00:47 and stopped at 00:50, while the launch was
+rearranged, left `optuna_pendigits_20nan_20260928_004728` and its `optuna_trial_1` as
+`RUNNING` in the store; they are not part of this record.
+
+| variant | study | trials, median | best validation objective | 5-fold retrain |
+|---|---|---|---|---|
+| `pendigits_20nan` | 2.1 h | 40, 198 s | 0.372 | finished |
+| `letter_20nan` | 3.7 h | 40, 271 s | 0.499 | running at 07:41 |
+| `electricity_20nan` … `credit-g_80nan` | not started | | | |
+
+**`pendigits_20nan`, pre-registered measures** (`cv/test/impute/<population>/impute_score/mean`,
+95% intervals; retrain `impute_pendigits_20nan_20260928_025538`):
+
+| population | tuned model | best baseline (same run) | verdict | defaults (2026-09-25) | tuned − defaults, fold-paired |
+|---|---|---|---|---|---|
+| induced | 0.345 [0.335, 0.355] | `knn10` 0.348 [0.339, 0.357] | inside the bar's interval | 0.399 [0.384, 0.414] | −0.054 [−0.060, −0.048], 5/5 folds |
+| masked | 0.393 [0.385, 0.401] | `knn10` 0.407 [0.398, 0.416] | inside the bar's interval | 0.435 [0.417, 0.452] | −0.042 [−0.055, −0.029], 5/5 folds |
+
+By the pre-registered rule the tuned model **does not beat the bar** on either
+population: its intervals overlap `knn10`'s. It does move the decoder from clearly losing
+to `knn10` (the defaults' 0.399 against 0.348, disjoint) to level with it, and it beats
+the defaults on every fold of both populations, by far more than the seed noise measured
+before (0.007 to 0.014, addendum §8.2).
+
+Exploratory, not pre-registered: fold-paired against the same run's baselines, which
+share folds and cells with the model, the tuned model is below `knn10` by −0.014
+[−0.020, −0.008] on the masked cells (5/5 folds) and by −0.003 [−0.009, +0.002] on the
+induced ones (4/5), and below `hgb` by −0.020 and −0.048 (5/5 each).
+
+The winning configuration runs the opposite way to the defaults on almost every axis:
+`DIM` 192, `HEADS` 8, `LAYERS` 6, `HIDDEN_DIM` 40, `DIM_FEED` 80, `DROPOUT` 0.1, `BATCH` 64,
+`PROB_MASCARA` 0.2, `LR_PRE` 1.5e-5, `WEIGHT_DECAY_PRE` 1.9e-5, `LR_DECODE` 4.1e-4,
+`WEIGHT_DECAY_DECODE` 1.1e-3, with 40 pre-training and 60 decode epochs against the
+defaults' 300 and 150: a larger, deeper model trained less, on smaller batches, with a
+lower mask rate. The `letter_20nan` winner points the same way (`DIM` 144, `HEADS` 16,
+`LAYERS` 5, `HIDDEN_DIM` 64, `DIM_FEED` 48, `DROPOUT` 0.1, `BATCH` 64, `PROB_MASCARA` 0.4,
+`LR_PRE` 1.0e-5, 50 and 60 epochs). One seed, one selected trial per study; the caveats
+stated above apply unchanged.
