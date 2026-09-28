@@ -198,21 +198,21 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1789610762.8895862,
-    "seen": 1789693767.0144424,
-    "ast_hash": "48509cc68251b56b6db6542a5f0996f1",
+    "mtime": 1790299885.3878493,
+    "seen": 1790300006.429236,
+    "ast_hash": "1e1d828fa2879bfb2391fe8242f3899f",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1789693086.394377,
-    "seen": 1789693767.0144424,
-    "ast_hash": "793c29ac6b7d219d23036b7d1f5d1fcb",
+    "mtime": 1790549563.133193,
+    "seen": 1790549696.9180639,
+    "ast_hash": "cd77857f0d4d2957b2ca6fa21bcd63a7",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1789695302.6118305,
-    "seen": 1789695328.6190517,
-    "ast_hash": "fa0fa5977c67eb85a649d379e85ba978",
+    "mtime": 1790549563.1321955,
+    "seen": 1790549696.9180639,
+    "ast_hash": "f80e39670acec6b63ffe2aba16b15910",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1789610762.941588,
-    "seen": 1789693767.0144424,
-    "ast_hash": "e9d2b3c6c50f0656423645ca8a2d13bc",
+    "mtime": 1790549455.5204017,
+    "seen": 1790549696.9180639,
+    "ast_hash": "848c6acfd659627825ff5f532c7320a2",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1789178312.742739,
-    "seen": 1789693767.0144424,
-    "ast_hash": "bf310261881733ac4b21c6888ed30c7d",
+    "mtime": 1790549427.7846036,
+    "seen": 1790549696.9180639,
+    "ast_hash": "9317cdd9703f4eca6544b1b8a3e1d2d6",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
@@ -834,20 +834,20 @@
     "semantic_hash": ""
   },
   "datasets/hiperparams/credit-g/credit-g_20nan.imputation.json": {
-    "mtime": 1789102497.9368687,
-    "seen": 1789693767.0144424,
+    "mtime": 1789734806.838621,
+    "seen": 1790300006.429236,
     "ast_hash": "85d23313fe448478ac159bb748c43e7f",
     "semantic_hash": ""
   },
   "datasets/hiperparams/credit-g/credit-g_40nan.imputation.json": {
-    "mtime": 1789105031.5077598,
-    "seen": 1789693767.0144424,
+    "mtime": 1789734499.0326202,
+    "seen": 1790300006.429236,
     "ast_hash": "b86860e418a014cdbfbe855114bf4965",
     "semantic_hash": ""
   },
   "datasets/hiperparams/kr-vs-kp/kr-vs-kp_20nan.imputation.json": {
-    "mtime": 1789114583.9738352,
-    "seen": 1789693767.0144424,
+    "mtime": 1789732740.45133,
+    "seen": 1790300006.429236,
     "ast_hash": "08fffdc03606ade2016601b276250838",
     "semantic_hash": ""
   },
@@ -1032,9 +1032,9 @@
     "semantic_hash": ""
   },
   "docs/reviews/imputation-critique/CONSOLIDATED.md": {
-    "mtime": 1789518786.763005,
-    "seen": 1789693767.0144424,
-    "ast_hash": "0c29ef58a7d544be1753a540b98d72fb",
+    "mtime": 1789735781.4876163,
+    "seen": 1790300006.429236,
+    "ast_hash": "e68e696bf36020d3bc1e926c43981918",
     "semantic_hash": ""
   },
   "docs/adr/0006-mirror-experiments-per-task.md": {
@@ -1044,9 +1044,9 @@
     "semantic_hash": ""
   },
   "docs/reviews/imputation-critique/ADDENDUM-2026-09-15-optuna-results.md": {
-    "mtime": 1789633434.5515206,
-    "seen": 1789693767.0144424,
-    "ast_hash": "687e8dfc169e338a1d76bfdb15568820",
+    "mtime": 1789735774.8252573,
+    "seen": 1790300006.429236,
+    "ast_hash": "39bea94c98c0980c0419ce4547c77138",
     "semantic_hash": ""
   },
   "scripts/mirror_runs.py": {
@@ -1077,6 +1077,24 @@
     "mtime": 1789695555.0680468,
     "seen": 1789695561.1574228,
     "ast_hash": "feeb1a0735177bd0cce57133e7b28e36",
+    "semantic_hash": ""
+  },
+  "src/training/imputation_baselines.py": {
+    "mtime": 1790549400.8926187,
+    "seen": 1790549696.9180639,
+    "ast_hash": "5bb47237540989581d504da518ae5882",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_imputation_baselines.py": {
+    "mtime": 1790549400.8926187,
+    "seen": 1790549696.9180639,
+    "ast_hash": "4548bd9b5c5c17ad397b7a2968548824",
+    "semantic_hash": ""
+  },
+  "docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md": {
+    "mtime": 1790557875.0198686,
+    "seen": 1790557895.7573662,
+    "ast_hash": "8c26aec7723e8d36f96e092fc58049ed",
     "semantic_hash": ""
   }
 }
