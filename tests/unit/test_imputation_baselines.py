@@ -6,6 +6,7 @@ import pytest
 import torch
 
 from src.training.imputation_baselines import (
+    GradientBoostingImputer,
     KnnImputer,
     MeanModeImputer,
     fit_baseline_imputers,
@@ -135,6 +136,7 @@ def _fitted(train: pd.DataFrame) -> list:
     imputers = [
         MeanModeImputer(NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
         KnnImputer(NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS, n_neighbors=5),
+        GradientBoostingImputer(NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
     ]
     for imputer in imputers:
         imputer.fit(train)
@@ -280,7 +282,11 @@ def test_a_table_of_one_kind_produces_only_that_kinds_keys() -> None:
     frame = _frame()
     train, test = _split(frame)
 
-    numerical_only = [MeanModeImputer(NUMERICAL_COLUMNS, []), KnnImputer(NUMERICAL_COLUMNS, [], n_neighbors=5)]
+    numerical_only = [
+        MeanModeImputer(NUMERICAL_COLUMNS, []),
+        KnnImputer(NUMERICAL_COLUMNS, [], n_neighbors=5),
+        GradientBoostingImputer(NUMERICAL_COLUMNS, []),
+    ]
     for imputer in numerical_only:
         imputer.fit(train[NUMERICAL_COLUMNS])
     metrics = score_baselines(
@@ -291,11 +297,15 @@ def test_a_table_of_one_kind_produces_only_that_kinds_keys() -> None:
     )
     assert set(metrics) == {
         f"baseline/{name}/{metric}"
-        for name in ("mean_mode", "knn5")
+        for name in ("mean_mode", "knn5", "hgb")
         for metric in ("rmse_num_z", "mae_num_z", "impute_score")
     }
 
-    categorical_only = [MeanModeImputer([], CATEGORICAL_COLUMNS), KnnImputer([], CATEGORICAL_COLUMNS, n_neighbors=5)]
+    categorical_only = [
+        MeanModeImputer([], CATEGORICAL_COLUMNS),
+        KnnImputer([], CATEGORICAL_COLUMNS, n_neighbors=5),
+        GradientBoostingImputer([], CATEGORICAL_COLUMNS),
+    ]
     for imputer in categorical_only:
         imputer.fit(train[CATEGORICAL_COLUMNS])
     metrics = score_baselines(
@@ -306,7 +316,7 @@ def test_a_table_of_one_kind_produces_only_that_kinds_keys() -> None:
     )
     assert set(metrics) == {
         f"baseline/{name}/{metric}"
-        for name in ("mean_mode", "knn5")
+        for name in ("mean_mode", "knn5", "hgb")
         for metric in ("acc_cat", "macro_f1_cat", "impute_score")
     }
 
@@ -351,7 +361,7 @@ def test_a_category_only_the_truth_holds_is_a_miss_not_a_crash() -> None:
 
     metrics = score_baselines(_fitted(train), test, cells, naive)
 
-    for name in ("mean_mode", "knn5"):
+    for name in ("mean_mode", "knn5", "hgb"):
         assert metrics[f"baseline/{name}/acc_cat"] == 0.0
         assert np.isfinite(metrics[f"baseline/{name}/impute_score"])
 
@@ -404,11 +414,99 @@ def test_each_knn_baseline_fills_from_its_own_number_of_neighbours() -> None:
     assert fills == {"knn5": pytest.approx(3.0), "knn10": pytest.approx(5.5)}
 
 
-def test_the_fitted_baselines_are_mean_mode_and_both_knn_sizes() -> None:
-    """What every scored population carries: the naive fill, and KNN at five and at ten
-    neighbours, each under its own name."""
+def test_the_fitted_baselines_are_mean_mode_both_knn_sizes_and_gradient_boosting() -> None:
+    """What every scored population carries: the naive fill, KNN at five and at ten
+    neighbours, and a gradient-boosting model per column, each under its own name."""
     train, _ = _split(_frame())
 
     imputers = fit_baseline_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
 
-    assert [imputer.name for imputer in imputers] == ["mean_mode", "knn5", "knn10"]
+    assert [imputer.name for imputer in imputers] == ["mean_mode", "knn5", "knn10", "hgb"]
+
+
+def _step_frame(rows: int) -> pd.DataFrame:
+    """``level`` jumps from -3 to 3 where ``x`` passes 10, and ``side`` follows the same
+    threshold, with an unrelated ``colour`` in between: a rule a per-column model finds
+    exactly and an average of neighbours only approaches near the jump."""
+    x = [float(index % 21) for index in range(rows)]
+    return pd.DataFrame(
+        {
+            "side": ["low" if value <= 10 else "high" for value in x],
+            "x": x,
+            "colour": [["red", "blue", "green"][index % 3] for index in range(rows)],
+            "level": [-3.0 if value <= 10 else 3.0 for value in x],
+        }
+    )
+
+
+def test_gradient_boosting_learns_each_column_from_the_others() -> None:
+    """The third baseline trains one model per column on the training rows where that
+    column is observed, with every other column as features, and fills a hidden cell
+    from the rest of its row. Worked by hand: at ``x = 2`` the rule says ``level = -3``
+    and ``side = "low"``, at ``x = 18`` it says 3 and ``"high"``.
+
+    The columns are interleaved, so a fill read from the wrong column, or a model
+    trained on the wrong target, lands on the wrong answer here. The training fold is
+    complete, as on any ``_00nan`` variant, and ``side`` is hidden beside ``level``: a
+    booster that never saw ``side`` missing would send the gap down its larger branch
+    and answer -3 at ``x = 18``, ignoring the ``x`` it was given.
+    """
+    train = _step_frame(420)
+    test = pd.DataFrame(
+        {"side": ["high", "low"], "x": [2.0, 18.0], "colour": ["red", "blue"], "level": [99.0, -99.0]}
+    )
+    hidden = np.zeros(test.shape, dtype=bool)
+    hidden[:, test.columns.get_loc("level")] = True
+    hidden[:, test.columns.get_loc("side")] = True
+
+    imputer = GradientBoostingImputer(["x", "level"], ["side", "colour"])
+    imputer.fit(train)
+    filled = imputer.impute(test, hidden)
+
+    assert imputer.name == "hgb"
+    # Within half a unit: the hidden copy it also trains on has rows where neither side
+    # nor x is known, which pulls every fill slightly toward the mean. What a broken
+    # wiring or an unlearnt gap gets wrong is the side of the jump, six units away.
+    assert filled["level"].tolist() == pytest.approx([-3.0, 3.0], abs=0.5)
+    assert filled["side"].tolist() == ["low", "high"]
+    assert filled["x"].tolist() == [2.0, 18.0]
+
+
+def test_gradient_boosting_fills_the_same_way_every_time() -> None:
+    """Boosting subsamples a validation split on large folds; with a fixed seed of its own
+    two fits of the same fold must fill every cell identically, or the bar would move
+    between runs of one configuration."""
+    train = _step_frame(12_000)
+    train.loc[train.index % 7 == 0, "level"] = np.nan
+    test = _step_frame(50)
+    hidden = np.zeros(test.shape, dtype=bool)
+    hidden[::3, test.columns.get_loc("level")] = True
+    hidden[1::4, test.columns.get_loc("side")] = True
+
+    fills = []
+    for _ in range(2):
+        imputer = GradientBoostingImputer(["x", "level"], ["side", "colour"])
+        imputer.fit(train)
+        fills.append(imputer.impute(test, hidden))
+
+    assert fills[0].equals(fills[1])
+
+
+def test_gradient_boosting_falls_back_to_a_constant_where_there_is_nothing_to_learn() -> None:
+    """A column the training fold holds in one category only, or not at all, gives a
+    classifier or regressor nothing to fit. The fill is then that single category, or
+    the scaled mean of zero, and never a crash or a NaN that would abort the run."""
+    train = _step_frame(60)
+    train["colour"] = "red"
+    train["level"] = np.nan
+    test = _step_frame(9)
+    hidden = np.zeros(test.shape, dtype=bool)
+    hidden[:, test.columns.get_loc("colour")] = True
+    hidden[:, test.columns.get_loc("level")] = True
+
+    imputer = GradientBoostingImputer(["x", "level"], ["side", "colour"])
+    imputer.fit(train)
+    filled = imputer.impute(test, hidden)
+
+    assert set(filled["colour"]) == {"red"}
+    assert filled["level"].tolist() == [0.0] * 9

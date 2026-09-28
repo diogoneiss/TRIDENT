@@ -337,7 +337,7 @@ def test_every_scored_population_carries_both_baseline_imputers_beside_the_model
     metrics = outcome.result.metrics
 
     for population in ("impute/masked", "impute/masked/rate_10", "impute/induced"):
-        for name in ("mean_mode", "knn5", "knn10"):
+        for name in ("mean_mode", "knn5", "knn10", "hgb"):
             assert f"{population}/baseline/{name}/impute_score" in metrics, (population, name)
             assert f"{population}/baseline/{name}/rmse_num_z" in metrics, (population, name)
             assert f"{population}/baseline/{name}/acc_cat" in metrics, (population, name)
@@ -360,7 +360,7 @@ def test_every_scored_population_carries_both_baseline_imputers_beside_the_model
     assert metrics["impute/masked/baseline/mean_mode/rmse_num_z"] == pytest.approx(naive_rmse)
     assert metrics["impute/masked/baseline/mean_mode/impute_score"] == pytest.approx(1.0, abs=1e-12)
     logged = {event.key for event in tracker.metric_events if event.step is None}
-    for name in ("knn5", "knn10"):
+    for name in ("knn5", "knn10", "hgb"):
         assert f"test/impute/masked/baseline/{name}/impute_score" in logged
         assert f"test/impute/induced/baseline/{name}/impute_score" in logged
 
