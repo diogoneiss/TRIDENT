@@ -37,11 +37,19 @@ def _complete_frame(rows: int = 36) -> pd.DataFrame:
     )
 
 
-def _dataset(rows: int = 36) -> PreparedDataset:
-    """That table with cells taken away, then scaled as preparation would leave it."""
-    frame = _complete_frame(rows)
-    frame.loc[frame.index % 5 == 0, "size"] = np.nan
-    frame.loc[frame.index % 7 == 0, "colour"] = np.nan
+def _dataset(
+    rows: int = 36,
+    complete: pd.DataFrame | None = None,
+    gaps: dict[str, int] | None = None,
+) -> PreparedDataset:
+    """That table with cells taken away, then scaled as preparation would leave it.
+
+    ``gaps`` maps a column to the modulus of the rows it loses; by default ``size`` loses
+    every fifth row and ``colour`` every seventh.
+    """
+    frame = (complete if complete is not None else _complete_frame(rows)).copy()
+    for column, every in (gaps or {"size": 5, "colour": 7}).items():
+        frame.loc[frame.index % every == 0, column] = np.nan
     raw_numerical = frame[NUMERICAL].copy()
     scaler = StandardScaler()
     frame[NUMERICAL] = scaler.fit_transform(frame[NUMERICAL])
@@ -371,3 +379,33 @@ def test_baseline_imputers_stay_out_of_the_diagnostic_and_search_families() -> N
     assert not any("null_token/baseline" in key for key in keys)
     assert not any("validation/" in key and "baseline" in key for key in keys)
 
+
+def test_an_integer_coded_category_is_scored_against_the_truth_it_spells() -> None:
+    """electricity's ``day`` is a category written as a number. The variant has gaps in
+    it, so it is read as floats and its categories spell ``"3.0"``; the complete sibling
+    has none, is read as integers, and spells the same day ``"3"``. Compared as they are
+    stored, every induced cell of such a column looked like a category the variant never
+    shows and was scored a miss, for the model and every baseline alike.
+
+    The induced truth must be spelt the way the variant spells it, so each one is a
+    category the model could answer with, and a guess of the right day counts as right.
+    """
+    complete = _complete_frame()
+    complete["shape"] = [1 + index % 3 for index in range(len(complete))]
+    dataset = _dataset(complete=complete, gaps={"size": 5, "colour": 7, "shape": 4})
+    assert dataset.frame["shape"].dtype == np.float64
+    assert complete["shape"].dtype == np.int64
+
+    outcome, _ = _run(dataset=dataset, sibling=complete)
+
+    induced = outcome.scored_cells[outcome.scored_cells["population"] == "induced"]
+    shapes = induced[induced["column"] == "shape"]
+    assert len(shapes) > 0
+    assert set(shapes["actual"]) <= {"1.0", "2.0", "3.0"}
+    # The mode baseline answers every cell with the training mode; it is right exactly on
+    # the cells whose truth is that mode, which this toy guarantees are not none.
+    features = dataset.frame.drop(columns=[dataset.label_column])
+    train = features.iloc[_fold(len(dataset.frame)).train_indices]
+    mode = str(train["shape"].mode().iloc[0])
+    assert (shapes["actual"] == mode).any()
+    assert outcome.result.metrics["impute/induced/baseline/mean_mode/acc_cat"] > 0.0
