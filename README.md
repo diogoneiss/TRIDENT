@@ -321,6 +321,8 @@ impute_score = w_num * (rmse_num_z / mean-imputation rmse) + w_cat * (err_cat / 
 
 with the baselines learned from the **training** fold and applied to the same scored cells, and `w_*` the share of scored cells of each kind. **Lower is better**; `1.0` means no better than filling the column mean or mode. It degrades correctly on the six all-numerical datasets and on all-categorical `kr-vs-kp`.
 
+Beside those numbers, every scored population also carries what three **baseline imputers** scored on exactly the same cells ([ADR 0007](docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md)): `baseline/mean_mode/*`, the column mean or mode the score divides by, whose `impute_score` is `1.0` by construction; and `baseline/knn5/*` and `baseline/knn10/*`, a k-nearest-neighbours imputer at five and at ten neighbours (uniform weights, numerical columns as scaled, categorical columns one-hot) fit on the training fold. Each carries `rmse_num_z`, `mae_num_z`, `acc_cat`, `macro_f1_cat` and `impute_score`. The KNN bar of a run is the better of the two: the lower of `cv/test/impute/induced/baseline/knn5/impute_score/mean` and `.../knn10/...`, read beside `cv/test/impute/induced/impute_score/mean`, says whether the model clears a plain tabular imputer and not only the naive one.
+
 ### Artifacts
 
 | File | What it holds |

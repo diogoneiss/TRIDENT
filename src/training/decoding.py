@@ -17,6 +17,7 @@ from src.models import TridentDecoder
 from src.utils import preprocess_table
 
 from .data import evaluation_mask
+from .imputation_baselines import fit_baseline_imputers, score_baselines
 from .imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import (
@@ -135,6 +136,12 @@ def train_and_evaluate_decoder(
     baselines = mean_mode_baselines(
         train_frame, dataset.numerical_columns, dataset.categorical_columns
     )
+    # The baseline imputers, fit on this same training split, scored later on exactly
+    # the cells the model is scored on (ADR 0007). Their numbers say whether the bar the
+    # ranking score divides by is low, and whether a plain tabular imputer clears it.
+    baseline_imputers = fit_baseline_imputers(
+        train_frame, dataset.numerical_columns, dataset.categorical_columns
+    )
     hidden_test = embedder.encode(
         evaluation_mask(test_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal), device
     )
@@ -150,6 +157,14 @@ def train_and_evaluate_decoder(
     metrics: dict[str, float | int | str] = {}
     scored = score_cells(cells, baselines)
     metrics.update({f"impute/masked/{name}": value for name, value in scored.metrics.items()})
+    # Scored here, while ``cells`` holds the masked population alone: the induced cells
+    # are appended to it further down.
+    metrics.update(
+        {
+            f"impute/masked/{name}": value
+            for name, value in score_baselines(baseline_imputers, test_frame, cells, baselines).items()
+        }
+    )
     # Nominal is what was asked for; realised is what the masking helper actually hid,
     # which falls as missingness rises because it never hides an already-missing cell.
     eligible = int(hidden_test.masked_positions.numel() - _already_missing(test_frame))
@@ -171,6 +186,12 @@ def train_and_evaluate_decoder(
         metrics.update(
             {f"{prefix}/{name}": value for name, value in score_cells(at_rate, baselines).metrics.items()}
         )
+        metrics.update(
+            {
+                f"{prefix}/{name}": value
+                for name, value in score_baselines(baseline_imputers, test_frame, at_rate, baselines).items()
+            }
+        )
 
     if complete_sibling is not None:
         induced = _score_induced_missing(
@@ -180,6 +201,14 @@ def train_and_evaluate_decoder(
         scored_induced = score_cells(induced, baselines)
         metrics.update(
             {f"impute/induced/{name}": value for name, value in scored_induced.metrics.items()}
+        )
+        # The induced cells are the frame's own gaps, so the mask adds nothing here; one
+        # code path for both populations all the same.
+        metrics.update(
+            {
+                f"impute/induced/{name}": value
+                for name, value in score_baselines(baseline_imputers, test_frame, induced, baselines).items()
+            }
         )
         if score_null_path:
             # The same gaps, left as the [NULL] the variant stores rather than swapped to

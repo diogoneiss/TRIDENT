@@ -12,6 +12,7 @@ from src.embedder import TabularEmbedder
 from src.models import TridentPretrainer
 from src.training.data import evaluation_mask
 from src.training.decoding import train_and_evaluate_decoder
+from src.training.imputation_metrics import mean_mode_baselines
 from src.training.tracking import BufferedFoldTracker
 from src.training.types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome
 from src.transformer import TabularTransformerEncoder
@@ -309,3 +310,64 @@ def test_an_induced_cell_whose_category_the_variant_never_shows_is_scored_as_a_m
     assert unseen.iloc[0]["actual_original"] == "violet"
     # Rows 28 and 35 are the variant's colour gaps in the test fold: both are scored.
     assert outcome.result.metrics["impute/induced/n_cat_cells"] == 2
+
+
+def test_every_scored_population_carries_both_baseline_imputers_beside_the_model() -> None:
+    """Beside every score of the model's, what filling the mean or mode and what a KNN
+    imputer would have scored on the very same cells (ADR 0007), so a reader can tell a
+    low bar from a cleared one.
+
+    The naive RMSE is recomputed here from the fold's own masked cells: a hook placed
+    after the induced cells are appended to the table would score the wrong population
+    and disagree with it.
+    """
+    dataset = _dataset()
+    hyperparameters = _hyperparameters(EVAL_MASK_RATES_EXTRA=[0.1])
+    outcome, tracker = _run(
+        dataset=dataset, hyperparameters=hyperparameters, sibling=_complete_frame()
+    )
+    metrics = outcome.result.metrics
+
+    for population in ("impute/masked", "impute/masked/rate_10", "impute/induced"):
+        for name in ("mean_mode", "knn5", "knn10"):
+            assert f"{population}/baseline/{name}/impute_score" in metrics, (population, name)
+            assert f"{population}/baseline/{name}/rmse_num_z" in metrics, (population, name)
+            assert f"{population}/baseline/{name}/acc_cat" in metrics, (population, name)
+            assert f"{population}/baseline/{name}/n_num_cells" not in metrics
+
+    features = dataset.frame.drop(columns=[dataset.label_column])
+    fold = _fold(len(dataset.frame))
+    naive = mean_mode_baselines(
+        features.iloc[fold.train_indices].reset_index(drop=True), NUMERICAL, CATEGORICAL
+    )
+    masked = outcome.scored_cells[outcome.scored_cells["population"] == "masked"]
+    numbers = masked[masked["kind"] == "numerical"]
+    naive_rmse = float(
+        np.sqrt(
+            np.mean(
+                (numbers["column"].map(naive).to_numpy(dtype=float) - numbers["actual"].to_numpy(dtype=float)) ** 2
+            )
+        )
+    )
+    assert metrics["impute/masked/baseline/mean_mode/rmse_num_z"] == pytest.approx(naive_rmse)
+    assert metrics["impute/masked/baseline/mean_mode/impute_score"] == pytest.approx(1.0, abs=1e-12)
+    logged = {event.key for event in tracker.metric_events if event.step is None}
+    for name in ("knn5", "knn10"):
+        assert f"test/impute/masked/baseline/{name}/impute_score" in logged
+        assert f"test/impute/induced/baseline/{name}/impute_score" in logged
+
+
+def test_baseline_imputers_stay_out_of_the_diagnostic_and_search_families() -> None:
+    """The null-token path scores the same induced cells, so its baselines would be the
+    induced ones repeated; the search objective is compared across trials that all share
+    the same data, so a baseline there would be a constant. Neither carries one.
+    """
+    outcome, tracker = _run(
+        sibling=_complete_frame(), score_null_path=True, score_search_objective=True
+    )
+
+    keys = set(outcome.result.metrics) | {event.key for event in tracker.metric_events}
+    assert any("/baseline/" in key for key in keys)
+    assert not any("null_token/baseline" in key for key in keys)
+    assert not any("validation/" in key and "baseline" in key for key in keys)
+
