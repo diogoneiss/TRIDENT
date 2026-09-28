@@ -124,3 +124,39 @@ def test_applying_writes_at_step_zero_marks_the_runs_and_a_second_pass_writes_no
     again = backfill.plan_run(parent, "impute_toy_20nan_x", parent_run.data.metrics, _folds(), {child: 2})
     assert again.refused is None
     assert again.parent == {} and again.children == {}
+
+
+def _stats(prefix: str, mean: float) -> dict[str, float]:
+    return {f"{prefix}/{stat}": value for stat, value in (
+        ("mean", mean), ("ci95_lower", mean - 0.1), ("ci95_upper", mean + 0.1),
+        ("std", 0.05), ("min", mean - 0.05), ("max", mean + 0.05), ("fold_count", 5.0),
+    )}
+
+
+def test_the_best_baseline_is_derived_from_what_the_run_logged() -> None:
+    """A run recorded before ``baseline/best`` existed gets it from its own logged
+    statistics: the population's lowest mean ``impute_score`` names the baseline, and all
+    of that baseline's statistics are copied. A legacy ``knn`` stands in for ``knn5``
+    only where ``knn5`` is absent, so a backfilled run never names ``knn`` its best."""
+    induced = "cv/test/impute/induced/baseline"
+    logged = {
+        **_stats(f"{induced}/mean_mode/impute_score", 1.0),
+        **_stats(f"{induced}/knn/impute_score", 0.90),
+        **_stats(f"{induced}/knn5/impute_score", 0.90),
+        **_stats(f"{induced}/hgb/impute_score", 0.95),
+        **_stats(f"{induced}/knn5/rmse_num_z", 0.70),
+        **_stats(f"{induced}/hgb/rmse_num_z", 0.60),
+    }
+
+    metrics, tags = backfill.plan_best(logged)
+
+    assert tags == {"best_baseline/impute/induced": "knn5"}
+    assert metrics[f"{induced}/best/impute_score/mean"] == 0.90
+    assert metrics[f"{induced}/best/rmse_num_z/mean"] == 0.70
+    assert len(metrics) == 14
+
+    legacy_only = {**_stats(f"{induced}/mean_mode/impute_score", 1.0), **_stats(f"{induced}/knn/impute_score", 0.9)}
+    _, legacy_tags = backfill.plan_best(legacy_only)
+    assert legacy_tags == {"best_baseline/impute/induced": "knn5"}
+
+    assert backfill.plan_best({**logged, **metrics}) == ({}, {})

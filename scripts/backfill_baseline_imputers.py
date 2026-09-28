@@ -9,7 +9,7 @@ some of the current ones (``mean_mode``, ``knn5``, ``knn10``, ``hgb``), and writ
 missing ones where a live run would have: the seven cross-validation statistics on the
 parent at step 0, and each diagnostic child's own fold value.
 
-A run is written only if the recomputation reproduces, within 1e-6, every baseline mean
+A run is written only if the recomputation reproduces, within 1e-9, every baseline mean
 the run already logged (a legacy ``knn`` is checked as ``knn5``). A run whose own numbers
 cannot be reproduced is refused and reported: its cells were not the ones recomputed
 here, as with the electricity run scored before the spelling fix of 2026-09-27. Every
@@ -21,10 +21,20 @@ Usage (dry run by default, honours ``MLFLOW_TRACKING_URI``):
     uv run --python 3.11 python scripts/backfill_baseline_imputers.py
     uv run --python 3.11 python scripts/backfill_baseline_imputers.py --cache <dir> --apply
 
+A second pass gives every run that logged baselines but no ``baseline/best`` its best
+baseline, derived from the statistics it already carries (no recomputation): per
+population, the lowest mean ``impute_score`` names the baseline, all its statistics are
+copied under ``baseline/best``, and the tag ``best_baseline/<population>`` names it,
+exactly as a live run's summary does.
+
 ``--cache`` keeps each run's recomputed folds as JSON so a dry run and the ``--apply``
 after it pay for the imputers once; ``--run <id>`` (repeatable) restricts the pass. Runs
 are taken smallest dataset first, so on a machine short of memory the cache fills as far
-as it can before the large tables, and a rerun resumes from it.
+as it can before the large tables, and a rerun resumes from it; ``--fold_budget`` stops a
+pass cleanly after that many new folds. scikit-learn's working memory is left at its
+default, as a live run leaves it: KNN computes distances in chunks of that size, and on a
+table of integers (``letter``) a different chunk size breaks distance ties differently,
+which moved a logged score by 3e-5 and failed the reproduction check.
 """
 
 from __future__ import annotations
@@ -36,11 +46,10 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
-import sklearn
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -57,26 +66,38 @@ from src.training.data import (  # noqa: E402
     load_complete_sibling,
     prepare_dataset,
 )
-from src.training.imputation_baselines import fit_baseline_imputers, score_baselines  # noqa: E402
+from src.training.imputation_baselines import (  # noqa: E402
+    BaselineImputer,
+    MeanModeImputer,
+    fit_baseline_imputers,
+    score_baselines,
+)
 from src.training.imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines  # noqa: E402
 from src.training.mirroring import mirror_run_tree  # noqa: E402
 
 # The summariser's and the tracker's own helpers, so a backfilled statistic is computed and
 # named exactly as a live run's is.
-from src.training.summary import _summarize_metric  # noqa: E402
+from src.training.summary import BEST_BASELINE, _summarize_metric  # noqa: E402
 from src.training.tracking import _summary_metrics  # noqa: E402
 from src.training.types import DatasetSpec, PreparedDataset  # noqa: E402
 
 CURRENT_BASELINES = ("mean_mode", "knn5", "knn10", "hgb")
 # A name a run logged before the first amendment, and what it is called now.
 LEGACY_NAMES = {"knn": "knn5"}
-TOLERANCE = 1e-6
+# Every run that reproduces does so to machine precision (2e-16 at worst); anything
+# looser would let a changed tie-break through.
+TOLERANCE = 1e-9
 _BASELINE_MEAN = re.compile(r"cv/test/(impute/.+)/baseline/([^/]+)/([^/]+)/mean")
 _EXTRA_RATE = re.compile(r"cv/test/impute/masked/rate_(\d+)/impute_score/mean")
+_BASELINE_STAT = re.compile(r"cv/test/(impute/.+)/baseline/([^/]+)/([^/]+)/([^/]+)")
 _METRICS_PER_BATCH = 1000
 _CELL_COLUMNS = ["row", "column", "kind", "population", "actual", "imputed", "confidence", "actual_original"]
 
 FoldMetrics = dict[int, dict[str, float]]
+
+
+class _BudgetSpent(Exception):
+    """The pass has recomputed as many folds as it was allowed to; the cache keeps them."""
 
 
 @dataclass
@@ -148,6 +169,42 @@ def apply_plan(client: MlflowClient, plan: RunPlan) -> None:
         client.set_tag(run_id, BASELINES_BACKFILLED_TAG, "true")
 
 
+def plan_best(logged: Mapping[str, float]) -> tuple[dict[str, float], dict[str, str]]:
+    """The ``baseline/best`` statistics and tags a run lacks, from what it already logged.
+
+    A legacy name stands in for its current one only where the current one is absent,
+    so a run carrying both ``knn`` and ``knn5`` is never said to be best at ``knn``.
+    """
+    held: dict[str, dict[str, str]] = {}
+    for key in logged:
+        match = _BASELINE_STAT.fullmatch(key)
+        if match is None or match.group(2) == BEST_BASELINE:
+            continue
+        population, name = match.group(1), match.group(2)
+        current = LEGACY_NAMES.get(name, name)
+        names = held.setdefault(population, {})
+        if current not in names or current == name:
+            names[current] = name
+    metrics: dict[str, float] = {}
+    tags: dict[str, str] = {}
+    for population, names in sorted(held.items()):
+        if f"cv/test/{population}/baseline/{BEST_BASELINE}/impute_score/mean" in logged:
+            continue
+        scored = [
+            (logged[f"cv/test/{population}/baseline/{logged_name}/impute_score/mean"], current, logged_name)
+            for current, logged_name in names.items()
+            if f"cv/test/{population}/baseline/{logged_name}/impute_score/mean" in logged
+        ]
+        if not scored:
+            continue
+        _, best, logged_name = min(scored)
+        source = f"cv/test/{population}/baseline/{logged_name}/"
+        target = f"cv/test/{population}/baseline/{BEST_BASELINE}/"
+        metrics.update({target + key[len(source):]: value for key, value in logged.items() if key.startswith(source)})
+        tags[f"best_baseline/{population}"] = best
+    return metrics, tags
+
+
 def _cells(
     positions: np.ndarray,
     columns: Sequence[str],
@@ -183,9 +240,22 @@ def _frame_values(frame: pd.DataFrame, dataset: PreparedDataset) -> tuple[dict[s
 
 
 def recompute_folds(
-    dataset_name: str, seed: int, cv_folds: int, rate: float, extra_rates: Sequence[float]
+    dataset_name: str,
+    seed: int,
+    cv_folds: int,
+    rate: float,
+    extra_rates: Sequence[float],
+    naive_only: bool = False,
+    done: Mapping[int, dict[str, float]] | None = None,
+    on_fold: Callable[[int, dict[str, float]], None] | None = None,
 ) -> FoldMetrics:
-    """Every current baseline's metrics on each fold's populations, as the run scored them."""
+    """Every current baseline's metrics on each fold's populations, as the run scored them.
+
+    ``naive_only`` fits the mean/mode baseline alone, which takes seconds and is enough to
+    tell whether these are the run's own cells. ``done`` holds folds already recomputed,
+    which are not recomputed again, and ``on_fold`` hears each fold as it completes, so a
+    killed pass loses one fold at most.
+    """
     spec = DatasetSpec.from_name(dataset_name, None)
     dataset = prepare_dataset(spec)
     sibling = load_complete_sibling(spec)
@@ -195,8 +265,16 @@ def recompute_folds(
     for ordinal, fold in enumerate(build_folds(dataset.frame, dataset.label_column, cv_folds, seed), start=1):
         train = features.iloc[np.asarray(fold.train_indices)].reset_index(drop=True)
         test = features.iloc[np.asarray(fold.test_indices)].reset_index(drop=True)
+        if done is not None and ordinal in done:
+            folds[ordinal] = dict(done[ordinal])
+            continue
         naive = mean_mode_baselines(train, numerical, categorical)
-        imputers = fit_baseline_imputers(train, numerical, categorical)
+        imputers: list[BaselineImputer]
+        if naive_only:
+            imputers = [MeanModeImputer(numerical, categorical)]
+            imputers[0].fit(train)
+        else:
+            imputers = fit_baseline_imputers(train, numerical, categorical)
         columns = list(test.columns)
         numbers, categories = _frame_values(test, dataset)
         metrics: dict[str, float] = {}
@@ -220,6 +298,8 @@ def recompute_folds(
             scored = score_baselines(imputers, test, cells, naive).metrics
             metrics.update({f"impute/induced/{key}": value for key, value in scored.items()})
         folds[ordinal] = metrics
+        if on_fold is not None:
+            on_fold(ordinal, metrics)
     return folds
 
 
@@ -237,7 +317,7 @@ def _needs_backfill(metrics: Mapping[str, float]) -> bool:
     )
 
 
-def candidate_runs(client: MlflowClient, only: Sequence[str] | None) -> list[Run]:
+def _imputation_parents(client: MlflowClient, only: Sequence[str] | None) -> list[Run]:
     """Finished imputation parents in the experiment families, never mirrors."""
     experiments = [
         experiment.experiment_id
@@ -252,7 +332,13 @@ def candidate_runs(client: MlflowClient, only: Sequence[str] | None) -> list[Run
         ),
         max_results=50_000,
     )
-    return [run for run in runs if (not only or run.info.run_id in only) and _needs_backfill(run.data.metrics)]
+    return [run for run in runs if not only or run.info.run_id in only]
+
+
+def candidate_runs(client: MlflowClient, only: Sequence[str] | None) -> list[Run]:
+    """Finished imputation parents in the experiment families, never mirrors, lacking part
+    of the current baseline set."""
+    return [run for run in _imputation_parents(client, only) if _needs_backfill(run.data.metrics)]
 
 
 def _dataset_bytes(run: Run) -> int:
@@ -269,23 +355,40 @@ def _children(client: MlflowClient, run: Run) -> dict[str, int]:
     return {kid.info.run_id: int(kid.data.tags["fold"]) for kid in kids if kid.data.tags.get("fold", "").isdigit()}
 
 
-def _recompute_cached(run: Run, cache: Path | None) -> FoldMetrics:
+def _arguments(run: Run) -> tuple[str, int, int, float, list[float]]:
     params = run.data.params
     extra = sorted(
         int(match.group(1)) / 100
         for key in run.data.metrics
         if (match := _EXTRA_RATE.fullmatch(key)) is not None
     )
+    return params["dataset_name"], int(params["seed"]), int(params["cv_folds"]), float(params["EVAL_MASK_RATE"]), extra
+
+
+def _naive_refusal(run: Run, name: str) -> str | None:
+    """Why the run's own mean/mode numbers cannot be reproduced, if they cannot."""
+    logged = {key: value for key, value in run.data.metrics.items() if "/baseline/mean_mode/" in key}
+    folds = recompute_folds(*_arguments(run), naive_only=True)
+    return plan_run(run.info.run_id, name, logged, folds, {}).refused
+
+
+def _recompute_cached(run: Run, cache: Path | None, budget: list[int] | None = None) -> FoldMetrics:
     path = None if cache is None else cache / f"{run.info.run_id}.json"
+    done: dict[int, dict[str, float]] = {}
     if path is not None and path.exists():
-        return {int(fold): metrics for fold, metrics in json.loads(path.read_text()).items()}
-    folds = recompute_folds(
-        params["dataset_name"], int(params["seed"]), int(params["cv_folds"]), float(params["EVAL_MASK_RATE"]), extra
-    )
-    if path is not None:
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(folds))
-    return folds
+        done = {int(fold): metrics for fold, metrics in json.loads(path.read_text()).items()}
+
+    def keep(fold: int, metrics: dict[str, float]) -> None:
+        done[fold] = metrics
+        if path is not None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(done))
+        if budget is not None:
+            budget[0] -= 1
+            if budget[0] <= 0:
+                raise _BudgetSpent
+
+    return recompute_folds(*_arguments(run), done=dict(done), on_fold=keep)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -294,22 +397,38 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run", action="append", default=None, help="Restrict to this parent run id (repeatable).")
     parser.add_argument("--cache", type=Path, default=None, help="Keep recomputed folds here as JSON, one file per run.")
     parser.add_argument("--tracking_uri", default=None, help="Override MLFLOW_TRACKING_URI.")
+    parser.add_argument(
+        "--fold_budget",
+        type=int,
+        default=None,
+        help="Stop cleanly after recomputing this many new folds (needs --cache); rerun to resume.",
+    )
     args = parser.parse_args(argv)
 
     mode = "APPLIED" if args.apply else "DRY RUN"
-    # KNN's distances are computed in chunks of this many megabytes; the default 1024 is
-    # what a 45,000-row table on a 16 GB machine cannot always spare. Chunking never
-    # changes a distance, only how many are held at once.
-    sklearn.set_config(working_memory=128)
     tracking_uri = setup_mlflow(args.tracking_uri)
     client = MlflowClient(tracking_uri=tracking_uri)
     runs = sorted(candidate_runs(client, args.run), key=_dataset_bytes)
     print(f"[{mode}] tracking URI: {tracking_uri}; {len(runs)} run(s) lack part of the current baseline set")
+    if args.fold_budget is not None and args.cache is None:
+        parser.error("--fold_budget needs --cache, or the folds it computes are lost")
+    budget = None if args.fold_budget is None else [args.fold_budget]
     written = refused = 0
     for run in runs:
         name = run.info.run_name or run.info.run_id
         started = time.perf_counter()
-        folds = _recompute_cached(run, args.cache)
+        # The naive baseline first: seconds, and enough to refuse a run whose cells these
+        # are not before the learned baselines are paid for.
+        naive_refusal = _naive_refusal(run, name)
+        if naive_refusal is not None:
+            refused += 1
+            print(f"[{mode}] REFUSED {name}: {naive_refusal}", flush=True)
+            continue
+        try:
+            folds = _recompute_cached(run, args.cache, budget)
+        except _BudgetSpent:
+            print(f"[{mode}] fold budget spent inside {name}; the cache holds every fold so far, rerun to resume", flush=True)
+            return 0
         children = _children(client, run)
         plan = plan_run(run.info.run_id, name, run.data.metrics, folds, children)
         seconds = time.perf_counter() - started
@@ -329,6 +448,25 @@ def main(argv: list[str] | None = None) -> int:
             mirror_run_tree(client, run.info.run_id)
             written += 1
     print(f"[{mode}] {written} run tree(s) written and re-mirrored, {refused} refused")
+
+    # Second pass: the best baseline, derived from what every run now carries.
+    best_written = 0
+    for run in _imputation_parents(client, args.run):
+        logged = client.get_run(run.info.run_id).data.metrics if args.apply else run.data.metrics
+        metrics, tags = plan_best(logged)
+        if not metrics:
+            continue
+        print(f"[{mode}] best baseline for {run.info.run_name}: {tags}", flush=True)
+        if args.apply:
+            stamp = int(time.time() * 1000)
+            entries = [Metric(key, float(value), stamp, 0) for key, value in sorted(metrics.items())]
+            for start in range(0, len(entries), _METRICS_PER_BATCH):
+                client.log_batch(run.info.run_id, metrics=entries[start : start + _METRICS_PER_BATCH])
+            for key, value in {**tags, BASELINES_BACKFILLED_TAG: "true"}.items():
+                client.set_tag(run.info.run_id, key, value)
+            mirror_run_tree(client, run.info.run_id)
+        best_written += 1
+    print(f"[{mode}] {best_written} run(s) given a best baseline")
     return 0
 
 
