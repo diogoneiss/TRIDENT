@@ -198,9 +198,9 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1790720426.5591779,
-    "seen": 1790720674.118686,
-    "ast_hash": "531a7ed108a6587ca37a8289df4c9dd0",
+    "mtime": 1790726092.1109135,
+    "seen": 1790726114.555541,
+    "ast_hash": "9b3b8e4a13a08927930e2978f64bbfa9",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790642730.292933,
-    "seen": 1790643273.4105473,
-    "ast_hash": "2cd97730748254a95e5ce06f2edb8dc7",
+    "mtime": 1790726092.1109135,
+    "seen": 1790726114.5555444,
+    "ast_hash": "ed22b8ed4252361301a84b605fbe8ce7",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1789695302.6108456,
-    "seen": 1789695328.6190517,
-    "ast_hash": "fe096bcb5ebea1c29b68d22426026770",
+    "mtime": 1790726092.1109135,
+    "seen": 1790726114.5555422,
+    "ast_hash": "b1f08396cc0e4d943d2e3942bfdad000",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": ""
   },
   "scripts/sync_remote.py": {
-    "mtime": 1790725638.0990007,
-    "seen": 1790725771.101672,
-    "ast_hash": "29a6b3d57e34997f7204691665314a73",
+    "mtime": 1790726092.1109135,
+    "seen": 1790726114.5554795,
+    "ast_hash": "f26bc59e7f7a6283e1f3d45f3cc1fe66",
     "semantic_hash": ""
   },
   "tests/unit/test_sync_remote.py": {
@@ -1146,9 +1146,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0009-store-hand-off-to-a-remote-server.md": {
-    "mtime": 1790725651.6799574,
-    "seen": 1790725771.1017451,
-    "ast_hash": "dbef5e65d63462f9b4ac4d7228fd81ca",
+    "mtime": 1790726092.1109135,
+    "seen": 1790726114.5555587,
+    "ast_hash": "570c21dc4a94e4cd421683d42ceb07b5",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-full/02-credit-g-80nan-induced-objective.md": {

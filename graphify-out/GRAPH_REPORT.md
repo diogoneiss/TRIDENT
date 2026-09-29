@@ -1,16 +1,16 @@
 # Graph Report - TRIDENT  (2026-09-29)
 
 ## Corpus Check
-- 193 files · ~283,662 words
+- 193 files · ~283,988 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2255 nodes · 4208 edges · 169 communities (152 shown, 7 thin omitted)
+- 2255 nodes · 4211 edges · 165 communities (150 shown, 5 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 157 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2a2e6ac5`
+- Built from commit: `e898251d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -49,7 +49,7 @@
 - Ticket 0003: Training Loop Performance (Behavior-Preserving)
 - types.py
 - FoldTrackingRecord
-- test_opt_tracking.py
+- run_hyperparameter_optimization
 - Imputation Decoder Task Implementation Plan
 - Resolution
 - _stack
@@ -110,7 +110,7 @@
 - run_training
 - Hyperparameters
 - Research: third-party stub strategy for sklearn and scipy
-- 0006-mirror-experiments-per-task.md
+- Mirror Experiments: Implementation Plan
 - PreparedDataset
 - 06. The hyperparameter JSON schema and the three naming layers
 - 07. Enforcing the constants convention beyond what the checker catches
@@ -148,15 +148,12 @@
 - Consolidated report — the imputation work on `feat/imputation-task`
 - 4. What the experiments can and cannot support
 - GradientBoostingImputer
-- ObjectiveFunctionWrapper
+- 0006-mirror-experiments-per-task.md
 - test_preprocess_table.py
-- run_hyperparameter_optimization
+- 08. Configure the checker and make it green
 - Mirror every run into one derived MLflow experiment per task
-- Path
 - _frame_values
-- RuntimeError
 - Transport
-- mlflow_backend
 - Hand the tracking store to a remote server whole, one writer at a time
 - tracking.py
 - _BudgetSpent
@@ -167,7 +164,6 @@
 - Code health
 - 03. Task-keyed lookup and explicit promotion
 - Bugs
-- 8. The configuration for ticket 08
 - mirror_experiment_name
 - backfill_search_objective_tag.py
 - 01. The held set and the ranges
@@ -207,15 +203,15 @@
 - **Training Refactor Documentation Trail** — docs_tickets_0001_training_refactor, docs_superpowers_specs_2026_08_02_training_refactor_design, docs_superpowers_plans_2026_08_02_training_refactor, docs_adr_0001_training_package_with_compatibility_facade, _superpowers_sdd_2026_08_02_training_refactor_task_3_report [INFERRED 0.85]
 - **TRIDENT Model Architecture Pipeline** — readme_tabularembedder, readme_tabulartransformerencoder, readme_tridentpretrainer, readme_tridentclassifier [INFERRED 0.85]
 
-## Communities (169 total, 7 thin omitted)
+## Communities (165 total, 5 thin omitted)
 
 ### Community 0 - "EncoderLayer"
 Cohesion: 0.17
 Nodes (8): EncoderLayer, FeedForwardNetwork, initialize_weight(), MultiHeadAttention, Simple feed-forward network with two linear layers and ReLU activation, Multi-head attention layer for transformers, Initializes the weight of a layer using Xavier uniform for weights and zeros…, Transformer encoder layer with self-attention and feed-forward
 
 ### Community 1 - "test_opt_search_space.py"
-Cohesion: 0.12
-Nodes (22): build_parser(), define_search_space(), ArgumentParser, The training parser, so a study launched here accepts every flag main.py…, Define the hyperparameter search space for Optuna. ``profile`` is the search-…, Optuna's search space and failure handling, per task (ADR 0004, decision 13)., A trial that could lower the evaluation mask rate would win by hiding less., Attention splits the model width across heads, so the width must divide evenly.… (+14 more)
+Cohesion: 0.08
+Nodes (30): build_parser(), define_search_space(), ObjectiveFunctionWrapper, ArgumentParser, Path, Wrapper class for the Optuna objective function to maintain state, Save the best parameters found so far, inside the study's own directory. The…, The training parser, so a study launched here accepts every flag main.py… (+22 more)
 
 ### Community 3 - "opt.py"
 Cohesion: 0.09
@@ -337,17 +333,17 @@ Nodes (14): _best_baseline_copies(), _best_baselines(), Every metric of each pop
 Cohesion: 0.12
 Nodes (24): Filesystem artifacts emitted by a training runtime., Write the parent-run CSV, summary, diagnostic manifest, and lineage. The…, Write prepared-dataset lineage for a parent training run., _to_builtin(), _write_json(), _diagnostic_roles(), final_metrics_for_tracking(), fold_timings_for_tracking() (+16 more)
 
-### Community 36 - "test_opt_tracking.py"
-Cohesion: 0.15
-Nodes (35): _optuna_args(), MlflowClient, Namespace, MLflow structure of an Optuna study: one study run, one light run per trial., ``task`` and ``is_optuna`` are dense on every other run kind (ADR 0004,…, The study is a root, so it mirrors the whole tree when it closes (ADR 0006,…, The width is sampled as a multiple of the head count, so what Optuna records…, Unspecified, an imputation study resolves to ``reduced``; the choice is a… (+27 more)
+### Community 36 - "run_hyperparameter_optimization"
+Cohesion: 0.09
+Nodes (54): log_param_importances(), Namespace, Rank the knobs the study sampled and record the ranking on the study parent.…, Run hyperparameter optimization with Optuna Annotated ahead of the rest of this…, run_hyperparameter_optimization(), RuntimeError, mlflow_backend(), _optuna_args() (+46 more)
 
 ### Community 38 - "Imputation Decoder Task Implementation Plan"
 Cohesion: 0.14
 Nodes (14): File structure, Global Constraints, Imputation Decoder Task Implementation Plan, Task 10: Optuna, Task 11: Regression fixture, documentation, complete verification, Task 1: Per-task ranking contract, classification byte-identical, Task 2: Request, hyperparameters and command line, Task 3: Imputation metrics as pure functions (+6 more)
 
 ### Community 39 - "Resolution"
-Cohesion: 0.14
-Nodes (14): 08. Configure the checker and make it green, Acceptance, Acceptance, Left for ticket 09, Notes, Question, Resolution, The bump: verified, not assumed (+6 more)
+Cohesion: 0.25
+Nodes (8): Acceptance, Left for ticket 09, Resolution, The bump: verified, not assumed, The gate, The ramp, as measured, Two corrections to this ticket's own instructions, What the checker found
 
 ### Community 41 - "_stack"
 Cohesion: 0.20
@@ -578,12 +574,12 @@ Cohesion: 0.10
 Nodes (25): promote_best_configuration(), Publish a study's winning configuration where the task's runs will find it. The…, hyperparameter_file(), _load_base_hyperparameters(), load_hyperparameters(), Namespace, Path, The configuration a run trains with, and where it came from. The source is… (+17 more)
 
 ### Community 101 - "Research: third-party stub strategy for sklearn and scipy"
-Cohesion: 0.08
-Nodes (24): 10. Out of scope, but found, 11. What could not be verified, 12. Sources, 1. Answer, 2.1 typeshed — no, for either library, 2.2 scipy — `scipy-stubs` is official and current, 2.3 sklearn — nothing credible exists, 2. Does a maintained stub package exist? (+16 more)
+Cohesion: 0.07
+Nodes (29): 10. Out of scope, but found, 11. What could not be verified, 12. Sources, 1. Answer, 2.1 typeshed — no, for either library, 2.2 scipy — `scipy-stubs` is official and current, 2.3 sklearn — nothing credible exists, 2. Does a maintained stub package exist? (+21 more)
 
-### Community 102 - "0006-mirror-experiments-per-task.md"
-Cohesion: 0.15
-Nodes (10): Background & full reference, graphify, MLflow run analysis, Destination, Map: Mirror every run into one derived MLflow experiment per task, Notes, Global constraints, Mirror Experiments: Implementation Plan (+2 more)
+### Community 102 - "Mirror Experiments: Implementation Plan"
+Cohesion: 0.22
+Nodes (7): Destination, Map: Mirror every run into one derived MLflow experiment per task, Notes, Global constraints, Mirror Experiments: Implementation Plan, Seams under test, and why each earns its place, Slices
 
 ### Community 103 - "PreparedDataset"
 Cohesion: 0.12
@@ -602,8 +598,8 @@ Cohesion: 0.33
 Nodes (5): 09. Record the design: ADR 0006 and the implementation plan, Acceptance, Notes, Question, The work
 
 ### Community 107 - "TRIDENT README"
-Cohesion: 0.18
-Nodes (17): credit-g Categorical Columns, electricity Categorical Columns, kr-vs-kp Categorical Columns, ADR 0002: Curated Cross-Validation MLflow Runs, Curated MLflow Cross-Validation Implementation Plan, CrossValidationSummary, MlflowTracker Adapter, summarize_cross_validation() (+9 more)
+Cohesion: 0.20
+Nodes (16): credit-g Categorical Columns, electricity Categorical Columns, kr-vs-kp Categorical Columns, Curated MLflow Cross-Validation Implementation Plan, CrossValidationSummary, MlflowTracker Adapter, summarize_cross_validation(), Curated MLflow Cross-Validation Design Spec (+8 more)
 
 ### Community 108 - "Map: Typing and naming standard for TRIDENT"
 Cohesion: 0.33
@@ -729,25 +725,21 @@ Nodes (6): 4. What the experiments can and cannot support, Cross-ladder reads (`
 Cohesion: 0.22
 Nodes (10): GradientBoostingImputer, A learned baseline: one gradient-boosting model per column, in a single pass.…, ``level`` jumps from -3 to 3 where ``x`` passes 10, and ``side`` follows the…, The third baseline trains one model per column on the training rows where that…, Boosting subsamples a validation split on large folds; with a fixed seed of its…, A column the training fold holds in one category only, or not at all, gives a…, _step_frame(), test_gradient_boosting_falls_back_to_a_constant_where_there_is_nothing_to_learn() (+2 more)
 
-### Community 141 - "ObjectiveFunctionWrapper"
-Cohesion: 0.22
-Nodes (8): ObjectiveFunctionWrapper, Path, Wrapper class for the Optuna objective function to maintain state, Save the best parameters found so far, inside the study's own directory. The…, Scoring a crash teaches the search to seek crashes when lower is better.…, Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no…, test_a_trial_that_crashes_is_discarded_rather_than_scored(), test_an_imputation_study_never_overwrites_a_datasets_shared_config()
+### Community 141 - "0006-mirror-experiments-per-task.md"
+Cohesion: 0.33
+Nodes (4): Background & full reference, graphify, MLflow run analysis, ADR 0002: Curated Cross-Validation MLflow Runs
 
 ### Community 142 - "test_preprocess_table.py"
 Cohesion: 0.29
 Nodes (9): _frame(), _mask_positions(), DataFrame, The masking primitive, whose draw sequence is protected behaviour. `AGENTS.md`…, Small, but shaped like the cliff: at a low `p_base` most rows need the fallback., P1's speed-up must not cost a single draw. The backlog's suggested fix -- one…, The fallback picks among a row's observed cells, so a gap cannot be masked…, test_an_already_missing_cell_is_never_chosen_as_the_row_guarantee() (+1 more)
 
-### Community 143 - "run_hyperparameter_optimization"
-Cohesion: 0.22
-Nodes (9): log_param_importances(), Namespace, Rank the knobs the study sampled and record the ranking on the study parent.…, Run hyperparameter optimization with Optuna Annotated ahead of the rest of this…, run_hyperparameter_optimization(), The objective builds each trial's namespace itself, so the task has to be…, A study is an experiment: the seed that fixes every trial's training fixes the…, test_a_study_with_the_same_seed_samples_the_same_trials() (+1 more)
+### Community 143 - "08. Configure the checker and make it green"
+Cohesion: 0.33
+Nodes (6): 08. Configure the checker and make it green, Acceptance, Notes, Question, The work, Two corrections to the numbers above, made before execution
 
 ### Community 144 - "Mirror every run into one derived MLflow experiment per task"
 Cohesion: 0.25
 Nodes (8): Consequences, Considered options, Context, Decision, How to compare, Mirror every run into one derived MLflow experiment per task, Outcome (2026-09-17), Status
-
-### Community 145 - "Path"
-Cohesion: 0.29
-Nodes (7): Path, Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no…, Backlog I2: the study used to overwrite…, A variant with gaps beside the fixture's complete table, so an induced study…, test_a_classification_study_no_longer_writes_the_shared_file_on_its_own(), test_a_finished_imputation_study_leaves_the_shared_config_alone(), _with_gaps_variant()
 
 ### Community 146 - "_frame_values"
 Cohesion: 0.50
@@ -758,7 +750,7 @@ Cohesion: 0.22
 Nodes (3): Protocol, How files and commands reach the server. Paths are relative to each side's root., Transport
 
 ### Community 150 - "Hand the tracking store to a remote server whole, one writer at a time"
-Cohesion: 0.25
+Cohesion: 0.29
 Nodes (7): Consequences, Context, Decision, Hand the tracking store to a remote server whole, one writer at a time, How to use, Outcome (2026-09-29, rehearsal), Status
 
 ### Community 151 - "tracking.py"
@@ -797,10 +789,6 @@ Nodes (6): 03. Task-keyed lookup and explicit promotion, Acceptance criteria, Co
 Cohesion: 0.40
 Nodes (5): B1. The learning-rate schedule completes a full cosine cycle — protected, B2. `--cv_folds 1` crashes, B3. Optuna proposes head counts that crash, and scores them as 0.0, B4. Optuna with MLflow enabled scored every trial 0.0, Bugs
 
-### Community 161 - "8. The configuration for ticket 08"
-Cohesion: 0.40
-Nodes (5): 8.1 `pyproject.toml`, 8.2 Where the stubs live, 8.3 Resolver impact — verified against copies of the real `pyproject.toml` + `uv.lock`, 8.4 Honest cost to ticket 08, 8. The configuration for ticket 08
-
 ### Community 163 - "mirror_experiment_name"
 Cohesion: 0.40
 Nodes (5): get_or_create_mirror_experiment(), mirror_experiment_name(), The mirror experiment for a task, e.g. ``TRIDENT/mirror/imputation``., Return the experiment_id of the task's mirror experiment, creating it if…, The task's mirror experiment id; None when it does not exist and ``create`` is…
@@ -826,7 +814,7 @@ Nodes (4): 07. Task: repair the imputation Optuna path and prove it with a two-t
 ## Knowledge Gaps
 - **681 isolated node(s):** `info`, `trident`, `start_mlflow.sh script`, `graphify`, `MLflow run analysis` (+676 more)
   These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1212 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -835,9 +823,9 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `TRIDENT README` and `src/training Package`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `SyncError` connect `sync_remote.py` to `RuntimeError`?**
+- **Why does `SyncError` connect `sync_remote.py` to `run_hyperparameter_optimization`?**
   _High betweenness centrality (0.066) - this node is a cross-community bridge._
-- **Why does `test_a_run_that_failed_is_left_to_the_script()` connect `test_mirroring.py` to `RuntimeError`, `test_training_tracking.py`?**
+- **Why does `test_a_run_that_failed_is_left_to_the_script()` connect `test_mirroring.py` to `run_hyperparameter_optimization`, `test_training_tracking.py`?**
   _High betweenness centrality (0.047) - this node is a cross-community bridge._
 - **Why does `PreparedDataset` connect `PreparedDataset` to `types.py`, `FoldTrackingRecord`, `run_training`, `backfill_baseline_imputers.py`, `FoldResult`, `test_mirroring.py`, `runner.py`, `decoding.py`, `DatasetSpec`, `_frame_values`, `finetuning.py`, `score_cells`, `test_training_tracking.py`, `tracking.py`, `test_training_tasks.py`, `ArtifactWriter`, `preprocess_table`, `test_training_decoding.py`?**
   _High betweenness centrality (0.034) - this node is a cross-community bridge._

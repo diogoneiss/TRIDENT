@@ -89,6 +89,19 @@
       "source_location": "L34"
     },
     {
+      "id": "opt_objectivefunctionwrapper",
+      "label": "ObjectiveFunctionWrapper",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": "objectivefunctionwrapper",
+      "source_file": "opt.py",
+      "source_location": "L162"
+    },
+    {
       "id": "src_training_types_hyperparameters",
       "label": "Hyperparameters",
       "_callable": true,
@@ -206,19 +219,6 @@
       "source_location": "L193"
     },
     {
-      "id": "opt_objectivefunctionwrapper",
-      "label": "ObjectiveFunctionWrapper",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": "objectivefunctionwrapper",
-      "source_file": "opt.py",
-      "source_location": "L162"
-    },
-    {
       "id": "scripts_sync_remote_transport",
       "label": "Transport",
       "_callable": true,
@@ -229,7 +229,7 @@
       "file_type": "code",
       "norm_label": "transport",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L414"
+      "source_location": "L417"
     },
     {
       "id": "scripts_backfill_baseline_imputers_budgetspent",
@@ -602,7 +602,7 @@
       "_callable_class": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "_trainingstub",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -710,7 +710,7 @@
       "file_type": "code",
       "norm_label": "rsynctransport",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L693"
+      "source_location": "L696"
     },
     {
       "id": "scripts_sync_remote_storeerror",
@@ -723,7 +723,7 @@
       "file_type": "code",
       "norm_label": "storeerror",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L60"
+      "source_location": "L63"
     },
     {
       "id": "scripts_sync_remote_syncconfig",
@@ -736,7 +736,7 @@
       "file_type": "code",
       "norm_label": "syncconfig",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L371"
+      "source_location": "L374"
     },
     {
       "id": "scripts_sync_remote_syncerror",
@@ -749,7 +749,7 @@
       "file_type": "code",
       "norm_label": "syncerror",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L56"
+      "source_location": "L59"
     },
     {
       "id": "scripts_sync_remote_syncstate",
@@ -762,7 +762,7 @@
       "file_type": "code",
       "norm_label": "syncstate",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L393"
+      "source_location": "L396"
     },
     {
       "id": "scripts_sync_remote_workspace",
@@ -775,7 +775,7 @@
       "file_type": "code",
       "norm_label": "workspace",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L431"
+      "source_location": "L434"
     },
     {
       "id": "tests_unit_test_sync_remote_directoryserver",
@@ -1015,6 +1015,42 @@
       "source_location": "L90"
     },
     {
+      "id": "opt_objectivefunctionwrapper_call",
+      "label": ".__call__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": ".__call__()",
+      "source_file": "opt.py",
+      "source_location": "L196"
+    },
+    {
+      "id": "opt_objectivefunctionwrapper_init",
+      "label": ".__init__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": ".__init__()",
+      "source_file": "opt.py",
+      "source_location": "L166"
+    },
+    {
+      "id": "opt_objectivefunctionwrapper_save_best_params",
+      "label": ".save_best_params()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": ".save_best_params()",
+      "source_file": "opt.py",
+      "source_location": "L316"
+    },
+    {
       "id": "tests_unit_test_opt_search_space_sampled",
       "label": "_sampled()",
       "_callable": true,
@@ -1049,6 +1085,30 @@
       "norm_label": "test_a_search_tunes_the_stage_its_task_actually_runs()",
       "source_file": "tests/unit/test_opt_search_space.py",
       "source_location": "L25"
+    },
+    {
+      "id": "tests_unit_test_opt_search_space_test_a_trial_that_crashes_is_discarded_rather_than_scored",
+      "label": "test_a_trial_that_crashes_is_discarded_rather_than_scored()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": "test_a_trial_that_crashes_is_discarded_rather_than_scored()",
+      "source_file": "tests/unit/test_opt_search_space.py",
+      "source_location": "L122"
+    },
+    {
+      "id": "tests_unit_test_opt_search_space_test_an_imputation_study_never_overwrites_a_datasets_shared_config",
+      "label": "test_an_imputation_study_never_overwrites_a_datasets_shared_config()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": "test_an_imputation_study_never_overwrites_a_datasets_shared_config()",
+      "source_file": "tests/unit/test_opt_search_space.py",
+      "source_location": "L162"
     },
     {
       "id": "tests_unit_test_opt_search_space_test_every_sampled_shape_is_one_the_model_can_actually_build",
@@ -2203,66 +2263,6 @@
       "source_location": "L444"
     },
     {
-      "id": "opt_objectivefunctionwrapper_call",
-      "label": ".__call__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": ".__call__()",
-      "source_file": "opt.py",
-      "source_location": "L196"
-    },
-    {
-      "id": "opt_objectivefunctionwrapper_init",
-      "label": ".__init__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": ".__init__()",
-      "source_file": "opt.py",
-      "source_location": "L166"
-    },
-    {
-      "id": "opt_objectivefunctionwrapper_save_best_params",
-      "label": ".save_best_params()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": ".save_best_params()",
-      "source_file": "opt.py",
-      "source_location": "L316"
-    },
-    {
-      "id": "tests_unit_test_opt_search_space_test_a_trial_that_crashes_is_discarded_rather_than_scored",
-      "label": "test_a_trial_that_crashes_is_discarded_rather_than_scored()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": "test_a_trial_that_crashes_is_discarded_rather_than_scored()",
-      "source_file": "tests/unit/test_opt_search_space.py",
-      "source_location": "L122"
-    },
-    {
-      "id": "tests_unit_test_opt_search_space_test_an_imputation_study_never_overwrites_a_datasets_shared_config",
-      "label": "test_an_imputation_study_never_overwrites_a_datasets_shared_config()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": "test_an_imputation_study_never_overwrites_a_datasets_shared_config()",
-      "source_file": "tests/unit/test_opt_search_space.py",
-      "source_location": "L162"
-    },
-    {
       "id": "tests_unit_test_preprocess_table_frame",
       "label": "_frame()",
       "_callable": true,
@@ -2311,90 +2311,6 @@
       "source_location": "L44"
     },
     {
-      "id": "opt_log_param_importances",
-      "label": "log_param_importances()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "code",
-      "norm_label": "log_param_importances()",
-      "source_file": "opt.py",
-      "source_location": "L361"
-    },
-    {
-      "id": "opt_run_hyperparameter_optimization",
-      "label": "run_hyperparameter_optimization()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "code",
-      "norm_label": "run_hyperparameter_optimization()",
-      "source_file": "opt.py",
-      "source_location": "L383"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_test_a_study_with_the_same_seed_samples_the_same_trials",
-      "label": "test_a_study_with_the_same_seed_samples_the_same_trials()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "code",
-      "norm_label": "test_a_study_with_the_same_seed_samples_the_same_trials()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L284"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_test_an_imputation_study_trains_the_imputation_task_in_every_trial",
-      "label": "test_an_imputation_study_trains_the_imputation_task_in_every_trial()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "code",
-      "norm_label": "test_an_imputation_study_trains_the_imputation_task_in_every_trial()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L188"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_test_a_classification_study_no_longer_writes_the_shared_file_on_its_own",
-      "label": "test_a_classification_study_no_longer_writes_the_shared_file_on_its_own()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "code",
-      "norm_label": "test_a_classification_study_no_longer_writes_the_shared_file_on_its_own()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L399"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_test_a_finished_imputation_study_leaves_the_shared_config_alone",
-      "label": "test_a_finished_imputation_study_leaves_the_shared_config_alone()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "code",
-      "norm_label": "test_a_finished_imputation_study_leaves_the_shared_config_alone()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L264"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_with_gaps_variant",
-      "label": "_with_gaps_variant()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "code",
-      "norm_label": "_with_gaps_variant()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L552"
-    },
-    {
       "id": "scripts_backfill_baseline_imputers_cells",
       "label": "_cells()",
       "_callable": true,
@@ -2419,30 +2335,6 @@
       "source_location": "L336"
     },
     {
-      "id": "tests_unit_test_opt_tracking_trainingstub_call",
-      "label": ".__call__()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 147,
-      "community_name": "RuntimeError",
-      "file_type": "code",
-      "norm_label": ".__call__()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L58"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_trainingstub_trial_number",
-      "label": "._trial_number()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 147,
-      "community_name": "RuntimeError",
-      "file_type": "code",
-      "norm_label": "._trial_number()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L83"
-    },
-    {
       "id": "scripts_sync_remote_transport_fetch_dir",
       "label": ".fetch_dir()",
       "_callable": true,
@@ -2452,7 +2344,7 @@
       "file_type": "code",
       "norm_label": ".fetch_dir()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L425"
+      "source_location": "L428"
     },
     {
       "id": "scripts_sync_remote_transport_fetch_file",
@@ -2464,7 +2356,7 @@
       "file_type": "code",
       "norm_label": ".fetch_file()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L427"
+      "source_location": "L430"
     },
     {
       "id": "scripts_sync_remote_transport_remote",
@@ -2476,7 +2368,7 @@
       "file_type": "code",
       "norm_label": ".remote()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L417"
+      "source_location": "L420"
     },
     {
       "id": "scripts_sync_remote_transport_send_dir",
@@ -2488,7 +2380,7 @@
       "file_type": "code",
       "norm_label": ".send_dir()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L421"
+      "source_location": "L424"
     },
     {
       "id": "scripts_sync_remote_transport_send_file",
@@ -2500,7 +2392,7 @@
       "file_type": "code",
       "norm_label": ".send_file()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L423"
+      "source_location": "L426"
     },
     {
       "id": "scripts_sync_remote_transport_send_files",
@@ -2512,19 +2404,7 @@
       "file_type": "code",
       "norm_label": ".send_files()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L419"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_mlflow_backend",
-      "label": "mlflow_backend()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 149,
-      "community_name": "mlflow_backend",
-      "file_type": "code",
-      "norm_label": "mlflow_backend()",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L16"
+      "source_location": "L422"
     },
     {
       "id": "src_training_data_in_variant_dtypes",
@@ -6487,12 +6367,48 @@
       "source_location": "L74"
     },
     {
+      "id": "opt_log_param_importances",
+      "label": "log_param_importances()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "log_param_importances()",
+      "source_file": "opt.py",
+      "source_location": "L361"
+    },
+    {
+      "id": "opt_run_hyperparameter_optimization",
+      "label": "run_hyperparameter_optimization()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "run_hyperparameter_optimization()",
+      "source_file": "opt.py",
+      "source_location": "L383"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_mlflow_backend",
+      "label": "mlflow_backend()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "mlflow_backend()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L16"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_optuna_args",
       "label": "_optuna_args()",
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "_optuna_args()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6504,11 +6420,35 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "_runs_by_name()",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L103"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_test_a_classification_study_no_longer_writes_the_shared_file_on_its_own",
+      "label": "test_a_classification_study_no_longer_writes_the_shared_file_on_its_own()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "test_a_classification_study_no_longer_writes_the_shared_file_on_its_own()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L399"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_test_a_finished_imputation_study_leaves_the_shared_config_alone",
+      "label": "test_a_finished_imputation_study_leaves_the_shared_config_alone()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "test_a_finished_imputation_study_leaves_the_shared_config_alone()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L264"
     },
     {
       "id": "tests_unit_test_opt_tracking_test_a_finished_study_mirrors_itself_and_its_trials",
@@ -6516,7 +6456,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_a_finished_study_mirrors_itself_and_its_trials()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6528,7 +6468,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_a_finished_study_ranks_the_knobs_it_sampled()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6540,7 +6480,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_a_study_asked_for_no_mirror_gets_none()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6552,7 +6492,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_a_study_ranks_by_the_masked_cells_unless_asked_otherwise()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6564,11 +6504,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_a_study_too_small_to_rank_still_finishes()",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L532"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_test_a_study_with_the_same_seed_samples_the_same_trials",
+      "label": "test_a_study_with_the_same_seed_samples_the_same_trials()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "test_a_study_with_the_same_seed_samples_the_same_trials()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L284"
     },
     {
       "id": "tests_unit_test_opt_tracking_test_an_imputation_study_records_and_samples_the_reduced_profile_by_default",
@@ -6576,11 +6528,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_an_imputation_study_records_and_samples_the_reduced_profile_by_default()",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L331"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_test_an_imputation_study_trains_the_imputation_task_in_every_trial",
+      "label": "test_an_imputation_study_trains_the_imputation_task_in_every_trial()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "test_an_imputation_study_trains_the_imputation_task_in_every_trial()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L188"
     },
     {
       "id": "tests_unit_test_opt_tracking_test_an_imputation_trial_is_ranked_by_its_validation_score_not_its_test_score",
@@ -6588,7 +6552,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_an_imputation_trial_is_ranked_by_its_validation_score_not_its_test_score()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6600,7 +6564,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_an_induced_study_on_a_complete_variant_is_refused_before_any_trial()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6612,7 +6576,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_an_induced_study_ranks_trials_by_the_validation_splits_own_gaps()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6624,7 +6588,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_disabled_tracking_runs_the_study_without_touching_the_store()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6636,7 +6600,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_each_trial_trains_inside_its_own_nested_run()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6648,7 +6612,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_every_run_a_study_opens_says_which_task_and_that_a_search_made_it()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6660,7 +6624,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_promotion_writes_a_complete_classification_configuration_to_the_shared_file()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6672,7 +6636,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_promotion_writes_a_complete_imputation_configuration_where_the_task_will_find_it()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6684,7 +6648,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_retraining_the_best_trial_links_a_normal_parent_run_to_the_study()",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -6696,11 +6660,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_the_configuration_a_study_hands_on_is_the_one_its_best_trial_trained_with()",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L302"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_trainingstub_call",
+      "label": ".__call__()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": ".__call__()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L58"
     },
     {
       "id": "tests_unit_test_opt_tracking_trainingstub_init",
@@ -6708,11 +6684,35 @@
       "_callable": true,
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L41"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_trainingstub_trial_number",
+      "label": "._trial_number()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "._trial_number()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L83"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_with_gaps_variant",
+      "label": "_with_gaps_variant()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "_with_gaps_variant()",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L552"
     },
     {
       "id": "src_models_stack",
@@ -7348,7 +7348,7 @@
       "file_type": "code",
       "norm_label": "artifact_prefix()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L365"
+      "source_location": "L368"
     },
     {
       "id": "scripts_sync_remote_branch_tips",
@@ -7360,7 +7360,7 @@
       "file_type": "code",
       "norm_label": "branch_tips()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L301"
+      "source_location": "L304"
     },
     {
       "id": "scripts_sync_remote_branches",
@@ -7372,7 +7372,7 @@
       "file_type": "code",
       "norm_label": "_branches()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L446"
+      "source_location": "L449"
     },
     {
       "id": "scripts_sync_remote_code_files",
@@ -7384,7 +7384,7 @@
       "file_type": "code",
       "norm_label": "code_files()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L479"
+      "source_location": "L482"
     },
     {
       "id": "scripts_sync_remote_columns_holding",
@@ -7396,7 +7396,7 @@
       "file_type": "code",
       "norm_label": "_columns_holding()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L157"
+      "source_location": "L160"
     },
     {
       "id": "scripts_sync_remote_delete_pushed_files",
@@ -7408,7 +7408,7 @@
       "file_type": "code",
       "norm_label": "delete_pushed_files()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L282"
+      "source_location": "L285"
     },
     {
       "id": "scripts_sync_remote_foreign_roots",
@@ -7420,7 +7420,7 @@
       "file_type": "code",
       "norm_label": "_foreign_roots()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L141"
+      "source_location": "L144"
     },
     {
       "id": "scripts_sync_remote_held_open_by",
@@ -7432,7 +7432,7 @@
       "file_type": "code",
       "norm_label": "held_open_by()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L117"
+      "source_location": "L120"
     },
     {
       "id": "scripts_sync_remote_held_open_linux",
@@ -7444,7 +7444,7 @@
       "file_type": "code",
       "norm_label": "_held_open_linux()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L101"
+      "source_location": "L104"
     },
     {
       "id": "scripts_sync_remote_held_open_windows",
@@ -7456,7 +7456,7 @@
       "file_type": "code",
       "norm_label": "_held_open_windows()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L79"
+      "source_location": "L82"
     },
     {
       "id": "scripts_sync_remote_install_store",
@@ -7468,7 +7468,7 @@
       "file_type": "code",
       "norm_label": "install_store()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L256"
+      "source_location": "L259"
     },
     {
       "id": "scripts_sync_remote_main",
@@ -7480,7 +7480,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L770"
+      "source_location": "L773"
     },
     {
       "id": "scripts_sync_remote_mode",
@@ -7492,7 +7492,7 @@
       "file_type": "code",
       "norm_label": "_mode()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L512"
+      "source_location": "L515"
     },
     {
       "id": "scripts_sync_remote_names",
@@ -7504,7 +7504,7 @@
       "file_type": "code",
       "norm_label": "_names()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L442"
+      "source_location": "L445"
     },
     {
       "id": "scripts_sync_remote_never_pushed",
@@ -7516,7 +7516,7 @@
       "file_type": "code",
       "norm_label": "_never_pushed()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L277"
+      "source_location": "L280"
     },
     {
       "id": "scripts_sync_remote_pull",
@@ -7528,7 +7528,7 @@
       "file_type": "code",
       "norm_label": "pull()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L597"
+      "source_location": "L600"
     },
     {
       "id": "scripts_sync_remote_push",
@@ -7540,7 +7540,7 @@
       "file_type": "code",
       "norm_label": "push()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L556"
+      "source_location": "L559"
     },
     {
       "id": "scripts_sync_remote_push_code",
@@ -7552,7 +7552,7 @@
       "file_type": "code",
       "norm_label": "push_code()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L542"
+      "source_location": "L545"
     },
     {
       "id": "scripts_sync_remote_refuse_if_busy",
@@ -7564,7 +7564,7 @@
       "file_type": "code",
       "norm_label": "refuse_if_busy()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L128"
+      "source_location": "L131"
     },
     {
       "id": "scripts_sync_remote_refuse_if_changed",
@@ -7576,7 +7576,7 @@
       "file_type": "code",
       "norm_label": "refuse_if_changed()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L236"
+      "source_location": "L239"
     },
     {
       "id": "scripts_sync_remote_refuse_if_server_has_commits",
@@ -7588,7 +7588,7 @@
       "file_type": "code",
       "norm_label": "refuse_if_server_has_commits()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L450"
+      "source_location": "L453"
     },
     {
       "id": "scripts_sync_remote_remote_command",
@@ -7600,7 +7600,7 @@
       "file_type": "code",
       "norm_label": "remote_command()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L320"
+      "source_location": "L323"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_fetch_dir",
@@ -7612,7 +7612,7 @@
       "file_type": "code",
       "norm_label": ".fetch_dir()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L763"
+      "source_location": "L766"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_fetch_file",
@@ -7624,7 +7624,7 @@
       "file_type": "code",
       "norm_label": ".fetch_file()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L766"
+      "source_location": "L769"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_init",
@@ -7636,7 +7636,7 @@
       "file_type": "code",
       "norm_label": ".__init__()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L696"
+      "source_location": "L699"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_local",
@@ -7648,7 +7648,7 @@
       "file_type": "code",
       "norm_label": "._local()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L706"
+      "source_location": "L709"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_remote",
@@ -7660,7 +7660,7 @@
       "file_type": "code",
       "norm_label": ".remote()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L729"
+      "source_location": "L732"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_remote_e15a13",
@@ -7672,7 +7672,7 @@
       "file_type": "code",
       "norm_label": "._remote()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L710"
+      "source_location": "L713"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_rsync",
@@ -7684,7 +7684,7 @@
       "file_type": "code",
       "norm_label": "._rsync()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L716"
+      "source_location": "L719"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_run",
@@ -7696,7 +7696,7 @@
       "file_type": "code",
       "norm_label": "._run()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L700"
+      "source_location": "L703"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_send_dir",
@@ -7708,7 +7708,7 @@
       "file_type": "code",
       "norm_label": ".send_dir()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L752"
+      "source_location": "L755"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_send_file",
@@ -7720,7 +7720,7 @@
       "file_type": "code",
       "norm_label": ".send_file()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L760"
+      "source_location": "L763"
     },
     {
       "id": "scripts_sync_remote_rsynctransport_send_files",
@@ -7732,7 +7732,7 @@
       "file_type": "code",
       "norm_label": ".send_files()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L745"
+      "source_location": "L748"
     },
     {
       "id": "scripts_sync_remote_send_code",
@@ -7744,7 +7744,7 @@
       "file_type": "code",
       "norm_label": "_send_code()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L516"
+      "source_location": "L519"
     },
     {
       "id": "scripts_sync_remote_sha256_file",
@@ -7756,7 +7756,7 @@
       "file_type": "code",
       "norm_label": "sha256_file()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L67"
+      "source_location": "L70"
     },
     {
       "id": "scripts_sync_remote_snapshot_store",
@@ -7768,7 +7768,7 @@
       "file_type": "code",
       "norm_label": "snapshot_store()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L214"
+      "source_location": "L217"
     },
     {
       "id": "scripts_sync_remote_status",
@@ -7780,7 +7780,7 @@
       "file_type": "code",
       "norm_label": "status()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L629"
+      "source_location": "L632"
     },
     {
       "id": "scripts_sync_remote_syncconfig_load",
@@ -7792,7 +7792,7 @@
       "file_type": "code",
       "norm_label": ".load()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L380"
+      "source_location": "L383"
     },
     {
       "id": "scripts_sync_remote_syncconfig_save",
@@ -7804,7 +7804,7 @@
       "file_type": "code",
       "norm_label": ".save()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L386"
+      "source_location": "L389"
     },
     {
       "id": "scripts_sync_remote_syncstate_load",
@@ -7816,7 +7816,7 @@
       "file_type": "code",
       "norm_label": ".load()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L400"
+      "source_location": "L403"
     },
     {
       "id": "scripts_sync_remote_syncstate_save",
@@ -7828,7 +7828,7 @@
       "file_type": "code",
       "norm_label": ".save()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L406"
+      "source_location": "L409"
     },
     {
       "id": "scripts_sync_remote_text",
@@ -7840,7 +7840,7 @@
       "file_type": "code",
       "norm_label": "_text()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L438"
+      "source_location": "L441"
     },
     {
       "id": "scripts_sync_remote_to_wsl",
@@ -7852,7 +7852,7 @@
       "file_type": "code",
       "norm_label": "to_wsl()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L673"
+      "source_location": "L676"
     },
     {
       "id": "scripts_sync_remote_translate_store",
@@ -7864,7 +7864,7 @@
       "file_type": "code",
       "norm_label": "translate_store()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L176"
+      "source_location": "L179"
     },
     {
       "id": "scripts_sync_remote_uncommitted",
@@ -7876,7 +7876,7 @@
       "file_type": "code",
       "norm_label": "_uncommitted()",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L497"
+      "source_location": "L500"
     },
     {
       "id": "tests_unit_test_sync_remote_client_for",
@@ -8606,6 +8606,17 @@
       "source_location": ""
     },
     {
+      "id": "opt_py_path",
+      "label": "Path",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "code",
+      "norm_label": "path",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "tests_unit_test_opt_search_space",
       "label": "test_opt_search_space.py",
       "_origin": "ast",
@@ -8615,6 +8626,28 @@
       "norm_label": "test_opt_search_space.py",
       "source_file": "tests/unit/test_opt_search_space.py",
       "source_location": "L1"
+    },
+    {
+      "id": "opt_rationale_163",
+      "label": "Wrapper class for the Optuna objective function to maintain state",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "rationale",
+      "norm_label": "wrapper class for the optuna objective function to maintain state",
+      "source_file": "opt.py",
+      "source_location": "L163"
+    },
+    {
+      "id": "opt_rationale_317",
+      "label": "Save the best parameters found so far, inside the study's own directory. The\u2026",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "rationale",
+      "norm_label": "save the best parameters found so far, inside the study's own directory. the...",
+      "source_file": "opt.py",
+      "source_location": "L317"
     },
     {
       "id": "opt_rationale_629",
@@ -8681,6 +8714,28 @@
       "norm_label": "draw a spread of trials so a constraint is tested against many combinations.",
       "source_file": "tests/unit/test_opt_search_space.py",
       "source_location": "L12"
+    },
+    {
+      "id": "tests_unit_test_opt_search_space_rationale_123",
+      "label": "Scoring a crash teaches the search to seek crashes when lower is better.\u2026",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "rationale",
+      "norm_label": "scoring a crash teaches the search to seek crashes when lower is better....",
+      "source_file": "tests/unit/test_opt_search_space.py",
+      "source_location": "L123"
+    },
+    {
+      "id": "tests_unit_test_opt_search_space_rationale_163",
+      "label": "Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no\u2026",
+      "_origin": "ast",
+      "community": 1,
+      "community_name": "test_opt_search_space.py",
+      "file_type": "rationale",
+      "norm_label": "both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no...",
+      "source_file": "tests/unit/test_opt_search_space.py",
+      "source_location": "L163"
     },
     {
       "id": "tests_unit_test_opt_search_space_rationale_26",
@@ -9232,6 +9287,66 @@
       "source_location": "L363"
     },
     {
+      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_1_pyproject_toml",
+      "label": "8.1 `pyproject.toml`",
+      "_origin": "ast",
+      "community": 101,
+      "community_name": "Research: third-party stub strategy for sklearn and scipy",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "8.1 `pyproject.toml`",
+      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
+      "source_location": "L409"
+    },
+    {
+      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_2_where_the_stubs_live",
+      "label": "8.2 Where the stubs live",
+      "_origin": "ast",
+      "community": 101,
+      "community_name": "Research: third-party stub strategy for sklearn and scipy",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "8.2 where the stubs live",
+      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
+      "source_location": "L445"
+    },
+    {
+      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_3_resolver_impact_verified_against_copies_of_the_real_pyproject_toml_uv_lock",
+      "label": "8.3 Resolver impact \u2014 verified against copies of the real `pyproject.toml` + `uv.lock`",
+      "_origin": "ast",
+      "community": 101,
+      "community_name": "Research: third-party stub strategy for sklearn and scipy",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "8.3 resolver impact \u2014 verified against copies of the real `pyproject.toml` + `uv.lock`",
+      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
+      "source_location": "L450"
+    },
+    {
+      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_4_honest_cost_to_ticket_08",
+      "label": "8.4 Honest cost to ticket 08",
+      "_origin": "ast",
+      "community": 101,
+      "community_name": "Research: third-party stub strategy for sklearn and scipy",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "8.4 honest cost to ticket 08",
+      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
+      "source_location": "L482"
+    },
+    {
+      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_the_configuration_for_ticket_08",
+      "label": "8. The configuration for ticket 08",
+      "_origin": "ast",
+      "community": 101,
+      "community_name": "Research: third-party stub strategy for sklearn and scipy",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "8. the configuration for ticket 08",
+      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
+      "source_location": "L407"
+    },
+    {
       "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_9_the_stubs_verbatim",
       "label": "9. The stubs, verbatim",
       "_origin": "ast",
@@ -9268,71 +9383,11 @@
       "source_location": "L769"
     },
     {
-      "id": "claude",
-      "label": "CLAUDE.md",
-      "_origin": "ast",
-      "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "claude.md",
-      "source_file": "CLAUDE.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "claude_background_full_reference",
-      "label": "Background & full reference",
-      "_origin": "ast",
-      "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "background & full reference",
-      "source_file": "CLAUDE.md",
-      "source_location": "L17"
-    },
-    {
-      "id": "claude_graphify",
-      "label": "graphify",
-      "_origin": "ast",
-      "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "graphify",
-      "source_file": "CLAUDE.md",
-      "source_location": "L3"
-    },
-    {
-      "id": "claude_mlflow_run_analysis",
-      "label": "MLflow run analysis",
-      "_origin": "ast",
-      "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "mlflow run analysis",
-      "source_file": "CLAUDE.md",
-      "source_location": "L13"
-    },
-    {
-      "id": "docs_adr_0006_mirror_experiments_per_task",
-      "label": "0006-mirror-experiments-per-task.md",
-      "_origin": "ast",
-      "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "0006-mirror-experiments-per-task.md",
-      "source_file": "docs/adr/0006-mirror-experiments-per-task.md",
-      "source_location": "L1"
-    },
-    {
       "id": "docs_wayfinder_mirror_experiments_map",
       "label": "mirror-experiments/map.md",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "page",
       "norm_label": "mirror-experiments/map.md",
@@ -9344,7 +9399,7 @@
       "label": "Destination",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "destination",
@@ -9356,7 +9411,7 @@
       "label": "Map: Mirror every run into one derived MLflow experiment per task",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "map: mirror every run into one derived mlflow experiment per task",
@@ -9368,7 +9423,7 @@
       "label": "Notes",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "notes",
@@ -9380,7 +9435,7 @@
       "label": "mirror-experiments/plan.md",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "page",
       "norm_label": "mirror-experiments/plan.md",
@@ -9392,7 +9447,7 @@
       "label": "Global constraints",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "global constraints",
@@ -9404,7 +9459,7 @@
       "label": "Mirror Experiments: Implementation Plan",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "mirror experiments: implementation plan",
@@ -9416,7 +9471,7 @@
       "label": "Seams under test, and why each earns its place",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "seams under test, and why each earns its place",
@@ -9428,7 +9483,7 @@
       "label": "Slices",
       "_origin": "ast",
       "community": 102,
-      "community_name": "0006-mirror-experiments-per-task.md",
+      "community_name": "Mirror Experiments: Implementation Plan",
       "file_type": "document",
       "node_kind": "heading",
       "norm_label": "slices",
@@ -9754,30 +9809,6 @@
       "norm_label": "the work",
       "source_file": "docs/wayfinder/typing-and-constants/issues/09-record-adr-and-plan.md",
       "source_location": "L14"
-    },
-    {
-      "id": "docs_adr_0003_selectable_learning_rate_schedule",
-      "label": "0003-selectable-learning-rate-schedule.md",
-      "_origin": "ast",
-      "community": 107,
-      "community_name": "TRIDENT README",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "0003-selectable-learning-rate-schedule.md",
-      "source_file": "docs/adr/0003-selectable-learning-rate-schedule.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_architecture",
-      "label": "ARCHITECTURE.md",
-      "_origin": "ast",
-      "community": 107,
-      "community_name": "TRIDENT README",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "architecture.md",
-      "source_file": "docs/ARCHITECTURE.md",
-      "source_location": "L1"
     },
     {
       "id": "docs_wayfinder_typing_and_constants_map_decisions_so_far",
@@ -13793,59 +13824,100 @@
       "source_location": "L498"
     },
     {
-      "id": "opt_py_path",
-      "label": "Path",
+      "id": "claude",
+      "label": "CLAUDE.md",
       "_origin": "ast",
       "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "code",
-      "norm_label": "path",
-      "source_file": "",
-      "source_location": ""
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "claude.md",
+      "source_file": "CLAUDE.md",
+      "source_location": "L1"
     },
     {
-      "id": "opt_rationale_163",
-      "label": "Wrapper class for the Optuna objective function to maintain state",
+      "id": "claude_background_full_reference",
+      "label": "Background & full reference",
       "_origin": "ast",
       "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "rationale",
-      "norm_label": "wrapper class for the optuna objective function to maintain state",
-      "source_file": "opt.py",
-      "source_location": "L163"
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "background & full reference",
+      "source_file": "CLAUDE.md",
+      "source_location": "L17"
     },
     {
-      "id": "opt_rationale_317",
-      "label": "Save the best parameters found so far, inside the study's own directory. The\u2026",
+      "id": "claude_graphify",
+      "label": "graphify",
       "_origin": "ast",
       "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "rationale",
-      "norm_label": "save the best parameters found so far, inside the study's own directory. the...",
-      "source_file": "opt.py",
-      "source_location": "L317"
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "graphify",
+      "source_file": "CLAUDE.md",
+      "source_location": "L3"
     },
     {
-      "id": "tests_unit_test_opt_search_space_rationale_123",
-      "label": "Scoring a crash teaches the search to seek crashes when lower is better.\u2026",
+      "id": "claude_mlflow_run_analysis",
+      "label": "MLflow run analysis",
       "_origin": "ast",
       "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "rationale",
-      "norm_label": "scoring a crash teaches the search to seek crashes when lower is better....",
-      "source_file": "tests/unit/test_opt_search_space.py",
-      "source_location": "L123"
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "mlflow run analysis",
+      "source_file": "CLAUDE.md",
+      "source_location": "L13"
     },
     {
-      "id": "tests_unit_test_opt_search_space_rationale_163",
-      "label": "Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no\u2026",
+      "id": "docs_adr_0003_selectable_learning_rate_schedule",
+      "label": "0003-selectable-learning-rate-schedule.md",
       "_origin": "ast",
       "community": 141,
-      "community_name": "ObjectiveFunctionWrapper",
-      "file_type": "rationale",
-      "norm_label": "both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no...",
-      "source_file": "tests/unit/test_opt_search_space.py",
-      "source_location": "L163"
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "0003-selectable-learning-rate-schedule.md",
+      "source_file": "docs/adr/0003-selectable-learning-rate-schedule.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_adr_0006_mirror_experiments_per_task",
+      "label": "0006-mirror-experiments-per-task.md",
+      "_origin": "ast",
+      "community": 141,
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "0006-mirror-experiments-per-task.md",
+      "source_file": "docs/adr/0006-mirror-experiments-per-task.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_adr_0009_store_hand_off_to_a_remote_server",
+      "label": "0009-store-hand-off-to-a-remote-server.md",
+      "_origin": "ast",
+      "community": 141,
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "0009-store-hand-off-to-a-remote-server.md",
+      "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_architecture",
+      "label": "ARCHITECTURE.md",
+      "_origin": "ast",
+      "community": 141,
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "norm_label": "architecture.md",
+      "source_file": "docs/ARCHITECTURE.md",
+      "source_location": "L1"
     },
     {
       "id": "tests_unit_test_preprocess_table",
@@ -13914,59 +13986,76 @@
       "source_location": "L60"
     },
     {
-      "id": "opt_py_namespace",
-      "label": "Namespace",
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_08_configure_the_checker_and_make_it_green",
+      "label": "08. Configure the checker and make it green",
       "_origin": "ast",
       "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "code",
-      "norm_label": "namespace",
-      "source_file": "",
-      "source_location": ""
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "08. configure the checker and make it green",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L1"
     },
     {
-      "id": "opt_rationale_362",
-      "label": "Rank the knobs the study sampled and record the ranking on the study parent.\u2026",
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_acceptance",
+      "label": "Acceptance",
       "_origin": "ast",
       "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "rationale",
-      "norm_label": "rank the knobs the study sampled and record the ranking on the study parent....",
-      "source_file": "opt.py",
-      "source_location": "L362"
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "acceptance",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L118"
     },
     {
-      "id": "opt_rationale_384",
-      "label": "Run hyperparameter optimization with Optuna Annotated ahead of the rest of this\u2026",
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_notes",
+      "label": "Notes",
       "_origin": "ast",
       "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "rationale",
-      "norm_label": "run hyperparameter optimization with optuna annotated ahead of the rest of this...",
-      "source_file": "opt.py",
-      "source_location": "L384"
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "notes",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L128"
     },
     {
-      "id": "tests_unit_test_opt_tracking_rationale_191",
-      "label": "The objective builds each trial's namespace itself, so the task has to be\u2026",
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_question",
+      "label": "Question",
       "_origin": "ast",
       "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "rationale",
-      "norm_label": "the objective builds each trial's namespace itself, so the task has to be...",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L191"
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "question",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L13"
     },
     {
-      "id": "tests_unit_test_opt_tracking_rationale_285",
-      "label": "A study is an experiment: the seed that fixes every trial's training fixes the\u2026",
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_the_work",
+      "label": "The work",
       "_origin": "ast",
       "community": 143,
-      "community_name": "run_hyperparameter_optimization",
-      "file_type": "rationale",
-      "norm_label": "a study is an experiment: the seed that fixes every trial's training fixes the...",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L285"
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "the work",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L24"
+    },
+    {
+      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_two_corrections_to_the_numbers_above_made_before_execution",
+      "label": "Two corrections to the numbers above, made before execution",
+      "_origin": "ast",
+      "community": 143,
+      "community_name": "08. Configure the checker and make it green",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "two corrections to the numbers above, made before execution",
+      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
+      "source_location": "L94"
     },
     {
       "id": "docs_adr_0006_mirror_experiments_per_task_consequences",
@@ -14065,50 +14154,6 @@
       "source_location": "L3"
     },
     {
-      "id": "tests_unit_test_opt_tracking_py_path",
-      "label": "Path",
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "code",
-      "norm_label": "path",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_rationale_267",
-      "label": "Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no\u2026",
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "rationale",
-      "norm_label": "both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no...",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L267"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_rationale_402",
-      "label": "Backlog I2: the study used to overwrite\u2026",
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "rationale",
-      "norm_label": "backlog i2: the study used to overwrite...",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L402"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_rationale_553",
-      "label": "A variant with gaps beside the fixture's complete table, so an induced study\u2026",
-      "_origin": "ast",
-      "community": 145,
-      "community_name": "Path",
-      "file_type": "rationale",
-      "norm_label": "a variant with gaps beside the fixture's complete table, so an induced study...",
-      "source_file": "tests/unit/test_opt_tracking.py",
-      "source_location": "L553"
-    },
-    {
       "id": "scripts_backfill_baseline_imputers_py_dataframe",
       "label": "DataFrame",
       "_origin": "ast",
@@ -14142,17 +14187,6 @@
       "source_location": "L315"
     },
     {
-      "id": "runtimeerror",
-      "label": "RuntimeError",
-      "_origin": "ast",
-      "community": 147,
-      "community_name": "RuntimeError",
-      "file_type": "code",
-      "norm_label": "runtimeerror",
-      "source_file": "",
-      "source_location": ""
-    },
-    {
       "id": "scripts_sync_remote_py_protocol",
       "label": "Protocol",
       "_origin": "ast",
@@ -14164,7 +14198,7 @@
       "source_location": ""
     },
     {
-      "id": "scripts_sync_remote_rationale_415",
+      "id": "scripts_sync_remote_rationale_418",
       "label": "How files and commands reach the server. Paths are relative to each side's root.",
       "_origin": "ast",
       "community": 148,
@@ -14172,18 +14206,7 @@
       "file_type": "rationale",
       "norm_label": "how files and commands reach the server. paths are relative to each side's root.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L415"
-    },
-    {
-      "id": "tests_unit_test_opt_tracking_py_fixture",
-      "label": "fixture",
-      "_origin": "ast",
-      "community": 149,
-      "community_name": "mlflow_backend",
-      "file_type": "code",
-      "norm_label": "fixture",
-      "source_file": "",
-      "source_location": ""
+      "source_location": "L418"
     },
     {
       "id": "src_training_decoding",
@@ -14329,18 +14352,6 @@
       "source_location": "L47"
     },
     {
-      "id": "docs_adr_0009_store_hand_off_to_a_remote_server",
-      "label": "0009-store-hand-off-to-a-remote-server.md",
-      "_origin": "ast",
-      "community": 150,
-      "community_name": "Hand the tracking store to a remote server whole, one writer at a time",
-      "file_type": "document",
-      "node_kind": "page",
-      "norm_label": "0009-store-hand-off-to-a-remote-server.md",
-      "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L1"
-    },
-    {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_consequences",
       "label": "Consequences",
       "_origin": "ast",
@@ -14350,7 +14361,7 @@
       "node_kind": "heading",
       "norm_label": "consequences",
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L164"
+      "source_location": "L166"
     },
     {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_context",
@@ -14362,7 +14373,7 @@
       "node_kind": "heading",
       "norm_label": "context",
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L43"
+      "source_location": "L45"
     },
     {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_decision",
@@ -14374,7 +14385,7 @@
       "node_kind": "heading",
       "norm_label": "decision",
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L85"
+      "source_location": "L87"
     },
     {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_hand_the_tracking_store_to_a_remote_server_whole_one_writer_at_a_time",
@@ -14398,7 +14409,7 @@
       "node_kind": "heading",
       "norm_label": "how to use",
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L181"
+      "source_location": "L183"
     },
     {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_outcome_2026_09_29_rehearsal",
@@ -14410,7 +14421,7 @@
       "node_kind": "heading",
       "norm_label": "outcome (2026-09-29, rehearsal)",
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L18"
+      "source_location": "L20"
     },
     {
       "id": "docs_adr_0009_store_hand_off_to_a_remote_server_status",
@@ -15649,66 +15660,6 @@
       "norm_label": "bugs",
       "source_file": "docs/BACKLOG.md",
       "source_location": "L37"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_1_pyproject_toml",
-      "label": "8.1 `pyproject.toml`",
-      "_origin": "ast",
-      "community": 161,
-      "community_name": "8. The configuration for ticket 08",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "8.1 `pyproject.toml`",
-      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
-      "source_location": "L409"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_2_where_the_stubs_live",
-      "label": "8.2 Where the stubs live",
-      "_origin": "ast",
-      "community": 161,
-      "community_name": "8. The configuration for ticket 08",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "8.2 where the stubs live",
-      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
-      "source_location": "L445"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_3_resolver_impact_verified_against_copies_of_the_real_pyproject_toml_uv_lock",
-      "label": "8.3 Resolver impact \u2014 verified against copies of the real `pyproject.toml` + `uv.lock`",
-      "_origin": "ast",
-      "community": 161,
-      "community_name": "8. The configuration for ticket 08",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "8.3 resolver impact \u2014 verified against copies of the real `pyproject.toml` + `uv.lock`",
-      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
-      "source_location": "L450"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_4_honest_cost_to_ticket_08",
-      "label": "8.4 Honest cost to ticket 08",
-      "_origin": "ast",
-      "community": 161,
-      "community_name": "8. The configuration for ticket 08",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "8.4 honest cost to ticket 08",
-      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
-      "source_location": "L482"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_research_05_stub_strategy_8_the_configuration_for_ticket_08",
-      "label": "8. The configuration for ticket 08",
-      "_origin": "ast",
-      "community": 161,
-      "community_name": "8. The configuration for ticket 08",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "8. the configuration for ticket 08",
-      "source_file": "docs/wayfinder/typing-and-constants/research/05-stub-strategy.md",
-      "source_location": "L407"
     },
     {
       "id": "docs_backlog",
@@ -19367,22 +19318,55 @@
       "source_location": "L75"
     },
     {
+      "id": "opt_py_namespace",
+      "label": "Namespace",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "namespace",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "runtimeerror",
+      "label": "RuntimeError",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "runtimeerror",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "tests_unit_test_opt_tracking",
       "label": "test_opt_tracking.py",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "test_opt_tracking.py",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L1"
     },
     {
+      "id": "tests_unit_test_opt_tracking_py_fixture",
+      "label": "fixture",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "fixture",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
       "id": "tests_unit_test_opt_tracking_py_mlflowclient",
       "label": "MlflowClient",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "mlflowclient",
       "source_file": "",
@@ -19393,29 +19377,73 @@
       "label": "Namespace",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "code",
       "norm_label": "namespace",
       "source_file": "",
       "source_location": ""
     },
     {
+      "id": "tests_unit_test_opt_tracking_py_path",
+      "label": "Path",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "code",
+      "norm_label": "path",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "opt_rationale_362",
+      "label": "Rank the knobs the study sampled and record the ranking on the study parent.\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "rank the knobs the study sampled and record the ranking on the study parent....",
+      "source_file": "opt.py",
+      "source_location": "L362"
+    },
+    {
+      "id": "opt_rationale_384",
+      "label": "Run hyperparameter optimization with Optuna Annotated ahead of the rest of this\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "run hyperparameter optimization with optuna annotated ahead of the rest of this...",
+      "source_file": "opt.py",
+      "source_location": "L384"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_rationale_1",
       "label": "MLflow structure of an Optuna study: one study run, one light run per trial.",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "mlflow structure of an optuna study: one study run, one light run per trial.",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L1"
     },
     {
+      "id": "tests_unit_test_opt_tracking_rationale_191",
+      "label": "The objective builds each trial's namespace itself, so the task has to be\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "the objective builds each trial's namespace itself, so the task has to be...",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L191"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_rationale_210",
       "label": "``task`` and ``is_optuna`` are dense on every other run kind (ADR 0004,\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "``task`` and ``is_optuna`` are dense on every other run kind (adr 0004,...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19426,18 +19454,40 @@
       "label": "The study is a root, so it mirrors the whole tree when it closes (ADR 0006,\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "the study is a root, so it mirrors the whole tree when it closes (adr 0006,...",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L233"
     },
     {
+      "id": "tests_unit_test_opt_tracking_rationale_267",
+      "label": "Both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "both tasks read datasets/hiperparams/<base>/<dataset>.json, and it names no...",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L267"
+    },
+    {
+      "id": "tests_unit_test_opt_tracking_rationale_285",
+      "label": "A study is an experiment: the seed that fixes every trial's training fixes the\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "a study is an experiment: the seed that fixes every trial's training fixes the...",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L285"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_rationale_305",
       "label": "The width is sampled as a multiple of the head count, so what Optuna records\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "the width is sampled as a multiple of the head count, so what optuna records...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19448,7 +19498,7 @@
       "label": "Unspecified, an imputation study resolves to ``reduced``; the choice is a\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "unspecified, an imputation study resolves to ``reduced``; the choice is a...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19459,7 +19509,7 @@
       "label": "The test split never chooses hyperparameters (ADR 0005, decision 3). The trial\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "the test split never chooses hyperparameters (adr 0005, decision 3). the trial...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19470,18 +19520,29 @@
       "label": "Stand-in for ``train.main`` that records what each trial was asked to do.",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "stand-in for ``train.main`` that records what each trial was asked to do.",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L39"
     },
     {
+      "id": "tests_unit_test_opt_tracking_rationale_402",
+      "label": "Backlog I2: the study used to overwrite\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "backlog i2: the study used to overwrite...",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L402"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_rationale_425",
       "label": "``--promote_best`` on an imputation study writes ``<dataset>.imputation.json``,\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "``--promote_best`` on an imputation study writes ``<dataset>.imputation.json``,...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19492,7 +19553,7 @@
       "label": "Classification's promotion target is the shared file every classification run\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "classification's promotion target is the shared file every classification run...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19503,7 +19564,7 @@
       "label": "A study says which of the knobs it sampled moved the objective, so the\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "a study says which of the knobs it sampled moved the objective, so the...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19514,18 +19575,29 @@
       "label": "One trial gives fANOVA nothing to rank. The study still records its best and\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "one trial gives fanova nothing to rank. the study still records its best and...",
       "source_file": "tests/unit/test_opt_tracking.py",
       "source_location": "L533"
     },
     {
+      "id": "tests_unit_test_opt_tracking_rationale_553",
+      "label": "A variant with gaps beside the fixture's complete table, so an induced study\u2026",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "run_hyperparameter_optimization",
+      "file_type": "rationale",
+      "norm_label": "a variant with gaps beside the fixture's complete table, so an induced study...",
+      "source_file": "tests/unit/test_opt_tracking.py",
+      "source_location": "L553"
+    },
+    {
       "id": "tests_unit_test_opt_tracking_rationale_562",
       "label": "Asked for the induced objective, the study ranks by the validation split's\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "asked for the induced objective, the study ranks by the validation split's...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19536,7 +19608,7 @@
       "label": "Every study before ADR 0008 ranked by the masked validation cells; one that\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "every study before adr 0008 ranked by the masked validation cells; one that...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19547,7 +19619,7 @@
       "label": "A ``_00nan`` table has no gaps, so no induced population to rank by: every\u2026",
       "_origin": "ast",
       "community": 36,
-      "community_name": "test_opt_tracking.py",
+      "community_name": "run_hyperparameter_optimization",
       "file_type": "rationale",
       "norm_label": "a ``_00nan`` table has no gaps, so no induced population to rank by: every...",
       "source_file": "tests/unit/test_opt_tracking.py",
@@ -19890,30 +19962,6 @@
       "source_location": "L286"
     },
     {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_08_configure_the_checker_and_make_it_green",
-      "label": "08. Configure the checker and make it green",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "08. configure the checker and make it green",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L1"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_acceptance",
-      "label": "Acceptance",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "acceptance",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L118"
-    },
-    {
       "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_acceptance_249",
       "label": "Acceptance",
       "_origin": "ast",
@@ -19936,30 +19984,6 @@
       "norm_label": "left for ticket 09",
       "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
       "source_location": "L258"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_notes",
-      "label": "Notes",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "notes",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L128"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_question",
-      "label": "Question",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "question",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L13"
     },
     {
       "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_resolution",
@@ -20008,30 +20032,6 @@
       "norm_label": "the ramp, as measured",
       "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
       "source_location": "L165"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_the_work",
-      "label": "The work",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "the work",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L24"
-    },
-    {
-      "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_two_corrections_to_the_numbers_above_made_before_execution",
-      "label": "Two corrections to the numbers above, made before execution",
-      "_origin": "ast",
-      "community": 39,
-      "community_name": "Resolution",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "two corrections to the numbers above, made before execution",
-      "source_file": "docs/wayfinder/typing-and-constants/issues/08-configure-the-checker.md",
-      "source_location": "L94"
     },
     {
       "id": "docs_wayfinder_typing_and_constants_issues_08_configure_the_checker_two_corrections_to_this_ticket_s_own_instructions",
@@ -25252,7 +25252,7 @@
       "source_location": ""
     },
     {
-      "id": "scripts_sync_remote_rationale_118",
+      "id": "scripts_sync_remote_rationale_121",
       "label": "The processes holding ``path`` open: a training, the MLflow UI, a notebook.",
       "_origin": "ast",
       "community": 92,
@@ -25260,10 +25260,10 @@
       "file_type": "rationale",
       "norm_label": "the processes holding ``path`` open: a training, the mlflow ui, a notebook.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L118"
+      "source_location": "L121"
     },
     {
-      "id": "scripts_sync_remote_rationale_129",
+      "id": "scripts_sync_remote_rationale_132",
       "label": "A store is handed over only when nothing is writing it and no write was cut\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25271,10 +25271,10 @@
       "file_type": "rationale",
       "norm_label": "a store is handed over only when nothing is writing it and no write was cut...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L129"
+      "source_location": "L132"
     },
     {
-      "id": "scripts_sync_remote_rationale_144",
+      "id": "scripts_sync_remote_rationale_147",
       "label": "Artifact roots under neither prefix; ``mlflow-artifacts:`` roots belong to no\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25282,10 +25282,10 @@
       "file_type": "rationale",
       "norm_label": "artifact roots under neither prefix; ``mlflow-artifacts:`` roots belong to no...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L144"
+      "source_location": "L147"
     },
     {
-      "id": "scripts_sync_remote_rationale_158",
+      "id": "scripts_sync_remote_rationale_161",
       "label": "Every ``table.column`` of the store in which some value contains ``text``.",
       "_origin": "ast",
       "community": 92,
@@ -25293,10 +25293,10 @@
       "file_type": "rationale",
       "norm_label": "every ``table.column`` of the store in which some value contains ``text``.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L158"
+      "source_location": "L161"
     },
     {
-      "id": "scripts_sync_remote_rationale_177",
+      "id": "scripts_sync_remote_rationale_180",
       "label": "Rewrite every artifact root under ``source_prefix`` to ``target_prefix``, in\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25304,7 +25304,7 @@
       "file_type": "rationale",
       "norm_label": "rewrite every artifact root under ``source_prefix`` to ``target_prefix``, in...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L177"
+      "source_location": "L180"
     },
     {
       "id": "scripts_sync_remote_rationale_2",
@@ -25318,7 +25318,7 @@
       "source_location": "L2"
     },
     {
-      "id": "scripts_sync_remote_rationale_215",
+      "id": "scripts_sync_remote_rationale_218",
       "label": "Copy ``store`` consistently to ``destination``; return the digest of ``store``.\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25326,10 +25326,10 @@
       "file_type": "rationale",
       "norm_label": "copy ``store`` consistently to ``destination``; return the digest of ``store``....",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L215"
+      "source_location": "L218"
     },
     {
-      "id": "scripts_sync_remote_rationale_237",
+      "id": "scripts_sync_remote_rationale_240",
       "label": "The one rule of the hand-off: a sync overwrites only a store it left unchanged.\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25337,10 +25337,10 @@
       "file_type": "rationale",
       "norm_label": "the one rule of the hand-off: a sync overwrites only a store it left unchanged....",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L237"
+      "source_location": "L240"
     },
     {
-      "id": "scripts_sync_remote_rationale_259",
+      "id": "scripts_sync_remote_rationale_262",
       "label": "Put ``incoming`` in place as ``root``'s store, keeping the one it replaces.\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25348,10 +25348,10 @@
       "file_type": "rationale",
       "norm_label": "put ``incoming`` in place as ``root``'s store, keeping the one it replaces....",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L259"
+      "source_location": "L262"
     },
     {
-      "id": "scripts_sync_remote_rationale_283",
+      "id": "scripts_sync_remote_rationale_286",
       "label": "Delete files an earlier code push sent and the checkout no longer has. Only\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25359,10 +25359,10 @@
       "file_type": "rationale",
       "norm_label": "delete files an earlier code push sent and the checkout no longer has. only...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L283"
+      "source_location": "L286"
     },
     {
-      "id": "scripts_sync_remote_rationale_302",
+      "id": "scripts_sync_remote_rationale_305",
       "label": "The commit each branch of ``root``'s repository points at; none without a\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25370,10 +25370,10 @@
       "file_type": "rationale",
       "norm_label": "the commit each branch of ``root``'s repository points at; none without a...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L302"
+      "source_location": "L305"
     },
     {
-      "id": "scripts_sync_remote_rationale_366",
+      "id": "scripts_sync_remote_rationale_369",
       "label": "The artifact-root prefix MLflow gives experiments created from checkout\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25381,10 +25381,10 @@
       "file_type": "rationale",
       "norm_label": "the artifact-root prefix mlflow gives experiments created from checkout...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L366"
+      "source_location": "L369"
     },
     {
-      "id": "scripts_sync_remote_rationale_451",
+      "id": "scripts_sync_remote_rationale_454",
       "label": "The code push mirrors ``.git``, which would roll back a commit made on the\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25392,10 +25392,10 @@
       "file_type": "rationale",
       "norm_label": "the code push mirrors ``.git``, which would roll back a commit made on the...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L451"
+      "source_location": "L454"
     },
     {
-      "id": "scripts_sync_remote_rationale_480",
+      "id": "scripts_sync_remote_rationale_483",
       "label": "The code as it is on disk: tracked and untracked-but-not-ignored files, plus\u2026",
       "_origin": "ast",
       "community": 92,
@@ -25403,10 +25403,10 @@
       "file_type": "rationale",
       "norm_label": "the code as it is on disk: tracked and untracked-but-not-ignored files, plus...",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L480"
+      "source_location": "L483"
     },
     {
-      "id": "scripts_sync_remote_rationale_498",
+      "id": "scripts_sync_remote_rationale_501",
       "label": "The commit a server run will record, when the tracked code differs from it.",
       "_origin": "ast",
       "community": 92,
@@ -25414,10 +25414,10 @@
       "file_type": "rationale",
       "norm_label": "the commit a server run will record, when the tracked code differs from it.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L498"
+      "source_location": "L501"
     },
     {
-      "id": "scripts_sync_remote_rationale_543",
+      "id": "scripts_sync_remote_rationale_546",
       "label": "Send the code only; the stores stay where they are.",
       "_origin": "ast",
       "community": 92,
@@ -25425,10 +25425,10 @@
       "file_type": "rationale",
       "norm_label": "send the code only; the stores stay where they are.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L543"
+      "source_location": "L546"
     },
     {
-      "id": "scripts_sync_remote_rationale_557",
+      "id": "scripts_sync_remote_rationale_560",
       "label": "Send code, outputs and the store; the server's store becomes this checkout's.",
       "_origin": "ast",
       "community": 92,
@@ -25436,10 +25436,10 @@
       "file_type": "rationale",
       "norm_label": "send code, outputs and the store; the server's store becomes this checkout's.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L557"
+      "source_location": "L560"
     },
     {
-      "id": "scripts_sync_remote_rationale_57",
+      "id": "scripts_sync_remote_rationale_60",
       "label": "The hand-off stopped before changing anything it could not undo.",
       "_origin": "ast",
       "community": 92,
@@ -25447,10 +25447,10 @@
       "file_type": "rationale",
       "norm_label": "the hand-off stopped before changing anything it could not undo.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L57"
+      "source_location": "L60"
     },
     {
-      "id": "scripts_sync_remote_rationale_598",
+      "id": "scripts_sync_remote_rationale_601",
       "label": "Fetch outputs and the store; this checkout's store becomes the server's.",
       "_origin": "ast",
       "community": 92,
@@ -25458,21 +25458,10 @@
       "file_type": "rationale",
       "norm_label": "fetch outputs and the store; this checkout's store becomes the server's.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L598"
+      "source_location": "L601"
     },
     {
-      "id": "scripts_sync_remote_rationale_61",
-      "label": "A store the hand-off refuses to move, translate or overwrite.",
-      "_origin": "ast",
-      "community": 92,
-      "community_name": "sync_remote.py",
-      "file_type": "rationale",
-      "norm_label": "a store the hand-off refuses to move, translate or overwrite.",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L61"
-    },
-    {
-      "id": "scripts_sync_remote_rationale_630",
+      "id": "scripts_sync_remote_rationale_633",
       "label": "Say which direction may sync now, without changing anything.",
       "_origin": "ast",
       "community": 92,
@@ -25480,10 +25469,21 @@
       "file_type": "rationale",
       "norm_label": "say which direction may sync now, without changing anything.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L630"
+      "source_location": "L633"
     },
     {
-      "id": "scripts_sync_remote_rationale_674",
+      "id": "scripts_sync_remote_rationale_64",
+      "label": "A store the hand-off refuses to move, translate or overwrite.",
+      "_origin": "ast",
+      "community": 92,
+      "community_name": "sync_remote.py",
+      "file_type": "rationale",
+      "norm_label": "a store the hand-off refuses to move, translate or overwrite.",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L64"
+    },
+    {
+      "id": "scripts_sync_remote_rationale_677",
       "label": "A Windows path as WSL mounts it: ``C:/Users/x`` becomes ``/mnt/c/Users/x``.",
       "_origin": "ast",
       "community": 92,
@@ -25491,10 +25491,10 @@
       "file_type": "rationale",
       "norm_label": "a windows path as wsl mounts it: ``c:/users/x`` becomes ``/mnt/c/users/x``.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L674"
+      "source_location": "L677"
     },
     {
-      "id": "scripts_sync_remote_rationale_694",
+      "id": "scripts_sync_remote_rationale_697",
       "label": "rsync and ssh; through WSL on Windows, where their keys and known_hosts live.",
       "_origin": "ast",
       "community": 92,
@@ -25502,10 +25502,10 @@
       "file_type": "rationale",
       "norm_label": "rsync and ssh; through wsl on windows, where their keys and known_hosts live.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L694"
+      "source_location": "L697"
     },
     {
-      "id": "scripts_sync_remote_rationale_80",
+      "id": "scripts_sync_remote_rationale_83",
       "label": "Windows names no holder cheaply, but refuses an exclusive open while one exists.",
       "_origin": "ast",
       "community": 92,
@@ -25513,7 +25513,7 @@
       "file_type": "rationale",
       "norm_label": "windows names no holder cheaply, but refuses an exclusive open while one exists.",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L80"
+      "source_location": "L83"
     },
     {
       "id": "tests_unit_test_sync_remote_rationale_1",
@@ -26130,21 +26130,6 @@
       "source_url": null
     },
     {
-      "id": "docs_adr_0002_curated_cross_validation_mlflow_runs",
-      "label": "ADR 0002: Curated Cross-Validation MLflow Runs",
-      "_origin": "semantic",
-      "author": null,
-      "captured_at": null,
-      "community": 107,
-      "community_name": "TRIDENT README",
-      "contributor": null,
-      "file_type": "document",
-      "norm_label": "adr 0002: curated cross-validation mlflow runs",
-      "source_file": "docs/adr/0002-curated-cross-validation-mlflow-runs.md",
-      "source_location": null,
-      "source_url": null
-    },
-    {
       "id": "docs_superpowers_plans_2026_08_03_curated_mlflow_cross_validation",
       "label": "Curated MLflow Cross-Validation Implementation Plan",
       "_origin": "semantic",
@@ -26471,6 +26456,21 @@
       "file_type": "document",
       "norm_label": "ticket 0001: training refactor and regression baseline",
       "source_file": "docs/tickets/0001-training-refactor.md",
+      "source_location": null,
+      "source_url": null
+    },
+    {
+      "id": "docs_adr_0002_curated_cross_validation_mlflow_runs",
+      "label": "ADR 0002: Curated Cross-Validation MLflow Runs",
+      "_origin": "semantic",
+      "author": null,
+      "captured_at": null,
+      "community": 141,
+      "community_name": "0006-mirror-experiments-per-task.md",
+      "contributor": null,
+      "file_type": "document",
+      "norm_label": "adr 0002: curated cross-validation mlflow runs",
+      "source_file": "docs/adr/0002-curated-cross-validation-mlflow-runs.md",
       "source_location": null,
       "source_url": null
     },
@@ -28012,7 +28012,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L313",
+      "source_location": "L316",
       "weight": 1.0
     },
     {
@@ -28024,7 +28024,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L494",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -28036,7 +28036,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L290",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -28048,7 +28048,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L291",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -28060,7 +28060,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L122",
+      "source_location": "L125",
       "weight": 1.0
     },
     {
@@ -28072,7 +28072,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L124",
+      "source_location": "L127",
       "weight": 1.0
     },
     {
@@ -28084,7 +28084,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L125",
+      "source_location": "L128",
       "weight": 1.0
     },
     {
@@ -28096,7 +28096,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L104",
+      "source_location": "L107",
       "weight": 1.0
     },
     {
@@ -28108,7 +28108,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L264",
+      "source_location": "L267",
       "weight": 1.0
     },
     {
@@ -28120,7 +28120,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L265",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -28132,7 +28132,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L265",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -28144,7 +28144,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L268",
+      "source_location": "L271",
       "weight": 1.0
     },
     {
@@ -28156,7 +28156,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L775",
+      "source_location": "L778",
       "weight": 1.0
     },
     {
@@ -28168,7 +28168,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L808",
+      "source_location": "L811",
       "weight": 1.0
     },
     {
@@ -28180,7 +28180,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L813",
+      "source_location": "L816",
       "weight": 1.0
     },
     {
@@ -28192,7 +28192,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L814",
+      "source_location": "L817",
       "weight": 1.0
     },
     {
@@ -28204,7 +28204,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L817",
+      "source_location": "L820",
       "weight": 1.0
     },
     {
@@ -28216,7 +28216,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L825",
+      "source_location": "L828",
       "weight": 1.0
     },
     {
@@ -28228,7 +28228,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L826",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -28240,7 +28240,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L826",
+      "source_location": "L829",
       "weight": 1.0
     },
     {
@@ -28252,7 +28252,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L828",
+      "source_location": "L831",
       "weight": 1.0
     },
     {
@@ -28264,7 +28264,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L830",
+      "source_location": "L833",
       "weight": 1.0
     },
     {
@@ -28276,7 +28276,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L832",
+      "source_location": "L835",
       "weight": 1.0
     },
     {
@@ -28288,36 +28288,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L834",
+      "source_location": "L837",
       "weight": 1.0
     },
     {
       "source": "scripts_sync_remote_pull",
       "target": "scripts_sync_remote_mode",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L599",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_syncstate_load",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L600",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_refuse_if_busy",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28329,7 +28305,7 @@
     },
     {
       "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_sha256_file",
+      "target": "scripts_sync_remote_syncstate_load",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28341,19 +28317,19 @@
     },
     {
       "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_refuse_if_changed",
+      "target": "scripts_sync_remote_refuse_if_busy",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L604",
+      "source_location": "L605",
       "weight": 1.0
     },
     {
       "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_text",
+      "target": "scripts_sync_remote_sha256_file",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28365,7 +28341,7 @@
     },
     {
       "source": "scripts_sync_remote_pull",
-      "target": "scripts_sync_remote_names",
+      "target": "scripts_sync_remote_refuse_if_changed",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28377,6 +28353,30 @@
     },
     {
       "source": "scripts_sync_remote_pull",
+      "target": "scripts_sync_remote_text",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L609",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_pull",
+      "target": "scripts_sync_remote_names",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L610",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_pull",
       "target": "scripts_sync_remote_translate_store",
       "relation": "calls",
       "_origin": "ast",
@@ -28384,7 +28384,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L613",
+      "source_location": "L616",
       "weight": 1.0
     },
     {
@@ -28396,7 +28396,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L619",
+      "source_location": "L622",
       "weight": 1.0
     },
     {
@@ -28408,36 +28408,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L558",
+      "source_location": "L561",
       "weight": 1.0
     },
     {
       "source": "scripts_sync_remote_push",
       "target": "scripts_sync_remote_syncstate_load",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L559",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_refuse_if_busy",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L560",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_names",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28449,7 +28425,7 @@
     },
     {
       "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_storeerror",
+      "target": "scripts_sync_remote_refuse_if_busy",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28461,31 +28437,7 @@
     },
     {
       "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_branches",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L564",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_refuse_if_server_has_commits",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L564",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_refuse_if_changed",
+      "target": "scripts_sync_remote_names",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28497,19 +28449,7 @@
     },
     {
       "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_text",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L565",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_push",
-      "target": "scripts_sync_remote_send_code",
+      "target": "scripts_sync_remote_storeerror",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28521,6 +28461,66 @@
     },
     {
       "source": "scripts_sync_remote_push",
+      "target": "scripts_sync_remote_branches",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L567",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_push",
+      "target": "scripts_sync_remote_refuse_if_server_has_commits",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L567",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_push",
+      "target": "scripts_sync_remote_refuse_if_changed",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L568",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_push",
+      "target": "scripts_sync_remote_text",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L568",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_push",
+      "target": "scripts_sync_remote_send_code",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L569",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_push",
       "target": "scripts_sync_remote_snapshot_store",
       "relation": "calls",
       "_origin": "ast",
@@ -28528,7 +28528,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L571",
+      "source_location": "L574",
       "weight": 1.0
     },
     {
@@ -28540,7 +28540,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L572",
+      "source_location": "L575",
       "weight": 1.0
     },
     {
@@ -28552,7 +28552,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L578",
+      "source_location": "L581",
       "weight": 1.0
     },
     {
@@ -28564,7 +28564,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L544",
+      "source_location": "L547",
       "weight": 1.0
     },
     {
@@ -28576,7 +28576,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L546",
+      "source_location": "L549",
       "weight": 1.0
     },
     {
@@ -28588,7 +28588,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L548",
+      "source_location": "L551",
       "weight": 1.0
     },
     {
@@ -28600,7 +28600,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L552",
+      "source_location": "L555",
       "weight": 1.0
     },
     {
@@ -28612,7 +28612,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L552",
+      "source_location": "L555",
       "weight": 1.0
     },
     {
@@ -28624,7 +28624,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L553",
+      "source_location": "L556",
       "weight": 1.0
     },
     {
@@ -28636,7 +28636,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L130",
+      "source_location": "L133",
       "weight": 1.0
     },
     {
@@ -28648,7 +28648,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L132",
+      "source_location": "L135",
       "weight": 1.0
     },
     {
@@ -28660,7 +28660,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L134",
+      "source_location": "L137",
       "weight": 1.0
     },
     {
@@ -28672,7 +28672,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L245",
+      "source_location": "L248",
       "weight": 1.0
     },
     {
@@ -28684,7 +28684,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L472",
+      "source_location": "L475",
       "weight": 1.0
     },
     {
@@ -28696,36 +28696,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L334",
+      "source_location": "L337",
       "weight": 1.0
     },
     {
       "source": "scripts_sync_remote_remote_command",
       "target": "scripts_sync_remote_sha256_file",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L339",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_remote_command",
-      "target": "scripts_sync_remote_held_open_by",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L340",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_remote_command",
-      "target": "scripts_sync_remote_branch_tips",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28737,7 +28713,19 @@
     },
     {
       "source": "scripts_sync_remote_remote_command",
-      "target": "scripts_sync_remote_snapshot_store",
+      "target": "scripts_sync_remote_held_open_by",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L343",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_remote_command",
+      "target": "scripts_sync_remote_branch_tips",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28749,6 +28737,18 @@
     },
     {
       "source": "scripts_sync_remote_remote_command",
+      "target": "scripts_sync_remote_snapshot_store",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L348",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_remote_command",
       "target": "scripts_sync_remote_delete_pushed_files",
       "relation": "calls",
       "_origin": "ast",
@@ -28756,7 +28756,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L352",
+      "source_location": "L355",
       "weight": 1.0
     },
     {
@@ -28768,7 +28768,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L353",
+      "source_location": "L356",
       "weight": 1.0
     },
     {
@@ -28780,7 +28780,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L764",
+      "source_location": "L767",
       "weight": 1.0
     },
     {
@@ -28792,7 +28792,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L764",
+      "source_location": "L767",
       "weight": 1.0
     },
     {
@@ -28804,7 +28804,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L764",
+      "source_location": "L767",
       "weight": 1.0
     },
     {
@@ -28816,7 +28816,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L767",
+      "source_location": "L770",
       "weight": 1.0
     },
     {
@@ -28828,7 +28828,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L767",
+      "source_location": "L770",
       "weight": 1.0
     },
     {
@@ -28840,7 +28840,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L767",
+      "source_location": "L770",
       "weight": 1.0
     },
     {
@@ -28852,7 +28852,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L708",
+      "source_location": "L711",
       "weight": 1.0
     },
     {
@@ -28864,24 +28864,12 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L730",
+      "source_location": "L733",
       "weight": 1.0
     },
     {
       "source": "scripts_sync_remote_rsynctransport_remote",
       "target": "scripts_sync_remote_rsynctransport_run",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L736",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_rsynctransport_remote",
-      "target": "scripts_sync_remote_storeerror",
       "relation": "calls",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -28893,6 +28881,18 @@
     },
     {
       "source": "scripts_sync_remote_rsynctransport_remote",
+      "target": "scripts_sync_remote_storeerror",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L742",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_rsynctransport_remote",
       "target": "scripts_sync_remote_syncerror",
       "relation": "calls",
       "_origin": "ast",
@@ -28900,7 +28900,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L741",
+      "source_location": "L744",
       "weight": 1.0
     },
     {
@@ -28912,7 +28912,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L722",
+      "source_location": "L725",
       "weight": 1.0
     },
     {
@@ -28924,7 +28924,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L725",
+      "source_location": "L728",
       "weight": 1.0
     },
     {
@@ -28936,7 +28936,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L756",
+      "source_location": "L759",
       "weight": 1.0
     },
     {
@@ -28948,7 +28948,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L757",
+      "source_location": "L760",
       "weight": 1.0
     },
     {
@@ -28960,7 +28960,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L757",
+      "source_location": "L760",
       "weight": 1.0
     },
     {
@@ -28972,7 +28972,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L761",
+      "source_location": "L764",
       "weight": 1.0
     },
     {
@@ -28984,7 +28984,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L761",
+      "source_location": "L764",
       "weight": 1.0
     },
     {
@@ -28996,7 +28996,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L761",
+      "source_location": "L764",
       "weight": 1.0
     },
     {
@@ -29008,7 +29008,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L749",
+      "source_location": "L752",
       "weight": 1.0
     },
     {
@@ -29020,7 +29020,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L750",
+      "source_location": "L753",
       "weight": 1.0
     },
     {
@@ -29032,7 +29032,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L750",
+      "source_location": "L753",
       "weight": 1.0
     },
     {
@@ -29044,7 +29044,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L517",
+      "source_location": "L520",
       "weight": 1.0
     },
     {
@@ -29056,7 +29056,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L520",
+      "source_location": "L523",
       "weight": 1.0
     },
     {
@@ -29068,7 +29068,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L531",
+      "source_location": "L534",
       "weight": 1.0
     },
     {
@@ -29080,7 +29080,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L220",
+      "source_location": "L223",
       "weight": 1.0
     },
     {
@@ -29092,7 +29092,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L221",
+      "source_location": "L224",
       "weight": 1.0
     },
     {
@@ -29104,7 +29104,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L631",
+      "source_location": "L634",
       "weight": 1.0
     },
     {
@@ -29116,7 +29116,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L633",
+      "source_location": "L636",
       "weight": 1.0
     },
     {
@@ -29128,7 +29128,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L635",
+      "source_location": "L638",
       "weight": 1.0
     },
     {
@@ -29140,7 +29140,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L653",
+      "source_location": "L656",
       "weight": 1.0
     },
     {
@@ -29152,7 +29152,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L657",
+      "source_location": "L660",
       "weight": 1.0
     },
     {
@@ -29164,7 +29164,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L657",
+      "source_location": "L660",
       "weight": 1.0
     },
     {
@@ -29176,7 +29176,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L383",
+      "source_location": "L386",
       "weight": 1.0
     },
     {
@@ -29188,7 +29188,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L678",
+      "source_location": "L681",
       "weight": 1.0
     },
     {
@@ -29200,7 +29200,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L184",
+      "source_location": "L187",
       "weight": 1.0
     },
     {
@@ -29212,7 +29212,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L187",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -29224,7 +29224,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L200",
+      "source_location": "L203",
       "weight": 1.0
     },
     {
@@ -41092,7 +41092,7 @@
       "confidence_score": 1.0,
       "context": "generic_arg",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L700",
+      "source_location": "L703",
       "weight": 1.0
     },
     {
@@ -47044,7 +47044,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L301",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -47056,7 +47056,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L479",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -47068,7 +47068,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L157",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -47080,7 +47080,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L282",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -47092,7 +47092,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L141",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -47104,7 +47104,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L117",
+      "source_location": "L120",
       "weight": 1.0
     },
     {
@@ -47116,7 +47116,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L79",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -47128,7 +47128,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L256",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -47140,7 +47140,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L597",
+      "source_location": "L600",
       "weight": 1.0
     },
     {
@@ -47152,7 +47152,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L556",
+      "source_location": "L559",
       "weight": 1.0
     },
     {
@@ -47164,7 +47164,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L542",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -47176,7 +47176,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L450",
+      "source_location": "L453",
       "weight": 1.0
     },
     {
@@ -47188,7 +47188,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L696",
+      "source_location": "L699",
       "weight": 1.0
     },
     {
@@ -47200,7 +47200,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L696",
+      "source_location": "L699",
       "weight": 1.0
     },
     {
@@ -47212,7 +47212,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L516",
+      "source_location": "L519",
       "weight": 1.0
     },
     {
@@ -47224,7 +47224,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L516",
+      "source_location": "L519",
       "weight": 1.0
     },
     {
@@ -47236,7 +47236,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L67",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -47248,7 +47248,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L214",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -47260,7 +47260,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L629",
+      "source_location": "L632",
       "weight": 1.0
     },
     {
@@ -47272,7 +47272,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L380",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -47284,7 +47284,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L386",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
@@ -47296,7 +47296,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L400",
+      "source_location": "L403",
       "weight": 1.0
     },
     {
@@ -47308,7 +47308,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L406",
+      "source_location": "L409",
       "weight": 1.0
     },
     {
@@ -47320,7 +47320,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L673",
+      "source_location": "L676",
       "weight": 1.0
     },
     {
@@ -47332,7 +47332,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L176",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -47344,7 +47344,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L497",
+      "source_location": "L500",
       "weight": 1.0
     },
     {
@@ -50384,7 +50384,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L164",
+      "source_location": "L166",
       "weight": 1.0
     },
     {
@@ -50395,7 +50395,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L181",
+      "source_location": "L183",
       "weight": 1.0
     },
     {
@@ -50417,7 +50417,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L43",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -50428,7 +50428,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L85",
+      "source_location": "L87",
       "weight": 1.0
     },
     {
@@ -50439,7 +50439,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0
     },
     {
@@ -59602,7 +59602,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L101",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -59613,7 +59613,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L117",
+      "source_location": "L120",
       "weight": 1.0
     },
     {
@@ -59624,7 +59624,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L128",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -59635,7 +59635,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L141",
+      "source_location": "L144",
       "weight": 1.0
     },
     {
@@ -59646,7 +59646,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L157",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -59657,7 +59657,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L176",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -59668,7 +59668,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L214",
+      "source_location": "L217",
       "weight": 1.0
     },
     {
@@ -59679,7 +59679,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L236",
+      "source_location": "L239",
       "weight": 1.0
     },
     {
@@ -59690,7 +59690,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L256",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -59701,7 +59701,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L277",
+      "source_location": "L280",
       "weight": 1.0
     },
     {
@@ -59712,7 +59712,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L282",
+      "source_location": "L285",
       "weight": 1.0
     },
     {
@@ -59723,7 +59723,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L301",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -59734,7 +59734,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L320",
+      "source_location": "L323",
       "weight": 1.0
     },
     {
@@ -59745,7 +59745,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L365",
+      "source_location": "L368",
       "weight": 1.0
     },
     {
@@ -59756,7 +59756,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L371",
+      "source_location": "L374",
       "weight": 1.0
     },
     {
@@ -59767,7 +59767,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L393",
+      "source_location": "L396",
       "weight": 1.0
     },
     {
@@ -59778,7 +59778,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L414",
+      "source_location": "L417",
       "weight": 1.0
     },
     {
@@ -59789,7 +59789,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L431",
+      "source_location": "L434",
       "weight": 1.0
     },
     {
@@ -59800,7 +59800,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L438",
+      "source_location": "L441",
       "weight": 1.0
     },
     {
@@ -59811,7 +59811,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L442",
+      "source_location": "L445",
       "weight": 1.0
     },
     {
@@ -59822,7 +59822,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L446",
+      "source_location": "L449",
       "weight": 1.0
     },
     {
@@ -59833,7 +59833,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L450",
+      "source_location": "L453",
       "weight": 1.0
     },
     {
@@ -59844,7 +59844,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L479",
+      "source_location": "L482",
       "weight": 1.0
     },
     {
@@ -59855,7 +59855,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L497",
+      "source_location": "L500",
       "weight": 1.0
     },
     {
@@ -59866,7 +59866,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L512",
+      "source_location": "L515",
       "weight": 1.0
     },
     {
@@ -59877,7 +59877,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L516",
+      "source_location": "L519",
       "weight": 1.0
     },
     {
@@ -59888,7 +59888,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L542",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -59899,7 +59899,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L556",
+      "source_location": "L559",
       "weight": 1.0
     },
     {
@@ -59910,7 +59910,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -59921,7 +59921,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L597",
+      "source_location": "L600",
       "weight": 1.0
     },
     {
@@ -59932,7 +59932,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L60",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -59943,18 +59943,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L629",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote",
-      "target": "scripts_sync_remote_sha256_file",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L67",
+      "source_location": "L632",
       "weight": 1.0
     },
     {
@@ -59965,7 +59954,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L673",
+      "source_location": "L676",
       "weight": 1.0
     },
     {
@@ -59976,7 +59965,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L693",
+      "source_location": "L696",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote",
+      "target": "scripts_sync_remote_sha256_file",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
@@ -59987,7 +59987,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L770",
+      "source_location": "L773",
       "weight": 1.0
     },
     {
@@ -59998,7 +59998,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L79",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -65047,7 +65047,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L60",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -65058,7 +65058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L56",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -65069,7 +65069,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L414",
+      "source_location": "L417",
       "weight": 1.0
     },
     {
@@ -65311,7 +65311,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L696",
+      "source_location": "L699",
       "weight": 1.0
     },
     {
@@ -65322,7 +65322,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L700",
+      "source_location": "L703",
       "weight": 1.0
     },
     {
@@ -65333,7 +65333,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L706",
+      "source_location": "L709",
       "weight": 1.0
     },
     {
@@ -65344,7 +65344,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L710",
+      "source_location": "L713",
       "weight": 1.0
     },
     {
@@ -65355,7 +65355,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L716",
+      "source_location": "L719",
       "weight": 1.0
     },
     {
@@ -65366,7 +65366,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L729",
+      "source_location": "L732",
       "weight": 1.0
     },
     {
@@ -65377,7 +65377,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L745",
+      "source_location": "L748",
       "weight": 1.0
     },
     {
@@ -65388,7 +65388,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L752",
+      "source_location": "L755",
       "weight": 1.0
     },
     {
@@ -65399,7 +65399,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L760",
+      "source_location": "L763",
       "weight": 1.0
     },
     {
@@ -65410,7 +65410,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L763",
+      "source_location": "L766",
       "weight": 1.0
     },
     {
@@ -65421,7 +65421,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L766",
+      "source_location": "L769",
       "weight": 1.0
     },
     {
@@ -65432,7 +65432,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L380",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -65443,7 +65443,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L386",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
@@ -65454,7 +65454,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L400",
+      "source_location": "L403",
       "weight": 1.0
     },
     {
@@ -65465,7 +65465,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L406",
+      "source_location": "L409",
       "weight": 1.0
     },
     {
@@ -65476,7 +65476,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L417",
+      "source_location": "L420",
       "weight": 1.0
     },
     {
@@ -65487,7 +65487,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L419",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -65498,7 +65498,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L421",
+      "source_location": "L424",
       "weight": 1.0
     },
     {
@@ -65509,7 +65509,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L423",
+      "source_location": "L426",
       "weight": 1.0
     },
     {
@@ -65520,7 +65520,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L425",
+      "source_location": "L428",
       "weight": 1.0
     },
     {
@@ -65531,7 +65531,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L427",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -67262,58 +67262,58 @@
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_118",
+      "source": "scripts_sync_remote_rationale_121",
       "target": "scripts_sync_remote_held_open_by",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L118",
+      "source_location": "L121",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_129",
+      "source": "scripts_sync_remote_rationale_132",
       "target": "scripts_sync_remote_refuse_if_busy",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L129",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_144",
+      "source": "scripts_sync_remote_rationale_147",
       "target": "scripts_sync_remote_foreign_roots",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L144",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_158",
+      "source": "scripts_sync_remote_rationale_161",
       "target": "scripts_sync_remote_columns_holding",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L158",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_177",
+      "source": "scripts_sync_remote_rationale_180",
       "target": "scripts_sync_remote_translate_store",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L177",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -67328,212 +67328,212 @@
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_215",
+      "source": "scripts_sync_remote_rationale_218",
       "target": "scripts_sync_remote_snapshot_store",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L215",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_237",
+      "source": "scripts_sync_remote_rationale_240",
       "target": "scripts_sync_remote_refuse_if_changed",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L237",
+      "source_location": "L240",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_259",
+      "source": "scripts_sync_remote_rationale_262",
       "target": "scripts_sync_remote_install_store",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L259",
+      "source_location": "L262",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_283",
+      "source": "scripts_sync_remote_rationale_286",
       "target": "scripts_sync_remote_delete_pushed_files",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L283",
+      "source_location": "L286",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_302",
+      "source": "scripts_sync_remote_rationale_305",
       "target": "scripts_sync_remote_branch_tips",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L302",
+      "source_location": "L305",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_366",
+      "source": "scripts_sync_remote_rationale_369",
       "target": "scripts_sync_remote_artifact_prefix",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L366",
+      "source_location": "L369",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_415",
+      "source": "scripts_sync_remote_rationale_418",
       "target": "scripts_sync_remote_transport",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L415",
+      "source_location": "L418",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_451",
+      "source": "scripts_sync_remote_rationale_454",
       "target": "scripts_sync_remote_refuse_if_server_has_commits",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L451",
+      "source_location": "L454",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_480",
+      "source": "scripts_sync_remote_rationale_483",
       "target": "scripts_sync_remote_code_files",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L480",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_498",
+      "source": "scripts_sync_remote_rationale_501",
       "target": "scripts_sync_remote_uncommitted",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L498",
+      "source_location": "L501",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_543",
+      "source": "scripts_sync_remote_rationale_546",
       "target": "scripts_sync_remote_push_code",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L543",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_557",
+      "source": "scripts_sync_remote_rationale_560",
       "target": "scripts_sync_remote_push",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L557",
+      "source_location": "L560",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_57",
+      "source": "scripts_sync_remote_rationale_60",
       "target": "scripts_sync_remote_syncerror",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L57",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_598",
+      "source": "scripts_sync_remote_rationale_601",
       "target": "scripts_sync_remote_pull",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L598",
+      "source_location": "L601",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_61",
-      "target": "scripts_sync_remote_storeerror",
-      "relation": "rationale_for",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "scripts/sync_remote.py",
-      "source_location": "L61",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_sync_remote_rationale_630",
+      "source": "scripts_sync_remote_rationale_633",
       "target": "scripts_sync_remote_status",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L630",
+      "source_location": "L633",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_674",
+      "source": "scripts_sync_remote_rationale_64",
+      "target": "scripts_sync_remote_storeerror",
+      "relation": "rationale_for",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/sync_remote.py",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_sync_remote_rationale_677",
       "target": "scripts_sync_remote_to_wsl",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L674",
+      "source_location": "L677",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_694",
+      "source": "scripts_sync_remote_rationale_697",
       "target": "scripts_sync_remote_rsynctransport",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L694",
+      "source_location": "L697",
       "weight": 1.0
     },
     {
-      "source": "scripts_sync_remote_rationale_80",
+      "source": "scripts_sync_remote_rationale_83",
       "target": "scripts_sync_remote_held_open_windows",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/sync_remote.py",
-      "source_location": "L80",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -71090,6 +71090,17 @@
       "weight": 1.0
     },
     {
+      "source": "agents",
+      "target": "docs_adr_0009_store_hand_off_to_a_remote_server",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "AGENTS.md",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
       "source": "claude",
       "target": "docs_adr_0002_curated_cross_validation_mlflow_runs",
       "relation": "references",
@@ -71103,6 +71114,17 @@
     {
       "source": "claude",
       "target": "docs_adr_0006_mirror_experiments_per_task",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "claude",
+      "target": "docs_adr_0009_store_hand_off_to_a_remote_server",
       "relation": "references",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -71471,7 +71493,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L15",
+      "source_location": "L17",
       "weight": 1.0
     },
     {
@@ -71482,7 +71504,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/adr/0009-store-hand-off-to-a-remote-server.md",
-      "source_location": "L16",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -72451,6 +72473,17 @@
       "confidence_score": 1.0,
       "source_file": "README.md",
       "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "readme",
+      "target": "docs_adr_0009_store_hand_off_to_a_remote_server",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "L203",
       "weight": 1.0
     },
     {
@@ -75098,5 +75131,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "2a2e6ac5f7451275eb762779cd617d7ee6a54119"
+  "built_at_commit": "e898251d342903cdd81bf2b45c4c75c8b737efd2"
 }
