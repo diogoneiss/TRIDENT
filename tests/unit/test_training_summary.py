@@ -186,3 +186,31 @@ def test_stage_timing_metrics_sums_the_two_stages() -> None:
         "time/finetune_seconds": 1.5,
         "time/total_seconds": 3.5,
     }
+
+
+def _without_pretraining(record: FoldTrackingRecord) -> FoldTrackingRecord:
+    return replace(
+        record,
+        metric_events=tuple(
+            event for event in record.metric_events if not event.key.startswith("pretrain/")
+        ),
+    )
+
+
+def test_a_stage_no_fold_ran_has_no_loss_band() -> None:
+    """A run may skip pre-training (zero epochs) to measure what it contributes. No fold
+    then logs a pre-training loss, and the summary must say nothing about that stage
+    rather than refuse the whole run; the stage that did train keeps its bands."""
+    summary = summarize_cross_validation(
+        [_without_pretraining(_record(1, 0.4)), _without_pretraining(_record(2, 0.8))]
+    )
+
+    assert "pretrain/train_loss" not in summary.loss_bands
+    assert "pretrain/val_loss" not in summary.loss_bands
+    assert set(summary.loss_bands) == {"finetune/train_loss", "finetune/val_loss"}
+
+
+def test_a_stage_only_some_folds_ran_is_still_refused() -> None:
+    """Folds that disagree about whether a stage ran are not comparable, as before."""
+    with pytest.raises(ValueError, match="pretrain/train_loss"):
+        summarize_cross_validation([_without_pretraining(_record(1, 0.4)), _record(2, 0.8)])

@@ -240,8 +240,13 @@ def _summarize_metric(values: Sequence[float]) -> MetricSummary:
 def _summarize_loss_bands(
     records: Sequence[FoldTrackingRecord], task: TaskSpec
 ) -> Mapping[str, Sequence[LossBand]]:
-    loss_keys = task.loss_keys
-    fold_events = [_loss_events_by_key(record.metric_events, loss_keys) for record in records]
+    fold_events = [_loss_events_by_key(record.metric_events, task.loss_keys) for record in records]
+    # A stage no fold ran (zero epochs, to measure what it contributes) has no band. A
+    # stage only some folds ran makes the folds incomparable and is refused, as before.
+    loss_keys = tuple(key for key in task.loss_keys if any(events[key] for events in fold_events))
+    for key in loss_keys:
+        if not all(events[key] for events in fold_events):
+            raise ValueError(f"Loss events must include {key!r}.")
     reference_steps = {key: set(fold_events[0][key]) for key in loss_keys}
     for events_by_key in fold_events:
         for key in loss_keys:
@@ -271,10 +276,6 @@ def _loss_events_by_key(
         if event.step in events_by_key[event.key]:
             raise ValueError(f"Loss event {event.key!r} has duplicate step {event.step}.")
         events_by_key[event.key][event.step] = float(event.value)
-
-    for key, events in events_by_key.items():
-        if not events:
-            raise ValueError(f"Loss events must include {key!r}.")
     return events_by_key
 
 
