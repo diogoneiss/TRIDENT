@@ -91,6 +91,16 @@ def _variant_path(base_dataset_name: str, dataset_name: str) -> Path:
     return PROCESSED_DATASETS / base_dataset_name / f"{dataset_name}.csv"
 
 
+def has_complete_sibling(spec: DatasetSpec) -> bool:
+    """Whether the variant has a complete table its gaps were cut from, without reading it.
+
+    A complete variant is its own sibling and has no gaps to score.
+    """
+    variant = _variant_path(spec.base_dataset_name, spec.dataset_name)
+    complete = _variant_path(spec.base_dataset_name, f"{spec.base_dataset_name}_00nan")
+    return complete != variant and complete.exists()
+
+
 def load_complete_sibling(spec: DatasetSpec) -> pd.DataFrame | None:
     """The complete table a variant's missing cells were cut from, if there is one.
 

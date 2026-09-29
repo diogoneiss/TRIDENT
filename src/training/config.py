@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from .types import (
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
+    SEARCH_OBJECTIVE_POPULATIONS,
     SEARCH_SPACE_PROFILES,
     TASK_NAMES,
     DatasetSpec,
@@ -183,6 +184,14 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     ):
         raise SystemExit("error: --search_space reduced requires --task imputation")
 
+    # Only imputation has validation populations to choose between; classification ranks
+    # by macro F1 (ADR 0008). Refused here rather than mid-study.
+    if (
+        getattr(args, "search_objective", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --search_objective requires --task imputation")
+
     return args
 
 
@@ -281,6 +290,19 @@ def build_training_parser() -> argparse.ArgumentParser:
             "rate and dropout, holding the rest at the task default. Unspecified resolves "
             "to 'reduced' for --task imputation and 'full' for classification; 'reduced' is "
             "defined only for the imputation task."
+        ),
+    )
+    parser.add_argument(
+        "--search_objective",
+        type=str,
+        default=None,
+        choices=SEARCH_OBJECTIVE_POPULATIONS,
+        help=(
+            "Which validation population an imputation study ranks its trials by (ADR 0008): "
+            "'masked', the cells hidden on the validation split, which every study before "
+            "ADR 0008 used; or 'induced', the validation rows' own gaps scored against the "
+            "complete _00nan sibling, the population the headline test score is on. "
+            "Unspecified means 'masked'. 'induced' needs a variant with gaps."
         ),
     )
     return parser

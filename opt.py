@@ -20,6 +20,7 @@ from src.mlflow_utils import (
     IS_MIRROR_TAG,
     IS_OPTUNA_TAG,
     LR_SCHEDULER_TAG,
+    SEARCH_OBJECTIVE_TAG,
     SEARCH_SPACE_TAG,
     TASK_TAG,
     setup_mlflow,
@@ -31,9 +32,16 @@ from src.training.config import (
     hyperparameter_file,
     validate_parsed_args,
 )
-from src.training.data import PROCESSED_DATASETS, declared_column_types
+from src.training.data import PROCESSED_DATASETS, declared_column_types, has_complete_sibling
 from src.training.tracking import execution_tags, mirror_root_safely
-from src.training.types import DEFAULT_LR_SCHEDULER, Hyperparameters, task_spec
+from src.training.types import (
+    DEFAULT_LR_SCHEDULER,
+    DEFAULT_SEARCH_OBJECTIVE_POPULATION,
+    DatasetSpec,
+    Hyperparameters,
+    task_spec,
+    validation_objective_key,
+)
 
 # Import components from train.py
 from train import main as train_main
@@ -248,6 +256,7 @@ class ObjectiveFunctionWrapper:
             IS_OPTUNA_TAG: "true",
             IS_MIRROR_TAG: "false",
             SEARCH_SPACE_TAG: self.profile,
+            SEARCH_OBJECTIVE_TAG: self.search_objective,
         }
 
         with mlflow.start_run(
@@ -260,6 +269,7 @@ class ObjectiveFunctionWrapper:
             # A param as well as a tag, so the profile shows in the trial's parameter
             # table beside the knobs it explains.
             mlflow.log_param(SEARCH_SPACE_TAG, self.profile)
+            mlflow.log_param(SEARCH_OBJECTIVE_TAG, self.search_objective)
             try:
                 # Run the training with these hyperparameters
                 metrics = train_main(args, return_metrics=True)
@@ -380,6 +390,19 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     """
     logger.info(f"Starting hyperparameter optimization for {args.dataset_name}")
     logger.info(f"Number of trials: {args.n_trials}")
+
+    # An imputation study ranks by one validation population (ADR 0008). The induced one
+    # needs gaps and the complete table they were cut from; a complete variant has
+    # neither, and every trial would then fail on a missing key. Refused before anything
+    # is opened.
+    population = getattr(args, "search_objective", None) or DEFAULT_SEARCH_OBJECTIVE_POPULATION
+    if population == "induced" and not has_complete_sibling(
+        DatasetSpec.from_name(args.dataset_name, getattr(args, "label_column", None))
+    ):
+        raise ValueError(
+            f"--search_objective induced needs a variant with gaps and a complete _00nan "
+            f"sibling; {args.dataset_name} has none. Use the masked objective."
+        )
     
     # Configure MLflow unless the runtime has explicitly disabled every API call.
     global mlflow
@@ -408,7 +431,10 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     task = task_spec(getattr(args, "task", None) or "classification")
     objective.task = task.name
     objective.ranking_metric = task.ranking_metric
-    objective.search_objective = task.search_objective
+    objective.search_objective = (
+        validation_objective_key(population) if task.name == "imputation" else task.search_objective
+    )
+    logger.info(f"Search objective: {objective.search_objective}")
     objective.direction = task.direction
     objective.best_score = float("-inf") if task.direction == "maximize" else float("inf")
     # Unspecified, the profile follows the task: only imputation defines ``reduced`` so far.
@@ -458,7 +484,11 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
         cv_folds=None,
         lr_scheduler=getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
         environment=None,
-        extra_tags={"n_trials": str(args.n_trials), SEARCH_SPACE_TAG: profile},
+        extra_tags={
+            "n_trials": str(args.n_trials),
+            SEARCH_SPACE_TAG: profile,
+            SEARCH_OBJECTIVE_TAG: objective.search_objective,
+        },
         task=task.name,
         is_optuna=True,
     )
@@ -474,6 +504,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
             "seed": args.seed,
             "optuna_storage": storage_name,
             SEARCH_SPACE_TAG: profile,
+            SEARCH_OBJECTIVE_TAG: objective.search_objective,
         })
 
         # Give the objective access to the parent run so it can open child runs
@@ -516,7 +547,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     # Report best parameters
     logger.info("\n\n" + "="*50)
     logger.info(f"Best trial: {study.best_trial.number}")
-    logger.info(f"Best {task.search_objective}: {study.best_value:.4f}")
+    logger.info(f"Best {objective.search_objective}: {study.best_value:.4f}")
     logger.info("Best hyperparameters:")
     for key, value in best_config.items():
         logger.info(f"  {key}: {value}")

@@ -53,6 +53,13 @@ IS_OPTUNA_TAG = "is_optuna"
 # Which search-space profile a study sampled (ADR 0005). Sparse: only Optuna runs carry
 # it, and the dense is_optuna tag already gates any filter on it, so no backfill.
 SEARCH_SPACE_TAG = "search_space"
+# The metric an Optuna study and its trials were ranked by (ADR 0008), as the key the
+# study read: `validation/impute/masked/impute_score`, `.../induced/...`, or `f1_macro`.
+# Dense on every Optuna run; runs recorded before it existed are stamped with their
+# task's default by `scripts/backfill_search_objective_tag.py` and marked with
+# SEARCH_OBJECTIVE_BACKFILLED_TAG.
+SEARCH_OBJECTIVE_TAG = "search_objective"
+SEARCH_OBJECTIVE_BACKFILLED_TAG = "search_objective_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

@@ -29,6 +29,21 @@ DEFAULT_TASK = "classification"
 # and the corruption it learns from, holding the rest at the task default. Only the
 # imputation task defines ``reduced`` so far; the flag resolves per task when unspecified.
 SEARCH_SPACE_PROFILES: tuple[str, ...] = ("full", "reduced")
+# Which validation population an imputation search ranks its trials by (ADR 0008): the
+# masked cells every study before it used, or the validation rows' own gaps, scored
+# against the complete sibling like the induced test population.
+SEARCH_OBJECTIVE_POPULATIONS: tuple[str, ...] = ("masked", "induced")
+DEFAULT_SEARCH_OBJECTIVE_POPULATION = "masked"
+
+
+def validation_objective_key(population: str) -> str:
+    """The validation metric an imputation search ranks by, for a population."""
+    if population not in SEARCH_OBJECTIVE_POPULATIONS:
+        raise ValueError(
+            f"Unknown search objective population {population!r}; expected one of "
+            f"{SEARCH_OBJECTIVE_POPULATIONS}."
+        )
+    return f"validation/impute/{population}/impute_score"
 
 
 @dataclass(frozen=True)

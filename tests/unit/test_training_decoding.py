@@ -413,3 +413,28 @@ def test_an_integer_coded_category_is_scored_against_the_truth_it_spells() -> No
     mode = str(train["shape"].mode().iloc[0])
     assert (shapes["actual"] == mode).any()
     assert outcome.result.metrics["impute/induced/baseline/mean_mode/acc_cat"] > 0.0
+
+
+def test_the_search_also_scores_the_validation_splits_own_gaps() -> None:
+    """A search may rank trials by the induced population, the headline, rather than the
+    masked one (ADR 0008). On the validation split those are the validation rows' own
+    gaps, scored against the complete table as the test ones are, and scoring them must
+    not move the masked validation score an existing study ranks by.
+
+    The toy's validation rows (18 to 26) hold three gaps: ``size`` at 20 and 25, ``colour``
+    at 21.
+    """
+    dataset = _dataset()
+    np.random.seed(0)
+    with_truth, _ = _run(dataset=dataset, sibling=_complete_frame(), score_search_objective=True)
+    np.random.seed(0)
+    without_truth, _ = _run(dataset=dataset, sibling=None, score_search_objective=True)
+
+    metrics = with_truth.result.metrics
+    assert "validation/impute/induced/impute_score" in metrics
+    assert (metrics["validation/impute/induced/n_num_cells"], metrics["validation/impute/induced/n_cat_cells"]) == (2, 1)
+    assert not any(key.startswith("validation/impute/induced/") for key in without_truth.result.metrics)
+    assert not any(key.startswith("validation/impute/induced/baseline/") for key in metrics)
+    assert metrics["validation/impute/masked/impute_score"] == without_truth.result.metrics[
+        "validation/impute/masked/impute_score"
+    ]

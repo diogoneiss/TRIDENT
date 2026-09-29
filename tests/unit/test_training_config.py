@@ -352,3 +352,26 @@ def test_every_request_says_where_its_configuration_came_from(tmp_path, monkeypa
     )
     assert overridden.config_source == "override"
     assert overridden.hyperparameters.dimension == 8
+
+
+def test_the_search_objective_population_is_a_choice_only_imputation_offers() -> None:
+    """A study may rank its trials by the validation split's induced gaps instead of its
+    masked cells (ADR 0008). Classification ranks by macro F1 and has neither, so the flag
+    is refused there at parse time; left unspecified it stays unspecified, and the study
+    resolves it to the masked population every earlier study used.
+    """
+    parser = build_training_parser()
+    with_classification = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--search_objective", "induced"]
+    )
+    with_imputation = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--task", "imputation", "--search_objective", "induced"]
+    )
+    unspecified = parser.parse_args(["--dataset_name", "credit-g_20nan"])
+
+    with pytest.raises(SystemExit, match="search_objective"):
+        validate_parsed_args(with_classification)
+    assert validate_parsed_args(with_imputation).search_objective == "induced"
+    assert unspecified.search_objective is None
+    with pytest.raises(SystemExit):
+        parser.parse_args(["--dataset_name", "credit-g_20nan", "--search_objective", "test"])

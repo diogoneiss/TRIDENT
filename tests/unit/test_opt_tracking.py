@@ -43,9 +43,12 @@ class _TrainingStub:
         scores: dict[int, float],
         failing: set[int] = frozenset(),
         validation_scores: dict[int, float] | None = None,
+        induced_validation_scores: dict[int, float] | None = None,
     ) -> None:
         self.scores = scores
         self.failing = failing
+        # The validation split's induced gaps, scored only where a complete sibling exists.
+        self.induced_validation_scores = induced_validation_scores or {}
         # An imputation run scores its validation split too when asked; unless a test
         # says otherwise, that score equals the test one.
         self.validation_scores = validation_scores or {}
@@ -63,7 +66,7 @@ class _TrainingStub:
         # The real runner returns the metrics of whichever task the namespace names, so a
         # namespace that forgot its task gets classification metrics and no imputation key.
         if getattr(args, "task", None) == "imputation":
-            return {
+            metrics = {
                 "fold": "single_split",
                 "dataset": args.dataset_name,
                 "impute/masked/impute_score": score,
@@ -71,6 +74,9 @@ class _TrainingStub:
                     trial_number, score
                 ),
             }
+            if trial_number in self.induced_validation_scores:
+                metrics["validation/impute/induced/impute_score"] = self.induced_validation_scores[trial_number]
+            return metrics
         return {"fold": "single_split", "dataset": args.dataset_name, "f1_macro": score}
 
     @staticmethod
@@ -541,3 +547,75 @@ def test_a_study_too_small_to_rank_still_finishes(mlflow_backend, monkeypatch) -
     assert study.data.metrics["optuna/best_trial_number"] == 0.0
     assert not any(key.startswith("optuna/importance/") for key in study.data.metrics)
     assert {info.path for info in client.list_artifacts(study.info.run_id)} == set()
+
+
+def _with_gaps_variant(tmp_path: Path) -> None:
+    """A variant with gaps beside the fixture's complete table, so an induced study has
+    a sibling to score against."""
+    table = tmp_path / "datasets" / "processed_datasets" / "vehicle" / "vehicle_20nan.csv"
+    table.write_text("compactness,circularity,class\n")
+
+
+def test_an_induced_study_ranks_trials_by_the_validation_splits_own_gaps(
+    mlflow_backend, monkeypatch, tmp_path
+) -> None:
+    """Asked for the induced objective, the study ranks by the validation split's gaps:
+    trial 1 wins on them although trial 0 is better on the masked cells. Both run kinds
+    say which objective chose them, as the metric key the study read (ADR 0008)."""
+    _with_gaps_variant(tmp_path)
+    stub = _TrainingStub(
+        scores={0: 0.5, 1: 0.5},
+        validation_scores={0: 0.3, 1: 0.6},
+        induced_validation_scores={0: 0.9, 1: 0.4},
+    )
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(
+        _optuna_args(dataset_name="vehicle_20nan", task="imputation", n_trials=2, search_objective="induced")
+    )
+
+    runs = _runs_by_name(MlflowClient(tracking_uri=mlflow_backend))
+    study = next(run for name, run in runs.items() if name.startswith("optuna_vehicle_20nan_"))
+    trials = [run for name, run in runs.items() if name.startswith("optuna_trial_")]
+    key = "validation/impute/induced/impute_score"
+    assert study.data.metrics["optuna/best_objective_value"] == pytest.approx(0.4)
+    assert study.data.metrics["optuna/best_trial_number"] == 1.0
+    assert study.data.tags["search_objective"] == key
+    assert len(trials) == 2 and all(trial.data.tags["search_objective"] == key for trial in trials)
+    assert study.data.params["search_objective"] == key
+
+
+def test_a_study_ranks_by_the_masked_cells_unless_asked_otherwise(mlflow_backend, monkeypatch) -> None:
+    """Every study before ADR 0008 ranked by the masked validation cells; one that does not
+    ask keeps doing so, and says so."""
+    stub = _TrainingStub(scores={0: 0.5, 1: 0.5}, validation_scores={0: 0.3, 1: 0.6})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2))
+
+    study = next(
+        run
+        for name, run in _runs_by_name(MlflowClient(tracking_uri=mlflow_backend)).items()
+        if name.startswith("optuna_vehicle_00nan_")
+    )
+    assert study.data.metrics["optuna/best_trial_number"] == 0.0
+    assert study.data.tags["search_objective"] == "validation/impute/masked/impute_score"
+
+
+def test_an_induced_study_on_a_complete_variant_is_refused_before_any_trial(
+    mlflow_backend, monkeypatch
+) -> None:
+    """A ``_00nan`` table has no gaps, so no induced population to rank by: every trial
+    would fail on a missing key. Refused before the study opens, naming the reason."""
+    stub = _TrainingStub(scores={})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    with pytest.raises(ValueError, match="induced"):
+        opt.run_hyperparameter_optimization(
+            _optuna_args(task="imputation", n_trials=2, search_objective="induced")
+        )
+
+    assert stub.calls == []
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    experiment = client.get_experiment_by_name("TRIDENT/vehicle")
+    assert experiment is None or client.search_runs([experiment.experiment_id]) == []

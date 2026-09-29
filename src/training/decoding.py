@@ -196,7 +196,7 @@ def train_and_evaluate_decoder(
 
     if complete_sibling is not None:
         induced = _score_induced_missing(
-            model, dataset, test_frame, complete_sibling, fold, device
+            model, dataset, test_frame, complete_sibling, fold.test_indices, device
         )
         cells = pd.concat([cells, induced], ignore_index=True)
         scored_induced = score_cells(induced, baselines)
@@ -215,7 +215,7 @@ def train_and_evaluate_decoder(
             # [MASK]. The head was never trained at a null position, so this measures
             # whether it transfers there. Diagnostic only; it never ranks a fold.
             through_null = _score_induced_missing(
-                model, dataset, test_frame, complete_sibling, fold, device, as_mask=False
+                model, dataset, test_frame, complete_sibling, fold.test_indices, device, as_mask=False
             )
             cells = pd.concat([cells, through_null], ignore_index=True)
             metrics.update(
@@ -238,6 +238,20 @@ def train_and_evaluate_decoder(
             f"validation/impute/masked/{name}": value
             for name, value in score_cells(validation_cells, baselines).metrics.items()
         }
+        if complete_sibling is not None:
+            # The validation rows' own gaps, scored against the complete table like the
+            # induced test cells, for a search that ranks by the headline population
+            # (ADR 0008). Scored for every trial whichever objective it ranks by: nothing
+            # is drawn at random, and a study can then set both objectives side by side.
+            validation_induced = _score_induced_missing(
+                model, dataset, validation_frame, complete_sibling, fold.validation_indices, device
+            )
+            validation_metrics.update(
+                {
+                    f"validation/impute/induced/{name}": value
+                    for name, value in score_cells(validation_induced, baselines).metrics.items()
+                }
+            )
         tracker.log_metrics({name: float(value) for name, value in validation_metrics.items()})
 
     tracker.log_metrics({f"test/{name}": float(value) for name, value in metrics.items()})
@@ -258,9 +272,9 @@ def train_and_evaluate_decoder(
 def _score_induced_missing(
     model,
     dataset: PreparedDataset,
-    test_frame: pd.DataFrame,
+    frame: pd.DataFrame,
     complete_sibling: pd.DataFrame,
-    fold: FoldSplit,
+    rows,
     device: torch.device,
     as_mask: bool = True,
 ) -> pd.DataFrame:
@@ -269,15 +283,16 @@ def _score_induced_missing(
     These are the real imputation benchmark: a generator took them away, so their true
     value is known. By default they are shown to the model as ``[MASK]``, the token the
     decoder was trained to fill. With ``as_mask=False`` they keep the ``[NULL]`` the
-    variant stores, which is the diagnostic path.
+    variant stores, which is the diagnostic path. ``rows`` are the positions of
+    ``frame``'s rows in the whole table, so the sibling's truths line up with them.
     """
-    hidden = test_frame.mask(test_frame.isna(), "[MASK]" if as_mask else "[NULL]")
+    hidden = frame.mask(frame.isna(), "[MASK]" if as_mask else "[NULL]")
     population = "induced" if as_mask else "induced_null_token"
 
-    truth = complete_sibling.iloc[fold.test_indices].reset_index(drop=True)
+    truth = complete_sibling.iloc[rows].reset_index(drop=True)
     truth = in_variant_dtypes(
-        truth[[column for column in test_frame.columns]].copy(),
-        test_frame,
+        truth[[column for column in frame.columns]].copy(),
+        frame,
         dataset.categorical_columns,
     )
     # The sibling as it is stored, kept before the scaling below overwrites it: this is
@@ -294,7 +309,7 @@ def _score_induced_missing(
     if not as_mask:
         # [NULL] cells are not [MASK] cells, so nothing would be selected for scoring.
         # Point the selection at the gaps explicitly.
-        encoded = _select(encoded, torch.tensor(test_frame.isna().to_numpy(), device=device))
+        encoded = _select(encoded, torch.tensor(frame.isna().to_numpy(), device=device))
     # A category the variant never shows (the generator took its every occurrence) is
     # outside the embedder's vocabulary, so the head can never produce it and the encoder
     # cannot even index it. Such a cell is a miss by construction: its truth is encoded
