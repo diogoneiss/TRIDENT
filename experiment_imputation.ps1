@@ -57,7 +57,7 @@ $sweepStart = Get-Date
 try {
     foreach ($dataset in $Datasets) {
         foreach ($scheduler in $Schedulers) {
-            $uvArgs = @("run", "--python", "3.10", "main.py",
+            $uvArgs = @("run", "--python", "3.10", "main.py", "--task", "imputation",
                       "--dataset_name", $dataset, "--cv_folds", $CvFolds,
                       "--seed", $Seed, "--lr_scheduler", $scheduler)
             Write-Host ""
