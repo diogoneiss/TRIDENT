@@ -12,7 +12,7 @@ Rules:
 
 ## MLflow run analysis
 
-Every training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing runs — `best_fold`/`worst_fold` children exist only for diagnosis and double-count if included. Every run also has a mirror run in `TRIDENT/mirror/<task>` ([ADR 0006](docs/adr/0006-mirror-experiments-per-task.md)); any query that spans experiments must add `tags.is_mirror = false`, or every source run is counted twice. Also compare within one `tags.lr_scheduler` value (`cosine_legacy` is the pre-ADR-0003 schedule; backfilled runs carry `lr_scheduler_backfilled = true`). Full tagging/CI-metric layout: README.md § "MLflow Cross-Validation Comparisons", [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md).
+Every training invocation is a top-level MLflow run. Filter `tags.run_role = parent` before comparing runs — `best_fold`/`worst_fold` children exist only for diagnosis and double-count if included. Every run also has a mirror run in `TRIDENT/mirror/<task>` ([ADR 0006](docs/adr/0006-mirror-experiments-per-task.md)); any query that spans experiments must add `tags.is_mirror = false`, or every source run is counted twice. Also compare within one `tags.lr_scheduler` value (`cosine_legacy` is the pre-ADR-0003 schedule; backfilled runs carry `lr_scheduler_backfilled = true`). Each machine's `mlflow.db` is a snapshot as of the last sync ([ADR 0009](docs/adr/0009-store-hand-off-to-a-remote-server.md)): query the side that holds the store, or the newest runs are missing. Full tagging/CI-metric layout: README.md § "MLflow Cross-Validation Comparisons", [ADR 0002](docs/adr/0002-curated-cross-validation-mlflow-runs.md).
 
 ## Background & full reference
 

@@ -198,6 +198,10 @@ uv run --python 3.11 pytest
 
 The integration test disables MLflow and writes all run artifacts to temporary directories. Its checked-in baseline validates per-fold and mean accuracy, micro F1, and macro F1 against a small two-epoch pre-training/fine-tuning run.
 
+## Training on a Remote Server
+
+Training can run on a Linux server while the Windows checkout remains where syncs start. `scripts/sync_remote.py` (run from Windows, through WSL's rsync and ssh) sends the code and hands the whole MLflow store back and forth, one writing side at a time; [ADR 0009](docs/adr/0009-store-hand-off-to-a-remote-server.md) has the protocol, what it refuses, and the commands. Commits made on the server come back through GitHub: push them there, and pull them on Windows before the next `code` or `push`.
+
 ## Configuration System
 
 A run resolves its hyperparameters in this order and logs the source it used as the

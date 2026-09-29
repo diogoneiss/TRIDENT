@@ -18,6 +18,9 @@ Usage (a dry run by default, run from Windows; rsync and ssh are called through 
 An empty ``--host`` rehearses against a directory in this machine's WSL instead of a
 server. The server needs Python 3.9+, rsync and key-based ssh from WSL; nothing is
 installed there: each server-side step runs this file through ``ssh <host> python3 -``.
+
+Commits made on the server come back through GitHub: pull them here before ``code`` or
+``push``, which refuse while a server branch holds a commit no local branch contains.
 """
 
 from __future__ import annotations

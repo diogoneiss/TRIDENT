@@ -5,7 +5,9 @@
 Accepted (2026-09-29). Decided in conversation on 2026-09-29, after a shared SQLite over
 SMB and an HTTP tracking server were ruled out (Context below). Implemented the same day
 as `scripts/sync_remote.py` with `tests/unit/test_sync_remote.py`, and rehearsed end to
-end against a directory in this machine's WSL (Outcome). Not yet run against the server.
+end against a directory in this machine's WSL (Outcome). First run against the server,
+gorgona8 (`/scratch2/diogoneiss/TRIDENT`), on 2026-09-29 at 20:25 UTC: a push of the whole
+store.
 
 Amended the same evening, once the first push had reached gorgona8 and commits began to be
 made there: decision 5 gains the guard against rolling those commits back, and decision 7
@@ -196,3 +198,8 @@ the first day. The server needs rsync, Python 3.9+, git for the commit tag, and
 `uv sync --python 3.11` in its checkout before training. When the two stores have
 diverged, keep one: rename the other side's `mlflow.db` aside, then sync from the side
 that is kept (the renamed store keeps its runs for a later manual look).
+
+Code changed on the server goes back through GitHub. On the server, commit and
+`git push origin <branch>` before any sync from here; here, `git pull` before `code` or
+`push`. Both refuse while a server branch holds a commit no local branch contains, and
+both overwrite an uncommitted edit on the server.
