@@ -47,6 +47,14 @@ def make_store(store: Path, prefix: str) -> tuple[str, str]:
     """One experiment family with one finished run, its artifact root under ``prefix``."""
     client = client_for(store)
     experiment_id = client.create_experiment("TRIDENT/credit-g", artifact_location=f"{prefix}1")
+    # MLflow roots the Default experiment at the working directory, which sits under
+    # ``prefix`` only when the suite runs from the Windows checkout; pin it there.
+    connection = sqlite3.connect(store)
+    with connection:
+        connection.execute(
+            "UPDATE experiments SET artifact_location = ? WHERE experiment_id = 0", (f"{prefix}0",)
+        )
+    connection.close()
     run = client.create_run(
         experiment_id, tags={"mlflow.source.name": SCRIPT_PATH, "mlflow.user": "Diogo Neiss"}
     )
