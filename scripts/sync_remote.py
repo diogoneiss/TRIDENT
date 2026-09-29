@@ -298,6 +298,22 @@ def delete_pushed_files(root: Path, relatives: list[str]) -> list[str]:
     return deleted
 
 
+def branch_tips(root: Path) -> dict[str, str]:
+    """The commit each branch of ``root``'s repository points at; none without a ``.git``."""
+    if not (root / ".git").exists():
+        return {}
+    try:
+        listed = subprocess.run(
+            ["git", "-C", str(root), "for-each-ref", "--format=%(refname:short) %(objectname)",
+             "refs/heads"],
+            capture_output=True,
+            check=True,
+        ).stdout.decode("utf-8")
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise SyncError(f"cannot list the branches of {root}: {error}") from error
+    return {name: commit for name, commit in (line.rsplit(" ", 1) for line in listed.splitlines())}
+
+
 # --- the server's side: run there as ``python3 - remote <command>`` ----------------------
 
 
@@ -323,6 +339,7 @@ def remote_command(argv: list[str]) -> dict[str, object]:
             "store_sha256": sha256_file(store) if store.exists() else None,
             "holders": held_open_by(store),
             "dirs": [name for name in OUTPUT_DIRS if (root / name).is_dir()],
+            "branches": branch_tips(root),
         }
     if args.command == "snapshot":
         digest = snapshot_store(store, root / SYNC_DIR / "outgoing.db")
@@ -426,6 +443,39 @@ def _names(value: object) -> list[str]:
     return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
 
 
+def _branches(value: object) -> dict[str, str]:
+    return {str(name): str(commit) for name, commit in value.items()} if isinstance(value, dict) else {}
+
+
+def refuse_if_server_has_commits(root: Path, branches: dict[str, str]) -> None:
+    """The code push mirrors ``.git``, which would roll back a commit made on the server.
+
+    Every branch of the server must point at a commit some branch here contains, so merely
+    fetched is not enough: the push would still send the older files. A commit made there
+    reaches this checkout through GitHub (or any pull) before the next push.
+    """
+
+    def contained_here(commit: str) -> bool:
+        listed = subprocess.run(
+            ["git", "-C", str(root), "for-each-ref", "--contains", commit, "--count=1",
+             "--format=%(refname)", "refs/heads"],
+            capture_output=True,
+        )
+        return listed.returncode == 0 and bool(listed.stdout.strip())
+
+    missing = [
+        f"{name} ({commit[:7]})"
+        for name, commit in sorted(branches.items())
+        if not contained_here(commit)
+    ]
+    if missing:
+        raise SyncError(
+            f"the server has commits no branch here contains, on {', '.join(missing)}. The code "
+            "push mirrors .git and would roll them back: push them from the server (to GitHub) "
+            "and pull them here first."
+        )
+
+
 def code_files(root: Path) -> list[str]:
     """The code as it is on disk: tracked and untracked-but-not-ignored files, plus inputs."""
     listed = subprocess.run(
@@ -499,6 +549,7 @@ def push_code(workspace: Workspace, *, apply: bool, while_busy: bool = False) ->
             f"the server's store is open by {', '.join(holders)}: a batch still starting "
             "processes would run the new code for its remaining runs. Wait, or pass --while-busy."
         )
+    refuse_if_server_has_commits(workspace.root, _branches(server["branches"]))
     _send_code(workspace, state, apply)
 
 
@@ -510,6 +561,7 @@ def push(workspace: Workspace, *, apply: bool) -> None:
     server = transport.remote("prepare", "--root", config.remote_root)
     if _names(server["holders"]):
         raise StoreError(f"the server's store is open by {', '.join(_names(server['holders']))}")
+    refuse_if_server_has_commits(workspace.root, _branches(server["branches"]))
     refuse_if_changed("the server", state.remote_store_sha256, _text(server["store_sha256"]))
     _send_code(workspace, state, apply)
     for name in OUTPUT_DIRS:
@@ -601,6 +653,10 @@ def status(workspace: Workspace) -> None:
     holders = _names(server["holders"])
     if holders:
         workspace.say(f"the server's store is open by {', '.join(holders)}")
+    try:
+        refuse_if_server_has_commits(workspace.root, _branches(server["branches"]))
+    except SyncError as error:
+        workspace.say(f"code and push would be refused: {error}")
     if local_changed and remote_changed:
         workspace.say(
             "DIVERGED: both stores changed, so neither push nor pull will run. Decide which "
@@ -621,6 +677,17 @@ def to_wsl(path: Path) -> str:
     if len(drive) != 2 or drive[1] != ":":
         raise SyncError(f"{resolved} is not on a drive letter WSL mounts under /mnt")
     return f"/mnt/{drive[0].lower()}{resolved.as_posix()[2:]}"
+
+
+# Per call, so a host entry written for interactive logins (``RequestTTY``,
+# ``RemoteCommand``, ``LocalForward``) neither refuses a command, mangles rsync's stream nor
+# fights an open login for its forwarded ports, and a missing key fails instead of prompting.
+SSH_OPTIONS = (
+    "-o", "BatchMode=yes",
+    "-o", "RequestTTY=no",
+    "-o", "RemoteCommand=none",
+    "-o", "ClearAllForwardings=yes",
+)
 
 
 class RsyncTransport:
@@ -648,6 +715,8 @@ class RsyncTransport:
 
     def _rsync(self, arguments: list[str], dry_run: bool) -> int:
         command = ["rsync", "-rtz", "--protect-args", "--itemize-changes"]
+        if self.config.host:
+            command += ["-e", " ".join(("ssh", *SSH_OPTIONS))]
         if dry_run:
             command.append("--dry-run")
         result = self._run([*command, *arguments])
@@ -661,7 +730,7 @@ class RsyncTransport:
         script = Path(__file__).read_bytes()
         if self.config.host:
             line = f"{self.config.remote_python} - remote {shlex.join(args)}"
-            command = ["ssh", "-o", "BatchMode=yes", self.config.host, line]
+            command = ["ssh", *SSH_OPTIONS, self.config.host, line]
         else:
             command = [*shlex.split(self.config.remote_python), "-", "remote", *args]
         result = self._run(command, stdin=script)

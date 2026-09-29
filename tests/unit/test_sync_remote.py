@@ -19,6 +19,7 @@ from mlflow.tracking import MlflowClient
 from scripts.sync_remote import (
     StoreError,
     SyncConfig,
+    SyncError,
     Workspace,
     pull,
     push_code,
@@ -334,6 +335,27 @@ def test_the_code_push_mirrors_the_checkout_and_spares_the_servers_own_files(
     assert not (server / "src" / "old.py").exists()
     assert (server / "train.log").read_text() == "the server's own"
     assert (server / "results" / "run.csv").exists()
+
+
+def test_a_code_push_waits_for_the_commits_made_on_the_server(workspace: Workspace) -> None:
+    # The push mirrors .git, so a fix committed on the server and missing here would vanish
+    # from the server's history, and its files would be overwritten with the old ones.
+    local, server = workspace.root, server_root(workspace)
+    push_code(workspace, apply=True)
+    (server / "src" / "model.py").write_text("VERSION = 2\n")
+    git(server, "commit", "-q", "-am", "fixed on the server")
+
+    with pytest.raises(SyncError, match="no branch here contains"):
+        push_code(workspace, apply=True)
+    with pytest.raises(SyncError, match="no branch here contains"):
+        push(workspace, apply=False)
+    assert (server / "src" / "model.py").read_text() == "VERSION = 2\n"
+
+    git(local, "fetch", "-q", str(server), "HEAD")
+    git(local, "merge", "-q", "--ff-only", "FETCH_HEAD")
+    push_code(workspace, apply=True)
+
+    assert (server / "src" / "model.py").read_text() == "VERSION = 2\n"
 
 
 def test_moving_a_diverged_store_aside_lets_the_other_side_in(workspace: Workspace) -> None:

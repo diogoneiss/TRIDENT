@@ -7,6 +7,10 @@ SMB and an HTTP tracking server were ruled out (Context below). Implemented the 
 as `scripts/sync_remote.py` with `tests/unit/test_sync_remote.py`, and rehearsed end to
 end against a directory in this machine's WSL (Outcome). Not yet run against the server.
 
+Amended the same evening, once the first push had reached gorgona8 and commits began to be
+made there: decision 5 gains the guard against rolling those commits back, and decision 7
+lists the ssh options the host's interactive entry made necessary.
+
 Touches no training code: every run still logs to `sqlite:///mlflow.db` in the checkout
 it is launched from, as [ADR 0002](0002-curated-cross-validation-mlflow-runs.md) and
 [ADR 0006](0006-mirror-experiments-per-task.md) assume.
@@ -131,6 +135,15 @@ Rejected on the way:
    When tracked files differ from `HEAD`, it notes that runs will record `HEAD` but run
    the working tree.
 
+   Code is also edited and committed on the server, and those commits come back through
+   GitHub, never through this script. Since `.git` is mirrored with `--delete`, a push
+   from a checkout that has not pulled them would roll the server's branch back and
+   overwrite its files with the older ones. So `code` and `push` refuse, with no override,
+   unless every branch of the server points at a commit some local branch contains;
+   fetched but not merged is not enough. `status` reports the same condition. The guard
+   sees commits only: an uncommitted edit on the server is overwritten by the next push, so
+   on the server, commit and push to GitHub before any push from here.
+
 6. **Outputs move additively in both directions.** `mlruns/`, `results/` and `metrics/`
    are copied without deletion; run directories are unique by id and result directories
    by timestamp. On the same path the sender wins, as the owner should.
@@ -141,8 +154,12 @@ Rejected on the way:
    server cannot reach a machine behind a home router. rsync and ssh run through WSL
    (`wsl -e`), where the keys and `known_hosts` live. Each server-side step runs this same
    file through `ssh <host> python3 - remote <command>`, so the script is standard
-   library only and runs on Python 3.9+. ssh runs with `BatchMode=yes`: key
-   authentication only.
+   library only and runs on Python 3.9+. Every ssh call, rsync's included, overrides the
+   host entry, which is written for interactive logins: `BatchMode=yes` (key
+   authentication only; a missing key fails instead of prompting), `RequestTTY=no` and
+   `RemoteCommand=none` (the entry's `RemoteCommand cd ...` would refuse the command, and a
+   TTY mangles rsync's stream), and `ClearAllForwardings=yes` (the entry's `LocalForward`
+   for the MLflow UI would make every call contend for ports an open login already holds).
 
 ## Consequences
 
@@ -154,6 +171,8 @@ Rejected on the way:
   the next translation.
 - `mlflow.user` on server runs is the Linux account, which marks the machine a run came
   from.
+- Code has two ways in: rsync from here, and GitHub from the server. Before a push from
+  here, pull what the server pushed; the push refuses otherwise (decision 5).
 - Moving the server checkout means `init` again with the new root, and a store pushed
   under the old one keeps the old prefix until translated from it.
 - Stopping the MLflow UI must stop its uvicorn workers. Killing only the parent process
