@@ -1,9 +1,9 @@
 {
   "environment": {
-    "python": "3.10",
-    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.11",
+    "platform": "Linux-6.8.0-138-generic-x86_64-with-glibc2.39",
     "torch": "2.5.1+cu121",
-    "device": "cuda",
+    "device": "cpu",
     "seed": 42,
     "cv_folds": 2,
     "runs": 3
@@ -28,29 +28,29 @@
   },
   "folds": [
     {
-      "impute/masked/impute_score": 1.3972246866445832,
-      "impute/masked/rmse_num_z": 1.056293654605907,
-      "impute/masked/acc_cat": 0.34242093784078514,
-      "impute/induced/impute_score": 1.3739522894738032,
-      "impute/induced/rmse_num_z": 1.0215407136818082,
-      "impute/induced/acc_cat": 0.35764158262218776
+      "impute/masked/impute_score": 1.2213458573636147,
+      "impute/masked/rmse_num_z": 0.991272140043252,
+      "impute/masked/acc_cat": 0.4394765539803708,
+      "impute/induced/impute_score": 1.272406139197149,
+      "impute/induced/rmse_num_z": 1.0374725264818188,
+      "impute/induced/acc_cat": 0.4251357641582622
     },
     {
-      "impute/masked/impute_score": 1.4019680591006674,
-      "impute/masked/rmse_num_z": 0.9996902012123393,
-      "impute/masked/acc_cat": 0.41301775147928993,
-      "impute/induced/impute_score": 1.3064739671409975,
-      "impute/induced/rmse_num_z": 1.081275380837228,
-      "impute/induced/acc_cat": 0.40350877192982454
+      "impute/masked/impute_score": 1.412099465901216,
+      "impute/masked/rmse_num_z": 1.0043712786896113,
+      "impute/masked/acc_cat": 0.40828402366863903,
+      "impute/induced/impute_score": 1.3716447368458669,
+      "impute/induced/rmse_num_z": 1.066560627921717,
+      "impute/induced/acc_cat": 0.35926773455377575
     }
   ],
   "mean": {
-    "impute/masked/impute_score": 1.3995963728726253,
-    "impute/masked/rmse_num_z": 1.0279919279091232,
-    "impute/masked/acc_cat": 0.37771934466003754,
-    "impute/induced/impute_score": 1.3402131283074004,
-    "impute/induced/rmse_num_z": 1.051408047259518,
-    "impute/induced/acc_cat": 0.38057517727600615
+    "impute/masked/impute_score": 1.3167226616324155,
+    "impute/masked/rmse_num_z": 0.9978217093664317,
+    "impute/masked/acc_cat": 0.4238802888245049,
+    "impute/induced/impute_score": 1.322025438021508,
+    "impute/induced/rmse_num_z": 1.0520165772017678,
+    "impute/induced/acc_cat": 0.392201749356019
   },
   "observed_max_deviation": 0.0,
   "tolerance": 0.01
