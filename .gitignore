@@ -60,3 +60,6 @@ graphify-out/.graphify_analysis.json
 # Graphify: dated backup snapshots of the full output dir (auto-created before
 # rebuilds), each a multi-hundred-KB duplicate of graph.json/GRAPH_REPORT.md/etc.
 graphify-out/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/
+
+# Teaching workspace (mattpocock-skills:teach): personal study material, not project docs
+docs/teaching/
