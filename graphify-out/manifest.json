@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "src/training/summary.py": {
-    "mtime": 1790595442.1259398,
-    "seen": 1790595957.5843778,
-    "ast_hash": "2ee55d5ebb34f970e79b0c1044241904",
+    "mtime": 1790695358.5129838,
+    "seen": 1790712575.199817,
+    "ast_hash": "ef0c58eeffef92b60dc08eebd3bf1720",
     "semantic_hash": ""
   },
   "src/training/tracking.py": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_summary.py": {
-    "mtime": 1789008392.8769557,
-    "seen": 1789693767.0144424,
-    "ast_hash": "4167a8eda818f0d3b53d128ed2f05917",
+    "mtime": 1790695342.722106,
+    "seen": 1790712575.199817,
+    "ast_hash": "5f997c64a12762571912ad0b0f89778b",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tracking.py": {
@@ -198,15 +198,15 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1790564718.783584,
-    "seen": 1790568458.8263721,
-    "ast_hash": "f6cf2c6561d417e723279175a8ea5a02",
+    "mtime": 1790720426.5591779,
+    "seen": 1790720674.118686,
+    "ast_hash": "531a7ed108a6587ca37a8289df4c9dd0",
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1790642730.2939315,
-    "seen": 1790643273.4105473,
-    "ast_hash": "59652953fcf1a1d5a7fa64a96c306db0",
+    "mtime": 1790712434.0323603,
+    "seen": 1790712575.199817,
+    "ast_hash": "924b2b443bfa2163a00c27c268922ab3",
     "semantic_hash": ""
   },
   "README.md": {
@@ -390,15 +390,15 @@
     "semantic_hash": ""
   },
   "tests/fixtures/credit-g_20nan_imputation_regression.json": {
-    "mtime": 1789079928.0309002,
-    "seen": 1789693767.0144424,
-    "ast_hash": "32f156e1ee5efd5865c68ce3cafdb9b8",
+    "mtime": 1790720481.7790358,
+    "seen": 1790720674.1186564,
+    "ast_hash": "7686a823f08592a3d2270424d80c4b16",
     "semantic_hash": ""
   },
   "tests/integration/test_credit_g_imputation_regression.py": {
-    "mtime": 1789079944.311757,
-    "seen": 1789693767.0144424,
-    "ast_hash": "73fd4fec32f477fc679ddb06b35db1b1",
+    "mtime": 1790720421.9431896,
+    "seen": 1790720674.1186585,
+    "ast_hash": "e740a57c905545994f19f839529381ab",
     "semantic_hash": ""
   },
   "tests/unit/test_backfill_run_tags.py": {
@@ -516,9 +516,9 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/11-fixture-and-docs.md": {
-    "mtime": 1789080371.7233603,
-    "seen": 1789693767.0144424,
-    "ast_hash": "f8625c91cee4c227159b11bc4ec9c8a2",
+    "mtime": 1790720424.4661832,
+    "seen": 1790720674.1187418,
+    "ast_hash": "1e05ef90ef93bf7c4a55e7555a56a9f4",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/spec.md": {
@@ -1131,6 +1131,48 @@
     "mtime": 1790643266.6437926,
     "seen": 1790643273.4105473,
     "ast_hash": "d3c0454376262fe7897b89675a23b26b",
+    "semantic_hash": ""
+  },
+  "scripts/sync_remote.py": {
+    "mtime": 1790725638.0990007,
+    "seen": 1790725771.101672,
+    "ast_hash": "29a6b3d57e34997f7204691665314a73",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_sync_remote.py": {
+    "mtime": 1790725638.0990007,
+    "seen": 1790725771.1017148,
+    "ast_hash": "f84cbd80cbc7a01d661a1cd097d8bc89",
+    "semantic_hash": ""
+  },
+  "docs/adr/0009-store-hand-off-to-a-remote-server.md": {
+    "mtime": 1790725651.6799574,
+    "seen": 1790725771.1017451,
+    "ast_hash": "dbef5e65d63462f9b4ac4d7228fd81ca",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-full/02-credit-g-80nan-induced-objective.md": {
+    "mtime": 1790645660.433784,
+    "seen": 1790712575.199817,
+    "ast_hash": "8c675288cae10cd4c93cdae72fab2fb7",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-optuna-full/03-induced-objective-on-the-other-variants.md": {
+    "mtime": 1790691065.8726783,
+    "seen": 1790712575.199817,
+    "ast_hash": "28b497109b4fa458fbec9cce1dd72371",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-pretraining/01-pretraining-ablation.md": {
+    "mtime": 1790696040.9112272,
+    "seen": 1790712575.199817,
+    "ast_hash": "548b86176f086bd8ba40dd666d85a725",
+    "semantic_hash": ""
+  },
+  "start_mlflow.sh": {
+    "mtime": 1790716366.8023953,
+    "seen": 1790720674.1186552,
+    "ast_hash": "d0855834948a96b9c6d50cd0ec58234f",
     "semantic_hash": ""
   }
 }
