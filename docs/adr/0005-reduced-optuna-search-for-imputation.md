@@ -11,7 +11,9 @@ executed test-first through the tickets under
 [`docs/tickets/imputation-optuna-reduced/`](../tickets/imputation-optuna-reduced/spec.md).
 
 Amends [ADR 0004](0004-imputation-decoder-task.md) decision 13 (the imputation search
-space and its ranges). Closes backlog item I2 when execution ticket 03 lands; leaves I1
+space and its ranges). Decision 3 is amended in turn by
+[ADR 0008](0008-selectable-search-objective-population.md), which lets a study rank by the
+validation split's induced gaps instead of its masked cells (default unchanged). Closes backlog item I2 when execution ticket 03 lands; leaves I1
 open and out of scope. Records the repair of the shipped Optuna path (commit `161fc92`),
 which also fixed `--retrain_best` for both tasks.
 

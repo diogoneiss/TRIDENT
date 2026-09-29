@@ -168,7 +168,8 @@ The metric and direction a hyperparameter search ranks its trials by, together
 with the split it is scored on. It is not the fold-ranking metric: the
 imputation task scores its search on the validation split of the trial's
 predefined split, so the test split never chooses hyperparameters and stays
-untouched until the chosen configuration is retrained. The classification
+untouched until the chosen configuration is retrained, on the masked cells by
+default or on the validation rows' own gaps when asked. The classification
 search scores the test split, as it always has.
 _Avoid_: objective value, trial score, best metric
 
