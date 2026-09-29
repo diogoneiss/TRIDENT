@@ -50,7 +50,7 @@ variant, not that it always does.
 ## Outcome (2026-09-28, study 22:11 to 22:31, retrain to 22:33)
 
 Study `optuna_credit-g_80nan_20260928_221137`, 40 trials; winner trial 15 (validation
-induced 0.985). Retrain `impute_credit-g_80nan_20260928_223126`, tagged
+induced 0.985). Retrain `impute_credit-g_80nan_20260928_223114`, tagged
 `selected_by=validation/impute/induced/impute_score`.
 
 **Primary, induced test cells** (`cv/test/impute/induced/impute_score/mean`, 95% intervals;
