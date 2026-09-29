@@ -472,7 +472,7 @@ def refuse_if_server_has_commits(root: Path, branches: dict[str, str]) -> None:
         raise SyncError(
             f"the server has commits no branch here contains, on {', '.join(missing)}. The code "
             "push mirrors .git and would roll them back: push them from the server (to GitHub) "
-            "and pull them here first."
+            "and pull them here first. A branch deleted here on purpose: delete it there too."
         )
 
 
