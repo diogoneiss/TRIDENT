@@ -90,9 +90,10 @@ It is not a uniform improvement, and on no variant did it produce a model that b
 best baseline.
 
 **Exploratory.** The rank correlation between the masked and the induced validation scores
-across each study's 40 trials orders the outcomes: −0.15 on `credit-g_80nan` (better by
-0.143), 0.80 on `biodeg_20nan` (better by 0.031), 0.57 on `kr-vs-kp_40nan` (level), and
-0.92 to 0.99 on `spambase_20nan`, `pendigits_20nan` and `letter_20nan` (level or worse).
+across each study's 40 trials roughly tracks the outcomes, with one exception: −0.15 on
+`credit-g_80nan` (better by 0.143), 0.80 on `biodeg_20nan` (better by 0.031), 0.92 to
+0.99 on `spambase_20nan`, `pendigits_20nan` and `letter_20nan` (level or worse); but
+`kr-vs-kp_40nan`, at 0.57, came out level rather than better.
 Where the two objectives disagree, ranking by the population the headline is scored on
 recovers a better configuration; where they agree almost perfectly, the switch only
 changes which of several near-equal trials wins, and on these variants that went against
