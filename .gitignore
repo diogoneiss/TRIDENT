@@ -29,6 +29,9 @@ metrics/
 mlflow.db
 mlruns/
 
+# Hand-off to the remote server (ADR 0009): its config, state and store snapshots.
+sync/
+
 # Graphify: machine-local state, regenerated automatically per machine/checkout.
 # These are NOT reproducible content - they record which local interpreter/path
 # ran graphify, so committing them makes every clone/CI run start from a stale,

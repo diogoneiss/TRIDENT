@@ -210,3 +210,11 @@ directly, it is rewritten whenever the source changes, and it goes when the
 source is deleted. Every run states whether it is one, so a query across
 experiments can keep source runs and mirror runs apart.
 _Avoid_: replica, copy, duplicate run, shadow run
+
+**Store hand-off**:
+Moving the whole MLflow store from one machine to the other, so that the
+receiving machine becomes the only one that writes it until the next hand-off.
+The store is never merged; its artifact roots are rewritten for the receiving
+machine, and a hand-off overwrites only a store unchanged since the previous
+one. Training on both machines between two hand-offs makes them diverge.
+_Avoid_: sync (for the store), merge, reconcile
