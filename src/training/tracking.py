@@ -8,6 +8,7 @@ from typing import Iterator, Mapping, Sequence
 
 import mlflow
 from mlflow.tracking import MlflowClient
+from mlflow.utils.time import get_current_time_millis
 
 from src.mlflow_utils import (
     IS_MIRROR_TAG,
@@ -20,7 +21,7 @@ from src.mlflow_utils import (
     parse_missingness_percent,
     setup_mlflow,
 )
-from src.training.mirroring import mirror_run_tree
+from src.training.mirroring import METRICS_PER_BATCH, chunks, metric, mirror_run_tree
 from src.training.summary import fold_timings_for_tracking
 from src.training.types import (
     DEFAULT_TASK,
@@ -188,7 +189,7 @@ class MlflowTracker:
         self._replay_record(record)
         timings = fold_timings_for_tracking(record)
         if "total_seconds" in timings:
-            mlflow.log_metric(TRAINING_SECONDS_KEY, timings["total_seconds"])
+            _log_metric_events([LoggedMetric(TRAINING_SECONDS_KEY, timings["total_seconds"], None)])
 
     def _log_parent_summary(
         self,
@@ -201,17 +202,18 @@ class MlflowTracker:
 
     @staticmethod
     def _log_loss_bands(summary: CrossValidationSummary) -> None:
-        for loss_name, bands in summary.loss_bands.items():
-            prefix = f"cv/{loss_name}"
-            for band in bands:
-                mlflow.log_metrics(
-                    {
-                        f"{prefix}/mean": float(band.mean),
-                        f"{prefix}/ci95_lower": float(band.ci95_lower),
-                        f"{prefix}/ci95_upper": float(band.ci95_upper),
-                    },
-                    step=int(band.step),
+        _log_metric_events(
+            [
+                LoggedMetric(f"cv/{loss_name}/{statistic}", float(value), int(band.step))
+                for loss_name, bands in summary.loss_bands.items()
+                for band in bands
+                for statistic, value in (
+                    ("mean", band.mean),
+                    ("ci95_lower", band.ci95_lower),
+                    ("ci95_upper", band.ci95_upper),
                 )
+            ]
+        )
 
     @staticmethod
     def _log_parent_artifacts(artifact_paths: TrackingArtifactPaths) -> None:
@@ -255,8 +257,7 @@ class MlflowTracker:
 
     @staticmethod
     def _replay_record(record: FoldTrackingRecord) -> None:
-        for event in record.metric_events:
-            mlflow.log_metric(event.key, event.value, step=event.step)
+        _log_metric_events(record.metric_events)
         for artifact in record.artifacts:
             mlflow.log_artifact(str(artifact.path), artifact_path=artifact.artifact_path)
 
@@ -334,12 +335,11 @@ class OptunaTrialTracker(MlflowTracker):
 
     def log_single_split_record(self, record: FoldTrackingRecord) -> None:
         # Only the step-less final metrics and timings, not the epoch histories.
-        for event in record.metric_events:
-            if event.step is None:
-                mlflow.log_metric(event.key, event.value)
+        events = [event for event in record.metric_events if event.step is None]
         timings = fold_timings_for_tracking(record)
         if "total_seconds" in timings:
-            mlflow.log_metric(TRAINING_SECONDS_KEY, timings["total_seconds"])
+            events.append(LoggedMetric(TRAINING_SECONDS_KEY, timings["total_seconds"], None))
+        _log_metric_events(events)
 
 
 def execution_tags(
@@ -411,21 +411,30 @@ def _log_execution_params(
 
 def _log_summary_metrics(summary: CrossValidationSummary) -> None:
     """Log the final CV statistics and timings; shared by parents and trials."""
-    for metric_name, statistics in summary.metrics.items():
-        mlflow.log_metrics(_summary_metrics(f"cv/test/{metric_name}", statistics))
+    events = [
+        LoggedMetric(key, value, None)
+        for metric_name, statistics in summary.metrics.items()
+        for key, value in _summary_metrics(f"cv/test/{metric_name}", statistics).items()
+    ]
     # Which baseline the copied ``baseline/best`` statistics belong to (ADR 0007).
     if summary.best_baselines:
         mlflow.set_tags(
             {f"best_baseline/{population}": name for population, name in summary.best_baselines.items()}
         )
 
-    for timing_name, statistics in summary.timings.items():
-        mlflow.log_metrics(_summary_metrics(f"cv/time/{timing_name}", statistics))
+    events.extend(
+        LoggedMetric(key, value, None)
+        for timing_name, statistics in summary.timings.items()
+        for key, value in _summary_metrics(f"cv/time/{timing_name}", statistics).items()
+    )
     if "total_seconds" in summary.timings:
         # One mode-independent column: the same key a single-split parent
         # logs, here as the sum of every fold's total.
         total = summary.timings["total_seconds"]
-        mlflow.log_metric(TRAINING_SECONDS_KEY, float(total.mean) * int(total.fold_count))
+        events.append(
+            LoggedMetric(TRAINING_SECONDS_KEY, float(total.mean) * int(total.fold_count), None)
+        )
+    _log_metric_events(events)
 
 
 def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]:
@@ -438,6 +447,54 @@ def _summary_metrics(prefix: str, statistics: MetricSummary) -> dict[str, float]
         f"{prefix}/max": float(statistics.maximum),
         f"{prefix}/fold_count": float(statistics.fold_count),
     }
+
+
+class _MetricClock:
+    """Hand out metric timestamps that only ever increase within this process.
+
+    A flush claims one millisecond per metric, running ahead of the wall clock, so the next
+    flush can start before the last one's final millisecond; the clock stepping back (NTP)
+    does the same. Either would tie or reorder rows that ``get_metric_history`` sorts by
+    timestamp first.
+    """
+
+    def __init__(self) -> None:
+        self._last = -1
+
+    def reserve(self, count: int) -> int:
+        """Claim ``count`` consecutive milliseconds; return the first."""
+        # MLflow's own clock, the one ``mlflow.log_metric`` stamps with; it is untyped.
+        now = int(get_current_time_millis())  # type: ignore[no-untyped-call]
+        start = max(now, self._last + 1)
+        self._last = start + count - 1
+        return start
+
+
+_METRIC_CLOCK = _MetricClock()
+
+
+def _log_metric_events(events: Sequence[LoggedMetric]) -> None:
+    """Write metrics into the active run in the order given, a thousand per commit.
+
+    ``mlflow.log_metric`` commits every value on its own, which on a hard disk cost about
+    200 ms each. Each metric here takes its own millisecond from ``_METRIC_CLOCK``, so
+    ``get_metric_history``, which sorts by timestamp first, returns them in logged order.
+    The timestamps mark when the run was written, not the epoch that produced the value.
+    """
+    if not events:
+        return
+    run = mlflow.active_run()
+    if run is None:
+        raise RuntimeError("metrics are written into the active MLflow run, and none is open")
+    start = _METRIC_CLOCK.reserve(len(events))
+    metrics = [
+        # A step-less metric is stored at step 0, as ``mlflow.log_metric`` stores it.
+        metric(event.key, event.value, start + offset, event.step if event.step is not None else 0)
+        for offset, event in enumerate(events)
+    ]
+    client = MlflowClient()
+    for batch in chunks(metrics, METRICS_PER_BATCH):
+        client.log_batch(run.info.run_id, metrics=batch)
 
 
 def mirror_root_safely(run_id: str) -> None:

@@ -1,14 +1,21 @@
 from dataclasses import replace
+import itertools
 import json
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Sequence
 
 import mlflow
 from mlflow.tracking import MlflowClient
+from mlflow.utils.time import get_current_time_millis
 import pandas as pd
 import pytest
 
-from src.mlflow_utils import get_or_create_experiment, setup_mlflow
+from src.mlflow_utils import (
+    SOURCE_RUN_ID_TAG,
+    get_or_create_experiment,
+    mirror_experiment_name,
+    setup_mlflow,
+)
 from src.training.summary import summarize_cross_validation
 from src.training.tracking import (
     DisabledTracker,
@@ -16,7 +23,13 @@ from src.training.tracking import (
     OptunaTrialTracker,
     create_tracker,
 )
-from src.training.types import FoldResult, PreparedDataset, TrackingArtifactPaths
+from src.training.types import (
+    FoldResult,
+    FoldTrackingRecord,
+    LoggedMetric,
+    PreparedDataset,
+    TrackingArtifactPaths,
+)
 
 
 pytestmark = [
@@ -477,6 +490,7 @@ def test_disabled_tracker_buffers_records_without_creating_mlflow_runs(
         (mlflow, "log_metric"),
         (mlflow, "log_artifact"),
         (mlflow, "log_input"),
+        (MlflowClient, "log_batch"),
         (mlflow.data, "from_pandas"),
     )
     with monkeypatch.context() as mlflow_spies:
@@ -763,3 +777,222 @@ def test_every_run_says_where_its_configuration_came_from(tmp_path, mlflow_backe
         "datasets/hiperparams/vehicle/vehicle_00nan.imputation.json"
     )
     assert client.get_run(trial.info.run_id).data.params["config_source"] == "override"
+
+
+_PRETRAIN_KEYS = ("pretrain/train_loss", "pretrain/val_loss", "pretrain/learning_rate")
+_FINETUNE_KEYS = (
+    "finetune/train_loss",
+    "finetune/val_loss",
+    "finetune/val_f1_micro",
+    "finetune/val_f1_macro",
+    "finetune/learning_rate",
+)
+
+
+def _epoch_history_record(
+    active_tracker, fold: int, f1_macro: float, cv_folds: int | None, epochs: int = 4
+) -> FoldTrackingRecord:
+    """One fold logged as the trainer logs it: a dict per epoch per stage, then the finals."""
+    with active_tracker.fold_run(
+        fold=fold, cv_folds=cv_folds, dataset_name="vehicle_00nan"
+    ) as fold_tracker:
+        for epoch in range(epochs):
+            fold_tracker.log_metrics(
+                {key: fold + epoch / 10 + index / 100 for index, key in enumerate(_PRETRAIN_KEYS)},
+                step=epoch,
+            )
+        for epoch in range(epochs):
+            fold_tracker.log_metrics(
+                {key: 2 * fold - epoch / 10 + index / 100 for index, key in enumerate(_FINETUNE_KEYS)},
+                step=epoch,
+            )
+        fold_tracker.log_metrics(
+            {
+                "test/accuracy": 0.5 + f1_macro / 2,
+                "test/f1_macro": f1_macro,
+                "test/loss": 0.5 - f1_macro / 2,
+            }
+        )
+        fold_tracker.log_metrics(
+            {
+                "time/pretrain_seconds": 10.0 * fold,
+                "time/finetune_seconds": 5.0 * fold,
+                "time/total_seconds": 15.0 * fold,
+            }
+        )
+    return fold_tracker.to_record(
+        FoldResult(
+            fold if cv_folds is not None else "single_split",
+            "vehicle_00nan",
+            {"accuracy": 0.5 + f1_macro / 2, "f1_macro": f1_macro},
+        )
+    )
+
+
+def _three_fold_tree(tmp_path: Path, mlflow_backend: str):
+    """Train three buffered folds and finalize them: a parent, best/worst children, mirrors."""
+    tracker = create_tracker(enabled=True)
+    with tracker.parent_run(
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=3,
+        hyperparameters={},
+        lr_scheduler="cosine",
+    ) as active_tracker:
+        records = [
+            _epoch_history_record(active_tracker, fold, f1_macro, cv_folds=3)
+            for fold, f1_macro in ((1, 0.4), (2, 0.6), (3, 0.8))
+        ]
+        summary = summarize_cross_validation(records)
+        active_tracker.finalize_cross_validation(
+            records, summary, _dataset(tmp_path), _artifact_paths(tmp_path)
+        )
+    return records, summary
+
+
+def _single_split_run(mlflow_backend: str) -> FoldTrackingRecord:
+    tracker = create_tracker(enabled=True)
+    with tracker.parent_run(
+        dataset_name="vehicle_00nan",
+        seed=42,
+        cv_folds=None,
+        hyperparameters={},
+        lr_scheduler="cosine",
+    ) as active_tracker:
+        record = _epoch_history_record(active_tracker, fold=1, f1_macro=0.4, cv_folds=None)
+        active_tracker.log_single_split_record(record)
+    return record
+
+
+def _logged_histories(events: Sequence[LoggedMetric]) -> dict[str, list[tuple[int, float]]]:
+    """What each key's history should read, from the events in logged order.
+
+    MLflow stores a step-less metric at step 0, as ``mlflow.log_metric`` always has.
+    """
+    histories: dict[str, list[tuple[int, float]]] = {}
+    for event in events:
+        step = event.step if event.step is not None else 0
+        histories.setdefault(event.key, []).append((step, event.value))
+    return histories
+
+
+def _stored_rows(client: MlflowClient, run_id: str) -> list[tuple[str, int, float, int]]:
+    """Every metric row of a run as ``(key, step, value, timestamp)``, key by key."""
+    run = client.get_run(run_id)
+    return [
+        (metric.key, metric.step, metric.value, metric.timestamp)
+        for key in sorted(run.data.metrics)
+        for metric in client.get_metric_history(run_id, key)
+    ]
+
+
+def _stored_histories(client: MlflowClient, run_id: str) -> dict[str, list[tuple[int, float]]]:
+    histories: dict[str, list[tuple[int, float]]] = {}
+    for key, step, value, _ in _stored_rows(client, run_id):
+        histories.setdefault(key, []).append((step, value))
+    return histories
+
+
+def test_finalize_cross_validation_stores_every_epoch_of_every_history(
+    tmp_path, mlflow_backend
+) -> None:
+    records, summary = _three_fold_tree(tmp_path, mlflow_backend)
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    runs = _experiment_runs(client)
+    parent = next(run for run in runs if run.data.tags["run_role"] == "parent")
+    children = [run for run in runs if run.data.tags["run_role"] != "parent"]
+    assert len(children) == 2
+    records_by_fold = {str(record.result.fold): record for record in records}
+    for child in children:
+        expected = _logged_histories(records_by_fold[child.data.tags["fold"]].metric_events)
+        assert _stored_histories(client, child.info.run_id) == expected
+        # The value a run shows for a key is the last one logged under it.
+        assert child.data.metrics == {key: history[-1][1] for key, history in expected.items()}
+
+    parent_histories = _stored_histories(client, parent.info.run_id)
+    assert summary.loss_bands
+    for loss_name, bands in summary.loss_bands.items():
+        for statistic in ("mean", "ci95_lower", "ci95_upper"):
+            assert parent_histories[f"cv/{loss_name}/{statistic}"] == [
+                (band.step, getattr(band, statistic)) for band in bands
+            ]
+
+    # Each mirror holds its source's rows exactly, timestamps included (ADR 0006).
+    mirror_experiment = client.get_experiment_by_name(mirror_experiment_name("classification"))
+    assert mirror_experiment is not None
+    mirrors = client.search_runs([mirror_experiment.experiment_id])
+    assert {mirror.data.tags[SOURCE_RUN_ID_TAG] for mirror in mirrors} == {
+        run.info.run_id for run in runs
+    }
+    for mirror in mirrors:
+        assert _stored_rows(client, mirror.info.run_id) == _stored_rows(
+            client, mirror.data.tags[SOURCE_RUN_ID_TAG]
+        )
+
+
+def test_log_single_split_record_stores_every_epoch_of_every_history(mlflow_backend) -> None:
+    record = _single_split_run(mlflow_backend)
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    (parent,) = _experiment_runs(client)
+    expected = _logged_histories(record.metric_events)
+    expected["time/training_seconds"] = [(0, 15.0)]
+    assert _stored_histories(client, parent.info.run_id) == expected
+    assert parent.data.metrics == {key: history[-1][1] for key, history in expected.items()}
+
+
+def _rows_in_stored_order(client: MlflowClient, run_id: str) -> list[tuple[str, int, float]]:
+    """A run's rows in timestamp order, after checking that no two rows share a timestamp.
+
+    ``get_metric_history`` sorts by timestamp first, so a tie would leave the logged
+    order to the step and the value.
+    """
+    rows = _stored_rows(client, run_id)
+    timestamps = [timestamp for *_, timestamp in rows]
+    assert len(set(timestamps)) == len(timestamps), "two metric rows share a timestamp"
+    return [(key, step, value) for key, step, value, _ in sorted(rows, key=lambda row: row[3])]
+
+
+def _logged_rows(events: Sequence[LoggedMetric]) -> list[tuple[str, int, float]]:
+    return [
+        (event.key, event.step if event.step is not None else 0, event.value)
+        for event in events
+    ]
+
+
+@pytest.mark.parametrize("clock", ["system", "stepping_back"])
+def test_every_run_stores_its_metrics_in_the_order_they_were_logged(
+    tmp_path, mlflow_backend, monkeypatch, clock
+) -> None:
+    if clock == "stepping_back":
+        # Every reading 10 ms behind the last, as after an NTP step: consecutive flushes
+        # that read the same or an earlier millisecond must still not tie or reorder rows.
+        readings = itertools.count()
+        first_reading = get_current_time_millis()
+        monkeypatch.setattr(
+            "src.training.tracking.get_current_time_millis",
+            lambda: first_reading - 10 * next(readings),
+        )
+    records, _ = _three_fold_tree(tmp_path, mlflow_backend)
+    single_split_record = _single_split_run(mlflow_backend)
+
+    client = MlflowClient(tracking_uri=mlflow_backend)
+    runs = _experiment_runs(client)
+    records_by_fold = {str(record.result.fold): record for record in records}
+    for child in (run for run in runs if run.data.tags["run_role"] != "parent"):
+        record = records_by_fold[child.data.tags["fold"]]
+        assert _rows_in_stored_order(client, child.info.run_id) == _logged_rows(
+            record.metric_events
+        )
+    parents = {
+        run.data.tags["evaluation_mode"]: run
+        for run in runs
+        if run.data.tags["run_role"] == "parent"
+    }
+    assert _rows_in_stored_order(client, parents["single_split"].info.run_id) == [
+        *_logged_rows(single_split_record.metric_events),
+        ("time/training_seconds", 0, 15.0),
+    ]
+    # The summary's emission order is not a contract, only that no two rows tie.
+    _rows_in_stored_order(client, parents["cross_validation"].info.run_id)

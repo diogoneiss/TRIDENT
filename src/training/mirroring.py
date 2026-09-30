@@ -39,7 +39,7 @@ RUN_NAME_TAG = "mlflow.runName"
 
 # ``log_batch`` accepts at most 1000 metrics, 100 params, 100 tags, and 1000 entries in
 # total per call; each kind is sent on its own, so the per-kind limits are the binding ones.
-_METRICS_PER_BATCH = 1000
+METRICS_PER_BATCH = 1000
 _PARAMS_PER_BATCH = 100
 _TAGS_PER_BATCH = 100
 _SEARCH_PAGE = 1000
@@ -55,6 +55,10 @@ def _param(key: str, value: str) -> Param:
 
 def _tag(key: str, value: str) -> RunTag:
     return RunTag(key, value)  # type: ignore[no-untyped-call]
+
+
+def metric(key: str, value: float, timestamp: int, step: int) -> Metric:
+    return Metric(key, value, timestamp, step)
 
 
 @dataclass
@@ -265,11 +269,11 @@ def mirror_run(
         ]
         report.updated.append(source_id)
 
-    for tag_batch in _chunks([_tag(key, value) for key, value in tags.items()], _TAGS_PER_BATCH):
+    for tag_batch in chunks([_tag(key, value) for key, value in tags.items()], _TAGS_PER_BATCH):
         client.log_batch(mirror_id, tags=tag_batch)
-    for param_batch in _chunks(params, _PARAMS_PER_BATCH):
+    for param_batch in chunks(params, _PARAMS_PER_BATCH):
         client.log_batch(mirror_id, params=param_batch)
-    for metric_batch in _chunks(metrics, _METRICS_PER_BATCH):
+    for metric_batch in chunks(metrics, METRICS_PER_BATCH):
         client.log_batch(mirror_id, metrics=metric_batch)
     inputs = [
         DatasetInput(
@@ -297,7 +301,7 @@ def _metric_history(client: MlflowClient, run: Run) -> Iterator[Metric]:
         yield from client.get_metric_history(run.info.run_id, key)
 
 
-def _chunks(items: Sequence[_Entry], size: int) -> Iterator[Sequence[_Entry]]:
+def chunks(items: Sequence[_Entry], size: int) -> Iterator[Sequence[_Entry]]:
     for start in range(0, len(items), size):
         yield items[start : start + size]
 
