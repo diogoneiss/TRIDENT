@@ -139,7 +139,7 @@ M spends 750 epochs against C's 450, a confound stated in advance; N − C on kr
 
 ## 7. State
 
-- Code and docs: `feat/imputation-task` at __HEAD__, pushed to GitHub. On Windows, `git pull`
+- Code and docs: `feat/imputation-task` at 57ec1e0 or later, pushed to GitHub. On Windows, `git pull`
   before any `sync_remote.py push` or `code`.
 - Store: on the SSD, the only copy written (ADR 0010); the replica is refreshed every 10 min.
 - Night folder (logs, per-cell results, the profiling and exactness scripts):
