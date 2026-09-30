@@ -196,20 +196,23 @@ class TridentDecoder(nn.Module):
         targets = self._as_encoded(targets, device)
         context = self._encode(hidden)
         mask = hidden.masked_positions  # (batch, n_columns), categorical then numerical
-        # How many cells each column hides, read to the host once per batch: the same
-        # selections in the same order as asking each column, without the two device
-        # synchronisations per column that asking costs.
-        hidden_per_column: list[int] = mask.sum(dim=0).tolist()
+        # Which rows each column hides, from one nonzero over the batch and one host read of
+        # the per-column counts. Indexing a column by those rows selects the same cells in
+        # the same ascending order as indexing it by its boolean mask, which would stop to
+        # synchronise with the device twice per column to size its result.
+        rows, columns = mask.nonzero(as_tuple=True)
+        hidden_per_column: list[int] = torch.bincount(columns, minlength=mask.shape[1]).tolist()
+        rows_by_column = torch.split(rows[torch.argsort(columns, stable=True)], hidden_per_column)
 
         categorical_loss = torch.zeros((), device=device)
         categorical_cells = 0
         for index, key in enumerate(self.embedder.categorical_keys):
             if hidden_per_column[index] == 0:
                 continue
-            selected = mask[:, index]
-            logits = self.categorical_heads[key](context[selected, index, :])
+            hidden_rows = rows_by_column[index]
+            logits = self.categorical_heads[key](context[hidden_rows, index, :])
             local_of = getattr(self, f"local_of_{key}")
-            expected = local_of[targets.cat_indices[index][selected]]
+            expected = local_of[targets.cat_indices[index][hidden_rows]]
             categorical_loss = categorical_loss + nn.functional.cross_entropy(
                 logits, expected, reduction="sum"
             )
@@ -221,9 +224,9 @@ class TridentDecoder(nn.Module):
         for index, key in enumerate(self.embedder.numerical_keys):
             if hidden_per_column[offset + index] == 0:
                 continue
-            selected = mask[:, offset + index]
-            predicted = self.numerical_heads[key](context[selected, offset + index, :]).squeeze(-1)
-            expected = targets.num_values[index][selected]
+            hidden_rows = rows_by_column[offset + index]
+            predicted = self.numerical_heads[key](context[hidden_rows, offset + index, :]).squeeze(-1)
+            expected = targets.num_values[index][hidden_rows]
             numerical_loss = numerical_loss + nn.functional.mse_loss(
                 predicted, expected, reduction="sum"
             )
