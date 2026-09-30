@@ -30,15 +30,15 @@
     "semantic_hash": ""
   },
   "src/mlflow_utils.py": {
-    "mtime": 1790642313.7752833,
-    "seen": 1790643273.4105473,
-    "ast_hash": "13350c74a2ce6d0a48faf0837cbcf71b",
+    "mtime": 1790741551.5434258,
+    "seen": 1790741997.6347313,
+    "ast_hash": "06f30e52d269f56c33f225c4ce42fb7c",
     "semantic_hash": ""
   },
   "src/models.py": {
-    "mtime": 1789077893.057978,
-    "seen": 1789693767.0144424,
-    "ast_hash": "cf67840731421344369cf434457adb3f",
+    "mtime": 1790741551.5434258,
+    "seen": 1790741997.6347325,
+    "ast_hash": "2561f9148601d5e1ec1720b482bf67b1",
     "semantic_hash": ""
   },
   "src/training/__init__.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1790642313.7742846,
-    "seen": 1790643273.4105473,
-    "ast_hash": "a373f1a9f294cd2260da243caa674f5f",
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6347384,
+    "ast_hash": "e7b7988312ddbebb746c71611b216386",
     "semantic_hash": ""
   },
   "src/training/data.py": {
@@ -84,15 +84,15 @@
     "semantic_hash": ""
   },
   "src/training/pretraining.py": {
-    "mtime": 1788997002.5042565,
-    "seen": 1789693767.0144424,
-    "ast_hash": "8fe5ec03a293ba9fdd742d801a6846e7",
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6347518,
+    "ast_hash": "28b41d539cef1fd4e99f0da7f483af38",
     "semantic_hash": ""
   },
   "src/training/runner.py": {
-    "mtime": 1790559483.0903199,
-    "seen": 1790561829.5137799,
-    "ast_hash": "b52f4cec63ec93ac99bf5d759288a468",
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.634753,
+    "ast_hash": "7e438d99e803e530e56f2a64419f5349",
     "semantic_hash": ""
   },
   "src/training/summary.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1790642313.7733078,
-    "seen": 1790643273.4105473,
-    "ast_hash": "ee8f9ac68b35f8ddaa971130d00d24c3",
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6347592,
+    "ast_hash": "738310cb26f2808984cc6adfae4c0c62",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1790642215.6149824,
-    "seen": 1790643273.4105473,
-    "ast_hash": "a328bcec52abf8f423b4ee5b6c9deddb",
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6347985,
+    "ast_hash": "6893f15787c5a2d9dcc8822957cfdfb2",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_runtime.py": {
-    "mtime": 1790559405.8076334,
-    "seen": 1790561829.5137799,
-    "ast_hash": "73c5074d2808e945ab92d934e2246273",
+    "mtime": 1790741551.545426,
+    "seen": 1790741997.6348073,
+    "ast_hash": "3d810bb7facfd27ccb0985c80085bb38",
     "semantic_hash": ""
   },
   "tests/unit/test_training_summary.py": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-pretraining/01-pretraining-ablation.md": {
-    "mtime": 1790729464.3679175,
-    "seen": 1790731437.30742,
-    "ast_hash": "d24548dce8f8e9810806a025b70482ff",
+    "mtime": 1790741529.9364715,
+    "seen": 1790741997.63493,
+    "ast_hash": "33f49adc9f1f072704df76a595718d16",
     "semantic_hash": ""
   },
   "start_mlflow.sh": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1790729464.3669176,
-    "seen": 1790731437.307364,
-    "ast_hash": "9c60d9fdda3688fd5dcd56ecd2fcb145",
+    "mtime": 1790741898.4876814,
+    "seen": 1790741997.6348312,
+    "ast_hash": "960450753eea4fc98e681c8f529651b4",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1203,6 +1203,54 @@
     "mtime": 1790733796.464341,
     "seen": 1790733813.676088,
     "ast_hash": "95a41f61d1a03e6ddd716dbce284ca9b",
+    "semantic_hash": ""
+  },
+  "scripts/backfill_pretrain_objective_tag.py": {
+    "mtime": 1790741551.5434258,
+    "seen": 1790741997.634714,
+    "ast_hash": "44860d3e5b8ccaf9684bfaebab1884d2",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_objective_report.py": {
+    "mtime": 1790741869.8127437,
+    "seen": 1790741997.6347187,
+    "ast_hash": "75d2960ccabd5c3beb6af62f5e97125e",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_objective_run.py": {
+    "mtime": 1790741869.8127437,
+    "seen": 1790741997.6347198,
+    "ast_hash": "4b46f38e225bf466eada919cb5dd99e1",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_pretrain_objective_queue.sh": {
+    "mtime": 1790741551.5434258,
+    "seen": 1790741997.634721,
+    "ast_hash": "1c3700f8ce87b428fab03f418a28381c",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_backfill_pretrain_objective_tag.py": {
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6347759,
+    "ast_hash": "b925ba8ff217d47fdecee750a9945207",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_training_pretraining.py": {
+    "mtime": 1790741551.5444257,
+    "seen": 1790741997.6348057,
+    "ast_hash": "33423c7e4daf32d677314f6c0771f6ee",
+    "semantic_hash": ""
+  },
+  "docs/adr/0011-selectable-pretraining-objective.md": {
+    "mtime": 1790741551.5434258,
+    "seen": 1790741997.634847,
+    "ast_hash": "3fa05d7b48416acb78b54e7774d54a91",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-pretraining/02-pretraining-objectives.md": {
+    "mtime": 1790741898.4866815,
+    "seen": 1790741997.6349306,
+    "ast_hash": "fdb856334f9993ba36bce2651f94ce7e",
     "semantic_hash": ""
   }
 }
