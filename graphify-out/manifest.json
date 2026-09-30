@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "src/training/tracking.py": {
-    "mtime": 1790567678.475245,
-    "seen": 1790568458.8263721,
-    "ast_hash": "834c9f2f74b4b9da85afc1c5bdaf6cbf",
+    "mtime": 1790733796.464341,
+    "seen": 1790733813.675971,
+    "ast_hash": "1e0c5f6d7f4dcdf8d4f224a1098fdd14",
     "semantic_hash": ""
   },
   "src/training/types.py": {
@@ -180,9 +180,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_tracking.py": {
-    "mtime": 1790567623.6038136,
-    "seen": 1790568458.8263721,
-    "ast_hash": "190e9b9e4d7292f03a99da7ea8f88d03",
+    "mtime": 1790733796.465341,
+    "seen": 1790733813.6760135,
+    "ast_hash": "24cfa04d5268201b5a70f1e85bc7d23b",
     "semantic_hash": ""
   },
   "train.py": {
@@ -1056,9 +1056,9 @@
     "semantic_hash": ""
   },
   "src/training/mirroring.py": {
-    "mtime": 1789694768.8403177,
-    "seen": 1789695328.6180518,
-    "ast_hash": "b2687a0e07bd8faffb3e896430a604ee",
+    "mtime": 1790733796.464341,
+    "seen": 1790733813.675965,
+    "ast_hash": "3726effe867d161197693555e19f7ffa",
     "semantic_hash": ""
   },
   "tests/unit/test_mirroring.py": {
@@ -1197,6 +1197,12 @@
     "mtime": 1790731373.9336057,
     "seen": 1790731437.307373,
     "ast_hash": "d6d0467a348c200071ec4f4727217242",
+    "semantic_hash": ""
+  },
+  "docs/tickets/0005-batched-mlflow-metric-writes.md": {
+    "mtime": 1790733796.464341,
+    "seen": 1790733813.676088,
+    "ast_hash": "95a41f61d1a03e6ddd716dbce284ca9b",
     "semantic_hash": ""
   }
 }
