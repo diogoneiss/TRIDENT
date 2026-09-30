@@ -106,3 +106,23 @@ pairs below are kept on one machine wherever it costs one cell.
 - Cells run one at a time on the server as on Windows. Wall time is reported per machine
   and never compared across them; on this check the server took 107 s of fold time
   against Windows' 197 s.
+
+## Amendment 2026-09-29 (23:08 GMT-3): the last eight cells write to the SSD store
+
+Written and committed before the batch resumed. The batch was paused at 22:13 GMT-3 at the
+user's request, in the middle of `pendigits_20nan` seed 42 arm C; that run ended `FAILED`, is
+not counted, and the cell runs from the start (no finished cell is rerun). Done on the server
+by then: `kr-vs-kp_40nan` s13 A and `pendigits_20nan` s42 B.
+
+Before resuming, the server store moved to the SSD in WAL mode
+([ADR 0010](../../adr/0010-server-store-on-ssd-with-hdd-replica.md)) and run metrics are
+written in batches ([ticket 0005](../0005-batched-mlflow-metric-writes.md), `0dde5e2`).
+Ticket 0005's exactness check found every metric value, step, param, tag and artifact
+identical between the old and the new code; only the `time/*` values and the metric
+timestamps differ. The scores of the eight remaining cells are therefore comparable with the
+25 finished ones.
+
+Wall time is not. On the hard-disk store, s13 A spent about 13 of its 20.1 minutes and s42 B
+about 6 of its 14.0 writing to MLflow. The cost measure for every arm is therefore the sum of
+the fold `total_seconds` in `raw_fold_metrics.csv`, which is taken before the store write;
+the run's wall clock is reported beside it, per machine and per store.

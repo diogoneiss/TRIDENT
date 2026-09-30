@@ -673,6 +673,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   shared across machines, and the model is another training draw on a different GPU.
   pendigits A/42 runs fresh on the server so its pairs stay on one machine; kr-vs-kp s13 is
   the one declared cross-machine pair (B, C Windows; A server).
+- **Amendment 2026-09-29, 23:08 GMT-3 (paused at 22:13 GMT-3 mid pendigits s42 C, which is not
+  counted and runs again from the start):** the last eight cells write to the SSD store in WAL
+  mode with batched metric writes (ADR 0010, ticket 0005); metric values are unchanged
+  (ticket 0005's exactness check), so scores stay comparable. Wall time does not: the cost
+  measure becomes the sum of fold `total_seconds` (taken before the store write), with run
+  wall clock reported per machine and per store.
 - **Results (partial, 2026-09-29 21:45 GMT-3, induced, B − A and C − A over 15 pairs):**
 
   | variant | B − A | C − A | best baseline |
