@@ -50,3 +50,12 @@ improvement (P) score differently on the induced test cells than training all 45
 - The checkpoint criterion is the λ-weighted validation loss, which critique F-02-1 found only
   loosely tied to `impute_score`.
 - One patience value, three seeds, one configuration per variant.
+
+## Operational note, 2026-09-30 14:05 GMT-3: a crash at finalisation, fixed
+
+The first P cell (`pendigits_20nan` s42) trained all five folds and then failed while
+summarising them: the cross-validation summary refused folds whose decode stages ended at
+different epochs, which is what early stopping does. The queue was stopped (the second cell,
+s7, was interrupted at once), the summary fixed in `fa38425` (training untouched), and the queue
+relaunched; both cells run again from the start. A crash is not a result, so this reruns no
+finished cell.
