@@ -50,7 +50,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E21 | Overnight full-profile Optuna studies against the baseline bar | 2026-09-28 | done | the tuned model beats the bar nowhere on induced cells |
 | E22 | Induced validation objective on credit-g_80nan | 2026-09-28 | done | induced objective beats the masked winner on 5 of 5 folds; level with the defaults |
 | E23 | Induced validation objective on the other six variants | 2026-09-28 – 2026-09-29 | stopped early | better on 2 of 6, level on 2, worse on 2; never beats the best baseline |
-| E24 | What pre-training contributes to imputation | 2026-09-29 – | in progress | so far no detectable B − A; kr-vs-kp: A better than C |
+| E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
 
 ## Entries
 
@@ -645,10 +645,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `docs/tickets/imputation-optuna-full/01-overnight-full-profile-studies.md` § Outcome (masked
   winners, defaults, their intervals); ADR 0008. Commits `37b996f` (pre-registration),
   `8072d01` (outcome), `8d7c01f` (correction). Retrain tags as in ticket 02.
-### E24 · What pre-training contributes to imputation (2026-09-29 – )
+### E24 · What pre-training contributes to imputation (2026-09-29 – 2026-09-30)
 
-- **Status:** in progress. 23 of 32 cells ran on the Windows RTX 3050 on 2026-09-29; the
-  remaining 10 run on gorgona8 (RTX 3090 Ti) from 2026-09-29 21:24 GMT-3, after the amendment below.
+- **Status:** done. 23 of 32 cells ran on the Windows RTX 3050 on 2026-09-29; the other nine
+  (and pendigits' fresh A/42) on gorgona8 (RTX 3090 Ti) that night, finishing 2026-09-30
+  01:10 GMT-3.
 - **Hypothesis:** the pre-training stage adds little or nothing to imputation. It regresses
   onto the detached clean *embedding* of a masked cell, not its value; the critique found the
   resulting encoder worse than a per-column constant at that target and no detectable
@@ -679,22 +680,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (ticket 0005's exactness check), so scores stay comparable. Wall time does not: the cost
   measure becomes the sum of fold `total_seconds` (taken before the store write), with run
   wall clock reported per machine and per store.
-- **Results (partial, 2026-09-29 21:45 GMT-3, induced, B − A and C − A over 15 pairs):**
+- **Results (induced, B − A and C − A over 15 fold pairs; positive favours A):**
 
   | variant | B − A | C − A | best baseline |
   |---|---|---|---|
-  | credit-g_20nan | −0.0015 [−0.0173, +0.0142], no detectable difference | +0.0092 [−0.0047, +0.0230], no detectable difference | hgb 0.9182; all arms inside it |
-  | credit-g_80nan | +0.0218 [−0.0065, +0.0502], no detectable difference (all 3 seeds favour A) | +0.0141 [−0.0121, +0.0404], no detectable difference | mean_mode 1.0000; every arm loses to it |
-  | kr-vs-kp_40nan | +0.0105 [−0.0049, +0.0258], no detectable difference (all 3 seeds favour A) | +0.0184 [+0.0046, +0.0323], **A better than C** | hgb 0.7725; A 0.7694 inside it |
-  | pendigits_20nan | pending | pending | |
+  | credit-g_20nan | −0.0015 [−0.0173, +0.0142], no detectable difference | +0.0092 [−0.0047, +0.0230], no detectable difference | hgb 0.918; every arm overlaps it |
+  | credit-g_80nan | +0.0218 [−0.0065, +0.0502], no detectable difference | +0.0141 [−0.0121, +0.0404], no detectable difference | mean_mode 1.000; every arm loses to it |
+  | kr-vs-kp_40nan | +0.0105 [−0.0049, +0.0258], no detectable difference | +0.0184 [+0.0046, +0.0323], **A better than C** | hgb 0.773; every arm overlaps it |
+  | pendigits_20nan | −0.0216 [−0.0250, −0.0181], **pre-training hurts** | −0.0664 [−0.0701, −0.0627], **C better than A** | knn10 0.350; **C 0.335 [0.331, 0.340] beats it**, A and B lose |
 
-  kr-vs-kp's C − A verdict rests on the declared cross-machine seed 13 (+0.0195); over its 10
-  same-machine pairs it was +0.0179 [−0.0034, +0.0393]. Masked: kr-vs-kp C − A +0.0255
-  [+0.0052, +0.0458], A better than C; no detectable difference elsewhere so far.
-- **Conclusion:** pending the queue. Planned follow-up (decided 2026-09-29): if no variant
-  shows "pre-training helps", propose a flag that skips pre-training for imputation (old
-  behaviour default, MLflow tag, backfill, ADR); if one does, a value-space pre-training
-  objective instead.
+  Masked cells agree on every variant. kr-vs-kp's C − A rests on the declared cross-machine
+  seed 13: over its 10 same-machine pairs it is +0.0179 [−0.0034, +0.0393]. Machine gap on
+  pendigits A/42 (server − Windows): +0.0036, per-fold sd 0.0050, against 0.044 on the
+  credit-g check cell. Cost (fold time per cell): C about 1.2x–1.8x A; server pendigits A 13.5,
+  B 7.6, C 21.4 min.
+- **Conclusion:** no variant shows "pre-training helps" against none. The stage's worth depends
+  on the table: on the all-numerical pendigits the embedding objective costs 0.022 against
+  none, and the same epochs on the value loss gain 0.066 and clear the best baseline for the
+  first time in the effort (the decode stage is under-trained at 150 epochs there); on the
+  all-categorical kr-vs-kp that move loses 0.018 (resting on the cross-machine pair); nothing
+  is detectable on credit-g. Next: the value and normalised-embedding objectives (E25).
 - **Sources:** `docs/tickets/imputation-pretraining/01-pretraining-ablation.md`
   (pre-registration 7af595b, amendment ebf5e86); analysis script
   `~/trident-handoff-2026-09-29/kit/pretrain_ablation_report.py` (outside the repo, on
