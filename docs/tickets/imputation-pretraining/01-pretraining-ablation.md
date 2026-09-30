@@ -129,8 +129,9 @@ the run's wall clock is reported beside it, per machine and per store.
 
 ## Outcome (2026-09-30, 01:10 GMT-3)
 
-All 32 cells finished: 23 on the Windows RTX 3050, then `kr-vs-kp_40nan` s13 A and the nine
-pendigits cells on gorgona8 (RTX 3090 Ti), the last seven with the SSD store. Every A/42 is
+All 32 cells of the design finished: 23 on the Windows RTX 3050, then `kr-vs-kp_40nan` s13 A
+and pendigits' eight on gorgona8 (RTX 3090 Ti), plus pendigits' fresh A/42 there; the last
+seven with the SSD store. Every A/42 is
 the reused 2026-09-24/25 run except pendigits', which ran fresh on the server. Numbers from
 `pretrain_ablation_report.py` (FINISHED, active, non-mirror runs tagged
 `ablation=pretraining-2026-09-29`). Lower is better; a positive difference favours A.

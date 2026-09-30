@@ -647,9 +647,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `8072d01` (outcome), `8d7c01f` (correction). Retrain tags as in ticket 02.
 ### E24 · What pre-training contributes to imputation (2026-09-29 – 2026-09-30)
 
-- **Status:** done. 23 of 32 cells ran on the Windows RTX 3050 on 2026-09-29; the other nine
-  (and pendigits' fresh A/42) on gorgona8 (RTX 3090 Ti) that night, finishing 2026-09-30
-  01:10 GMT-3.
+- **Status:** done. 23 of the 32 cells ran on the Windows RTX 3050 on 2026-09-29; the other
+  nine, plus pendigits' fresh A/42, on gorgona8 (RTX 3090 Ti) that night, finishing
+  2026-09-30 01:10 GMT-3.
 - **Hypothesis:** the pre-training stage adds little or nothing to imputation. It regresses
   onto the detached clean *embedding* of a masked cell, not its value; the critique found the
   resulting encoder worse than a per-column constant at that target and no detectable
