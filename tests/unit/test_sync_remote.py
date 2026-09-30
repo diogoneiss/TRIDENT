@@ -10,6 +10,7 @@ import shutil
 import sqlite3
 import stat
 import subprocess
+import sys
 from pathlib import Path
 from typing import Callable
 
@@ -371,3 +372,61 @@ def test_moving_a_diverged_store_aside_lets_the_other_side_in(workspace: Workspa
 
     assert client_for(local / "mlflow.db").get_run(kept).info.run_id == kept
     assert (local / "mlflow.db.diverged").exists()
+
+
+def link_server_store(workspace: Workspace, ssd: Path) -> Path:
+    """Put the server's store behind a link to another disk, as on gorgona8 (ADR 0010)."""
+    store = server_root(workspace) / "mlflow.db"
+    master = ssd / "mlflow.db"
+    master.parent.mkdir(parents=True)
+    store.rename(master)
+    store.symlink_to(master)
+    return master
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="gorgona8's layout: a symlink")
+def test_a_push_replaces_the_store_behind_the_servers_link_and_keeps_the_link(
+    workspace: Workspace, tmp_path: Path
+) -> None:
+    # Replacing the link itself would leave the store on the slow disk and orphan the one
+    # training writes on the fast one.
+    local, server = workspace.root, server_root(workspace)
+    experiment_id, _ = make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    master = link_server_store(workspace, tmp_path / "ssd")
+    added = client_for(local / "mlflow.db").create_run(experiment_id).info.run_id
+
+    push(workspace, apply=True)
+
+    store = server / "mlflow.db"
+    assert store.is_symlink() and store.resolve() == master
+    assert client_for(store).get_run(added).info.run_id == added
+    previous = server / "sync" / "mlflow.db.prev"
+    assert previous.is_file() and not previous.is_symlink()
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="gorgona8's layout: a symlink")
+def test_an_interrupted_write_behind_the_servers_link_stops_a_pull(
+    workspace: Workspace, tmp_path: Path
+) -> None:
+    # SQLite leaves its journal next to the file the link points to, not next to the link.
+    make_store(workspace.root / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    master = link_server_store(workspace, tmp_path / "ssd")
+    Path(f"{master}-journal").write_bytes(b"")
+
+    with pytest.raises(StoreError, match="interrupted"):
+        pull(workspace, apply=True)
+
+
+def test_an_empty_wal_left_by_a_reader_does_not_stop_a_pull(workspace: Workspace) -> None:
+    # A read-only reader of a WAL store cannot remove its -wal on close; empty, it holds no
+    # write the digest could miss (ADR 0010).
+    local, server = workspace.root, server_root(workspace)
+    _, run_id = make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    Path(f"{server / 'mlflow.db'}-wal").write_bytes(b"")
+
+    pull(workspace, apply=True)
+
+    assert client_for(local / "mlflow.db").get_run(run_id).info.run_id == run_id

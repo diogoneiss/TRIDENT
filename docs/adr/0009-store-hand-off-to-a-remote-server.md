@@ -13,6 +13,11 @@ Amended the same evening, once the first push had reached gorgona8 and commits b
 made there: decision 5 gains the guard against rolling those commits back, and decision 7
 lists the ssh options the host's interactive entry made necessary.
 
+Amended again the same night by [ADR 0010](0010-server-store-on-ssd-with-hdd-replica.md):
+on gorgona8 the store is a link to a file on the SSD, which `install_store` now replaces
+behind the link; `refuse_if_busy` looks next to the link's target and lets an empty `-wal`
+through; and every server-side step takes `sync/store.lock`.
+
 Touches no training code: every run still logs to `sqlite:///mlflow.db` in the checkout
 it is launched from, as [ADR 0002](0002-curated-cross-validation-mlflow-runs.md) and
 [ADR 0006](0006-mirror-experiments-per-task.md) assume.

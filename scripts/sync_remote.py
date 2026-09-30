@@ -25,22 +25,28 @@ Commits made on the server come back through GitHub: pull them here before ``cod
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import hashlib
 import json
 import os
 import shlex
+import shutil
 import sqlite3
 import subprocess
 import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Callable, Iterator, Protocol
 
 STORE_NAME = "mlflow.db"
 SYNC_DIR = "sync"
 STATE_FILE = f"{SYNC_DIR}/state.json"
 CONFIG_FILE = f"{SYNC_DIR}/config.json"
+# Taken by every server-side step that reads or replaces the store, and by
+# scripts/store_replica.py while it copies or restores it (ADR 0010).
+LOCK_FILE = f"{SYNC_DIR}/store.lock"
 # argparse already exits with 2 on a usage error.
 EXIT_REFUSED = 3
 # Plain files, each written once by one run: copied additively in both directions.
@@ -102,7 +108,11 @@ if sys.platform == "win32":
 
 
 def _held_open_linux(path: Path) -> list[str]:
-    target = str(path.resolve())
+    return processes_holding(str(path.resolve()))
+
+
+def processes_holding(target: str) -> list[str]:
+    """The processes with a descriptor whose ``/proc/<pid>/fd`` link reads ``target``."""
     holders: list[str] = []
     for process in Path("/proc").iterdir():
         if not process.name.isdigit():
@@ -133,11 +143,17 @@ def refuse_if_busy(store: Path) -> None:
     holders = held_open_by(store)
     if holders:
         raise StoreError(f"{store} is open by {', '.join(holders)}; wait for it or stop it")
+    # SQLite keeps these next to the file a link points to, not next to the link (ADR 0010).
+    live = store.resolve()
     for suffix in ("-journal", "-wal"):
-        if Path(f"{store}{suffix}").exists():
+        leftover = Path(f"{live}{suffix}")
+        # A read-only reader of a WAL store, this script's snapshot included, leaves an
+        # empty -wal behind. Only one holding pages means writes the digest cannot see.
+        if leftover.exists() and (suffix == "-journal" or leftover.stat().st_size > 0):
             raise StoreError(
-                f"{store}{suffix} exists: a write to the store was interrupted. Open the store "
-                "once with MLflow (or sqlite3) so SQLite recovers it, then sync again."
+                f"{leftover} exists: a write to the store was interrupted or not yet folded "
+                "back. Open the store once with MLflow (or sqlite3) so SQLite recovers it, "
+                "then sync again."
             )
 
 
@@ -271,10 +287,38 @@ def install_store(
         raise StoreError(
             f"the store arrived damaged: sha256 {received}, expected {incoming_sha256}"
         )
-    if store.exists():
-        os.replace(store, root / SYNC_DIR / f"{STORE_NAME}.prev")
-    os.replace(incoming, store)
+    previous = root / SYNC_DIR / f"{STORE_NAME}.prev"
+    if not store.is_symlink():
+        if store.exists():
+            os.replace(store, previous)
+        os.replace(incoming, store)
+        return received
+    # On gorgona8 the store is a link to a file on another disk (ADR 0010). Replacing the
+    # link would leave that file behind and put the store back on the slow disk, so the
+    # link stays and the file behind it is replaced, through a copy on its own disk.
+    live = store.resolve()
+    if live.exists():
+        shutil.copyfile(live, previous)
+    live.parent.mkdir(parents=True, exist_ok=True)
+    staged = live.with_name(f"{STORE_NAME}.incoming")
+    shutil.copyfile(incoming, staged)
+    os.replace(staged, live)
+    incoming.unlink()
     return received
+
+
+@contextlib.contextmanager
+def store_lock(root: Path) -> Iterator[None]:
+    """Wait for scripts/store_replica.py to finish with the store, and keep it out meanwhile."""
+    if sys.platform == "win32":
+        yield
+        return
+    import fcntl
+
+    (root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
+    with open(root / LOCK_FILE, "a") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield
 
 
 def _never_pushed(relative: str) -> bool:
@@ -321,8 +365,6 @@ def branch_tips(root: Path) -> dict[str, str]:
 
 
 def remote_command(argv: list[str]) -> dict[str, object]:
-    import argparse
-
     parser = argparse.ArgumentParser(prog="sync_remote.py remote")
     commands = parser.add_subparsers(dest="command", required=True)
     for name in ("prepare", "snapshot", "install", "delete"):
@@ -335,6 +377,11 @@ def remote_command(argv: list[str]) -> dict[str, object]:
             command.add_argument("--incoming-sha256", required=True)
     args = parser.parse_args(argv)
     root = Path(args.root)
+    with store_lock(root):
+        return _remote_step(args, root)
+
+
+def _remote_step(args: argparse.Namespace, root: Path) -> dict[str, object]:
     store = root / STORE_NAME
     (root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
     if args.command == "prepare":
@@ -783,8 +830,6 @@ def main(argv: list[str] | None = None) -> int:
             print(error, file=sys.stderr)
             return 1
         return 0
-
-    import argparse
 
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
