@@ -141,11 +141,16 @@ class TridentDecoder(nn.Module):
         embedder: TabularEmbedder,
         transformer: TabularTransformerEncoder,
         lambda_num: float = 1.0,
+        batched_heads: bool = False,
     ):
         super().__init__()
         self.embedder = embedder
         self.transformer = transformer
         self.lambda_num = lambda_num
+        # Apply the per-column heads as a few batched operations instead of one small
+        # kernel per column (``--decoder_heads batched``). The same parameters and the same
+        # arithmetic, regrouped, so it differs from the per-column path in rounding only.
+        self.batched_heads = batched_heads
 
         self.categorical_heads = nn.ModuleDict()
         for column, key in zip(embedder.categorical_columns, embedder.categorical_keys):
@@ -166,6 +171,35 @@ class TridentDecoder(nn.Module):
             local_of[valid_ids] = torch.arange(len(valid_ids))
             self.register_buffer(f"local_of_{key}", local_of, persistent=False)
             self.categorical_heads[key] = nn.Linear(embedder.dimensao, len(valid_ids))
+
+        # For the batched heads: every categorical head's rows laid end to end, so a cell of
+        # column c reads its logits at ``_class_index[c]``, the slots past the column's own
+        # classes masked out; and every column's vocabulary-to-head map laid end to end,
+        # starting at ``_vocabulary_start[c]``. Derived from the heads, never saved.
+        sizes = [len(getattr(self, f"valid_ids_{key}")) for key in embedder.categorical_keys]
+        widest = max(sizes, default=0)
+        class_index = torch.zeros((len(sizes), widest), dtype=torch.long)
+        class_valid = torch.zeros((len(sizes), widest), dtype=torch.bool)
+        start = 0
+        for column, size in enumerate(sizes):
+            class_index[column, :size] = torch.arange(start, start + size)
+            class_valid[column, :size] = True
+            start += size
+        self.register_buffer("_class_index", class_index, persistent=False)
+        self.register_buffer("_class_valid", class_valid, persistent=False)
+        maps = [getattr(self, f"local_of_{key}") for key in embedder.categorical_keys]
+        self.register_buffer(
+            "_local_of_all",
+            torch.cat(maps) if maps else torch.zeros(0, dtype=torch.long),
+            persistent=False,
+        )
+        self.register_buffer(
+            "_vocabulary_start",
+            torch.tensor([0] + [len(m) for m in maps[:-1]], dtype=torch.long).cumsum(0)
+            if maps
+            else torch.zeros(0, dtype=torch.long),
+            persistent=False,
+        )
 
         # The embedder's input MLP in reverse, one per column, so no two columns share
         # parameters. Output is a scalar in the same scaled space the embedder consumed.
@@ -202,6 +236,11 @@ class TridentDecoder(nn.Module):
         # synchronise with the device twice per column to size its result.
         rows, columns = mask.nonzero(as_tuple=True)
         hidden_per_column: list[int] = torch.bincount(columns, minlength=mask.shape[1]).tolist()
+        if self.batched_heads and all(hidden_per_column):
+            # A head with no hidden cell must get no gradient at all, as on the per-column
+            # path, or AdamW would still decay and move it. So a batch that leaves a column
+            # out (a short last batch, usually) takes the per-column path below.
+            return self._batched_loss(context, mask, targets, device)
         rows_by_column = torch.split(rows[torch.argsort(columns, stable=True)], hidden_per_column)
 
         categorical_loss = torch.zeros((), device=device)
@@ -237,6 +276,60 @@ class TridentDecoder(nn.Module):
 
         # Each kind is averaged over its own hidden cells, so a table dominated by one
         # kind cannot drown the other's term.
+        loss = torch.zeros((), device=device)
+        metrics: dict[str, torch.Tensor] = {}
+        if categorical_cells:
+            categorical_mean = categorical_loss / categorical_cells
+            loss = loss + categorical_mean
+            metrics["cross_entropy"] = categorical_mean.detach()
+        if numerical_cells:
+            numerical_mean = numerical_loss / numerical_cells
+            loss = loss + self.lambda_num * numerical_mean
+            metrics["mse"] = numerical_mean.detach()
+        return loss, metrics
+
+    def _batched_loss(self, context, mask, targets, device) -> tuple[torch.Tensor, dict]:
+        """The per-column loss, with every head applied at once to the cells it is asked for.
+
+        Each hidden cell reads its own column's weights by indexing the stacked heads, so a
+        table with C columns costs a constant number of kernel launches instead of a few per
+        column. Categorical logits past a column's own classes are -inf, which leaves the
+        cross-entropy over its classes unchanged.
+        """
+        n_categorical = len(self.embedder.categorical_keys)
+        categorical_loss = torch.zeros((), device=device)
+        numerical_loss = torch.zeros((), device=device)
+        rows, columns = mask[:, :n_categorical].nonzero(as_tuple=True)
+        categorical_cells = int(rows.numel())
+        if categorical_cells:
+            heads = [self.categorical_heads[key] for key in self.embedder.categorical_keys]
+            weight = torch.cat([head.weight for head in heads])  # (all classes, d)
+            bias = torch.cat([head.bias for head in heads])
+            slots = self._class_index[columns]  # (cells, widest)
+            logits = torch.bmm(weight[slots], context[rows, columns, :].unsqueeze(-1)).squeeze(-1)
+            logits = (logits + bias[slots]).masked_fill(~self._class_valid[columns], float("-inf"))
+            vocabulary_ids = torch.stack(list(targets.cat_indices))[columns, rows]
+            expected = self._local_of_all[self._vocabulary_start[columns] + vocabulary_ids]
+            categorical_loss = nn.functional.cross_entropy(logits, expected, reduction="sum")
+        rows, columns = mask[:, n_categorical:].nonzero(as_tuple=True)
+        numerical_cells = int(rows.numel())
+        if numerical_cells:
+            first = [self.numerical_heads[key][0] for key in self.embedder.numerical_keys]
+            second = [self.numerical_heads[key][2] for key in self.embedder.numerical_keys]
+            first_weight = torch.stack([layer.weight for layer in first])  # (C, hidden, d)
+            first_bias = torch.stack([layer.bias for layer in first])  # (C, hidden)
+            second_weight = torch.stack([layer.weight for layer in second]).squeeze(1)  # (C, hidden)
+            second_bias = torch.stack([layer.bias for layer in second]).squeeze(-1)  # (C,)
+            cells = context[rows, n_categorical + columns, :].unsqueeze(-1)  # (cells, d, 1)
+            hidden_units = torch.relu(
+                torch.bmm(first_weight[columns], cells).squeeze(-1) + first_bias[columns]
+            )
+            predicted = (hidden_units * second_weight[columns]).sum(-1) + second_bias[columns]
+            expected_values = torch.stack(list(targets.num_values))[columns, rows]
+            numerical_loss = nn.functional.mse_loss(predicted, expected_values, reduction="sum")
+
+        if categorical_cells == 0 and numerical_cells == 0:
+            return torch.zeros((), device=device, requires_grad=True), {}
         loss = torch.zeros((), device=device)
         metrics: dict[str, torch.Tensor] = {}
         if categorical_cells:

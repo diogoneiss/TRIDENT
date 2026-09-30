@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
+    DECODER_HEADS,
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
     PRETRAINING_OBJECTIVES,
@@ -39,6 +40,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_patience = getattr(args, "decode_patience", None)
     if decode_patience is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_patience=decode_patience)
+    # ``--decoder_heads`` wins the same way.
+    decoder_heads = getattr(args, "decoder_heads", None)
+    if decoder_heads is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decoder_heads=decoder_heads)
     # ``--pretrain_objective`` wins the same way (ADR 0011).
     pretraining_objective = getattr(args, "pretrain_objective", None)
     if pretraining_objective is not None:
@@ -116,6 +121,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "LAMBDA_NUM": values.lambda_num,
             "EVAL_MASK_RATE": values.eval_mask_rate,
             "DECODE_PATIENCE": values.decode_patience,
+            "DECODER_HEADS": values.decoder_heads,
         }
     return {
         **shared,
@@ -285,6 +291,18 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: stop the decode stage once its validation loss has not improved "
             "for this many epochs, keeping the best epoch. Overrides DECODE_PATIENCE from the "
             "hyperparameter file. Default: 0, every epoch trains."
+        ),
+    )
+    parser.add_argument(
+        "--decoder_heads",
+        type=str,
+        default=None,
+        choices=DECODER_HEADS,
+        help=(
+            "How the decoder applies its per-column heads: 'per_column' (one operation per "
+            "column, every run before 2026-09-30) or 'batched' (the same arithmetic in a few "
+            "operations, faster, equal up to rounding). Overrides DECODER_HEADS. "
+            "Default: per_column."
         ),
     )
     parser.add_argument(

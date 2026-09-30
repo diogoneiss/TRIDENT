@@ -74,6 +74,9 @@ class BaselineScorer:
         path = self._cache_dir / f"{self._key(test_frame, cells, baselines)}.json"
         if path.exists():
             self.hits += 1
+            # A hit refreshes the entry's modification time, so ``scripts/prune_cache.py``
+            # drops the entries used longest ago first.
+            os.utime(path)
             return _load(path)
         scores = score_baselines(self._fitted(), test_frame, cells, baselines)
         _store(path, scores)

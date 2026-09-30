@@ -6,7 +6,12 @@ from typing import Mapping
 import pandas as pd
 import torch
 
-from src.mlflow_utils import BASELINE_CACHE_TAG, DECODE_PATIENCE_TAG, PRETRAIN_OBJECTIVE_TAG
+from src.mlflow_utils import (
+    BASELINE_CACHE_TAG,
+    DECODE_PATIENCE_TAG,
+    DECODER_HEADS_TAG,
+    PRETRAIN_OBJECTIVE_TAG,
+)
 from src.utils import set_global_seed
 
 from .artifacts import ArtifactWriter
@@ -95,6 +100,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                 {
                     BASELINE_CACHE_TAG: "off" if request.runtime.baseline_cache_dir is None else "on",
                     DECODE_PATIENCE_TAG: str(request.hyperparameters.decode_patience),
+                    DECODER_HEADS_TAG: request.hyperparameters.decoder_heads,
                 }
                 if task.name == "imputation"
                 else {}

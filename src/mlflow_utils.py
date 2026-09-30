@@ -75,6 +75,11 @@ BASELINE_CACHE_TAG = "baseline_cache"
 # ``scripts/backfill_decode_patience_tag.py`` and marked DECODE_PATIENCE_BACKFILLED_TAG.
 DECODE_PATIENCE_TAG = "decode_patience"
 DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
+# How an imputation run's decoder applied its heads, "per_column" or "batched". On every
+# imputation parent and trial; runs recorded before it are stamped "per_column" by
+# ``scripts/backfill_decoder_heads_tag.py`` and marked DECODER_HEADS_BACKFILLED_TAG.
+DECODER_HEADS_TAG = "decoder_heads"
+DECODER_HEADS_BACKFILLED_TAG = "decoder_heads_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

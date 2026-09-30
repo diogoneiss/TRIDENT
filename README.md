@@ -165,6 +165,7 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--task`: What to train, one of `classification` (default) or `imputation`. Classification predicts the label from the `[CLS]` token and is what every run did before [ADR 0004](docs/adr/0004-imputation-decoder-task.md); imputation replaces the classifier with a decoder that reconstructs hidden cell values. Command-line only, never from a hyperparameter file, so an `--all` batch cannot end up training a different task per dataset
 - `--score_null_path`: Also score the dataset's own missing cells with the model seeing `[NULL]` rather than `[MASK]`, as a diagnostic that never ranks folds. Requires `--task imputation` and is refused at parse time otherwise
 - `--decode_patience`: Stop the decode stage once its validation loss has not improved for this many epochs, keeping the best epoch; the schedule still spans the configured epochs. Overrides `DECODE_PATIENCE`. Requires `--task imputation`. Default: `0`, every epoch trains
+- `--decoder_heads`: How the decoder applies its per-column heads: `per_column` (default, one operation per column, every run before 2026-09-30) or `batched` (the same arithmetic in a few operations, 1.4x to 1.6x faster a cell, equal up to rounding, so a different training draw). Overrides `DECODER_HEADS`
 - `--no_baseline_cache`: Compute the baseline imputers' scores every time instead of reusing the ones cached under `results/baseline_cache/` for the same fold and cells ([ADR 0007](docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md) decision 10; a hit is identical to the computation)
 
 ### Training Options
@@ -278,6 +279,7 @@ Every key is optional and defaulted, so a file written before a key existed keep
 - `EPOCHS_DECODE`: Number of decode-stage epochs (default: `150`)
 - `LR_DECODE`: Decode-stage learning rate (default: `0.001`)
 - `DECODE_PATIENCE`: Decode-stage early-stopping patience in epochs, see `--decode_patience` (default: `0`, off)
+- `DECODER_HEADS`: `per_column` or `batched`, see `--decoder_heads` (default: `per_column`)
 - `WEIGHT_DECAY_DECODE`: Decode-stage weight decay (default: `0.0019`)
 - `LAMBDA_NUM`: Weight on the numerical reconstruction term, each term already averaged over its own hidden cells (default: `1.0`)
 - `EVAL_MASK_RATE`: **Nominal** share of cells hidden for scoring (default: `0.2`). Nominal because the masking helper scales it down by each row's null density and never hides an already-missing cell, so asking for `0.2` hides about 20% of a `_00nan` variant but about 5% of an `_80nan` one. Each run logs the realised share as `impute/masked/realised_rate`. This is the evaluation counterpart of `PROB_MASCARA`, which governs training corruption

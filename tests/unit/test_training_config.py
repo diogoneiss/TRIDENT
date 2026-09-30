@@ -269,7 +269,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
-        "DECODE_PATIENCE",
+        "DECODE_PATIENCE", "DECODER_HEADS",
     }
 
 
@@ -446,3 +446,18 @@ def test_decode_patience_is_off_unless_an_imputation_run_asks_for_it() -> None:
         validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_patience", "5"]))
     with pytest.raises(ValueError, match="patience"):
         Hyperparameters(decode_patience=-1)
+
+
+def test_decoder_heads_stay_per_column_unless_a_run_asks_for_batched() -> None:
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation))
+    batched = resolve_training_request(parser.parse_args([*imputation, "--decoder_heads", "batched"]))
+
+    assert default.hyperparameters.decoder_heads == "per_column"
+    assert batched.hyperparameters.decoder_heads == "batched"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--decoder_heads", "fused"])
+    with pytest.raises(ValueError, match="decoder heads"):
+        Hyperparameters.from_mapping({"DECODER_HEADS": "fused"})

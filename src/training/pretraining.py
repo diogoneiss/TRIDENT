@@ -25,7 +25,12 @@ def _stage_model(
     loss; they are discarded with the stage, since the decode stage builds its own.
     """
     if hyperparameters.pretraining_objective == "value":
-        return TridentDecoder(embedder, transformer, lambda_num=hyperparameters.lambda_num)
+        return TridentDecoder(
+            embedder,
+            transformer,
+            lambda_num=hyperparameters.lambda_num,
+            batched_heads=hyperparameters.decoder_heads == "batched",
+        )
     if hyperparameters.pretraining_objective == "embedding_normalized":
         return NormalizedEmbeddingPretrainer(embedder, transformer)
     return TridentPretrainer(embedder, transformer)

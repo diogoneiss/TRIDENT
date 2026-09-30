@@ -164,3 +164,49 @@ def test_attaching_the_decoder_leaves_the_pretrained_encoder_untouched() -> None
         owner, name = key.split(".", 1)
         current = dict((embedder if owner == "embedder" else transformer).named_parameters())[name]
         assert torch.equal(current, original), key
+
+
+def _interleaved_frame(rows: int = 48) -> pd.DataFrame:
+    """Column kinds interleaved, and two categorical columns with different vocabularies."""
+    index = np.arange(rows)
+    return pd.DataFrame(
+        {
+            "size": (index % 7).astype(float),
+            "colour": np.array(["red", "blue", "green", np.nan], dtype=object)[index % 4],
+            "weight": (index % 3).astype(float) / 2,
+            "shape": np.array(["round", "square", "star", "oval", "cube"], dtype=object)[index % 5],
+        }
+    )
+
+
+def test_batched_heads_give_the_per_column_loss_and_gradients() -> None:
+    """The batched heads only regroup the same arithmetic: a column read through another
+    column's weights or classes would give a plausible loss that is simply wrong."""
+    frame = _interleaved_frame()
+    categorical, numerical = ["colour", "shape"], ["size", "weight"]
+    torch.manual_seed(0)
+    embedder = TabularEmbedder(frame, categorical, numerical, dimensao=8, hidden_dim=4)
+    transformer = TabularTransformerEncoder(d_model=8, nhead=2, num_layers=1, dim_feedforward=16, dropout=0.0)
+    per_column = TridentDecoder(embedder, transformer, lambda_num=1.7)
+    batched = TridentDecoder(embedder, transformer, lambda_num=1.7, batched_heads=True)
+    batched.load_state_dict(per_column.state_dict())
+    np.random.seed(0)
+    hidden = preprocess_table(frame.copy(), p_base=0.4, fine_tunning=False)
+    no_shape_hidden = hidden.copy()
+    no_shape_hidden["shape"] = frame["shape"]  # a column with nothing hidden in the batch
+
+    for masked in (hidden, no_shape_hidden):
+        results = []
+        for model in (per_column, batched):
+            model.zero_grad()
+            loss, metrics = model(masked, frame)
+            loss.backward()
+            grads = {name: p.grad.clone() for name, p in model.named_parameters() if p.grad is not None}
+            results.append((loss.item(), {k: v.item() for k, v in metrics.items()}, grads))
+        (loss_a, metrics_a, grads_a), (loss_b, metrics_b, grads_b) = results
+        assert loss_b == pytest.approx(loss_a, rel=1e-5)
+        assert metrics_b.keys() == metrics_a.keys()
+        assert all(metrics_b[k] == pytest.approx(metrics_a[k], rel=1e-5) for k in metrics_a)
+        assert grads_b.keys() == grads_a.keys()
+        for name in grads_a:
+            assert torch.allclose(grads_b[name], grads_a[name], rtol=1e-4, atol=1e-6), name

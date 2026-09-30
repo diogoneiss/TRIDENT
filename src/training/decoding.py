@@ -59,6 +59,7 @@ def train_and_evaluate_decoder(
     model = TridentDecoder(
         embedder=pretraining.model.embedder,
         transformer=pretraining.model.transformer,
+        batched_heads=hyperparameters.decoder_heads == "batched",
         lambda_num=hyperparameters.lambda_num,
     ).to(device)
     optimizer = optim.AdamW(
