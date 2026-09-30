@@ -51,7 +51,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E22 | Induced validation objective on credit-g_80nan | 2026-09-28 | done | induced objective beats the masked winner on 5 of 5 folds; level with the defaults |
 | E23 | Induced validation objective on the other six variants | 2026-09-28 – 2026-09-29 | stopped early | better on 2 of 6, level on 2, worse on 2; never beats the best baseline |
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
-| E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 –  | in progress | pending |
+| E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 | done | N never worse than A, better on 2/4 and better than no pre-training on 3/4; V helps only on pendigits |
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 –  | in progress | pending |
 
 ## Entries
@@ -707,10 +707,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `~/trident-handoff-2026-09-29/kit/pretrain_ablation_report.py` (outside the repo, on
   gorgona8); `docs/reviews/imputation-critique/13-pretraining-transfer.md`.
 
-### E25 · Value and normalised-embedding pre-training objectives (2026-09-30 – )
+### E25 · Value and normalised-embedding pre-training objectives (2026-09-30)
 
-- **Status:** in progress (overnight on gorgona8, two concurrent queues, no cell starts
-  after 06:30 GMT-3).
+- **Status:** done, 01:18–04:28 GMT-3, all 50 cells, none missing (relaunched once at 01:38
+  with a CPU thread cap after an oversubscription stall; scores unaffected).
 - **Hypothesis:** the current pre-training target (the detached clean embedding) lets the
   loss fall by rescaling rather than predicting (F-13-1), which would explain why the stage
   adds little (E04, E05, E24). A target aligned with the values (`value`) or one that cannot
@@ -729,8 +729,24 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   zero and all three seeds agree in sign. Secondary: V − C and N − C (reading fixed in advance:
   V ≈ C → drop pre-training and lengthen decode; V better → keep a value stage; C better →
   train the decoder longer), V − B, N − B, masked cells, each arm against the best baseline. Cost descriptive only (two trainers share the GPU).
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (induced, 15 fold pairs; negative favours the new arm):**
+
+  | variant | V − A | N − A | N − B | N − C |
+  |---|---|---|---|---|
+  | credit-g_20nan | −0.0002, none | +0.0060, none | −0.0054, none | −0.0044, none |
+  | credit-g_80nan | +0.0267, **A better** | −0.0147, **N better** | −0.0290, **N better** | −0.0099, none |
+  | kr-vs-kp_40nan | +0.0233, **A better** | +0.0001, none | −0.0191, **N better** | −0.0288, **N better** |
+  | pendigits_20nan | −0.0421, **V better** | −0.0373, **N better** | −0.0157, **N better** | +0.0291, **C better** |
+
+  V − C: C better on credit-g_80nan and pendigits, none elsewhere. Masked cells agree. Only C
+  on pendigits clears a best baseline.
+- **Conclusion:** the value target is not what pre-training lacks (better than the current
+  objective only on the all-numerical table, worse on two, never better than C). The
+  normalised target is: never worse than the current objective, better on two variants, and
+  better than no pre-training on three of four, which the current objective is on none (E24).
+  The decode budget that wins on pendigits loses on kr-vs-kp. Candidate default for
+  imputation: `embedding_normalized` (a decision for the user, ADR 0011); E26 tests it with
+  the long decode stage.
 - **Sources:** `docs/tickets/imputation-pretraining/02-pretraining-objectives.md`;
   `docs/adr/0011-selectable-pretraining-objective.md`;
   `scripts/experiments/pretrain_objective_report.py`.
