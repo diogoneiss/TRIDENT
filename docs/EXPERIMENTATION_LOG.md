@@ -27,7 +27,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 | ID | experiment | dates | status | headline |
 |---|---|---|---|---|
-| E01 | `[MASK]` vs `[NULL]` token path for induced cells | 2026-09-10; re-checked 2026-09-11 | done | `[MASK]` won 8 of 8 folds; the credit-g rows later found to score the wrong cells |
+| E01 | `[MASK]` vs `[NULL]` token path for induced cells | 2026-09-10; re-checked 2026-09-11 | done | `[MASK]` won 8 of 8 folds; credit-g rows scored the wrong cells, fixed and re-measured 2026-09-30: 8 of 8 again |
 | E02 | Reduced Optuna search: six studies under cosine | 2026-09-11 | done | `LR_DECODE` leads the importances in 5 of 6; both kr-vs-kp winners tie-broken |
 | E03 | Promoted configuration vs defaults, cosine, seed 42 | 2026-09-11 – 2026-09-12 | done | the reduced search did not beat the defaults; no interval separates |
 | E04 | Does the pre-training loss drop mean learning? | critique probe, 2026-09-11 | done | the loss drop is norm-matching; the encoder is worse than a per-column constant |
@@ -78,7 +78,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (CONFIRMED, high, by three verifiers): the credit-g numbers "are not biased, they are
   meaningless", so the gate's "at least two datasets" rests on kr-vs-kp alone. Proposed:
   build the selection in the embedder's column order and re-measure or strike the credit-g
-  rows. No fix recorded as of 2026-09-18 (addendum § 8.9 found D-1 still present).
+  rows. Fixed 2026-09-30 (`918bcd6`) and re-measured on the same four variants (two folds,
+  seed 42, defaults, cosine): `[MASK]` wins on all 8 folds again (credit-g_20nan 0.924, 0.902
+  against 0.985, 1.023), so decision 5 stands on valid credit-g rows (ADR 0004 decision 11).
 - **Sources:** `docs/adr/0004-imputation-decoder-task.md` decision 11 (verdict `74229fd`);
   `docs/reviews/imputation-critique/CONSOLIDATED.md` D-1; `04-ground-truth-protocol`,
   `05-embedder-tokens`, `09-test-adequacy` (`.md` and `.verdict.md`), F-04-1, F-05-1, F-09-1.

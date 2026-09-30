@@ -183,6 +183,24 @@ backfill.
     trained at a null position, and with 36 categorical columns it has nothing to transfer
     from. The diagnostic stays available behind its flag; the primary path does not move.
 
+    **Re-measured 2026-09-30, after the D-1 fix (`918bcd6`).** The imputation critique found
+    that the `[NULL]` path chose its cells in the file's column order while the encoding reads
+    categorical columns first, so on `credit-g`, which interleaves the two kinds, the credit-g
+    rows above scored mostly cells that were never missing (critique D-1). With the selection
+    in the encoder's order, the same criterion on the same four variants (two folds, seed 42,
+    defaults, `cosine`; runs tagged `experiment=null-path-recheck-2026-09-30`), `[MASK]` wins
+    on all eight folds again, so the verdict stands, now on valid credit-g rows:
+
+    | dataset | folds | `[MASK]` score | `[NULL]` score |
+    |---|---|---|---|
+    | `credit-g_20nan` | 2 | 0.924, 0.902 | 0.985, 1.023 |
+    | `credit-g_60nan` | 2 | 1.010, 1.010 | 1.135, 1.045 |
+    | `kr-vs-kp_20nan` | 2 | 0.681, 0.676 | 0.793, 0.757 |
+    | `kr-vs-kp_60nan` | 2 | 0.955, 0.909 | 1.023, 0.917 |
+
+    The numbers are not comparable with the 2026-09-10 table (another schedule and three weeks
+    of changes); only each row's two paths are.
+
 12. **Isolation.** A frozen `TaskSpec` (name, ranking metric, direction) in a small
     registry, validated in `__post_init__`, dispatched with an `if`/`elif` chain like
     `create_tracker`. The spec reaches `summarize_cross_validation`,

@@ -96,3 +96,7 @@ and is a separate experiment; it is recorded in the map's out-of-scope section.
   20% and 60% missingness. The margin is widest on all-categorical `kr-vs-kp`
   (0.98 against 1.92), where a head never trained at a null position has nothing to
   transfer from. Full table in ADR 0004 decision 11.
+
+- 2026-09-30, **re-measured after the D-1 fix** (`918bcd6`): the credit-g rows of the verdict
+  had scored the wrong cells (critique D-1). With the fix, `[MASK]` wins on all 8 folds again;
+  table in ADR 0004 decision 11.
