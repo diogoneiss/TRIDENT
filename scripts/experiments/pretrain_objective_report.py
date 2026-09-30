@@ -7,7 +7,7 @@ better, so a positive (X - A) difference favours arm A. Run from the checkout ro
     uv run --python 3.11 python scripts/experiments/pretrain_objective_report.py --todo 1|2
 
 ``--todo`` prints the cells a queue still has to run, in its pre-registered order, one
-"<variant> <seed> <arm>" per line. The server's A and B cells of the pre-training ablation
+"<variant> <seed> <arm>" per line. The server's A, B and C cells of the pre-training ablation
 (every pendigits one, and kr-vs-kp seed 13 A) are reused as references rather than rerun.
 """
 
@@ -29,7 +29,7 @@ BASELINES = ("mean_mode", "knn5", "knn10", "hgb")
 EXPERIMENT = "pretrain-objective-2026-09-30"
 ABLATION = "pretraining-2026-09-29"
 # The ablation's cells that ran on gorgona8, reused as same-machine references.
-REUSED = {(v, s, a) for v in ["pendigits_20nan"] for s in SEEDS for a in "AB"} | {
+REUSED = {(v, s, a) for v in ["pendigits_20nan"] for s in SEEDS for a in "ABC"} | {
     ("kr-vs-kp_40nan", 13, "A")
 }
 PRIMARY = ("V", "N")
@@ -91,9 +91,11 @@ def queue(number: str) -> list[tuple[str, int, str]]:
     cheap = ["credit-g_20nan", "credit-g_80nan", "kr-vs-kp_40nan"]
     references_a = [(v, s, "A") for v in cheap for s in SEEDS if (v, s, "A") not in REUSED]
     references_b = [(v, s, "B") for v in cheap for s in SEEDS]
+    references_c = [(v, s, "C") for v in cheap for s in SEEDS]
     value = [(v, s, "V") for v in VARIANTS for s in SEEDS]
     normalised = [(v, s, "N") for v in VARIANTS for s in SEEDS]
-    return references_a + value if number == "1" else normalised + references_b
+    # C before B: if the cutoff bites, it cuts the less decision-relevant reference.
+    return references_a + value if number == "1" else normalised + references_c + references_b
 
 
 def todo(number: str) -> None:
@@ -103,13 +105,13 @@ def todo(number: str) -> None:
 
 
 def report(variant: str) -> None:
-    cells = {(s, a): folds(variant, s, a) for s in SEEDS for a in "ABVN"}
+    cells = {(s, a): folds(variant, s, a) for s in SEEDS for a in "ABCVN"}
     missing = [f"s{s}{a}" for (s, a), f in cells.items() if f is None]
     print(f"=== {variant}" + (f"  (missing {missing})" if missing else ""))
     for population in ("induced", "masked"):
         key = f"impute/{population}/impute_score"
         line = [f"  {population:7s}"]
-        for arm in "ABVN":
+        for arm in "ABCVN":
             done = [f[key] for s in SEEDS if (f := cells[(s, arm)]) is not None]
             if done:
                 m, lo, hi = interval(pd.concat(done).to_numpy())
@@ -118,7 +120,7 @@ def report(variant: str) -> None:
         # carries it; the first one present per seed is read.
         bars, names = [], []
         for s in SEEDS:
-            run = next((f for a in "BAVN" if (f := cells[(s, a)]) is not None), None)
+            run = next((f for a in "BACVN" if (f := cells[(s, a)]) is not None), None)
             if run is None:
                 continue
             name = min(BASELINES, key=lambda b: float(run[f"impute/{population}/baseline/{b}/impute_score"].mean()))
@@ -129,7 +131,7 @@ def report(variant: str) -> None:
             line.append(f"best baseline {m:.4f} [{lo:.4f}, {hi:.4f}] ({'/'.join(sorted(set(names)))})")
         print("  ".join(line))
         for arm in PRIMARY:
-            for reference in "AB":
+            for reference in "ACB":
                 seeds = [s for s in SEEDS if cells[(s, arm)] is not None and cells[(s, reference)] is not None]
                 if not seeds:
                     continue
@@ -152,7 +154,7 @@ def report(variant: str) -> None:
                 role = "primary" if reference == "A" else "secondary"
                 print(f"    {arm} - {reference} ({role}) over {len(diffs)} pairs: {m:+.4f} [{lo:+.4f}, {hi:+.4f}]; {seed_text} -> {call}")
     cost = []
-    for arm in "ABVN":
+    for arm in "ABCVN":
         sums = [float(f["total_seconds"].sum()) / 60 for s in SEEDS if (f := cells[(s, arm)]) is not None]
         if sums:
             cost.append(f"{arm} {np.mean(sums):.1f} min")

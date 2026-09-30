@@ -51,6 +51,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E22 | Induced validation objective on credit-g_80nan | 2026-09-28 | done | induced objective beats the masked winner on 5 of 5 folds; level with the defaults |
 | E23 | Induced validation objective on the other six variants | 2026-09-28 – 2026-09-29 | stopped early | better on 2 of 6, level on 2, worse on 2; never beats the best baseline |
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
+| E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 –  | in progress | pending |
 
 ## Entries
 
@@ -704,3 +705,31 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (pre-registration 7af595b, amendment ebf5e86); analysis script
   `~/trident-handoff-2026-09-29/kit/pretrain_ablation_report.py` (outside the repo, on
   gorgona8); `docs/reviews/imputation-critique/13-pretraining-transfer.md`.
+
+### E25 · Value and normalised-embedding pre-training objectives (2026-09-30 – )
+
+- **Status:** in progress (overnight on gorgona8, two concurrent queues, no cell starts
+  after 06:30 GMT-3).
+- **Hypothesis:** the current pre-training target (the detached clean embedding) lets the
+  loss fall by rescaling rather than predicting (F-13-1), which would explain why the stage
+  adds little (E04, E05, E24). A target aligned with the values (`value`) or one that cannot
+  be met by rescaling (`embedding_normalized`, layer-normalised target through a predictor
+  head) might make pre-training useful (ADR 0011).
+- **Scenarios:** arms A (`embedding`, 300 + 150 epochs), B (no pre-training, 0 + 150), C (0 +
+  450, added after E24's outcome, before any cell ran), V
+  (`value`, 300 + 150), N (`embedding_normalized`, 300 + 150); promoted configuration or
+  defaults, cosine, five folds; variants credit-g_20nan, credit-g_80nan, kr-vs-kp_40nan,
+  pendigits_20nan; seeds 42, 7, 13. Every A, B and C reference is a server cell: the ablation's
+  server cells are reused (pendigits A, B and C, kr-vs-kp s13 A), the other 26 run now. V differs
+  from the ablation's C by being its own stage (pre-training's rate, weight decay and cycle,
+  heads discarded) before a fresh decode stage. Tag `experiment=pretrain-objective-2026-09-30`.
+- **Measures and decision rule:** primary V − A and N − A on `impute/induced/impute_score`,
+  paired by seed and fold (15 pairs), t-interval; a verdict only when the interval excludes
+  zero and all three seeds agree in sign. Secondary: V − C and N − C (reading fixed in advance:
+  V ≈ C → drop pre-training and lengthen decode; V better → keep a value stage; C better →
+  train the decoder longer), V − B, N − B, masked cells, each arm against the best baseline. Cost descriptive only (two trainers share the GPU).
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/02-pretraining-objectives.md`;
+  `docs/adr/0011-selectable-pretraining-objective.md`;
+  `scripts/experiments/pretrain_objective_report.py`.

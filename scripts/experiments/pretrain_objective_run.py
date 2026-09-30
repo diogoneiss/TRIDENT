@@ -6,9 +6,10 @@ docs/tickets/imputation-pretraining/02-pretraining-objectives.md. Run from the c
     uv run --python 3.11 python scripts/experiments/pretrain_objective_run.py \
         <variant> <seed> <arm A|B|V|N> <output_dir> <metrics_dir>
 
-A = the embedding objective as configured, B = no pre-training, V = the value objective,
-N = the normalised embedding objective; every arm keeps the variant's configured epochs,
-except B's zero pre-training epochs. The same runner as the pre-training ablation's
+A = the embedding objective as configured, B = no pre-training, C = no pre-training with its
+epochs given to the decode stage (the ablation's arm C), V = the value objective, N = the
+normalised embedding objective; every arm keeps the variant's configured epochs, except B's
+and C's zero pre-training epochs and C's longer decode stage. The same runner as the pre-training ablation's
 otherwise: the promoted configuration where one exists, cosine, five folds.
 """
 
@@ -28,7 +29,9 @@ from src.training.config import hyperparameter_file  # noqa: E402
 from train import main as train_main  # noqa: E402
 
 EXPERIMENT = "pretrain-objective-2026-09-30"
-OBJECTIVES = {"A": "embedding", "B": "embedding", "V": "value", "N": "embedding_normalized"}
+OBJECTIVES = {
+    "A": "embedding", "B": "embedding", "C": "embedding", "V": "value", "N": "embedding_normalized"
+}
 
 
 def main(argv: list[str]) -> int:
@@ -38,9 +41,11 @@ def main(argv: list[str]) -> int:
     promoted = hyperparameter_file(variant, "imputation")
     config: dict[str, object] = json.loads(promoted.read_text()) if promoted.exists() else {}
     pre = int(str(config.get("EPOCHS_PRE", 300)))
+    decode = int(str(config.get("EPOCHS_DECODE", 150)))
     config.update(
         {
-            "EPOCHS_PRE": 0 if arm == "B" else pre,
+            "EPOCHS_PRE": 0 if arm in "BC" else pre,
+            "EPOCHS_DECODE": decode + pre if arm == "C" else decode,
             "LR_SCHEDULER": "cosine",
             "PRETRAIN_OBJECTIVE": OBJECTIVES[arm],
         }
