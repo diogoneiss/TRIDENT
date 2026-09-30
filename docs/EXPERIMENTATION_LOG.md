@@ -53,6 +53,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
 | E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 | done | N never worse than A, better on 2/4 and better than no pre-training on 3/4; V helps only on pendigits |
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
+| E27 | Stopping the decode stage on a validation plateau | 2026-09-30 –  | in progress | pending |
+| E28 | Batch 1024 with a scaled learning rate | 2026-09-30 –  | in progress | pending |
 
 ## Entries
 
@@ -780,3 +782,35 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   with `EPOCHS_DECODE` 450.
 - **Sources:** `docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md`;
   `scripts/experiments/pretrain_decode_budget_report.py`.
+
+### E27 · Stopping the decode stage on a validation plateau (2026-09-30 – )
+
+- **Status:** in progress (gorgona8, beside E28; no cell starts after 06:30 GMT-3 on 2026-10-01).
+- **Hypothesis:** the 450-epoch decode stage's gain lives where the validation loss is still
+  falling (pendigits, best epoch ~390), and elsewhere it only costs time (best epochs 9–87), so a
+  patience of 50 should keep M's scores while training far fewer epochs.
+- **Scenarios:** arm P = M plus `DECODE_PATIENCE` 50, against M (E26) and N (E25); four variants,
+  seeds 42, 7, 13; credit-g_20nan pinned to the configuration M read (`fcaadfb`). Tag
+  `experiment=decode-early-stopping-2026-09-30`.
+- **Measures and decision rule:** primary P − M on `impute/induced/impute_score`, 15 fold pairs,
+  verdict only when the interval excludes zero and all seeds agree; decode epochs trained.
+  Secondary P − N, masked, best baseline. Limits: the schedule still spans 450 epochs; a stop
+  shifts later folds' training draws.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/04-decode-early-stopping.md`;
+  `scripts/experiments/decode_patience_batch_report.py`.
+
+### E28 · Batch 1024 with a scaled learning rate (2026-09-30 – )
+
+- **Status:** in progress (gorgona8, beside E27; same cutoff).
+- **Hypothesis:** a four times larger batch runs an epoch 1.55x–2.1x faster; with both learning
+  rates scaled by the square-root (x2) or linear (x4) rule it may keep M's scores.
+- **Scenarios:** arms Q2 and Q4 = M with `BATCH` 1024 and `LR_PRE`, `LR_DECODE` x2 or x4, against
+  M (E26); four variants, seeds 42, 7, 13. Tag `experiment=larger-batch-2026-09-30`.
+- **Measures and decision rule:** primary Q2 − M and Q4 − M, as in E27; secondary Q4 − Q2,
+  masked, best baseline, fold time per cell.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/05-larger-batch.md`;
+  `scripts/experiments/decode_patience_batch_report.py`.
