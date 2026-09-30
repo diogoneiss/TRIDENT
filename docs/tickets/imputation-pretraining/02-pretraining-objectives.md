@@ -100,3 +100,14 @@ every full-profile winner chose a pre-training rate 2 to 34 times below the defa
 bounds these objectives at this rate, not the objectives. V and N add a predictor or heads
 that A does not have, so a difference is the objective and its head together. `embedding`
 has no EMA teacher, the third usual anti-collapse ingredient (ADR 0011, considered options).
+
+## Operational note, 2026-09-30 01:40 GMT-3: CPU thread limit
+
+After the first cell of each queue, three processes (the two trainers and a check cell)
+were fitting the baseline imputers at once, each with 32 OpenMP/BLAS threads on the 32 cores,
+and a credit-g fold's scoring stalled for about ten minutes. The fills of all four baseline
+imputers are identical to the last value with 1, 4 and 32 threads (`credit-g_20nan` and
+`pendigits_20nan`, fold 1, seed 42; `baseline_threads.py` in the night's state folder), and
+the model trains on the GPU, so no score depends on the thread count. Both queues were
+stopped between cells and relaunched with `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and
+`OPENBLAS_NUM_THREADS` at 4. Cost stays descriptive only, as stated above.
