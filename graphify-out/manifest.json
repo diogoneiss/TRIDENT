@@ -36,9 +36,9 @@
     "semantic_hash": ""
   },
   "src/models.py": {
-    "mtime": 1790741551.5434258,
-    "seen": 1790741997.6347325,
-    "ast_hash": "2561f9148601d5e1ec1720b482bf67b1",
+    "mtime": 1790743116.641648,
+    "seen": 1790756614.424279,
+    "ast_hash": "539fafab0e5b55bcb8e2ff338c2a9ff1",
     "semantic_hash": ""
   },
   "src/training/__init__.py": {
@@ -1188,9 +1188,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1790741898.4876814,
-    "seen": 1790741997.6348312,
-    "ast_hash": "960450753eea4fc98e681c8f529651b4",
+    "mtime": 1790755971.2612782,
+    "seen": 1790756614.4243426,
+    "ast_hash": "ae5b494d7d7fdf49d9bd0a4f24b2ce5a",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1224,9 +1224,9 @@
     "semantic_hash": ""
   },
   "scripts/experiments/run_pretrain_objective_queue.sh": {
-    "mtime": 1790741551.5434258,
-    "seen": 1790741997.634721,
-    "ast_hash": "1c3700f8ce87b428fab03f418a28381c",
+    "mtime": 1790743116.655648,
+    "seen": 1790756614.4242718,
+    "ast_hash": "16a98689a09d3667c3838b9bf6a8ee38",
     "semantic_hash": ""
   },
   "tests/unit/test_backfill_pretrain_objective_tag.py": {
@@ -1248,9 +1248,39 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-pretraining/02-pretraining-objectives.md": {
-    "mtime": 1790741898.4866815,
-    "seen": 1790741997.6349306,
-    "ast_hash": "fdb856334f9993ba36bce2651f94ce7e",
+    "mtime": 1790753390.0361989,
+    "seen": 1790756614.424409,
+    "ast_hash": "77d0e9ae8be85a1c224e4c7545af9c92",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_decode_budget_report.py": {
+    "mtime": 1790748002.4051654,
+    "seen": 1790756614.4242656,
+    "ast_hash": "cc7114985763a08a33a03fa4c4aa7848",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_decode_budget_run.py": {
+    "mtime": 1790747976.1482275,
+    "seen": 1790756614.4242668,
+    "ast_hash": "32b6d38b3b4443da5afd1d6af2d36be8",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_pretrain_decode_budget_queue.sh": {
+    "mtime": 1790748002.4071655,
+    "seen": 1790756614.4242706,
+    "ast_hash": "4a2a9be12d9ece5fcb51fb2bf885f4c1",
+    "semantic_hash": ""
+  },
+  "docs/reports/2026-09-30-overnight.md": {
+    "mtime": 1790756611.828821,
+    "seen": 1790756614.4243548,
+    "ast_hash": "0771d87738a0c4d69c7f0c945f1f2862",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md": {
+    "mtime": 1790755971.2612782,
+    "seen": 1790756614.4244094,
+    "ast_hash": "6ff04feaad6ad38657d76b4328187758",
     "semantic_hash": ""
   }
 }
