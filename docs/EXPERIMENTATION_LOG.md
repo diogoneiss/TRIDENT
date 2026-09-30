@@ -54,7 +54,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 | done | N never worse than A, better on 2/4 and better than no pre-training on 3/4; V helps only on pendigits |
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
 | E27 | Stopping the decode stage on a validation plateau | 2026-09-30 –  | in progress | pending |
-| E28 | Batch 1024 with a scaled learning rate | 2026-09-30 –  | in progress | pending |
+| E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 
 ## Entries
 
@@ -801,16 +801,24 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/04-decode-early-stopping.md`;
   `scripts/experiments/decode_patience_batch_report.py`.
 
-### E28 · Batch 1024 with a scaled learning rate (2026-09-30 – )
+### E28 · Batch 1024 with a scaled learning rate (2026-09-30)
 
-- **Status:** in progress (gorgona8, beside E27; same cutoff).
+- **Status:** done, 13:16–15:27 GMT-3, all 24 cells.
 - **Hypothesis:** a four times larger batch runs an epoch 1.55x–2.1x faster; with both learning
   rates scaled by the square-root (x2) or linear (x4) rule it may keep M's scores.
 - **Scenarios:** arms Q2 and Q4 = M with `BATCH` 1024 and `LR_PRE`, `LR_DECODE` x2 or x4, against
   M (E26); four variants, seeds 42, 7, 13. Tag `experiment=larger-batch-2026-09-30`.
 - **Measures and decision rule:** primary Q2 − M and Q4 − M, as in E27; secondary Q4 − Q2,
   masked, best baseline, fold time per cell.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (induced, 15 fold pairs; negative favours the larger batch):** Q2 − M:
+  credit-g_20nan −0.0033, none; credit-g_80nan +0.0146, none; kr-vs-kp +0.0115, **M better**;
+  pendigits −0.0035, **Q2 better**. Q4 − M: credit-g_20nan +0.0190, **M better**;
+  credit-g_80nan +0.0095, none; kr-vs-kp +0.0012, none; pendigits −0.0107, **Q4 better** (0.323,
+  the best pendigits score yet). Fold time per cell falls by about 40% on pendigits and 25% on
+  kr-vs-kp (descriptive).
+- **Conclusion:** the gain depends on how many steps an epoch keeps: batch 1024 leaves one step
+  an epoch on credit-g, three on kr-vs-kp, eight on pendigits, and only pendigits gains. No
+  single rule is safe across tables; a per-variant batch or a steps-aware rule would be the
+  next question.
 - **Sources:** `docs/tickets/imputation-pretraining/05-larger-batch.md`;
   `scripts/experiments/decode_patience_batch_report.py`.
