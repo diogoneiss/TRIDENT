@@ -52,6 +52,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E23 | Induced validation objective on the other six variants | 2026-09-28 – 2026-09-29 | stopped early | better on 2 of 6, level on 2, worse on 2; never beats the best baseline |
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
 | E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 –  | in progress | pending |
+| E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 –  | in progress | pending |
 
 ## Entries
 
@@ -733,3 +734,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/02-pretraining-objectives.md`;
   `docs/adr/0011-selectable-pretraining-objective.md`;
   `scripts/experiments/pretrain_objective_report.py`.
+
+### E26 · Normalised-target pre-training with a long decode stage (2026-09-30 – )
+
+- **Status:** in progress (overnight on gorgona8 beside E25; no cell starts after 06:30 GMT-3).
+- **Hypothesis:** the two partial wins of the night might add up: the long decode stage (arm C,
+  450 epochs, best on pendigits in E24) and the normalised embedding objective (N, better than
+  the current objective on pendigits and credit-g_80nan in E25's first cells). Motivation post
+  hoc, design fixed before launch.
+- **Scenarios:** arm M = `embedding_normalized` pre-training 300 epochs + decode 450, against C
+  (0 + 450) and N (300 + 150), all on gorgona8; four variants, seeds 42, 7, 13; 12 new cells
+  tagged `experiment=pretrain-decode-budget-2026-09-30`.
+- **Measures and decision rule:** primary M − C on `impute/induced/impute_score`, 15 fold pairs,
+  verdict only when the interval excludes zero and all three seeds agree in sign; secondary
+  M − N, masked cells, best baseline. M trains 750 epochs against C's 450, so "M better"
+  confounds objective and budget.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md`;
+  `scripts/experiments/pretrain_decode_budget_report.py`.
