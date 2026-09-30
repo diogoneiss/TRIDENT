@@ -110,4 +110,10 @@ imputers are identical to the last value with 1, 4 and 32 threads (`credit-g_20n
 `pendigits_20nan`, fold 1, seed 42; `baseline_threads.py` in the night's state folder), and
 the model trains on the GPU, so no score depends on the thread count. Both queues were
 stopped between cells and relaunched with `OMP_NUM_THREADS`, `MKL_NUM_THREADS` and
-`OPENBLAS_NUM_THREADS` at 4. Cost stays descriptive only, as stated above.
+`OPENBLAS_NUM_THREADS` at 4 (now set by the launcher). Cost stays descriptive only, as stated
+above. At the same stop, `df5b353` was merged: the decoder indexes each column by its hidden
+rows, found once per batch, instead of by a boolean mask that synchronises with the device per
+column. It selects the same cells in the same order; the check cell (`credit-g_20nan` s42 B,
+GPU) still gives induced 0.9164988203285273 and masked 0.9326723085964879, and a three-fold
+CPU run matches the old code on all 56 fold metrics. Cells finished before the stop: A and N
+at `credit-g_20nan` seeds 42 and 7.

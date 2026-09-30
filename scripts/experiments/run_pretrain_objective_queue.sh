@@ -7,6 +7,10 @@
 # resumes. Stop between cells: touch <state_dir>/STOP. No cell starts after the
 # pre-registered cutoff, 06:30 GMT-3 on 2026-09-30 (09:30 UTC).
 set -u
+# Two trainers fit the baseline imputers at once; at 32 threads each they oversubscribe the
+# 32 cores and stall. Their fills are identical at 1, 4 and 32 threads (ticket 02, note).
+export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}" MKL_NUM_THREADS="${MKL_NUM_THREADS:-4}"
+export OPENBLAS_NUM_THREADS="${OPENBLAS_NUM_THREADS:-4}"
 QUEUE="$1"
 STATE="$2"
 ROOT="$(pwd)"
