@@ -46,6 +46,11 @@ generalise worse than the defaults (masked 0.926 against 0.896 at 20nan), which 
 thousand-row validation split affords. The protocol is single-seed and paired, so seed
 variability is not quantified. The promoted files remain as the record of the studies;
 whether later `--task imputation` runs should keep reading them is a separate decision.
+**Decided 2026-09-30 for `credit-g_20nan`:** its file is removed, so its imputation runs
+load the defaults again. Across seeds it was worse than the defaults (review addendum
+§ 8.11, paired by seed +0.0158, p ≈ 0.008; E17 in the experimentation log), and the
+best-induced trial did not beat the defaults either (§ 8.14). The file is in git history at
+`fcaadfb`; runs that read it say so in their `config_source` param. The other five files stay.
 Per-study winners and importances are on
 [execution ticket 05](../tickets/imputation-optuna-reduced/issues/05-launcher-and-studies.md).
 Running the comparison also surfaced backlog B5 (an induced cell whose category the

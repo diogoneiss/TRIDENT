@@ -431,8 +431,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   credit-g_40nan stays at "hold" (the extension past the stopping seed does not count);
   kr-vs-kp_20nan "sign-consistent and **not significant**". Under cosine the sign follows where
   the selector's pick landed, which is a lottery. Recommended (reversible): stop reading
-  `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`. Not done as of 2026-09-29:
-  the file is still tracked.
+  `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`. Done 2026-09-30 at the
+  user's request (ADR 0005 § Outcome); every run of E24–E26 on credit-g_20nan still read it.
 - **Sources:** addendum § 8.11–8.13. Commit `05c6595`.
 
 ### E18 · Control: the best-induced trial scored five-fold (2026-09-18)
