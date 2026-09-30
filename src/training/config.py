@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .types import (
+    DEFAULT_BASELINE_CACHE_DIR,
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
     PRETRAINING_OBJECTIVES,
@@ -135,6 +136,9 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
             # Programmatic only (set by opt.py), like ``hyperparams_override``.
             tracking_run_role=getattr(args, "mlflow_run_role", None) or "parent",
             tracking_tags=dict(getattr(args, "mlflow_tags", None) or {}),
+            baseline_cache_dir=(
+                None if getattr(args, "no_baseline_cache", False) else DEFAULT_BASELINE_CACHE_DIR
+            ),
         ),
         seed=getattr(args, "seed", 42),
         cv_folds=getattr(args, "cv_folds", None),
@@ -238,6 +242,14 @@ def build_training_parser() -> argparse.ArgumentParser:
         "--disable_mirror",
         action="store_true",
         help="Do not mirror the finished run into TRIDENT/mirror/<task> (ADR 0006).",
+    )
+    parser.add_argument(
+        "--no_baseline_cache",
+        action="store_true",
+        help=(
+            "Compute the baseline imputers' scores every time instead of reusing the ones "
+            "cached under results/baseline_cache/ for the same fold and cells."
+        ),
     )
     parser.add_argument("--plot_losses", action="store_true")
     parser.add_argument("--save_model", action="store_true")

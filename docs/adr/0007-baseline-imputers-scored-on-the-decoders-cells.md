@@ -217,6 +217,21 @@ the `impute/masked/...` family reads the same way. `baseline/mean_mode/impute_sc
   summary, where the per-run choice is available, which removes the objection
   (decision 8).
 
+10. **The baselines' scores are cached across runs that share a fold (added 2026-09-30,
+    the user's decision).** They never depend on the model, so every arm of a study and every
+    trial of a search computed the same numbers: 3.6 to 9.1 s per fold, up to 38% of a
+    credit-g_20nan cell. `src/training/baseline_cache.py` keys a file under
+    `results/baseline_cache/` (a fixed path from the checkout root, never a run's own output
+    directory) on a hash of everything that enters the computation: the machine, the
+    scikit-learn, pandas and numpy versions, the source of `imputation_baselines.py` and
+    `imputation_metrics.py`, the training and test frames, the scored cells' positions,
+    kinds and truths (never the model's guesses), the naive baselines and the column lists.
+    The imputers are fit only when some population misses. `--no_baseline_cache` turns it
+    off; an imputation parent carries `baseline_cache=on|off`, provenance only and not
+    backfilled, since a hit is the computation. Checked: the pre-training ablation's check
+    cell (`credit-g_20nan` s42 B, GPU) gives all 57 fold columns identical with the cache
+    empty and full (96.5 s, then 49.0 s).
+
 ## Consequences
 
 - Twenty more keys per scored population per fold (`test/...`), 140 per population on a

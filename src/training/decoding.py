@@ -6,6 +6,8 @@ and selects its checkpoint on a validation mask that never changes so that the l
 only when the model does. See ADR 0004.
 """
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import torch
@@ -17,7 +19,7 @@ from src.models import TridentDecoder
 from src.utils import preprocess_table
 
 from .data import evaluation_mask, in_variant_dtypes
-from .imputation_baselines import fit_baseline_imputers, score_baselines
+from .baseline_cache import BaselineScorer
 from .imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import (
@@ -43,6 +45,7 @@ def train_and_evaluate_decoder(
     complete_sibling: pd.DataFrame | None = None,
     score_null_path: bool = False,
     score_search_objective: bool = False,
+    baseline_cache_dir: Path | None = None,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -138,9 +141,11 @@ def train_and_evaluate_decoder(
     )
     # The baseline imputers, fit on this same training split, scored later on exactly
     # the cells the model is scored on (ADR 0007). Their numbers say whether the bar the
-    # ranking score divides by is low, and whether a plain tabular imputer clears it.
-    baseline_imputers = fit_baseline_imputers(
-        train_frame, dataset.numerical_columns, dataset.categorical_columns
+    # ranking score divides by is low, and whether a plain tabular imputer clears it. They
+    # never depend on the model, so a run that shares this fold reuses them from the cache,
+    # and the imputers are fit only if some population is not there.
+    baseline_scorer = BaselineScorer(
+        train_frame, dataset.numerical_columns, dataset.categorical_columns, baseline_cache_dir
     )
     hidden_test = embedder.encode(
         evaluation_mask(test_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal), device
@@ -159,7 +164,7 @@ def train_and_evaluate_decoder(
     metrics.update({f"impute/masked/{name}": value for name, value in scored.metrics.items()})
     # Scored here, while ``cells`` holds the masked population alone: the induced cells
     # are appended to it further down.
-    masked_baselines = score_baselines(baseline_imputers, test_frame, cells, baselines)
+    masked_baselines = baseline_scorer.score(test_frame, cells, baselines)
     metrics.update(
         {f"impute/masked/{name}": value for name, value in masked_baselines.metrics.items()}
     )
@@ -188,9 +193,7 @@ def train_and_evaluate_decoder(
         metrics.update(
             {
                 f"{prefix}/{name}": value
-                for name, value in score_baselines(
-                    baseline_imputers, test_frame, at_rate, baselines
-                ).metrics.items()
+                for name, value in baseline_scorer.score(test_frame, at_rate, baselines).metrics.items()
             }
         )
 
@@ -205,7 +208,7 @@ def train_and_evaluate_decoder(
         )
         # The induced cells are the frame's own gaps, so the mask adds nothing here; one
         # code path for both populations all the same.
-        induced_baselines = score_baselines(baseline_imputers, test_frame, induced, baselines)
+        induced_baselines = baseline_scorer.score(test_frame, induced, baselines)
         metrics.update(
             {f"impute/induced/{name}": value for name, value in induced_baselines.metrics.items()}
         )

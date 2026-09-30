@@ -413,3 +413,16 @@ def test_an_unknown_pretraining_objective_is_refused() -> None:
         )
     with pytest.raises(ValueError, match="Unknown pre-training objective"):
         Hyperparameters.from_mapping({"PRETRAIN_OBJECTIVE": "contrastive"})
+
+
+def test_imputation_runs_share_the_baseline_cache_unless_told_not_to() -> None:
+    """The cache lives at a fixed path under the checkout, never under a run's own output
+    directory, which every study runner sets per cell."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation", "--output_dir", "cell/42"]
+
+    shared = resolve_training_request(parser.parse_args(imputation))
+    off = resolve_training_request(parser.parse_args([*imputation, "--no_baseline_cache"]))
+
+    assert shared.runtime.baseline_cache_dir == Path("results") / "baseline_cache"
+    assert off.runtime.baseline_cache_dir is None

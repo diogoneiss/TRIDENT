@@ -25,6 +25,11 @@ DEFAULT_LR_SCHEDULER = "cosine_legacy"
 PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_normalized")
 DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
 
+# Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
+# checkout root every run starts from (ADR 0009). Never under a run's own output directory:
+# the study runners give every cell its own, and a cache there would never be shared.
+DEFAULT_BASELINE_CACHE_DIR = Path("results") / "baseline_cache"
+
 # Tasks a training request can run (ADR 0004). ``classification`` is every run before
 # that decision, so it stays the default; ``imputation`` trains the decode stage in
 # place of the classifier. Each task declares the fold-ranking metric and the
@@ -252,6 +257,10 @@ class RuntimeOptions:
     # user's explicit decision; ``--disable_mirror`` turns it off, and so does disabling
     # tracking, since there is then nothing to mirror.
     mirror_runs: bool = True
+    # Where an imputation run reads and writes the baseline imputers' cached scores
+    # (``src/training/baseline_cache.py``); None, from ``--no_baseline_cache``, computes
+    # them every time. On by the user's decision of 2026-09-30: a hit is the computation.
+    baseline_cache_dir: Path | None = DEFAULT_BASELINE_CACHE_DIR
 
     def __post_init__(self) -> None:
         if self.tracking_run_role not in TRACKING_RUN_ROLES:

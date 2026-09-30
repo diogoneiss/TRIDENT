@@ -66,6 +66,10 @@ SEARCH_OBJECTIVE_BACKFILLED_TAG = "search_objective_backfilled"
 # PRETRAIN_OBJECTIVE_BACKFILLED_TAG.
 PRETRAIN_OBJECTIVE_TAG = "pretrain_objective"
 PRETRAIN_OBJECTIVE_BACKFILLED_TAG = "pretrain_objective_backfilled"
+# Whether an imputation run could reuse cached baseline-imputer scores ("on") or computed
+# them all ("off"). Provenance only: a hit is the computation, so no comparison reads it and
+# runs recorded before it are not backfilled.
+BASELINE_CACHE_TAG = "baseline_cache"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

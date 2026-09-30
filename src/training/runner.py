@@ -6,7 +6,7 @@ from typing import Mapping
 import pandas as pd
 import torch
 
-from src.mlflow_utils import PRETRAIN_OBJECTIVE_TAG
+from src.mlflow_utils import BASELINE_CACHE_TAG, PRETRAIN_OBJECTIVE_TAG
 from src.utils import set_global_seed
 
 from .artifacts import ArtifactWriter
@@ -91,6 +91,11 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         extra_tags={
             **request.runtime.tracking_tags,
             PRETRAIN_OBJECTIVE_TAG: request.hyperparameters.pretraining_objective,
+            **(
+                {BASELINE_CACHE_TAG: "off" if request.runtime.baseline_cache_dir is None else "on"}
+                if task.name == "imputation"
+                else {}
+            ),
         },
         task=task.name,
         config_source=request.config_source,
@@ -124,6 +129,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         complete_sibling=complete_sibling,
                         score_null_path=request.score_null_path,
                         score_search_objective=request.score_search_objective,
+                        baseline_cache_dir=request.runtime.baseline_cache_dir,
                     )
                 else:
                     finetuning = train_and_evaluate_classifier(
