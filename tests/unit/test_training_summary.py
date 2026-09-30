@@ -8,7 +8,7 @@ from src.training.summary import (
     stage_timing_metrics,
     summarize_cross_validation,
 )
-from src.training.types import FoldResult, FoldTrackingRecord, LoggedMetric
+from src.training.types import FoldResult, FoldTrackingRecord, LoggedMetric, task_spec
 
 
 def _record(fold: int, f1_macro: float) -> FoldTrackingRecord:
@@ -214,3 +214,48 @@ def test_a_stage_only_some_folds_ran_is_still_refused() -> None:
     """Folds that disagree about whether a stage ran are not comparable, as before."""
     with pytest.raises(ValueError, match="pretrain/train_loss"):
         summarize_cross_validation([_without_pretraining(_record(1, 0.4)), _record(2, 0.8)])
+
+
+def _stopped_at(fold: int, epochs: int, stage: str = "decode") -> FoldTrackingRecord:
+    """An imputation fold whose decode stage stopped after ``epochs`` epochs (--decode_patience)."""
+    losses = tuple(
+        LoggedMetric(key, 10.0 * fold + step, step)
+        for step in range(epochs)
+        for key in (f"{stage}/train_loss", f"{stage}/val_loss")
+    )
+    return FoldTrackingRecord(
+        result=FoldResult(
+            fold,
+            "credit-g_20nan",
+            {"impute/masked/impute_score": 0.9 + 0.01 * fold, "f1_macro": 0.5, "accuracy": 0.5},
+        ),
+        metric_events=(
+            LoggedMetric("pretrain/train_loss", 1.0 + fold, 0),
+            LoggedMetric("pretrain/val_loss", 2.0 + fold, 0),
+            *losses,
+        ),
+        artifacts=(),
+    )
+
+
+def test_folds_that_stopped_at_different_epochs_share_the_bands_they_reached() -> None:
+    """With early stopping each fold decodes for its own number of epochs. A band averages
+    the folds that reached its step, and a step only one fold reached has no interval."""
+    imputation = task_spec("imputation")
+    summary = summarize_cross_validation(
+        [_stopped_at(1, 3), _stopped_at(2, 5), _stopped_at(3, 5)], imputation
+    )
+
+    bands = summary.loss_bands["decode/val_loss"]
+    assert [band.step for band in bands] == [0, 1, 2, 3, 4]
+    assert bands[0].mean == pytest.approx((10.0 + 20.0 + 30.0) / 3)
+    assert bands[3].mean == pytest.approx((23.0 + 33.0) / 2)
+
+    lonely = summarize_cross_validation([_stopped_at(1, 2), _stopped_at(2, 4)], imputation)
+    assert [band.step for band in lonely.loss_bands["decode/val_loss"]] == [0, 1]
+
+
+def test_only_the_decode_stage_may_end_folds_at_different_epochs() -> None:
+    """No other stage stops early, so a ragged pre-training or fine-tuning curve is a bug."""
+    with pytest.raises(ValueError, match="steps"):
+        summarize_cross_validation([_stopped_at(1, 3, "finetune"), _stopped_at(2, 5, "finetune")])

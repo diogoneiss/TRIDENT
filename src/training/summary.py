@@ -237,6 +237,10 @@ def _summarize_metric(values: Sequence[float]) -> MetricSummary:
     )
 
 
+# The one stage that can stop early, so its folds may end at different epochs.
+EARLY_STOPPED_STAGE = "decode/"
+
+
 def _summarize_loss_bands(
     records: Sequence[FoldTrackingRecord], task: TaskSpec
 ) -> Mapping[str, Sequence[LossBand]]:
@@ -247,19 +251,25 @@ def _summarize_loss_bands(
     for key in loss_keys:
         if not all(events[key] for events in fold_events):
             raise ValueError(f"Loss events must include {key!r}.")
-    reference_steps = {key: set(fold_events[0][key]) for key in loss_keys}
-    for events_by_key in fold_events:
-        for key in loss_keys:
-            if set(events_by_key[key]) != reference_steps[key]:
+    # Folds must log the same steps, except that a decode stage stopped early
+    # (``--decode_patience``) ends each fold at its own epoch: each fold's steps must then be
+    # the first ones of the longest fold's, a band averages the folds that reached its step,
+    # and a step fewer than two folds reached has no interval to show. Any other difference
+    # makes the folds incomparable.
+    bands: dict[str, tuple[LossBand, ...]] = {}
+    for key in loss_keys:
+        steps = sorted(set().union(*(events_by_key[key] for events_by_key in fold_events)))
+        for events_by_key in fold_events:
+            reached = sorted(events_by_key[key])
+            ragged_allowed = key.startswith(EARLY_STOPPED_STAGE)
+            if reached != (steps[: len(reached)] if ragged_allowed else steps):
                 raise ValueError(f"Loss events for {key!r} must have matching steps across folds.")
-
-    return {
-        key: tuple(
-            _loss_band(step, [events_by_key[key][step] for events_by_key in fold_events])
-            for step in sorted(reference_steps[key])
-        )
-        for key in loss_keys
-    }
+        at_step = [
+            (step, [events_by_key[key][step] for events_by_key in fold_events if step in events_by_key[key]])
+            for step in steps
+        ]
+        bands[key] = tuple(_loss_band(step, values) for step, values in at_step if len(values) >= 2)
+    return bands
 
 
 def _loss_events_by_key(
