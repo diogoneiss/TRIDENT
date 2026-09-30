@@ -455,3 +455,30 @@ def test_the_search_also_scores_the_validation_splits_own_gaps() -> None:
     assert metrics["validation/impute/masked/impute_score"] == without_truth.result.metrics[
         "validation/impute/masked/impute_score"
     ]
+
+
+def test_the_decode_stage_stops_once_validation_has_not_improved_for_its_patience() -> None:
+    """With nothing to learn (a zero learning rate) the validation loss never improves on
+    its first epoch, so a patience of three trains four epochs and keeps the first."""
+    outcome, tracker = _run(
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=20, LR_DECODE=0.0, DECODE_PATIENCE=3)
+    )
+
+    assert len(outcome.train_losses) == 4
+    assert outcome.result.metrics["decode/epochs_trained"] == 4
+    logged = [event.step for event in tracker.metric_events if event.key == "decode/val_loss"]
+    assert logged == [0, 1, 2, 3]
+
+
+def test_a_patience_that_never_runs_out_changes_nothing() -> None:
+    """Early stopping is only a way to end the loop: a run it never stops is the run
+    without it, to the last digit."""
+    np.random.seed(0)
+    without, _ = _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=6))
+    np.random.seed(0)
+    patient, _ = _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_PATIENCE=100))
+
+    assert list(patient.train_losses) == list(without.train_losses)
+    shared = {k: v for k, v in without.result.metrics.items()}
+    assert {k: patient.result.metrics[k] for k in shared} == shared
+    assert "decode/epochs_trained" not in without.result.metrics

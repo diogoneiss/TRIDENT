@@ -145,6 +145,10 @@ class Hyperparameters:
     # Weight on the numerical reconstruction term, each term already averaged over its own
     # hidden cells.
     lambda_num: float = 1.0
+    # Stop the decode stage once its validation loss has not improved for this many epochs;
+    # 0, every run before it existed, trains every epoch. The checkpoint is the best epoch
+    # either way, and the schedule still spans the configured epochs.
+    decode_patience: int = 0
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -159,6 +163,8 @@ class Hyperparameters:
                 f"Unknown learning-rate scheduler {self.lr_scheduler!r}; "
                 f"expected one of {', '.join(LR_SCHEDULER_NAMES)}"
             )
+        if self.decode_patience < 0:
+            raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
         if self.pretraining_objective not in PRETRAINING_OBJECTIVES:
             raise ValueError(
                 f"Unknown pre-training objective {self.pretraining_objective!r}; "
@@ -208,6 +214,7 @@ class Hyperparameters:
                 values.get("WEIGHT_DECAY_DECODE", values.get("decode_weight_decay", 0.0019))
             ),
             lambda_num=float(values.get("LAMBDA_NUM", values.get("lambda_num", 1.0))),
+            decode_patience=int(values.get("DECODE_PATIENCE", values.get("decode_patience", 0))),
             eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
             eval_mask_rates_extra=tuple(
                 float(rate)

@@ -269,6 +269,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
+        "DECODE_PATIENCE",
     }
 
 
@@ -426,3 +427,22 @@ def test_imputation_runs_share_the_baseline_cache_unless_told_not_to() -> None:
 
     assert shared.runtime.baseline_cache_dir == Path("results") / "baseline_cache"
     assert off.runtime.baseline_cache_dir is None
+
+
+def test_decode_patience_is_off_unless_an_imputation_run_asks_for_it() -> None:
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation))
+    from_flag = resolve_training_request(parser.parse_args([*imputation, "--decode_patience", "50"]))
+    flag_over_mapping = resolve_training_request(
+        Namespace(dataset_name="credit-g_20nan", hyperparams_override={"DECODE_PATIENCE": 20}, decode_patience=50)
+    )
+
+    assert default.hyperparameters.decode_patience == 0
+    assert from_flag.hyperparameters.decode_patience == 50
+    assert flag_over_mapping.hyperparameters.decode_patience == 50
+    with pytest.raises(SystemExit, match="decode_patience"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_patience", "5"]))
+    with pytest.raises(ValueError, match="patience"):
+        Hyperparameters(decode_patience=-1)

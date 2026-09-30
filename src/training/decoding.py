@@ -90,6 +90,7 @@ def train_and_evaluate_decoder(
     validation_losses: list[float] = []
     best_validation_loss = float("inf")
     best_state = None
+    best_epoch = 0
 
     print("\n=== Starting Decoding (reconstructing hidden cells) ===")
     for epoch in tqdm(range(hyperparameters.decode_epochs), desc="Decode epochs"):
@@ -130,6 +131,10 @@ def train_and_evaluate_decoder(
         if validation_losses[-1] < best_validation_loss:
             best_validation_loss = validation_losses[-1]
             best_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
+            best_epoch = epoch
+        # Early stopping only ends the loop: the checkpoint is the best epoch either way.
+        if hyperparameters.decode_patience and epoch - best_epoch >= hyperparameters.decode_patience:
+            break
 
     if best_state is not None:
         model.load_state_dict(best_state)
@@ -160,6 +165,8 @@ def train_and_evaluate_decoder(
     )
 
     metrics: dict[str, float | int | str] = {}
+    if hyperparameters.decode_patience:
+        metrics["decode/epochs_trained"] = len(train_losses)
     scored = score_cells(cells, baselines)
     metrics.update({f"impute/masked/{name}": value for name, value in scored.metrics.items()})
     # Scored here, while ``cells`` holds the masked population alone: the induced cells

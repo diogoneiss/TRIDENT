@@ -70,6 +70,11 @@ PRETRAIN_OBJECTIVE_BACKFILLED_TAG = "pretrain_objective_backfilled"
 # them all ("off"). Provenance only: a hit is the computation, so no comparison reads it and
 # runs recorded before it are not backfilled.
 BASELINE_CACHE_TAG = "baseline_cache"
+# The decode stage's early-stopping patience on an imputation run, "0" when it trains every
+# epoch. On every imputation parent and trial; runs recorded before it are stamped "0" by
+# ``scripts/backfill_decode_patience_tag.py`` and marked DECODE_PATIENCE_BACKFILLED_TAG.
+DECODE_PATIENCE_TAG = "decode_patience"
+DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

@@ -35,6 +35,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     lr_scheduler = getattr(args, "lr_scheduler", None)
     if lr_scheduler is not None:
         hyperparameters = dataclasses.replace(hyperparameters, lr_scheduler=lr_scheduler)
+    # ``--decode_patience`` wins the same way.
+    decode_patience = getattr(args, "decode_patience", None)
+    if decode_patience is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_patience=decode_patience)
     # ``--pretrain_objective`` wins the same way (ADR 0011).
     pretraining_objective = getattr(args, "pretrain_objective", None)
     if pretraining_objective is not None:
@@ -111,6 +115,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "WEIGHT_DECAY_DECODE": values.decode_weight_decay,
             "LAMBDA_NUM": values.lambda_num,
             "EVAL_MASK_RATE": values.eval_mask_rate,
+            "DECODE_PATIENCE": values.decode_patience,
         }
     return {
         **shared,
@@ -195,6 +200,13 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     ):
         raise SystemExit("error: --search_space reduced requires --task imputation")
 
+    # Only imputation has a decode stage to stop early.
+    if (
+        getattr(args, "decode_patience", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --decode_patience requires --task imputation")
+
     # Only imputation has validation populations to choose between; classification ranks
     # by macro F1 (ADR 0008). Refused here rather than mid-study.
     if (
@@ -263,6 +275,16 @@ def build_training_parser() -> argparse.ArgumentParser:
         help=(
             "Learning-rate schedule for both training stages. Overrides LR_SCHEDULER from the "
             "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003)."
+        ),
+    )
+    parser.add_argument(
+        "--decode_patience",
+        type=int,
+        default=None,
+        help=(
+            "Imputation only: stop the decode stage once its validation loss has not improved "
+            "for this many epochs, keeping the best epoch. Overrides DECODE_PATIENCE from the "
+            "hyperparameter file. Default: 0, every epoch trains."
         ),
     )
     parser.add_argument(
