@@ -118,6 +118,29 @@ M spends 750 epochs against C's 450, a confound stated in advance; N − C on kr
   needs to chase it.
 - The night's runs inherited nice 5 from the background session; harmless on an idle box.
 
+### Measured the morning after (for decisions 3–5)
+
+Scripts and raw outputs: `/scratch2/diogoneiss/trident-night-2026-09-30/analysis/`.
+
+- **Where the best decode epoch falls** (`decode/val_loss`, per-fold curves exist only on the
+  best and worst fold children, so this is a biased sample of 6 curves per cell set). With 450
+  decode epochs, the median best epoch is 9–87 on credit-g and kr-vs-kp, but about 390 on
+  pendigits, whose 150-epoch runs are still improving at epochs 137–143. Early stopping with
+  patience 50 would save 73–86% of the decode epochs on credit-g and kr-vs-kp while keeping
+  every 150-epoch run's checkpoint. On pendigits it saves 3–18%, and patience 20 or less
+  loses the long decode's gain (kept checkpoint 14–17% worse in validation loss). Caveat: the
+  cosine schedule spans the full epoch count, so a run re-budgeted to stop early would follow
+  another path.
+- **Baseline imputers per fold** (fit plus masked and induced scoring, 4 threads): credit-g_20nan
+  9.1 s, credit-g_80nan 3.6 s, kr-vs-kp_40nan 8.9 s, pendigits_20nan 6.5 s. As a share of a
+  cell's fold time: credit-g_20nan 18–38%, credit-g_80nan 5–19%, kr-vs-kp 4–18%, pendigits
+  1.5–7%. The `hgb` fit dominates everywhere but pendigits (82–96%); on pendigits the two KNN
+  scorings are half of it.
+- **Batch size, GPU batch loop only, idle GPU:** pendigits 384 / 264 / 187 ms per epoch at
+  256 / 512 / 1024 (2.1x at 1024), kr-vs-kp 151 / 125 / 97 ms (1.55x). The batch loop is about
+  70% of a pendigits decode epoch, so 1024 would cut a pendigits C cell by about a third. It
+  also means 2–4x fewer updates per epoch, so the learning rate would need retuning.
+
 ## 6. Decisions for you
 
 1. **Was the 23:35 message the authorisation I took it for?** I read "study improving the
