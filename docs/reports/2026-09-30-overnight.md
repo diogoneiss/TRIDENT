@@ -61,9 +61,11 @@ integration fixtures pass.
   `scripts/backfill_pretrain_objective_tag.py`: applied at 05:02–05:22 GMT-3 after a
   replica sync and a backup (`/scratch2/diogoneiss/mlflow.db.bak-2026-09-30-pretrain-objective`,
   4163 runs): 1456 parent and trial runs stamped `embedding` and re-mirrored; a second dry run
-  finds nothing. Side effect: re-mirroring the tree of the interrupted pendigits s42 C run
-  (`FAILED`, ADR 0006 mirrors only finished runs) created a `FAILED` mirror of it in
-  `TRIDENT/mirror/imputation`; every report ignores it (FINISHED, non-mirror runs only).
+  finds nothing. Re-mirroring also created a `FAILED` mirror of the interrupted pendigits
+  s42 C run in `TRIDENT/mirror/imputation`. That is ADR 0006 working as decided (decision 5:
+  "A `FAILED` source is mirrored with its status"; only the trainer's live path waits for a
+  normal finish); an earlier draft of this report said otherwise. Deleted at the user's
+  request later that morning; `scripts/mirror_runs.py --apply` would recreate it.
 - `71c6a9b`, `6dd07a5` **decoder: no per-column host synchronisation.** The same cells are
   selected in the same order; a three-fold CPU run gives all 56 fold metrics identical to the
   old code, and the ablation's GPU check cell gives induced 0.9164988203285273 before and after.
@@ -133,9 +135,10 @@ M spends 750 epochs against C's 450, a confound stated in advance; N − C on kr
    artifact to manage.
 6. **Carry-overs from the log:** remove `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`
    (E17: worse than the defaults, paired p ≈ 0.008); fix the `[NULL]`-path defect D-1 (E01).
-7. **Delete the `FAILED` mirror** of `impute_pendigits_20nan_20260930_005934` in the UI, and
-   should the backfill scripts' re-mirroring skip trees whose root did not finish (the
-   `search_objective` backfill shares the mechanism)?
+7. **Mirrors of `FAILED` runs** (answered 2026-09-30, then corrected): the mirror was deleted as
+   asked, but ADR 0006 mirrors failed runs by design, so no script was changed. Keep that
+   (the deleted mirror comes back at the next `mirror_runs.py --apply`), or amend ADR 0006
+   to stop mirroring failed runs in the script and the backfills?
 
 ## 7. State
 
