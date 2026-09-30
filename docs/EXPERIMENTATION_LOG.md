@@ -5,7 +5,7 @@ cross-machine checks), oldest first. Each entry summarises its ticket, ADR or re
 links to it; that source stays the contract and holds the full numbers. Scores are
 `impute_score` unless stated (lower is better, 1.0 = the mean/mode fill); intervals are 95%.
 
-Entries E01–E23 were written on 2026-09-30 from the existing records; from E24 on, each entry is
+Entries E01–E23 were written on 2026-09-29 (GMT-3) from the existing records; from E24 on, each entry is
 opened when the experiment is pre-registered and closed when it ends (see `CLAUDE.md`).
 
 ## Template
@@ -429,7 +429,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   credit-g_40nan stays at "hold" (the extension past the stopping seed does not count);
   kr-vs-kp_20nan "sign-consistent and **not significant**". Under cosine the sign follows where
   the selector's pick landed, which is a lottery. Recommended (reversible): stop reading
-  `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`. Not done as of 2026-09-30:
+  `datasets/hiperparams/credit-g/credit-g_20nan.imputation.json`. Not done as of 2026-09-29:
   the file is still tracked.
 - **Sources:** addendum § 8.11–8.13. Commit `05c6595`.
 
@@ -648,7 +648,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 ### E24 · What pre-training contributes to imputation (2026-09-29 – )
 
 - **Status:** in progress. 23 of 32 cells ran on the Windows RTX 3050 on 2026-09-29; the
-  remaining 10 run on gorgona8 (RTX 3090 Ti) from 2026-09-30 00:24, after the amendment below.
+  remaining 10 run on gorgona8 (RTX 3090 Ti) from 2026-09-29 21:24 GMT-3, after the amendment below.
 - **Hypothesis:** the pre-training stage adds little or nothing to imputation. It regresses
   onto the detached clean *embedding* of a masked cell, not its value; the critique found the
   resulting encoder worse than a per-column constant at that target and no detectable
@@ -667,13 +667,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   sign; the mirror case "hurts"; otherwise "no detectable difference". Secondary: masked
   cells the same way, each arm against the run's best baseline, wall time per arm (per
   machine). One pass, nothing rerun or extended on its result.
-- **Amendment 2026-09-30 (before the remaining cells):** a check cell (credit-g_20nan s42 B,
+- **Amendment 2026-09-29, 21:24 GMT-3 (before the remaining cells):** a check cell (credit-g_20nan s42 B,
   MLflow off) on the server gave induced 0.9165 vs Windows 0.9186 (per-fold sd of the gap
   0.044, mean −0.002); mean_mode/knn5/knn10 baselines identical, so folds and masks are
   shared across machines, and the model is another training draw on a different GPU.
   pendigits A/42 runs fresh on the server so its pairs stay on one machine; kr-vs-kp s13 is
   the one declared cross-machine pair (B, C Windows; A server).
-- **Results (partial, 2026-09-30, induced, B − A and C − A over 15 pairs):**
+- **Results (partial, 2026-09-29 21:45 GMT-3, induced, B − A and C − A over 15 pairs):**
 
   | variant | B − A | C − A | best baseline |
   |---|---|---|---|

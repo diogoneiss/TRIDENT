@@ -23,6 +23,10 @@ Every training invocation is a top-level MLflow run. Filter `tags.run_role = par
 
 The ticket stays the contract; the entry summarises it, copies its numbers, and links to it.
 
+## Times
+
+gorgona8's clock and its logs (`date`, `progress.log`, MLflow timestamps) run in UTC; the user reads GMT-3. Every time you report, in chat and in files you write (tickets, the experimentation log), is converted to GMT-3 and marked, e.g. `21:45 GMT-3`, including the date when the conversion crosses midnight.
+
 ## Background & full reference
 
 README.md — paper/method background (TabularEmbedder, pretraining/fine-tuning stages), complete CLI flag list, hyperparameter config schema, citation. Read it when asked about the paper, model architecture, or full CLI usage.

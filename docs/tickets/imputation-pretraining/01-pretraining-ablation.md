@@ -64,7 +64,7 @@ Four variants, three seeds, one configuration per variant. C equalises epochs, n
 steps or learning-rate schedules. A null result bounds what the current pre-training adds
 under this configuration; it does not show that no pre-training objective could help.
 
-## Amendment 2026-09-30: the remaining cells run on another machine
+## Amendment 2026-09-29 (21:24 GMT-3): the remaining cells run on another machine
 
 Written and committed before any of the remaining cells ran, after 23 of the 32 cells had
 finished on the Windows RTX 3050. The other ten run on the Linux server gorgona8
