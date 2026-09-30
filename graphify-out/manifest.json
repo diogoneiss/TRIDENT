@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1790726092.1109135,
-    "seen": 1790726114.5555422,
-    "ast_hash": "b1f08396cc0e4d943d2e3942bfdad000",
+    "mtime": 1790731373.9336057,
+    "seen": 1790731437.307357,
+    "ast_hash": "b24b21c31b210666354715f918665457",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -1134,21 +1134,21 @@
     "semantic_hash": ""
   },
   "scripts/sync_remote.py": {
-    "mtime": 1790726092.1109135,
-    "seen": 1790726114.5554795,
-    "ast_hash": "f26bc59e7f7a6283e1f3d45f3cc1fe66",
+    "mtime": 1790731043.2306542,
+    "seen": 1790731437.3073006,
+    "ast_hash": "c53b6d8c18f9bbc8fca4488afde64d58",
     "semantic_hash": ""
   },
   "tests/unit/test_sync_remote.py": {
-    "mtime": 1790725638.0990007,
-    "seen": 1790725771.1017148,
-    "ast_hash": "f84cbd80cbc7a01d661a1cd097d8bc89",
+    "mtime": 1790731067.3865807,
+    "seen": 1790731437.3073428,
+    "ast_hash": "0aa3134958aaa15f489dc39889cdcf49",
     "semantic_hash": ""
   },
   "docs/adr/0009-store-hand-off-to-a-remote-server.md": {
-    "mtime": 1790726092.1109135,
-    "seen": 1790726114.5555587,
-    "ast_hash": "570c21dc4a94e4cd421683d42ceb07b5",
+    "mtime": 1790731162.4372864,
+    "seen": 1790731437.3073723,
+    "ast_hash": "866ce00f77abff6bec5511b907796968",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-full/02-credit-g-80nan-induced-objective.md": {
@@ -1164,15 +1164,39 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-pretraining/01-pretraining-ablation.md": {
-    "mtime": 1790696040.9112272,
-    "seen": 1790712575.199817,
-    "ast_hash": "548b86176f086bd8ba40dd666d85a725",
+    "mtime": 1790729464.3679175,
+    "seen": 1790731437.30742,
+    "ast_hash": "d24548dce8f8e9810806a025b70482ff",
     "semantic_hash": ""
   },
   "start_mlflow.sh": {
     "mtime": 1790716366.8023953,
     "seen": 1790720674.1186552,
     "ast_hash": "d0855834948a96b9c6d50cd0ec58234f",
+    "semantic_hash": ""
+  },
+  "scripts/store_replica.py": {
+    "mtime": 1790731043.3736537,
+    "seen": 1790731437.3072994,
+    "ast_hash": "70ef8b50873c7afb9f55d18118a9d8ad",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_store_replica.py": {
+    "mtime": 1790731091.9995053,
+    "seen": 1790731437.3073416,
+    "ast_hash": "a667bba6be6e22cd8336f435655e4f54",
+    "semantic_hash": ""
+  },
+  "docs/EXPERIMENTATION_LOG.md": {
+    "mtime": 1790729464.3669176,
+    "seen": 1790731437.307364,
+    "ast_hash": "9c60d9fdda3688fd5dcd56ecd2fcb145",
+    "semantic_hash": ""
+  },
+  "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
+    "mtime": 1790731373.9336057,
+    "seen": 1790731437.307373,
+    "ast_hash": "d6d0467a348c200071ec4f4727217242",
     "semantic_hash": ""
   }
 }
