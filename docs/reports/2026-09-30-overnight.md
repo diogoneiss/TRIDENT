@@ -178,3 +178,30 @@ Scripts and raw outputs: `/scratch2/diogoneiss/trident-night-2026-09-30/analysis
 - Night folder (logs, per-cell results, the profiling and exactness scripts):
   `/scratch2/diogoneiss/trident-night-2026-09-30/`. The worktree
   `/scratch2/diogoneiss/TRIDENT-night` (branch `feat/pretrain-objective`, merged) can be removed.
+
+## Afternoon follow-up (2026-09-30)
+
+Decisions the user took after reading this report, and what was done:
+
+- Decision 3 (early stopping), then studied: `--decode_patience` (`521df3d`, the summary fix for
+  folds that stop at different epochs `a1d54a9`). **E27:** a patience of 50 keeps the scores on
+  credit-g_20nan, credit-g_80nan and kr-vs-kp with 61–107 of 450 decode epochs (a kr-vs-kp cell
+  18.5 → 4.9 min) and costs 0.006 on pendigits.
+- Decision 4 (larger batch), studied: **E28:** batch 1024 with scaled learning rates helps only
+  pendigits (x4: −0.011, 0.323, its best score yet) and hurts credit-g_20nan (x4) and kr-vs-kp
+  (x2); the small tables keep one and three steps an epoch at that batch.
+- Decision 5 (baseline cache), done: `8818f6d` (ADR 0007 decision 10), exact; a credit-g_20nan
+  B cell 96.5 → 49.0 s.
+- Decision 6, done: the promoted `credit-g_20nan` imputation file removed (`8954217`); the
+  `[NULL]`-path defect D-1 fixed (`918bcd6`) and the ADR 0004 gate re-measured, `[MASK]` 8 of 8.
+- Decision 7, done: `FAILED` runs are no longer mirrored (`a2a6a26`, ADR 0006 amended); the
+  eight existing `FAILED` mirrors deleted.
+- Both tag backfills applied: `pretrain_objective` (1456 runs) and `decode_patience` (1435 runs,
+  30 minutes of re-mirroring); a second dry run of each finds nothing.
+- **New exactness reference.** With `credit-g_20nan` back on the defaults, the check cell
+  (`pretrain_ablation_run.py credit-g_20nan 42 B ... --no-mlflow`) gives induced
+  0.8865289951105849 and masked 0.9198916682895757; the 0.9164988203285273 of the night belonged
+  to the removed file.
+
+Still open: whether the imputation default becomes `embedding_normalized`, and with which decode
+setting (150, 450, 450 with patience 50, or per variant).
