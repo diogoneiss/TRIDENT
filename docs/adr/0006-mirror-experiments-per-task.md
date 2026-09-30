@@ -138,7 +138,14 @@ Facts verified while deciding, against a read-only `mlflow.db` and the installed
    histories and inputs are replayed and deduplicated by the store, and status and end
    time are re-applied. A `RUNNING` source is skipped. A `FAILED` source is mirrored
    with its status. A source whose `lifecycle_stage` is `deleted`, or that no longer
-   exists, has its mirror deleted; a mirror deleted by hand is recreated. The script
+   exists, has its mirror deleted; a mirror deleted by hand is recreated.
+
+   **Amended 2026-09-30 (the user's decision): a `FAILED` source is no longer mirrored.**
+   It is treated like a deleted one: skipped with its subtree, and an existing mirror of
+   it is deleted, so a mirror experiment holds only runs that finished. The trainer's live
+   path already mirrored only a normal finish; the script and every backfill that
+   re-mirrors (they share `mirror_run_tree`) now agree with it. Found when the
+   `pretrain_objective` backfill re-mirrored the tree of an interrupted run. The script
    replays everything every time rather than detecting change; idempotency comes from
    the store, and the report is the evidence.
 

@@ -2,11 +2,11 @@
 """Mirror every run in every experiment family into ``TRIDENT/mirror/<task>`` (ADR 0006).
 
 The trainer mirrors a run tree live when its root closes; this script covers everything
-else: the runs recorded before mirroring existed, a run whose live mirror failed, a run
-that finished ``FAILED``, and any source that changed after it was mirrored. It is an
-upsert by replay, so running it twice is the same as running it once, and it reconciles
-in both directions: a source deleted from its family loses its mirror, and a mirror
-whose source no longer exists anywhere is deleted.
+else: the runs recorded before mirroring existed, a run whose live mirror failed, and any
+source that changed after it was mirrored. It is an upsert by replay, so running it twice
+is the same as running it once, and it reconciles in both directions: a source deleted
+from its family, or one that finished ``FAILED``, loses its mirror (ADR 0006, amended
+2026-09-30), and a mirror whose source no longer exists anywhere is deleted.
 
 Every active source that lacks the dense ``is_mirror`` tag is stamped ``false`` on the
 way, which is the backfill ADR 0006 calls for. Mirror experiments are never sources.

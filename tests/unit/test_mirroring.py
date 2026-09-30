@@ -221,12 +221,16 @@ def _bare_run(client: MlflowClient, experiment: str, tags: dict[str, str], statu
 
 def test_a_store_sync_mirrors_every_root_and_only_the_roots_that_finished(store, tmp_path) -> None:
     """The script's contract: every family is scanned, a ``RUNNING`` source waits, a
-    ``FAILED`` one is mirrored with its status, a deleted source loses its mirror, an
-    untagged source is stamped ``is_mirror=false``, and a mirror is never a source."""
+    ``FAILED`` one gets no mirror and loses any it had (ADR 0006, amended 2026-09-30), a
+    deleted source loses its mirror, an untagged source is stamped ``is_mirror=false``,
+    and a mirror is never a source."""
     _source_tree(tmp_path)
     client = MlflowClient(tracking_uri=store)
     running = _bare_run(client, "TRIDENT/vehicle", {"task": "classification"}, status="RUNNING")
     failed = _bare_run(client, "TRIDENT/vehicle", {"task": "classification"}, status="FAILED")
+    failed_later = _bare_run(client, "TRIDENT/vehicle", {"task": "classification", "is_mirror": "false"})
+    mirror_run_tree(client, failed_later)
+    client.set_terminated(failed_later, status="FAILED")
     doomed = _bare_run(client, "TRIDENT/kc2", {"task": "classification", "is_mirror": "false"})
     mirror_run_tree(client, doomed)
     client.delete_run(doomed)
@@ -238,10 +242,9 @@ def test_a_store_sync_mirrors_every_root_and_only_the_roots_that_finished(store,
     classification = _runs_of(client, "TRIDENT/mirror/classification")
     assert len(imputation) == 3
     active_classification = [run for run in classification if run.info.lifecycle_stage == "active"]
-    assert [run.data.tags["source_run_id"] for run in active_classification] == [failed]
-    assert active_classification[0].info.status == "FAILED"
+    assert active_classification == []
     assert report.skipped == [running]
-    assert report.deleted == [doomed]
+    assert sorted(report.deleted) == sorted([doomed, failed_later])
     assert sorted(report.stamped) == sorted([running, failed])
     assert client.get_run(failed).data.tags["is_mirror"] == "false"
     assert client.get_run(running).data.tags["is_mirror"] == "false"

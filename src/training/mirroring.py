@@ -160,7 +160,7 @@ def mirror_run_tree(
 
     Parents go first because a child's ``mlflow.parentRunId`` is rewritten to the parent's
     mirror, which has to exist by then. A ``RUNNING`` source is skipped with its subtree;
-    a deleted source has its mirror deleted. With ``apply`` off nothing is written and the
+    a deleted or ``FAILED`` source is skipped with its subtree and has its mirror deleted. With ``apply`` off nothing is written and the
     report says what would have been.
     """
     report = report if report is not None else MirrorReport()
@@ -205,7 +205,9 @@ def mirror_run(
     experiment_id = index.experiment_for(task, create=apply)
     existing = None if experiment_id is None else index.mirror_of(experiment_id, source_id)
 
-    if source.info.lifecycle_stage != "active":
+    # A deleted source loses its mirror, and so does one that failed: a mirror experiment
+    # holds only runs that finished (ADR 0006 decision 5, amended 2026-09-30).
+    if source.info.lifecycle_stage != "active" or source.info.status == "FAILED":
         if existing is not None and existing.info.lifecycle_stage == "active":
             if apply:
                 client.delete_run(existing.info.run_id)
