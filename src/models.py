@@ -196,34 +196,38 @@ class TridentDecoder(nn.Module):
         targets = self._as_encoded(targets, device)
         context = self._encode(hidden)
         mask = hidden.masked_positions  # (batch, n_columns), categorical then numerical
+        # How many cells each column hides, read to the host once per batch: the same
+        # selections in the same order as asking each column, without the two device
+        # synchronisations per column that asking costs.
+        hidden_per_column: list[int] = mask.sum(dim=0).tolist()
 
         categorical_loss = torch.zeros((), device=device)
         categorical_cells = 0
         for index, key in enumerate(self.embedder.categorical_keys):
-            selected = mask[:, index]
-            if not bool(selected.any()):
+            if hidden_per_column[index] == 0:
                 continue
+            selected = mask[:, index]
             logits = self.categorical_heads[key](context[selected, index, :])
             local_of = getattr(self, f"local_of_{key}")
             expected = local_of[targets.cat_indices[index][selected]]
             categorical_loss = categorical_loss + nn.functional.cross_entropy(
                 logits, expected, reduction="sum"
             )
-            categorical_cells += int(selected.sum())
+            categorical_cells += hidden_per_column[index]
 
         numerical_loss = torch.zeros((), device=device)
         numerical_cells = 0
         offset = len(self.embedder.categorical_keys)
         for index, key in enumerate(self.embedder.numerical_keys):
-            selected = mask[:, offset + index]
-            if not bool(selected.any()):
+            if hidden_per_column[offset + index] == 0:
                 continue
+            selected = mask[:, offset + index]
             predicted = self.numerical_heads[key](context[selected, offset + index, :]).squeeze(-1)
             expected = targets.num_values[index][selected]
             numerical_loss = numerical_loss + nn.functional.mse_loss(
                 predicted, expected, reduction="sum"
             )
-            numerical_cells += int(selected.sum())
+            numerical_cells += hidden_per_column[offset + index]
 
         if categorical_cells == 0 and numerical_cells == 0:
             return torch.zeros((), device=device, requires_grad=True), {}
