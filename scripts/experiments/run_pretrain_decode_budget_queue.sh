@@ -15,7 +15,8 @@ QUEUE="$1"
 STATE="$2"
 ROOT="$(pwd)"
 [ -f "$ROOT/train.py" ] || { echo "run from the checkout root" >&2; exit 2; }
-CUTOFF_UTC="2026-09-30 09:30:00"
+# Override for a later run, e.g. CUTOFF_UTC="2026-10-01 09:30:00"; past it no cell starts.
+CUTOFF_UTC="${CUTOFF_UTC:-2026-09-30 09:30:00}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$STATE/logs"
 P="$STATE/progress.log"

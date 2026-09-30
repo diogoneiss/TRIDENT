@@ -142,6 +142,13 @@ M spends 750 epochs against C's 450, a confound stated in advance; N − C on kr
 - Code and docs: `feat/imputation-task` at 57ec1e0 or later, pushed to GitHub. On Windows, `git pull`
   before any `sync_remote.py push` or `code`.
 - Store: on the SSD, the only copy written (ADR 0010); the replica is refreshed every 10 min.
+- The queue launchers stop at the night's cutoff (06:30 GMT-3 on 2026-09-30); to relaunch one
+  later, set `CUTOFF_UTC`, e.g. `CUTOFF_UTC="2026-10-01 09:30:00"`.
+- Removable when you are satisfied: the two store backups on `/scratch2`
+  (`mlflow.db.bak-2026-09-30-zombies`, `mlflow.db.bak-2026-09-30-pretrain-objective`, about
+  0.7 and 1 GB) and the merged worktree below.
+- The ablation's analysis script still lives outside the repo
+  (`~/trident-handoff-2026-09-29/kit/`); copy it into `scripts/experiments/`?
 - Night folder (logs, per-cell results, the profiling and exactness scripts):
   `/scratch2/diogoneiss/trident-night-2026-09-30/`. The worktree
   `/scratch2/diogoneiss/TRIDENT-night` (branch `feat/pretrain-objective`, merged) can be removed.
