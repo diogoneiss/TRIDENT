@@ -52,24 +52,20 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 Every full-profile winner used 4–6 layers (default 2); the feed-forward width (32) is narrower
 than the model width (128), against the usual ~4x; there is no final LayerNorm before the heads
 (handoff item 4). A study of `LAYERS` 4, `DIM_FEED` 256 and a final LayerNorm (behind a flag) on
-the candidate configuration. Cheaper after T04.
+the candidate configuration.
 
-### T04 · Pre-training cache — next
+### T18 · Decide whether `--decoder_heads batched` becomes the default — decision
 
-The baseline cache's idea applied to pre-training: studies that vary only the decode stage (E27,
-and T03's decode-side arms) repeat the same pre-training, 40–60% of a cell. Key on the
-configuration's pre-training part, seed, fold and data; store the encoder weights **and** the
-random-generator states after the stage (numpy, torch CPU and CUDA), or the decode draws would
-differ. Verify exactly as the baseline cache was (all fold columns identical, cache empty and
-full).
+Implemented 2026-09-30 (`c9be71f`) behind a flag: 1.4–1.6x faster a cell, equal to the
+per-column path up to rounding, so it is another training draw of the same model, like a run on
+another GPU. Flipping the default needs the user's decision; a small check (arm A or M on the
+four study variants, three seeds, batched against the existing per-column cells) would show "no
+detectable difference" if the regrouping changes nothing but the draw.
 
 ## Backlog
 
 ### Speed
 
-- **T05 · Batched per-column heads.** One batched matmul instead of one small kernel per column;
-  a step is launch-bound (~22 ms on pendigits). Rounding-level numeric change: flag, benchmark,
-  and a comparison run.
 - **T06 · `torch.compile` or CUDA graphs** on the decode loop. Likely 1.5–3x on a launch-bound
   loop, but the per-batch count of hidden cells varies, which breaks CUDA graphs; numerics change
   slightly. Related: [BACKLOG P2](BACKLOG.md) (fused attention).
@@ -120,4 +116,7 @@ full).
 | Promoted `credit-g_20nan` imputation file removed | `8954217` |
 | `[NULL]`-path defect D-1 fixed, gate re-measured | `918bcd6`, `1154f59` |
 | Tag backfills `pretrain_objective`, `decode_patience` | applied 2026-09-30 |
+| T05 · Batched per-column heads, behind `--decoder_heads` | `c9be71f` |
+| Cache prune script (`scripts/prune_cache.py`) | `c9be71f` |
+| T04 · Pre-training cache: **dropped** by the user's decision (an exact cache hits only fold 1 in most studies; a per-fold reseed would change the numbers) | 2026-09-30 |
 | Experimentation log (E01–E28) | `0849c4c` and later |

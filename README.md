@@ -166,7 +166,7 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--score_null_path`: Also score the dataset's own missing cells with the model seeing `[NULL]` rather than `[MASK]`, as a diagnostic that never ranks folds. Requires `--task imputation` and is refused at parse time otherwise
 - `--decode_patience`: Stop the decode stage once its validation loss has not improved for this many epochs, keeping the best epoch; the schedule still spans the configured epochs. Overrides `DECODE_PATIENCE`. Requires `--task imputation`. Default: `0`, every epoch trains
 - `--decoder_heads`: How the decoder applies its per-column heads: `per_column` (default, one operation per column, every run before 2026-09-30) or `batched` (the same arithmetic in a few operations, 1.4x to 1.6x faster a cell, equal up to rounding, so a different training draw). Overrides `DECODER_HEADS`
-- `--no_baseline_cache`: Compute the baseline imputers' scores every time instead of reusing the ones cached under `results/baseline_cache/` for the same fold and cells ([ADR 0007](docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md) decision 10; a hit is identical to the computation)
+- `--no_baseline_cache`: Compute the baseline imputers' scores every time instead of reusing the ones cached under `results/baseline_cache/` for the same fold and cells ([ADR 0007](docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md) decision 10; a hit is identical to the computation). `python3 scripts/prune_cache.py [--max_mb N] [--max_age_days D] [--apply]` keeps the cache under a size or age limit, least recently used first
 
 ### Training Options
 
