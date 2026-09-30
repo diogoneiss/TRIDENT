@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1790642313.7762825,
-    "seen": 1790643273.4105473,
-    "ast_hash": "6c99f5619044c227c5ede4168009e98a",
+    "mtime": 1790767605.2752545,
+    "seen": 1790768044.9679115,
+    "ast_hash": "170d92849ca15dd4d6c22589cc955564",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1790642215.614926,
-    "seen": 1790643273.4105473,
-    "ast_hash": "042c7b14d617c8907a814ae4a998d7ec",
+    "mtime": 1790767592.7972908,
+    "seen": 1790768044.9679475,
+    "ast_hash": "7e64a3881c05567dc115dbbce8ff4281",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0004-imputation-decoder-task.md": {
-    "mtime": 1789083024.3502398,
-    "seen": 1789693767.0144424,
-    "ast_hash": "c42850b478cc3023fc24581701ac6813",
+    "mtime": 1790768032.600926,
+    "seen": 1790768044.96797,
+    "ast_hash": "0ebf3b4720a2cd678128d1573113116e",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-decoder/issues/01-ranking-contract.md": {
@@ -594,9 +594,9 @@
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/12-null-path-diagnostic.md": {
-    "mtime": 1789080264.4536977,
-    "seen": 1789693767.0144424,
-    "ast_hash": "07ac27187e0543a9c2f97903f5cd833e",
+    "mtime": 1790768032.600926,
+    "seen": 1790768044.968038,
+    "ast_hash": "f77566013fb6e10355bb3ce1b2efc8c5",
     "semantic_hash": ""
   },
   "docs/wayfinder/imputation-decoder/issues/13-optuna-for-imputation.md": {
@@ -690,9 +690,9 @@
     "semantic_hash": ""
   },
   "docs/adr/0005-reduced-optuna-search-for-imputation.md": {
-    "mtime": 1790642730.292933,
-    "seen": 1790643273.4105473,
-    "ast_hash": "226212b658e861dc220ef92ec24958b5",
+    "mtime": 1790767662.5850847,
+    "seen": 1790768044.9679708,
+    "ast_hash": "254f74a81bf22deed61594eff11b06a1",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-optuna-reduced/issues/01-search-space-profiles.md": {
@@ -831,12 +831,6 @@
     "mtime": 1789610762.9515884,
     "seen": 1789693767.0144424,
     "ast_hash": "fa47ce402c3f83d6279db92f4b79f014",
-    "semantic_hash": ""
-  },
-  "datasets/hiperparams/credit-g/credit-g_20nan.imputation.json": {
-    "mtime": 1789734806.838621,
-    "seen": 1790300006.429236,
-    "ast_hash": "85d23313fe448478ac159bb748c43e7f",
     "semantic_hash": ""
   },
   "datasets/hiperparams/credit-g/credit-g_40nan.imputation.json": {
@@ -1188,9 +1182,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1790755971.2612782,
-    "seen": 1790756614.4243426,
-    "ast_hash": "ae5b494d7d7fdf49d9bd0a4f24b2ce5a",
+    "mtime": 1790768032.6019258,
+    "seen": 1790768044.9679668,
+    "ast_hash": "3695f86e93469ba2cdbde4d9e1dddb11",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1224,9 +1218,9 @@
     "semantic_hash": ""
   },
   "scripts/experiments/run_pretrain_objective_queue.sh": {
-    "mtime": 1790743116.655648,
-    "seen": 1790756614.4242718,
-    "ast_hash": "16a98689a09d3667c3838b9bf6a8ee38",
+    "mtime": 1790756858.3182304,
+    "seen": 1790768044.9678996,
+    "ast_hash": "8e7f6afa63f8db3c8aeaaece279dc8b8",
     "semantic_hash": ""
   },
   "tests/unit/test_backfill_pretrain_objective_tag.py": {
@@ -1266,15 +1260,15 @@
     "semantic_hash": ""
   },
   "scripts/experiments/run_pretrain_decode_budget_queue.sh": {
-    "mtime": 1790748002.4071655,
-    "seen": 1790756614.4242706,
-    "ast_hash": "4a2a9be12d9ece5fcb51fb2bf885f4c1",
+    "mtime": 1790756858.3222303,
+    "seen": 1790768044.9678984,
+    "ast_hash": "2e58712f8443a6160d39262fa5e47cd8",
     "semantic_hash": ""
   },
   "docs/reports/2026-09-30-overnight.md": {
-    "mtime": 1790756611.828821,
-    "seen": 1790756614.4243548,
-    "ast_hash": "0771d87738a0c4d69c7f0c945f1f2862",
+    "mtime": 1790767750.253819,
+    "seen": 1790768044.9679778,
+    "ast_hash": "57d74fbeb027a5f3cf4f7fecac79c840",
     "semantic_hash": ""
   },
   "docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md": {
