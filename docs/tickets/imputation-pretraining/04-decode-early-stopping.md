@@ -59,3 +59,35 @@ different epochs, which is what early stopping does. The queue was stopped (the 
 s7, was interrupted at once), the summary fixed in `fa38425` (training untouched), and the queue
 relaunched; both cells run again from the start. A crash is not a result, so this reruns no
 finished cell.
+
+## Outcome (2026-09-30, 16:00 GMT-3)
+
+All 12 P cells ran (the two crashed ones again from the start after the fix above), none
+missing. Numbers from `scripts/experiments/decode_patience_batch_report.py`. Lower is better; a
+negative P − M favours P.
+
+| variant | P − M, induced (primary) | verdict | decode epochs trained, median (range) of 450 | fold time per cell, M → P |
+|---|---|---|---|---|
+| `credit-g_20nan` | +0.0001 [−0.0122, +0.0125] | no detectable difference | 91 (65–171) | 4.1 → 1.5 min |
+| `credit-g_80nan` | −0.0031 [−0.0158, +0.0095] | no detectable difference | 61 (51–85) | 5.9 → 1.4 min |
+| `kr-vs-kp_40nan` | −0.0018 [−0.0163, +0.0126] | no detectable difference | 107 (79–135) | 18.5 → 4.9 min |
+| `pendigits_20nan` | +0.0057 [+0.0006, +0.0108] (+0.0043, +0.0018, +0.0111) | **M better than P** | 388 (242–450) | 35.4 → 30.5 min |
+
+**Secondary.** Masked cells: the same verdicts (pendigits +0.0057, M better; none elsewhere).
+P − N: P better on pendigits (−0.0247, induced), no detectable difference elsewhere. Against the
+best baseline: pendigits P 0.340 [0.334, 0.346] still beats `knn10` 0.350; elsewhere as M. Fold
+time is descriptive (M ran four to a GPU, P one to three).
+
+**The built-in check** (a cell with no early stop in any fold must equal M) had no cell to
+apply to: every cell stopped at least one fold early. Its mechanism shows on fold 1, which still
+shares M's random stream: its induced score is identical to M's to the last digit in 9 of 12
+cells, exactly those where M's best epoch came before P's stop (the other three are pendigits
+s42 and s13 and credit-g_20nan s42). Later folds differ, as stated in advance.
+
+**Reading.** A patience of 50 keeps M's scores on the three smaller tables while training 61 to
+107 of the 450 decode epochs, which cuts a kr-vs-kp cell from 18.5 to 4.9 minutes. On pendigits,
+the one table whose validation loss is still falling late, it stops some folds as early as epoch
+242 and costs 0.006 (still better than the 150-epoch N and still below `knn10`). So early
+stopping with this patience is a safe speed-up where the long decode buys nothing, and a small
+loss where it buys the most. Limits as stated in advance: one patience value, the schedule still
+spans 450 epochs, and later folds see other training draws.

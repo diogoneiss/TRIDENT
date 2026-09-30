@@ -53,7 +53,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
 | E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 | done | N never worse than A, better on 2/4 and better than no pre-training on 3/4; V helps only on pendigits |
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
-| E27 | Stopping the decode stage on a validation plateau | 2026-09-30 –  | in progress | pending |
+| E27 | Stopping the decode stage on a validation plateau | 2026-09-30 | done | same scores with 61–107 of 450 epochs on three tables (kr-vs-kp 18.5 → 4.9 min); pendigits loses 0.006 |
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 
 ## Entries
@@ -783,9 +783,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md`;
   `scripts/experiments/pretrain_decode_budget_report.py`.
 
-### E27 · Stopping the decode stage on a validation plateau (2026-09-30 – )
+### E27 · Stopping the decode stage on a validation plateau (2026-09-30)
 
-- **Status:** in progress (gorgona8, beside E28; no cell starts after 06:30 GMT-3 on 2026-10-01).
+- **Status:** done, 13:16–16:00 GMT-3, all 12 cells (two rerun from the start after a
+  finalisation crash, `a1d54a9`).
 - **Hypothesis:** the 450-epoch decode stage's gain lives where the validation loss is still
   falling (pendigits, best epoch ~390), and elsewhere it only costs time (best epochs 9–87), so a
   patience of 50 should keep M's scores while training far fewer epochs.
@@ -796,8 +797,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   verdict only when the interval excludes zero and all seeds agree; decode epochs trained.
   Secondary P − N, masked, best baseline. Limits: the schedule still spans 450 epochs; a stop
   shifts later folds' training draws.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (induced, 15 fold pairs):** P − M: credit-g_20nan +0.0001, credit-g_80nan −0.0031,
+  kr-vs-kp −0.0018, all no detectable difference; pendigits +0.0057 [+0.0006, +0.0108], **M
+  better**. Decode epochs trained (median of 450): 91, 61, 107, 388. Fold time per cell: 4.1 →
+  1.5, 5.9 → 1.4, 18.5 → 4.9, 35.4 → 30.5 min (descriptive). Fold 1 equals M to the last digit in
+  9 of 12 cells, those where M's best epoch preceded P's stop.
+- **Conclusion:** a patience of 50 is a safe speed-up where the long decode buys nothing (three
+  of four tables) and a small loss on pendigits, where the validation loss still falls late.
 - **Sources:** `docs/tickets/imputation-pretraining/04-decode-early-stopping.md`;
   `scripts/experiments/decode_patience_batch_report.py`.
 
