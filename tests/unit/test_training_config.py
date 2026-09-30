@@ -375,3 +375,41 @@ def test_the_search_objective_population_is_a_choice_only_imputation_offers() ->
     assert unspecified.search_objective is None
     with pytest.raises(SystemExit):
         parser.parse_args(["--dataset_name", "credit-g_20nan", "--search_objective", "test"])
+
+
+def test_pretraining_keeps_its_embedding_target_unless_a_run_asks_for_another() -> None:
+    """Every run before ADR 0011 regressed onto the clean embedding, so that stays the default.
+
+    The flag wins over the configuration, as ``--lr_scheduler`` does, so one invocation can
+    re-run any stored configuration under another objective.
+    """
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    override = {"PRETRAIN_OBJECTIVE": "embedding_normalized"}
+
+    default = resolve_training_request(parser.parse_args(imputation))
+    from_flag = resolve_training_request(
+        parser.parse_args([*imputation, "--pretrain_objective", "value"])
+    )
+    from_mapping = resolve_training_request(
+        Namespace(dataset_name="credit-g_20nan", hyperparams_override=override)
+    )
+    flag_over_mapping = resolve_training_request(
+        Namespace(
+            dataset_name="credit-g_20nan", hyperparams_override=override, pretrain_objective="value"
+        )
+    )
+
+    assert default.hyperparameters.pretraining_objective == "embedding"
+    assert from_flag.hyperparameters.pretraining_objective == "value"
+    assert from_mapping.hyperparameters.pretraining_objective == "embedding_normalized"
+    assert flag_over_mapping.hyperparameters.pretraining_objective == "value"
+
+
+def test_an_unknown_pretraining_objective_is_refused() -> None:
+    with pytest.raises(SystemExit):
+        build_training_parser().parse_args(
+            ["--dataset_name", "vehicle_00nan", "--pretrain_objective", "contrastive"]
+        )
+    with pytest.raises(ValueError, match="Unknown pre-training objective"):
+        Hyperparameters.from_mapping({"PRETRAIN_OBJECTIVE": "contrastive"})

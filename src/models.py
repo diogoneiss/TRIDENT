@@ -61,8 +61,8 @@ class TridentPretrainer(nn.Module):
         mask_tensor = masked.masked_positions
 
         # 5) Select only masked positions (flatten)
-        enc_sel  = encoded[:, 1:, :][mask_tensor]      # (N_mask, d)
-        tgt_sel  = emb_target[:, 1:, :][mask_tensor]   # (N_mask, d)
+        enc_sel  = self._prediction(encoded[:, 1:, :][mask_tensor])  # (N_mask, d)
+        tgt_sel  = self._target(emb_target[:, 1:, :][mask_tensor])   # (N_mask, d)
         #enc_sel = nn.functional.normalize(enc_sel, dim=-1)
         #tgt_sel = nn.functional.normalize(tgt_sel, dim=-1)
         if enc_sel.numel() == 0:          # no [MASK] in the batch
@@ -74,6 +74,39 @@ class TridentPretrainer(nn.Module):
         # The metric is returned as a detached tensor rather than a Python float so
         # that reading it does not force a device synchronisation on every batch.
         return loss, {"mse_embedding": loss.detach()}
+
+    def _prediction(self, encoded: torch.Tensor) -> torch.Tensor:
+        """What the transformer says at the masked cells, as the loss reads it."""
+        return encoded
+
+    def _target(self, clean: torch.Tensor) -> torch.Tensor:
+        """The clean embeddings of the masked cells, as the loss reads them."""
+        return clean
+
+
+class NormalizedEmbeddingPretrainer(TridentPretrainer):
+    """The embedding objective with a layer-normalised target and a predictor head (ADR 0011).
+
+    Regressing raw embeddings lets the loss fall when the embeddings merely change scale,
+    so a falling loss says nothing about what the encoder learned (critique F-13-1).
+    Normalising each target cell over its dimensions fixes the scale, and the predictor
+    keeps the transformer's own output out of the target's space, as masked-feature
+    predictors such as data2vec do. The target stays detached.
+    """
+
+    def __init__(self, embedder: TabularEmbedder, transformer: TabularTransformerEncoder):
+        super().__init__(embedder, transformer)
+        self.predictor = nn.Sequential(
+            nn.Linear(self.d_model, self.d_model),
+            nn.GELU(),
+            nn.Linear(self.d_model, self.d_model),
+        )
+
+    def _prediction(self, encoded: torch.Tensor) -> torch.Tensor:
+        return self.predictor(encoded)
+
+    def _target(self, clean: torch.Tensor) -> torch.Tensor:
+        return nn.functional.layer_norm(clean, (self.d_model,))
 
 
 @dataclass(frozen=True)

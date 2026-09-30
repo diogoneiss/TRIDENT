@@ -6,12 +6,29 @@ import torch.optim as optim
 from tqdm import tqdm
 
 from src.embedder import TabularEmbedder
-from src.models import TridentPretrainer
+from src.models import NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 from src.utils import preprocess_table
 
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
+
+
+def _stage_model(
+    embedder: TabularEmbedder,
+    transformer: TabularTransformerEncoder,
+    hyperparameters: Hyperparameters,
+) -> nn.Module:
+    """What the stage trains for its objective (ADR 0011). It hands over only the encoder.
+
+    ``value`` trains fresh decoder heads on the hidden values with the decode stage's own
+    loss; they are discarded with the stage, since the decode stage builds its own.
+    """
+    if hyperparameters.pretraining_objective == "value":
+        return TridentDecoder(embedder, transformer, lambda_num=hyperparameters.lambda_num)
+    if hyperparameters.pretraining_objective == "embedding_normalized":
+        return NormalizedEmbeddingPretrainer(embedder, transformer)
+    return TridentPretrainer(embedder, transformer)
 
 
 def train_pretrainer(
@@ -40,7 +57,7 @@ def train_pretrainer(
         dim_feedforward=hyperparameters.feedforward_dimension,
         dropout=hyperparameters.dropout,
     )
-    model = TridentPretrainer(embedder, transformer).to(device)
+    model = _stage_model(embedder, transformer, hyperparameters).to(device)
 
     def initialize_weights(module: nn.Module) -> None:
         if isinstance(module, (nn.Embedding, nn.Linear)):

@@ -16,6 +16,15 @@ LR_SCHEDULER_NAMES: tuple[str, ...] = (
 )
 DEFAULT_LR_SCHEDULER = "cosine_legacy"
 
+# What pre-training regresses a masked cell onto (ADR 0011), accepted by
+# ``Hyperparameters.pretraining_objective`` and the ``--pretrain_objective`` flag.
+# ``embedding`` is the cell's detached clean embedding, what every run before that decision
+# trained on, so it stays the default. ``value`` is the cell's value itself, through fresh
+# decoder heads that the stage discards; ``embedding_normalized`` keeps the embedding target
+# but layer-normalises it and reads the transformer through a predictor head.
+PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_normalized")
+DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
+
 # Tasks a training request can run (ADR 0004). ``classification`` is every run before
 # that decision, so it stays the default; ``imputation`` trains the decode stage in
 # place of the classifier. Each task declares the fold-ranking metric and the
@@ -120,6 +129,7 @@ class Hyperparameters:
     finetuning_weight_decay: float = 0.0019
     labels: int = 4
     lr_scheduler: str = DEFAULT_LR_SCHEDULER
+    pretraining_objective: str = DEFAULT_PRETRAINING_OBJECTIVE
 
     # The decode stage, used only by the imputation task. Defaulted so that every config
     # written before that task existed keeps loading unchanged; the fine-tuning values are
@@ -143,6 +153,11 @@ class Hyperparameters:
             raise ValueError(
                 f"Unknown learning-rate scheduler {self.lr_scheduler!r}; "
                 f"expected one of {', '.join(LR_SCHEDULER_NAMES)}"
+            )
+        if self.pretraining_objective not in PRETRAINING_OBJECTIVES:
+            raise ValueError(
+                f"Unknown pre-training objective {self.pretraining_objective!r}; "
+                f"expected one of {', '.join(PRETRAINING_OBJECTIVES)}"
             )
 
     @classmethod
@@ -173,6 +188,12 @@ class Hyperparameters:
             labels=int(values.get("LABELS", values.get("labels", 4))),
             lr_scheduler=str(
                 values.get("LR_SCHEDULER", values.get("lr_scheduler", DEFAULT_LR_SCHEDULER))
+            ),
+            pretraining_objective=str(
+                values.get(
+                    "PRETRAIN_OBJECTIVE",
+                    values.get("pretraining_objective", DEFAULT_PRETRAINING_OBJECTIVE),
+                )
             ),
             decode_epochs=int(values.get("EPOCHS_DECODE", values.get("decode_epochs", 150))),
             decode_learning_rate=float(

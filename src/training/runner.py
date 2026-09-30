@@ -6,6 +6,7 @@ from typing import Mapping
 import pandas as pd
 import torch
 
+from src.mlflow_utils import PRETRAIN_OBJECTIVE_TAG
 from src.utils import set_global_seed
 
 from .artifacts import ArtifactWriter
@@ -87,7 +88,10 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         hyperparameters=logged_hyperparameters(request),
         lr_scheduler=request.hyperparameters.lr_scheduler,
         environment=runtime_environment_tags(device),
-        extra_tags=request.runtime.tracking_tags,
+        extra_tags={
+            **request.runtime.tracking_tags,
+            PRETRAIN_OBJECTIVE_TAG: request.hyperparameters.pretraining_objective,
+        },
         task=task.name,
         config_source=request.config_source,
     ) as active_tracker:

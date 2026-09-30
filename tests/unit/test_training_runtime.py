@@ -284,7 +284,8 @@ def test_runner_uses_fold_buffers_and_finalizes_cross_validation_once(
         },
         "lr_scheduler": "cosine_legacy",
         "environment": _ENVIRONMENT,
-        "extra_tags": {},
+        # Every run says what its pre-training regressed onto (ADR 0011).
+        "extra_tags": {"pretrain_objective": "embedding"},
         "task": "classification",
         # No file and no override behind the minimal request, so the run says so.
         "config_source": "defaults",

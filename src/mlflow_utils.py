@@ -60,6 +60,12 @@ SEARCH_SPACE_TAG = "search_space"
 # SEARCH_OBJECTIVE_BACKFILLED_TAG.
 SEARCH_OBJECTIVE_TAG = "search_objective"
 SEARCH_OBJECTIVE_BACKFILLED_TAG = "search_objective_backfilled"
+# What pre-training regressed a masked cell onto (ADR 0011): ``embedding``, ``value`` or
+# ``embedding_normalized``. On every parent run; runs recorded before it existed are
+# stamped ``embedding`` by ``scripts/backfill_pretrain_objective_tag.py`` and marked with
+# PRETRAIN_OBJECTIVE_BACKFILLED_TAG.
+PRETRAIN_OBJECTIVE_TAG = "pretrain_objective"
+PRETRAIN_OBJECTIVE_BACKFILLED_TAG = "pretrain_objective_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

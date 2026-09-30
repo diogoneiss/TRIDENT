@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from .types import (
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
+    PRETRAINING_OBJECTIVES,
     SEARCH_OBJECTIVE_POPULATIONS,
     SEARCH_SPACE_PROFILES,
     TASK_NAMES,
@@ -33,6 +34,12 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     lr_scheduler = getattr(args, "lr_scheduler", None)
     if lr_scheduler is not None:
         hyperparameters = dataclasses.replace(hyperparameters, lr_scheduler=lr_scheduler)
+    # ``--pretrain_objective`` wins the same way (ADR 0011).
+    pretraining_objective = getattr(args, "pretrain_objective", None)
+    if pretraining_objective is not None:
+        hyperparameters = dataclasses.replace(
+            hyperparameters, pretraining_objective=pretraining_objective
+        )
     return hyperparameters, source
 
 
@@ -244,6 +251,17 @@ def build_training_parser() -> argparse.ArgumentParser:
         help=(
             "Learning-rate schedule for both training stages. Overrides LR_SCHEDULER from the "
             "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003)."
+        ),
+    )
+    parser.add_argument(
+        "--pretrain_objective",
+        type=str,
+        default=None,
+        choices=PRETRAINING_OBJECTIVES,
+        help=(
+            "What pre-training reconstructs at a masked cell (ADR 0011). Overrides "
+            "PRETRAIN_OBJECTIVE from the hyperparameter file. Default: embedding (the cell's "
+            "clean embedding, as every run before ADR 0011)."
         ),
     )
     parser.add_argument(
