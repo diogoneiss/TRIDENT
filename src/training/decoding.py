@@ -308,8 +308,11 @@ def _score_induced_missing(
     encoded = embedder.encode(hidden, device)
     if not as_mask:
         # [NULL] cells are not [MASK] cells, so nothing would be selected for scoring.
-        # Point the selection at the gaps explicitly.
-        encoded = _select(encoded, torch.tensor(frame.isna().to_numpy(), device=device))
+        # Point the selection at the gaps explicitly, in the embedder's column order
+        # (categorical, then numerical), not the file's: a table that interleaves the two
+        # kinds would otherwise score cells that were never missing (critique D-1).
+        order = list(embedder.categorical_columns) + list(embedder.numerical_columns)
+        encoded = _select(encoded, torch.tensor(frame[order].isna().to_numpy(), device=device))
     # A category the variant never shows (the generator took its every occurrence) is
     # outside the embedder's vocabulary, so the head can never produce it and the encoder
     # cannot even index it. Such a cell is a miss by construction: its truth is encoded

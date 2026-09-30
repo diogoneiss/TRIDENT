@@ -255,6 +255,23 @@ def test_the_null_path_diagnostic_asks_the_same_cells_through_the_other_token() 
     assert int(through_null.sum()) == int(through_mask.sum())
 
 
+def test_the_null_path_scores_exactly_the_gaps_whatever_the_column_order() -> None:
+    """Critique D-1: credit-g interleaves the two column kinds. The null path picked its cells
+    in the file's column order while the decoder reads categorical columns first, so it
+    scored mostly cells that were never missing, with the right count."""
+    interleaved = _complete_frame()[["size", "colour", "weight", "shape", "class"]]
+    asked, _ = _run(dataset=_dataset(complete=interleaved), sibling=interleaved, score_null_path=True)
+
+    cells = asked.scored_cells
+
+    def positions(population: str) -> set[tuple[int, str]]:
+        chosen = cells[cells["population"] == population]
+        return set(zip(chosen["row"], chosen["column"]))
+
+    assert positions("induced")
+    assert positions("induced_null_token") == positions("induced")
+
+
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
     """Ticket 0004: a known truth should not be reported at the model's precision.
 
