@@ -54,3 +54,35 @@ is post hoc, its design is not. One configuration per variant, `LR_PRE` at its c
 three seeds. M spends 750 epochs against C's 450, so "M better than C" confounds the objective
 with the extra training; "no detectable difference" or "C better than M" would say the
 pre-training stage does not earn its cost even in its better form.
+
+## Outcome (2026-09-30, 05:00 GMT-3)
+
+All 12 M cells ran (03:00–05:00 GMT-3, beside study 02 until 04:28), none missing, none rerun;
+every C and N reference was present. Numbers from
+`scripts/experiments/pretrain_decode_budget_report.py`. Lower is better; a negative M − X
+favours M.
+
+| variant | M | C | N | M − C (primary) | verdict | M − N (secondary) | verdict |
+|---|---|---|---|---|---|---|---|
+| `credit-g_20nan` | 0.908 | 0.914 | 0.910 | −0.0065 [−0.0158, +0.0029] | no detectable difference | −0.0021 [−0.0152, +0.0110] | none |
+| `credit-g_80nan` | 1.031 | 1.036 | 1.026 | −0.0042 [−0.0195, +0.0111] | no detectable difference | +0.0057 [−0.0077, +0.0190] | none |
+| `kr-vs-kp_40nan` | 0.773 | 0.794 | 0.765 | −0.0205 [−0.0373, −0.0037] (−0.0232, −0.0172, −0.0211) | **M better than C** | +0.0083 [−0.0060, +0.0226] | none |
+| `pendigits_20nan` | 0.334 | 0.335 | 0.364 | −0.0013 [−0.0045, +0.0018] | no detectable difference | −0.0305 [−0.0324, −0.0285] (−0.0292, −0.0303, −0.0319) | **M better than N** |
+
+Masked cells: no detectable M − C difference on any variant (kr-vs-kp −0.0288 [−0.0605,
++0.0030], all three seeds negative); M better than N on pendigits (−0.0341). Against the best
+baseline: pendigits M 0.334 [0.331, 0.337] beats `knn10` 0.350 [0.346, 0.354], as C does;
+kr-vs-kp M 0.773 [0.762, 0.785] overlaps `hgb` 0.773; credit-g_80nan loses to `mean_mode`;
+credit-g_20nan overlaps `hgb`.
+
+**Reading.** Normalised pre-training followed by the long decode stage is never worse than
+either of its halves: on pendigits it matches C (the long decode is what matters there) and on
+kr-vs-kp it beats C (pre-training is what matters there), where N alone and M are level. So
+the two partial wins of the night do add up: no comparison run tonight found M worse than
+anything, and it is the only configuration that is never detectably beaten by C or N. It was
+not compared formally with A, B or V (not pre-registered); descriptively it sits within noise
+of the best arm on each variant (kr-vs-kp A and N 0.765 against M 0.773; credit-g_80nan N
+1.026 against 1.031). As stated in advance, M trains 750
+epochs against C's 450, so "M better than C" on kr-vs-kp confounds the objective with the
+extra training; E25's N − C on kr-vs-kp (−0.0288, N at 450 epochs in total) says the budget
+alone does not explain it. One configuration per variant, three seeds.

@@ -52,7 +52,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E23 | Induced validation objective on the other six variants | 2026-09-28 – 2026-09-29 | stopped early | better on 2 of 6, level on 2, worse on 2; never beats the best baseline |
 | E24 | What pre-training contributes to imputation | 2026-09-29 – 2026-09-30 | done | never helps vs none; hurts on pendigits, where C beats the best baseline; A better than C on kr-vs-kp |
 | E25 | Value and normalised-embedding pre-training objectives | 2026-09-30 | done | N never worse than A, better on 2/4 and better than no pre-training on 3/4; V helps only on pendigits |
-| E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 –  | in progress | pending |
+| E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
 
 ## Entries
 
@@ -751,9 +751,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `docs/adr/0011-selectable-pretraining-objective.md`;
   `scripts/experiments/pretrain_objective_report.py`.
 
-### E26 · Normalised-target pre-training with a long decode stage (2026-09-30 – )
+### E26 · Normalised-target pre-training with a long decode stage (2026-09-30)
 
-- **Status:** in progress (overnight on gorgona8 beside E25; no cell starts after 06:30 GMT-3).
+- **Status:** done, 03:00–05:00 GMT-3, all 12 cells.
 - **Hypothesis:** the two partial wins of the night might add up: the long decode stage (arm C,
   450 epochs, best on pendigits in E24) and the normalised embedding objective (N, better than
   the current objective on pendigits and credit-g_80nan in E25's first cells). Motivation post
@@ -765,7 +765,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   verdict only when the interval excludes zero and all three seeds agree in sign; secondary
   M − N, masked cells, best baseline. M trains 750 epochs against C's 450, so "M better"
   confounds objective and budget.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (induced, 15 fold pairs; negative favours M):** M − C: credit-g_20nan −0.0065,
+  none; credit-g_80nan −0.0042, none; kr-vs-kp −0.0205 [−0.0373, −0.0037], **M better**;
+  pendigits −0.0013, none. M − N: pendigits −0.0305, **M better**; none elsewhere. Pendigits M
+  0.334 beats `knn10` 0.350, as C does. Masked: no M − C verdict; M better than N on pendigits.
+- **Conclusion:** normalised pre-training plus the 450-epoch decode stage is never worse than
+  either half: it keeps the long decode's gain on pendigits and pre-training's gain on
+  kr-vs-kp. Against A, B and V it was not compared formally; descriptively it sits within
+  noise of the best arm on each variant. The extra budget (750
+  against 450 epochs) is a confound, but N − C on kr-vs-kp in E25 (450 epochs in total) points
+  the same way. Candidate imputation default for the user to decide: `embedding_normalized`
+  with `EPOCHS_DECODE` 450.
 - **Sources:** `docs/tickets/imputation-pretraining/03-normalised-pretraining-with-a-long-decode.md`;
   `scripts/experiments/pretrain_decode_budget_report.py`.
