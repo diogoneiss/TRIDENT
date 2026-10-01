@@ -838,7 +838,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   detectable difference.
 - **Scenarios:** arm H = arm A with `DECODER_HEADS` batched, against the per-column A cells on
   the server; four variants, seeds 42, 7, 13; credit-g_20nan pinned to `fcaadfb`. Tag
-  `experiment=batched-heads-2026-09-30`.
+  `experiment=batched-heads-2026-10-01`.
 - **Measures and decision rule:** primary H − A on `impute/induced/impute_score`, 15 fold pairs,
   verdict only when the interval excludes zero and all seeds agree. "No detectable difference"
   on all four licenses the default switch; any verdict keeps per-column.

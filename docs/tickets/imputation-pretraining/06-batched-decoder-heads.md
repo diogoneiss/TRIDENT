@@ -27,7 +27,7 @@ than the per-column one?
 - Configuration: what A's cells read; for `credit-g_20nan` the promoted file removed on
   2026-09-30, pinned from `fcaadfb` in `scripts/experiments/batched_heads_run.py`.
 - Variants `credit-g_20nan`, `credit-g_80nan`, `kr-vs-kp_40nan`, `pendigits_20nan`; seeds
-  **42, 7, 13**; 12 new cells tagged `experiment=batched-heads-2026-09-30`, `arm=H`; one queue
+  **42, 7, 13**; 12 new cells tagged `experiment=batched-heads-2026-10-01`, `arm=H`; one queue
   (`scripts/experiments/run_batched_heads_queue.sh h`), pendigits first.
 
 ## Measures
