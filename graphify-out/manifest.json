@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "src/mlflow_utils.py": {
-    "mtime": 1790809691.9981408,
-    "seen": 1790810524.7781882,
-    "ast_hash": "a3290d900a6243aa8378a3d8e21eb2bc",
+    "mtime": 1790824651.2584512,
+    "seen": 1790824655.7684326,
+    "ast_hash": "9ba11e156c8ed5592af4bea4eb48f9ff",
     "semantic_hash": ""
   },
   "src/models.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1790809691.9971406,
-    "seen": 1790810524.7781966,
-    "ast_hash": "bfe9d004ba0733afbd01d44693786363",
+    "mtime": 1790824472.214473,
+    "seen": 1790824655.7684395,
+    "ast_hash": "275e5a5f4371b6809f2e9468c3db68e2",
     "semantic_hash": ""
   },
   "src/training/data.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1790809691.9971406,
-    "seen": 1790810524.7782154,
-    "ast_hash": "69555b0c15dfdf0bf0ff69a517502617",
+    "mtime": 1790824472.214473,
+    "seen": 1790824655.7684538,
+    "ast_hash": "d7c1a24c59ac3c117752249d6b9a8e17",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1790809704.810099,
-    "seen": 1790810524.7782533,
-    "ast_hash": "b6229658124962ca036de84cb4d01bc9",
+    "mtime": 1790824490.490479,
+    "seen": 1790824655.7684846,
+    "ast_hash": "3fa4956adcd9cf287155ba1973bb39d0",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790810504.1512234,
-    "seen": 1790810524.778273,
-    "ast_hash": "0c0e711785d5cfde9318f891026eef7d",
+    "mtime": 1790824651.2574513,
+    "seen": 1790824655.7685006,
+    "ast_hash": "23bb75d0c15c3f941d30d0e1b5ba29a0",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "CLAUDE.md": {
-    "mtime": 1790731373.9336057,
-    "seen": 1790731437.307357,
-    "ast_hash": "b24b21c31b210666354715f918665457",
+    "mtime": 1790821291.0435972,
+    "seen": 1790824655.7684984,
+    "ast_hash": "514388fa05c0612d09432c902315f080",
     "semantic_hash": ""
   },
   "docs/ARCHITECTURE.md": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_opt_tracking.py": {
-    "mtime": 1790809704.8070989,
-    "seen": 1790810524.7782462,
-    "ast_hash": "3d924535ec78aa3b5fa0e850400b3295",
+    "mtime": 1790824490.490479,
+    "seen": 1790824655.7684784,
+    "ast_hash": "11eb2bb6798efb9323f94be768c4022c",
     "semantic_hash": ""
   },
   "scripts/__init__.py": {
@@ -1182,9 +1182,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1790794925.7505715,
-    "seen": 1790794954.764803,
-    "ast_hash": "d4826491a28e4e4bf2595e33ea5550ce",
+    "mtime": 1790824142.9939232,
+    "seen": 1790824655.7685068,
+    "ast_hash": "55545b0ebc032876a10a6d6d237bcd4b",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1356,15 +1356,45 @@
     "semantic_hash": ""
   },
   "docs/TASKS.md": {
-    "mtime": 1790814309.096201,
-    "seen": 1790814311.9775898,
-    "ast_hash": "ddef7a6a78c7ba6ebe2a49c0d5ff9909",
+    "mtime": 1790824651.2584512,
+    "seen": 1790824655.7685077,
+    "ast_hash": "8ba97df8963134a438f2878dfbbab71c",
     "semantic_hash": ""
   },
   "tests/unit/test_epoch_masker.py": {
     "mtime": 1790810648.9585414,
     "seen": 1790814311.9775498,
     "ast_hash": "92377fbad639334fc59de494030496dc",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/batched_heads_report.py": {
+    "mtime": 1790821106.951598,
+    "seen": 1790824655.7684093,
+    "ast_hash": "837ca81b5348c8bb1500d5eea3adaf5d",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/batched_heads_run.py": {
+    "mtime": 1790821106.951598,
+    "seen": 1790824655.7684107,
+    "ast_hash": "9a775083209f73d5568a252e7ba6f085",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_batched_heads_queue.sh": {
+    "mtime": 1790821106.951598,
+    "seen": 1790824655.76842,
+    "ast_hash": "b3ccf900b6e7e9148d292025f6efdd29",
+    "semantic_hash": ""
+  },
+  "docs/adr/0012-batched-decoder-heads-by-default.md": {
+    "mtime": 1790824651.0284514,
+    "seen": 1790824655.7685192,
+    "ast_hash": "e464a021495d96ee04e8380a8adc78b6",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-pretraining/06-batched-decoder-heads.md": {
+    "mtime": 1790824142.979923,
+    "seen": 1790824655.7685802,
+    "ast_hash": "4de518fae0dbf344ed499d1f3385fcb2",
     "semantic_hash": ""
   }
 }
