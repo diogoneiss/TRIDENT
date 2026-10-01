@@ -865,6 +865,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   21 variants. Default reading fixed in advance: a candidate qualifies with no "A better" verdict;
   P is recommended over M unless "M better than P" on three or more variants; neither qualifying
   keeps A.
+- **Note, 2026-10-01 12:36 GMT-3:** queue 2, projected to end near the cutoff, split across two
+  launchers once queues 3 and 4 had finished (scheduling only; no cell or cutoff changed; ticket
+  07, Running notes).
 - **Results:** pending.
 - **Conclusion:** pending.
 - **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md`;

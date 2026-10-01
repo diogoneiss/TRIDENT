@@ -57,3 +57,13 @@ One configuration per variant (the promoted files were tuned for A's pipeline), 
 default `LR_PRE`. 21 variants and two primary comparisons are 42 tests; with the seed-agreement
 rule a false verdict is rarer than 1 in 20 per test, but a lone verdict among many nulls deserves
 less weight than a pattern.
+
+## Running notes
+
+- **2026-10-01 12:36 GMT-3, queue 2 split (scheduling only).** Queues 4 and 3 had finished
+  (11:46 and 12:32 GMT-3), and queue 2's 24 remaining cells were projected to end
+  near the 14:00 GMT-3 cutoff. Queue 2 was stopped between cells (STOP file, after
+  `kr-vs-kp_40nan_s7_P`) and its remaining cells, read from the store, were split across two
+  launchers that run the same cell runner, thread cap, cutoff and log format: the kr-vs-kp and
+  kc2 trios in `q2/`, the biodeg, credit-g and vehicle trios in `q2b/`. At most three trainers
+  ran at once, against four before. No cell, arm, seed, configuration or cutoff changed.
