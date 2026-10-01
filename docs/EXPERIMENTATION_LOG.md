@@ -56,6 +56,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E27 | Stopping the decode stage on a validation plateau | 2026-09-30 | done | same scores with 61–107 of 450 epochs on three tables (kr-vs-kp 18.5 → 4.9 min); pendigits loses 0.006 |
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
+| E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 –  | in progress | pending |
 
 ## Entries
 
@@ -849,3 +850,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   same way on every seed by 0.2% of the score, an order below its machine gap.
 - **Sources:** `docs/tickets/imputation-pretraining/06-batched-decoder-heads.md`;
   `scripts/experiments/batched_heads_report.py`.
+
+### E30 · The candidate configuration on all 21 imputation variants (2026-10-01 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3).
+- **Hypothesis:** the normalised pre-training objective with a 450-epoch decode stage (M), and its
+  early-stopped form (P), hold their E25–E27 gains, or at least lose nowhere, beyond the four
+  variants they were found on.
+- **Scenarios:** arms A (current default), M, P; the 21 variants of ADR 0007; seeds 42, 7, 13; each
+  variant's configuration as loaded today; batched decoder heads; all 189 cells fresh. Tag
+  `experiment=confirmatory-2026-10-01`.
+- **Measures and decision rule:** primary M − A and P − A on `impute/induced/impute_score`, 15 fold
+  pairs per variant, verdict only when the interval excludes zero and all seeds agree; tally over
+  21 variants. Default reading fixed in advance: a candidate qualifies with no "A better" verdict;
+  P is recommended over M unless "M better than P" on three or more variants; neither qualifying
+  keeps A.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md`;
+  `scripts/experiments/confirmatory_report.py`.

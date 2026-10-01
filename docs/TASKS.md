@@ -17,7 +17,7 @@ Created 2026-09-30 from the proposals after studies 04 and 05 (E27, E28).
 
 ## Next up, in the recommended order
 
-### T01 · Confirmatory study on all 21 variants — next
+### T01 · Confirmatory study on all 21 variants — in progress (ticket [07](tickets/imputation-pretraining/07-confirmatory-21-variants.md), E30)
 
 The candidate default against the current one on every imputation variant, since E24–E28 used
 only four. Three seeds (the verdict rule needs three), five folds, the same pairing and rule as
