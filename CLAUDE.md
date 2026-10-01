@@ -35,7 +35,12 @@ The ticket stays the contract; the entry summarises it, copies its numbers, and 
 
 ## Times
 
-gorgona8's clock and its logs (`date`, `progress.log`, MLflow timestamps) run in UTC; the user reads GMT-3. Every time you report, in chat and in files you write (tickets, the experimentation log), is converted to GMT-3 and marked, e.g. `21:45 GMT-3`, including the date when the conversion crosses midnight.
+The user reads GMT-3. gorgona8's system clock is UTC, but since 2026-09-30 23:20 GMT-3 the user's shells export `TZ=America/Sao_Paulo` (top of `~/.bashrc`). So `date`, Python's `datetime.now()` (run names) and the ablation kit's `progress.log` now come out in GMT-3. `progress.log` lines also carry their offset (`-0300`); its older lines without one are UTC. These stay UTC whatever `TZ` says:
+- logs written before that time;
+- any process started before it, or from an environment that did not read `~/.bashrc`;
+- `sync/replica.log`, which `store_replica.py` stamps in UTC explicitly.
+
+MLflow stores epoch timestamps, and its UI shows the browser's zone. Every time you report, in chat and in files you write (tickets, the experimentation log), is in GMT-3 and marked, e.g. `21:45 GMT-3`, including the date when the conversion crosses midnight; convert a UTC source before reporting it.
 
 ## Background & full reference
 
