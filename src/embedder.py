@@ -57,6 +57,50 @@ class EncodedTable:
         )
 
 
+class EpochMasker:
+    """An epoch's fresh mask over a frame encoded once, without going back through pandas.
+
+    The training loops re-roll their masks every epoch, and encoding the masked DataFrame
+    each time was a quarter to a third of a pre-training epoch on tables with many categorical
+    columns. The mask is drawn by the same ``draw_dynamic_mask`` ``preprocess_table`` calls,
+    so the global random stream moves exactly as before, and applied to the tensors of the
+    frame with its nulls as ``[NULL]``: a hidden categorical cell becomes its column's
+    ``[MASK]`` id, a hidden numerical cell a zero with its mask flag. The result equals
+    ``encode(preprocess_table(frame, p_base))`` tensor for tensor.
+    """
+
+    def __init__(self, embedder: "TabularEmbedder", frame, device) -> None:
+        from .utils import preprocess_table
+
+        self._null_values = frame.isnull().to_numpy()
+        self._base = embedder.encode(preprocess_table(frame.copy(), fine_tunning=True), device)
+        columns = list(embedder.categorical_columns) + list(embedder.numerical_columns)
+        self._order = np.array([frame.columns.get_loc(column) for column in columns], dtype=np.int64)
+        self._n_categorical = len(embedder.categorical_columns)
+        self._mask_ids = torch.tensor(
+            [int(embedder.label_encoders[column].transform(["[MASK]"])[0]) for column in embedder.categorical_columns],
+            dtype=torch.long,
+            device=device,
+        )
+        self._device = device
+
+    def draw(self, p_base: float) -> "EncodedTable":
+        from .utils import draw_dynamic_mask
+
+        dynamic_mask = draw_dynamic_mask(self._null_values, p_base)
+        positions = torch.tensor(dynamic_mask[:, self._order], dtype=torch.bool, device=self._device)
+        categorical = positions[:, : self._n_categorical].t()
+        numerical = positions[:, self._n_categorical :].t()
+        base = self._base
+        return EncodedTable(
+            cat_indices=torch.where(categorical, self._mask_ids.unsqueeze(1), base.cat_indices),
+            num_values=torch.where(numerical, torch.zeros((), dtype=base.num_values.dtype, device=self._device), base.num_values),
+            mask_flags=numerical,
+            null_flags=base.null_flags,
+            masked_positions=positions,
+        )
+
+
 class TabularEmbedder(nn.Module):
     """
     Class that encapsulates the creation of embeddings for tabular data:

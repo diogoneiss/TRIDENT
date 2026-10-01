@@ -47,32 +47,7 @@ def preprocess_table(data, null_token="[NULL]", p_base=0.15, fine_tunning=False)
     processed_data = data.mask(null_matrix, null_token)
 
     if not fine_tunning:
-        # Calculate the proportion of null values per row
-        prop_nulls = null_matrix.sum(axis=1) / data.shape[1]
-
-        # Adjust the dynamic masking probability based on the proportion of nulls
-        # Example: if a row has 30% nulls, then p_base * (1 - 0.3) => 70% of p_base
-        p_dynamic = p_base * (1 - prop_nulls.values[:, None])
-
-        # Generate a random matrix and apply the dynamic mask
-        dynamic_mask = np.random.rand(*data.shape) < p_dynamic
-
-        # Avoid masking values that are already null
-        null_values = null_matrix.to_numpy()
-        dynamic_mask[null_values] = False
-
-        # Ensure each row has at least one masked value
-        no_mask_rows = ~dynamic_mask.any(axis=1)
-        # One conversion for the whole frame, rather than a pandas row lookup per affected
-        # row: at p_base 0.05 on 45k rows that lookup was 94% of this loop's cost (backlog
-        # P1). The np.random.choice calls below keep their count, order and arguments, so
-        # the seeded draw sequence does not move and published results stand.
-        for i in np.where(no_mask_rows)[0]:
-            non_null_indices = np.where(~null_values[i])[0]
-            if len(non_null_indices) > 0:
-                random_index = np.random.choice(non_null_indices)
-                dynamic_mask[i, random_index] = True
-
+        dynamic_mask = draw_dynamic_mask(null_matrix.to_numpy(), p_base)
         # Apply the mask
         masked_data = processed_data.mask(dynamic_mask, "[MASK]")
         return masked_data
@@ -80,6 +55,41 @@ def preprocess_table(data, null_token="[NULL]", p_base=0.15, fine_tunning=False)
         # If we're in fine-tuning mode, we don't randomly mask
         # We just return with [NULL] in place of nulls
         return processed_data
+
+
+def draw_dynamic_mask(null_values: np.ndarray, p_base: float) -> np.ndarray:
+    """Which cells ``preprocess_table`` hides, drawn from the global numpy stream.
+
+    ``null_values`` is the frame's (rows, columns) null matrix. Every seeded result depends on
+    the draws below, so their count, order and arguments must not change; ``EpochMasker``
+    (``src/embedder.py``) draws through here too, which is what keeps it exact.
+    """
+    # Calculate the proportion of null values per row
+    prop_nulls = null_values.sum(axis=1) / null_values.shape[1]
+
+    # Adjust the dynamic masking probability based on the proportion of nulls
+    # Example: if a row has 30% nulls, then p_base * (1 - 0.3) => 70% of p_base
+    p_dynamic = p_base * (1 - prop_nulls[:, None])
+
+    # Generate a random matrix and apply the dynamic mask
+    dynamic_mask = np.random.rand(*null_values.shape) < p_dynamic
+
+    # Avoid masking values that are already null
+    dynamic_mask[null_values] = False
+
+    # Ensure each row has at least one masked value
+    no_mask_rows = ~dynamic_mask.any(axis=1)
+    # One conversion for the whole frame, rather than a pandas row lookup per affected
+    # row: at p_base 0.05 on 45k rows that lookup was 94% of this loop's cost (backlog
+    # P1). The np.random.choice calls below keep their count, order and arguments, so
+    # the seeded draw sequence does not move and published results stand.
+    for i in np.where(no_mask_rows)[0]:
+        non_null_indices = np.where(~null_values[i])[0]
+        if len(non_null_indices) > 0:
+            random_index = np.random.choice(non_null_indices)
+            dynamic_mask[i, random_index] = True
+    # Already a boolean array; asarray only states the type, it neither copies nor draws.
+    return np.asarray(dynamic_mask, dtype=bool)
 
 def split_numeric_and_special(df, numerical_columns, device='cuda'):
     """

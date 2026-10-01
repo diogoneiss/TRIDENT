@@ -5,10 +5,9 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 
-from src.embedder import TabularEmbedder
+from src.embedder import EpochMasker, TabularEmbedder
 from src.models import NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
-from src.utils import preprocess_table
 
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
@@ -87,26 +86,22 @@ def train_pretrainer(
     # The clean reconstruction targets never change, so they are encoded once per fold.
     original_train = model.embedder.encode(train_frame, device)
     original_validation = model.embedder.encode(validation_frame, device)
+    # Fresh masks every epoch, drawn exactly as preprocess_table draws them but applied to
+    # tensors encoded once per fold, so no epoch goes back through pandas.
+    train_masker = EpochMasker(model.embedder, train_frame, device)
+    validation_masker = EpochMasker(model.embedder, validation_frame, device)
 
     for epoch in tqdm(range(hyperparameters.pretraining_epochs), desc="Pre train epochs"):
-        masked_train_frame = preprocess_table(
-            train_frame.copy(), p_base=hyperparameters.mask_probability, fine_tunning=False
-        )
-        masked_validation_frame = preprocess_table(
-            validation_frame.copy(), p_base=hyperparameters.mask_probability, fine_tunning=False
-        )
-        # Fresh masks need a fresh encoding, but still only one per epoch rather
-        # than one per mini-batch.
-        masked_train = model.embedder.encode(masked_train_frame, device)
-        masked_validation = model.embedder.encode(masked_validation_frame, device)
+        masked_train = train_masker.draw(hyperparameters.mask_probability)
+        masked_validation = validation_masker.draw(hyperparameters.mask_probability)
         model.train()
         # Drawn on the CPU generator, then moved once so batch slicing stays on device.
-        indices = torch.randperm(len(masked_train_frame)).to(device)
+        indices = torch.randperm(len(train_frame)).to(device)
         # Accumulated on device in float64, so the per-batch losses are summed in
         # the same order and precision as before without a synchronisation each step.
         train_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
         train_steps = 0
-        for start in range(0, len(masked_train_frame), hyperparameters.batch_size):
+        for start in range(0, len(train_frame), hyperparameters.batch_size):
             batch_indices = indices[start : start + hyperparameters.batch_size]
             optimizer.zero_grad()
             total_loss, _ = model(masked_train[batch_indices], original_train[batch_indices])
@@ -122,7 +117,7 @@ def train_pretrainer(
         with torch.no_grad():
             validation_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
             validation_steps = 0
-            for start in range(0, len(masked_validation_frame), hyperparameters.batch_size):
+            for start in range(0, len(validation_frame), hyperparameters.batch_size):
                 batch = slice(start, start + hyperparameters.batch_size)
                 total_loss, _ = model(masked_validation[batch], original_validation[batch])
                 validation_loss_sum += total_loss.double()

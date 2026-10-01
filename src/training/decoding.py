@@ -14,7 +14,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 
-from src.embedder import as_category_strings
+from src.embedder import EpochMasker, as_category_strings
 from src.models import TridentDecoder
 from src.utils import preprocess_table
 
@@ -94,13 +94,10 @@ def train_and_evaluate_decoder(
     best_epoch = 0
 
     print("\n=== Starting Decoding (reconstructing hidden cells) ===")
+    # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
+    train_masker = EpochMasker(embedder, train_frame, device)
     for epoch in tqdm(range(hyperparameters.decode_epochs), desc="Decode epochs"):
-        hidden_train = embedder.encode(
-            preprocess_table(
-                train_frame.copy(), p_base=hyperparameters.mask_probability, fine_tunning=False
-            ),
-            device,
-        )
+        hidden_train = train_masker.draw(hyperparameters.mask_probability)
         model.train()
         order = torch.randperm(len(train_frame)).to(device)
         running = torch.zeros((), dtype=torch.float64, device=device)
