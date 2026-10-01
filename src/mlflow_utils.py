@@ -75,7 +75,8 @@ BASELINE_CACHE_TAG = "baseline_cache"
 # ``scripts/backfill_decode_patience_tag.py`` and marked DECODE_PATIENCE_BACKFILLED_TAG.
 DECODE_PATIENCE_TAG = "decode_patience"
 DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
-# How an imputation run's decoder applied its heads, "per_column" or "batched". On every
+# How an imputation run's decoder applied its heads, "batched" (the default since ADR 0012) or
+# "per_column". On every
 # imputation parent and trial; runs recorded before it are stamped "per_column" by
 # ``scripts/backfill_decoder_heads_tag.py`` and marked DECODER_HEADS_BACKFILLED_TAG.
 DECODER_HEADS_TAG = "decoder_heads"

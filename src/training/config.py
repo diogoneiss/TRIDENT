@@ -299,10 +299,10 @@ def build_training_parser() -> argparse.ArgumentParser:
         default=None,
         choices=DECODER_HEADS,
         help=(
-            "How the decoder applies its per-column heads: 'per_column' (one operation per "
-            "column, every run before 2026-09-30) or 'batched' (the same arithmetic in a few "
-            "operations, faster, equal up to rounding). Overrides DECODER_HEADS. "
-            "Default: per_column."
+            "How the decoder applies its per-column heads: 'batched' (the same arithmetic in a "
+            "few operations, faster; the default since 2026-10-01, ADR 0012) or 'per_column' "
+            "(one operation per column, which reproduces every earlier run to the last digit). "
+            "Overrides DECODER_HEADS. Default: batched."
         ),
     )
     parser.add_argument(

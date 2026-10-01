@@ -448,15 +448,16 @@ def test_decode_patience_is_off_unless_an_imputation_run_asks_for_it() -> None:
         Hyperparameters(decode_patience=-1)
 
 
-def test_decoder_heads_stay_per_column_unless_a_run_asks_for_batched() -> None:
+def test_decoder_heads_are_batched_unless_a_run_asks_for_the_per_column_path() -> None:
+    """Batched by the user's decision of 2026-10-01 (ADR 0012); per_column reproduces earlier runs."""
     parser = build_training_parser()
     imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
 
     default = resolve_training_request(parser.parse_args(imputation))
-    batched = resolve_training_request(parser.parse_args([*imputation, "--decoder_heads", "batched"]))
+    per_column = resolve_training_request(parser.parse_args([*imputation, "--decoder_heads", "per_column"]))
 
-    assert default.hyperparameters.decoder_heads == "per_column"
-    assert batched.hyperparameters.decoder_heads == "batched"
+    assert default.hyperparameters.decoder_heads == "batched"
+    assert per_column.hyperparameters.decoder_heads == "per_column"
     with pytest.raises(SystemExit):
         parser.parse_args([*imputation, "--decoder_heads", "fused"])
     with pytest.raises(ValueError, match="decoder heads"):

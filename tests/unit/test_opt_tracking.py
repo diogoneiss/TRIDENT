@@ -446,7 +446,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
         "DECODE_PATIENCE", "DECODER_HEADS",
     }
     assert promoted["DECODE_PATIENCE"] == 0
-    assert promoted["DECODER_HEADS"] == "per_column"
+    assert promoted["DECODER_HEADS"] == "batched"
     # Held at the defaults by the reduced profile (vehicle is all numerical, so the loss
     # balance is held too), and written out rather than left to the reader.
     assert promoted["DIM"] == 128

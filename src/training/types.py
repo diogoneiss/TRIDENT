@@ -26,11 +26,12 @@ PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_norm
 DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
 
 # How the decoder applies its per-column heads, accepted by ``Hyperparameters.decoder_heads``
-# and ``--decoder_heads``. ``per_column``, one small operation per column, is every run before
-# 2026-09-30, so it stays the default; ``batched`` regroups the same arithmetic into a few
-# operations, about 1.3x to 1.8x faster a decode epoch, and differs from it in rounding.
+# and ``--decoder_heads``. ``batched`` regroups the per-column arithmetic into a few
+# operations, 1.3x to 1.8x faster a decode epoch, and is the default by the user's decision of
+# 2026-10-01 (ADR 0012) after a check found no detectable difference. ``per_column``, one small
+# operation per column, is every run before that and reproduces them to the last digit.
 DECODER_HEADS: tuple[str, ...] = ("per_column", "batched")
-DEFAULT_DECODER_HEADS = "per_column"
+DEFAULT_DECODER_HEADS = "batched"
 
 # Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
 # checkout root every run starts from (ADR 0009). Never under a run's own output directory:

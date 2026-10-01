@@ -54,14 +54,15 @@ than the model width (128), against the usual ~4x; there is no final LayerNorm b
 (handoff item 4). A study of `LAYERS` 4, `DIM_FEED` 256 and a final LayerNorm (behind a flag) on
 the candidate configuration.
 
-### T18 · Decide whether `--decoder_heads batched` becomes the default — decision
+### T18 · Decide whether `--decoder_heads batched` becomes the default — done
 
 Implemented 2026-09-30 (`c9be71f`) behind a flag: 1.4–1.6x faster a cell, equal to the
 per-column path up to rounding, so it is another training draw of the same model, like a run on
 another GPU. Flipping the default needs the user's decision. **Checked 2026-10-01** (ticket
 [06](tickets/imputation-pretraining/06-batched-decoder-heads.md), E29): no detectable difference
 on any of the four variants, so the rule licenses the switch; pendigits leans +0.0008 on all
-three seeds (lower bound at zero), noise-sized.
+three seeds (lower bound at zero), noise-sized. **Decided 2026-10-01: batched is the default** (ADR 0012); the
+check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312231.
 
 ## Backlog
 
