@@ -13,11 +13,19 @@ Created 2026-09-30 from the proposals after studies 04 and 05 (E27, E28).
 
 | ID | Task | Evidence | Status |
 |---|---|---|---|
-| T00 | Make `embedding_normalized` the imputation default, and choose its decode setting (150, 450, 450 with patience 50, or per variant) | E25: never worse than the current objective, better than no pre-training on 3 of 4 variants. E26: with decode 450, never worse than either half. E27: patience 50 keeps the scores on 3 of 4 tables at a fraction of the time, −0.006 on pendigits. E28: batch 1024 pays only on pendigits. Best settled by T01 first | decision |
+| T00 | Make `embedding_normalized` the imputation default, and choose its decode setting (150, 450, 450 with patience 50, or per variant) | E25: never worse than the current objective, better than no pre-training on 3 of 4 variants. E26: with decode 450, never worse than either half. E27: patience 50 keeps the scores on 3 of 4 tables at a fraction of the time, −0.006 on pendigits. E28: batch 1024 pays only on pendigits. **E30 (all 21 variants): M better than A on 9, worse on none; P worse than A on 2, so by the pre-stated rule the recommendation is M** (normalised pre-training + decode 450), at 1.65x A's time | decision |
 
 ## Next up, in the recommended order
 
-### T01 · Confirmatory study on all 21 variants — in progress (ticket [07](tickets/imputation-pretraining/07-confirmatory-21-variants.md), E30)
+### T01 · Confirmatory study on all 21 variants — done (ticket [07](tickets/imputation-pretraining/07-confirmatory-21-variants.md), E30)
+
+**Done 2026-10-01**, 00:22–13:19 GMT-3, all 189 cells (A, M, P on 21 variants, three seeds).
+M − A: M better on 9 variants, A better on none; P − A: P better on 7, A better on 2
+(kr-vs-kp_40nan, spambase_40nan); M better than P on 3. Recommendation by the pre-stated rule:
+M, now T00's decision. Wall time 12 h 57 min against about 8.5 h planned (1.52x): small tables
+took 3–5x their per-cell estimate, kr-vs-kp 3.5x.
+
+The plan as written before launch:
 
 The candidate default against the current one on every imputation variant, since E24–E28 used
 only four. Three seeds (the verdict rule needs three), five folds, the same pairing and rule as

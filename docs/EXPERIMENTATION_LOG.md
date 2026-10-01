@@ -56,7 +56,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E27 | Stopping the decode stage on a validation plateau | 2026-09-30 | done | same scores with 61–107 of 450 epochs on three tables (kr-vs-kp 18.5 → 4.9 min); pendigits loses 0.006 |
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
-| E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 –  | in progress | pending |
+| E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
 
 ## Entries
 
@@ -851,9 +851,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/06-batched-decoder-heads.md`;
   `scripts/experiments/batched_heads_report.py`.
 
-### E30 · The candidate configuration on all 21 imputation variants (2026-10-01 – )
+### E30 · The candidate configuration on all 21 imputation variants (2026-10-01)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3).
+- **Status:** done, 00:22–13:19 GMT-3 on gorgona8, all 189 cells, none failed or missing.
 - **Hypothesis:** the normalised pre-training objective with a 450-epoch decode stage (M), and its
   early-stopped form (P), hold their E25–E27 gains, or at least lose nowhere, beyond the four
   variants they were found on.
@@ -868,7 +868,23 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Note, 2026-10-01 12:36 GMT-3:** queue 2, projected to end near the cutoff, split across two
   launchers once queues 3 and 4 had finished (scheduling only; no cell or cutoff changed; ticket
   07, Running notes).
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md`;
-  `scripts/experiments/confirmatory_report.py`.
+- **Results (induced, 15 fold pairs per variant):** M − A: M better on 9 variants (kr-vs-kp_80nan
+  −0.024, spambase_20nan −0.015, vehicle_20nan −0.029, vehicle_60nan −0.012, biodeg_20nan −0.046,
+  biodeg_60nan −0.058, pendigits −0.068, letter −0.054, electricity −0.034), A better on none.
+  P − A: P better on 7, A better on 2 (kr-vs-kp_40nan +0.014, spambase_40nan +0.014). P − M: M
+  better on 3 (biodeg_60nan, kc2_60nan, letter). P is also worse than A on all three seeds of
+  spambase_60nan (+0.070, interval too wide for a verdict). Masked cells: A better than both
+  candidates on kr-vs-kp_20nan; both better than A on biodeg_60nan, pendigits and letter. Mean
+  induced score below the best baseline on 7 variants for A, 11 for M, 9 for P. A cell of M costs
+  1.65x A's time summed over the variants, P 1.22x. Wall time 12 h 57 min against about 8.5 h
+  planned (1.52x).
+- **Conclusion:** by the rule fixed in advance, M qualifies and P does not, so the recommendation is
+  M (`embedding_normalized` pre-training with a 450-epoch decode stage) as the imputation
+  default; the user decides (T00). Its verdicts fall on pendigits, letter, electricity, both
+  biodeg and both vehicle variants, spambase_20nan and kr-vs-kp_80nan; no credit-g or kc2
+  variant shows a detectable difference. P stopped after a mean of 100 and 151 decode epochs
+  where it lost (kr-vs-kp_40nan, spambase_40nan); whether a longer patience recovers those is
+  T11's question.
+- **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md` (Outcome);
+  `scripts/experiments/confirmatory_report.py`; report, tally and secondary measures in
+  `/scratch2/diogoneiss/trident-2026-10-01-confirmatory/`.
