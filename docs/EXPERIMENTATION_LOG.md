@@ -55,6 +55,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
 | E27 | Stopping the decode stage on a validation plateau | 2026-09-30 | done | same scores with 61–107 of 450 epochs on three tables (kr-vs-kp 18.5 → 4.9 min); pendigits loses 0.006 |
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
+| E29 | Batched decoder heads against per-column | 2026-09-30 –  | in progress | pending |
 
 ## Entries
 
@@ -828,3 +829,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   next question.
 - **Sources:** `docs/tickets/imputation-pretraining/05-larger-batch.md`;
   `scripts/experiments/decode_patience_batch_report.py`.
+
+### E29 · Batched decoder heads against per-column (2026-09-30 – )
+
+- **Status:** in progress (gorgona8, one queue).
+- **Hypothesis:** the batched heads (`c9be71f`) regroup the same arithmetic, so beyond giving
+  another training draw they change nothing; a pairing over 15 folds per variant would show no
+  detectable difference.
+- **Scenarios:** arm H = arm A with `DECODER_HEADS` batched, against the per-column A cells on
+  the server; four variants, seeds 42, 7, 13; credit-g_20nan pinned to `fcaadfb`. Tag
+  `experiment=batched-heads-2026-09-30`.
+- **Measures and decision rule:** primary H − A on `impute/induced/impute_score`, 15 fold pairs,
+  verdict only when the interval excludes zero and all seeds agree. "No detectable difference"
+  on all four licenses the default switch; any verdict keeps per-column.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-pretraining/06-batched-decoder-heads.md`;
+  `scripts/experiments/batched_heads_report.py`.
