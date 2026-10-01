@@ -55,7 +55,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E26 | Normalised-target pre-training with a long decode stage | 2026-09-30 | done | never worse than C or N; beats C on kr-vs-kp, matches C on pendigits (both clear knn10) |
 | E27 | Stopping the decode stage on a validation plateau | 2026-09-30 | done | same scores with 61–107 of 450 epochs on three tables (kr-vs-kp 18.5 → 4.9 min); pendigits loses 0.006 |
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
-| E29 | Batched decoder heads against per-column | 2026-09-30 –  | in progress | pending |
+| E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
 
 ## Entries
 
@@ -830,9 +830,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/05-larger-batch.md`;
   `scripts/experiments/decode_patience_batch_report.py`.
 
-### E29 · Batched decoder heads against per-column (2026-09-30 – )
+### E29 · Batched decoder heads against per-column (2026-09-30 – 2026-10-01)
 
-- **Status:** in progress (gorgona8, one queue).
+- **Status:** done, 23:19–00:08 GMT-3, all 12 cells.
 - **Hypothesis:** the batched heads (`c9be71f`) regroup the same arithmetic, so beyond giving
   another training draw they change nothing; a pairing over 15 folds per variant would show no
   detectable difference.
@@ -842,7 +842,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** primary H − A on `impute/induced/impute_score`, 15 fold pairs,
   verdict only when the interval excludes zero and all seeds agree. "No detectable difference"
   on all four licenses the default switch; any verdict keeps per-column.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (induced, 15 fold pairs):** H − A: credit-g_20nan +0.0026, credit-g_80nan +0.0001,
+  kr-vs-kp −0.0006, pendigits +0.0008 [−0.0000, +0.0016] (all three seeds +0.0006 to +0.0009); no
+  detectable difference on any variant, induced or masked.
+- **Conclusion:** the rule licenses the batched heads as the default. Caveat: pendigits leans the
+  same way on every seed by 0.2% of the score, an order below its machine gap.
 - **Sources:** `docs/tickets/imputation-pretraining/06-batched-decoder-heads.md`;
   `scripts/experiments/batched_heads_report.py`.

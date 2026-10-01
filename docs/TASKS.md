@@ -58,9 +58,10 @@ the candidate configuration.
 
 Implemented 2026-09-30 (`c9be71f`) behind a flag: 1.4–1.6x faster a cell, equal to the
 per-column path up to rounding, so it is another training draw of the same model, like a run on
-another GPU. Flipping the default needs the user's decision; a small check (arm A or M on the
-four study variants, three seeds, batched against the existing per-column cells) would show "no
-detectable difference" if the regrouping changes nothing but the draw.
+another GPU. Flipping the default needs the user's decision. **Checked 2026-10-01** (ticket
+[06](tickets/imputation-pretraining/06-batched-decoder-heads.md), E29): no detectable difference
+on any of the four variants, so the rule licenses the switch; pendigits leans +0.0008 on all
+three seeds (lower bound at zero), noise-sized.
 
 ## Backlog
 

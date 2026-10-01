@@ -44,3 +44,23 @@ than the per-column one?
 
 Four variants, three seeds, one configuration; the check can only show that a difference, if
 any, is smaller than this design detects (about 0.01 on these variants).
+
+## Outcome (2026-10-01, 00:08 GMT-3)
+
+All 12 H cells ran (23:19–00:08 GMT-3, one trainer), none missing. Numbers from
+`scripts/experiments/batched_heads_report.py`; a positive H − A favours the per-column heads.
+
+| variant | H − A, induced (seeds 42, 7, 13) | verdict | H − A, masked | verdict | fold time per cell, A → H |
+|---|---|---|---|---|---|
+| `credit-g_20nan` | +0.0026 [−0.0062, +0.0114] (+0.0100, −0.0015, −0.0007) | no detectable difference | +0.0006 [−0.0079, +0.0090] | none | 6.9 → 1.0 min |
+| `credit-g_80nan` | +0.0001 [−0.0012, +0.0014] (−0.0000, +0.0000, +0.0003) | no detectable difference | +0.0004 [−0.0017, +0.0025] | none | 2.4 → 1.1 min |
+| `kr-vs-kp_40nan` | −0.0006 [−0.0101, +0.0089] (+0.0131, −0.0009, −0.0140) | no detectable difference | +0.0100 [−0.0051, +0.0252] | none | 7.9 → 3.0 min |
+| `pendigits_20nan` | +0.0008 [−0.0000, +0.0016] (+0.0009, +0.0009, +0.0006) | no detectable difference | +0.0003 [−0.0005, +0.0011] | none | 13.4 → 10.4 min |
+
+**Reading.** By the rule fixed in advance, "no detectable difference" on all four variants, so
+the batched heads may become the default. One caveat, stated rather than ruled on: on
+pendigits all three seeds lean the same way (+0.0006 to +0.0009) and the interval's lower bound
+sits at zero; the size is 0.2% of the score and a tenth of the pendigits machine gap
+(per-fold sd 0.005, study 01), so it is noise-sized but not proven to be noise. The fold times
+include every speed-up since A's cells ran (the store on the SSD, the exact decoder fixes, the
+epoch masks, the baseline cache), not the batched heads alone.
