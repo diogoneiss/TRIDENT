@@ -336,6 +336,42 @@ def test_the_column_wise_path_asks_each_gap_with_only_its_own_column_hidden(monk
                 assert bool(hidden.null_flags[index - offset][other_gaps].all())
 
 
+def test_the_decode_stage_can_show_every_real_gap_as_mask_and_still_learns_only_from_truths(
+    monkeypatch,
+) -> None:
+    """T02 step 2. With ``DECODE_GAP_TOKEN`` ``mask`` the decode stage shows a row's real gaps
+    as ``[MASK]``, the shape the induced headline scores in, on its training rows, its
+    validation rows and the masked test population alike; no gap ever enters the loss, since
+    it has no truth. The default ``null`` leaves every input as it was."""
+    seen: list = []
+    forward, predict = TridentDecoder.forward, TridentDecoder.predict
+    monkeypatch.setattr(TridentDecoder, "forward", lambda self, hidden, targets: (seen.append(("train", hidden, targets)), forward(self, hidden, targets))[1])
+    monkeypatch.setattr(TridentDecoder, "predict", lambda self, hidden: (seen.append(("score", hidden, None)), predict(self, hidden))[1])
+    dataset = _dataset()
+
+    outcome, _ = _run(dataset=dataset, sibling=_complete_frame(), hyperparameters=_hyperparameters(DECODE_GAP_TOKEN="mask"))
+
+    embedder = outcome.model.embedder
+    null_ids = [int(embedder.label_encoders[c].transform(["[NULL]"])[0]) for c in embedder.categorical_columns]
+    assert seen
+    for role, hidden, targets in seen:
+        for index, null_id in enumerate(null_ids):
+            assert not bool((hidden.cat_indices[index] == null_id).any()), role
+        assert not bool(hidden.null_flags.any()), role
+        if targets is not None:
+            # A loss position is never a gap: the clean view holds [NULL] exactly there.
+            offset = len(null_ids)
+            for index, null_id in enumerate(null_ids):
+                assert not bool((hidden.masked_positions[:, index] & (targets.cat_indices[index] == null_id)).any())
+            assert not bool((hidden.masked_positions[:, offset:].t() & targets.null_flags).any())
+    assert set(outcome.result.metrics) >= {"impute/masked/impute_score", "impute/induced/impute_score"}
+
+    seen.clear()
+    _run(dataset=dataset, sibling=_complete_frame())
+    training = [hidden for role, hidden, _ in seen if role == "train"]
+    assert any(bool(hidden.null_flags.any()) for hidden in training)
+
+
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
     """Ticket 0004: a known truth should not be reported at the model's precision.
 

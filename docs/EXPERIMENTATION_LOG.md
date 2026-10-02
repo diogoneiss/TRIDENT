@@ -58,6 +58,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
+| E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 – | in progress | pending |
 
 ## Entries
 
@@ -929,3 +930,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   headline, wait on the user's decision.
 - **Sources:** `docs/tickets/imputation-token-shape/01-column-wise-scoring.md` (Outcome);
   `scripts/experiments/column_wise_report.py`.
+
+### E32 · Training the decode stage with the gaps shown as `[MASK]` (2026-10-02 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 22:00 GMT-3 on
+  2026-10-02).
+- **Hypothesis:** E31 showed the train/score token-shape mismatch costs score where gaps are
+  many. Showing every real gap as `[MASK]` in the decode stage (`DECODE_GAP_TOKEN mask`), the
+  shape the induced headline scores in, should recover those gains from the training side
+  without the price column-wise scoring paid at 20nan (T02 step 2).
+- **Scenarios:** arm G = today's defaults (ADR 0013) with `DECODE_GAP_TOKEN mask`, against E30's
+  arm-M cells (read through E31's). All 21 variants, seeds 42, 7, 13, five folds; 63 new cells
+  tagged `experiment=gap-token-2026-10-02`. Two trained models per pair, as in E30.
+- **Measures and decision rule:**
+  - **Primary:** D = G − M on `impute/induced/impute_score`, 15 fold pairs per variant; a
+    verdict needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading on the 9 variants at 60nan or more:** supported if G is better on at least 5 and
+    M better on none; refuted if M is better on at least 5, or if at least 7 have no verdict;
+    mixed otherwise. G is recommended as the default only if supported and no variant among the
+    21 shows M better.
+  - **Secondary:** D by missing level; G against M scored column-wise (E31); the masked
+    population; variants below the best baseline and at or above 1.0; time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md`;
+  `scripts/experiments/gap_token_report.py`.

@@ -195,12 +195,47 @@ class TabularEmbedder(nn.Module):
         # 5) [CLS] Token
         # -----------------------
         self.cls_token = nn.Parameter(torch.randn(dimensao))
+        # Per device, the [NULL] and [MASK] ids of every categorical column, for ``gaps_as_mask``.
+        self._gap_token_ids: dict[str, tuple[torch.Tensor, torch.Tensor]] = {}
 
         # -----------------------
         # 6) Positional Embedding
         # -----------------------
         self.n_tokens = len(self.categorical_columns) + len(self.numerical_columns)
         self.pos_embedding_layer = nn.Embedding(self.n_tokens + 1, self.dimensao)
+
+    def gaps_as_mask(self, encoded: "EncodedTable") -> "EncodedTable":
+        """The same table with every real gap shown as its column's ``[MASK]``.
+
+        ADR 0004 shows a gap as ``[NULL]``; the decode stage may show it as ``[MASK]`` instead,
+        the token the induced scoring presents every gap as, so that it trains on the row shape
+        it is scored in (``DECODE_GAP_TOKEN``). Only what the model sees changes: a categorical
+        gap takes the column's ``[MASK]`` id, a numerical one its mask flag. ``masked_positions``
+        is left alone, because a gap has no truth and must never enter the loss.
+        """
+        device = encoded.cat_indices.device
+        ids = self._gap_token_ids.get(str(device))
+        if ids is None:
+            ids = tuple(
+                torch.tensor(
+                    [int(self.label_encoders[column].transform([token])[0]) for column in self.categorical_columns],
+                    dtype=torch.long,
+                    device=device,
+                ).unsqueeze(1)
+                for token in ("[NULL]", "[MASK]")
+            )
+            self._gap_token_ids[str(device)] = ids
+        null_ids, mask_ids = ids
+        cat_indices = encoded.cat_indices
+        if len(self.categorical_columns):
+            cat_indices = torch.where(cat_indices == null_ids, mask_ids, cat_indices)
+        return EncodedTable(
+            cat_indices=cat_indices,
+            num_values=encoded.num_values,
+            mask_flags=encoded.mask_flags | encoded.null_flags,
+            null_flags=torch.zeros_like(encoded.null_flags),
+            masked_positions=encoded.masked_positions,
+        )
 
     def encode(self, df, device=None) -> EncodedTable:
         """

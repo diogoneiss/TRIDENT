@@ -285,7 +285,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
-        "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE",
+        "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
     }
 
 
@@ -533,3 +533,26 @@ def test_an_imputation_run_trains_the_configuration_e30_chose_unless_told_otherw
         validate_parsed_args(
             parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_epochs", "150"])
         )
+
+
+def test_the_decode_stage_shows_gaps_as_null_unless_an_imputation_run_asks_for_mask() -> None:
+    """T02 step 2: ``--decode_gap_token mask`` shows a row's real gaps as [MASK] in the decode
+    stage. ``null`` is every run before it and stays the default; the flag is imputation's."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation))
+    from_flag = resolve_training_request(parser.parse_args([*imputation, "--decode_gap_token", "mask"]))
+    flag_over_mapping = resolve_training_request(
+        Namespace(dataset_name="credit-g_20nan", task="imputation", hyperparams_override={"DECODE_GAP_TOKEN": "null"}, decode_gap_token="mask")
+    )
+
+    assert default.hyperparameters.decode_gap_token == "null"
+    assert from_flag.hyperparameters.decode_gap_token == "mask"
+    assert flag_over_mapping.hyperparameters.decode_gap_token == "mask"
+    with pytest.raises(SystemExit, match="decode_gap_token"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_gap_token", "mask"]))
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--decode_gap_token", "zero"])
+    with pytest.raises(ValueError, match="gap token"):
+        Hyperparameters.from_mapping({"DECODE_GAP_TOKEN": "zero"})

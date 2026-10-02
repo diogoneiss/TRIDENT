@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
+    DECODE_GAP_TOKENS,
     DECODER_HEADS,
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
@@ -28,6 +29,7 @@ from .types import (
 # study would silently not reach its trials.
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
+    "decode_gap_token",
 )
 
 
@@ -59,6 +61,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
         hyperparameters = dataclasses.replace(
             hyperparameters, pretraining_objective=pretraining_objective
         )
+    # ``--decode_gap_token`` wins the same way (T02 step 2).
+    decode_gap_token = getattr(args, "decode_gap_token", None)
+    if decode_gap_token is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_gap_token=decode_gap_token)
     # ``--decode_epochs`` wins the same way (ADR 0013).
     decode_epochs = getattr(args, "decode_epochs", None)
     if decode_epochs is not None:
@@ -142,6 +148,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "EVAL_MASK_RATE": values.eval_mask_rate,
             "DECODE_PATIENCE": values.decode_patience,
             "DECODER_HEADS": values.decoder_heads,
+            "DECODE_GAP_TOKEN": values.decode_gap_token,
         }
     return {
         **shared,
@@ -235,6 +242,13 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
+
+    # Only imputation has a decode stage with gaps to show.
+    if (
+        getattr(args, "decode_gap_token", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --decode_gap_token requires --task imputation")
 
     # Only imputation has a decode stage to size.
     if (
@@ -332,6 +346,19 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: how many epochs the decode stage trains. Overrides EPOCHS_DECODE "
             "from the hyperparameter file. Default: 450 since ADR 0013; 150 is the decode "
             "stage of every run before it."
+        ),
+    )
+    parser.add_argument(
+        "--decode_gap_token",
+        type=str,
+        default=None,
+        choices=DECODE_GAP_TOKENS,
+        help=(
+            "Imputation only: what the decode stage shows the model at a row's real gap. 'null' "
+            "(the default, every run before the choice) shows the [NULL] token; 'mask' shows "
+            "[MASK], the token the induced scoring presents every gap as, so the stage trains on "
+            "the row shape it is scored in. A gap never enters the loss either way. Overrides "
+            "DECODE_GAP_TOKEN from the hyperparameter file."
         ),
     )
     parser.add_argument(

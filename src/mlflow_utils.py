@@ -81,6 +81,12 @@ DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
 # ``scripts/backfill_decoder_heads_tag.py`` and marked DECODER_HEADS_BACKFILLED_TAG.
 DECODER_HEADS_TAG = "decoder_heads"
 DECODER_HEADS_BACKFILLED_TAG = "decoder_heads_backfilled"
+# What an imputation run's decode stage showed at a real gap, "null" (the default) or "mask"
+# (T02 step 2). On every imputation parent and trial; runs recorded before it are stamped
+# "null" by ``scripts/backfill_decode_gap_token_tag.py`` and marked
+# DECODE_GAP_TOKEN_BACKFILLED_TAG.
+DECODE_GAP_TOKEN_TAG = "decode_gap_token"
+DECODE_GAP_TOKEN_BACKFILLED_TAG = "decode_gap_token_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

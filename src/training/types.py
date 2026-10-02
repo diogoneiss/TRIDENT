@@ -36,6 +36,14 @@ DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
 DECODER_HEADS: tuple[str, ...] = ("per_column", "batched")
 DEFAULT_DECODER_HEADS = "batched"
 
+# What the decode stage shows the model at a row's real gap, accepted by
+# ``Hyperparameters.decode_gap_token`` and ``--decode_gap_token``. ``null`` is the ``[NULL]``
+# token every run before the choice showed (ADR 0004); ``mask`` shows the gap as ``[MASK]``,
+# the token the induced scoring presents every gap as, so the decode stage trains on the row
+# shape it is scored in (T02 step 2). A gap has no truth, so it never enters the loss either way.
+DECODE_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
+DEFAULT_DECODE_GAP_TOKEN = "null"
+
 # Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
 # checkout root every run starts from (ADR 0009). Never under a run's own output directory:
 # the study runners give every cell its own, and a cache there would never be shared.
@@ -187,6 +195,7 @@ class Hyperparameters:
     # either way, and the schedule still spans the configured epochs.
     decode_patience: int = 0
     decoder_heads: str = DEFAULT_DECODER_HEADS
+    decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -204,6 +213,10 @@ class Hyperparameters:
         if self.decoder_heads not in DECODER_HEADS:
             raise ValueError(
                 f"Unknown decoder heads {self.decoder_heads!r}; expected one of {', '.join(DECODER_HEADS)}"
+            )
+        if self.decode_gap_token not in DECODE_GAP_TOKENS:
+            raise ValueError(
+                f"Unknown decode gap token {self.decode_gap_token!r}; expected one of {', '.join(DECODE_GAP_TOKENS)}"
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
@@ -259,6 +272,9 @@ class Hyperparameters:
             decode_patience=int(values.get("DECODE_PATIENCE", values.get("decode_patience", 0))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
+            ),
+            decode_gap_token=str(
+                values.get("DECODE_GAP_TOKEN", values.get("decode_gap_token", DEFAULT_DECODE_GAP_TOKEN))
             ),
             eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
             eval_mask_rates_extra=tuple(

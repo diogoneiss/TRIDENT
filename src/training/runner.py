@@ -10,6 +10,7 @@ from src.mlflow_utils import (
     BASELINE_CACHE_TAG,
     DECODE_PATIENCE_TAG,
     DECODER_HEADS_TAG,
+    DECODE_GAP_TOKEN_TAG,
     PRETRAIN_OBJECTIVE_TAG,
 )
 from src.utils import set_global_seed
@@ -101,6 +102,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     BASELINE_CACHE_TAG: "off" if request.runtime.baseline_cache_dir is None else "on",
                     DECODE_PATIENCE_TAG: str(request.hyperparameters.decode_patience),
                     DECODER_HEADS_TAG: request.hyperparameters.decoder_heads,
+                    DECODE_GAP_TOKEN_TAG: request.hyperparameters.decode_gap_token,
                 }
                 if task.name == "imputation"
                 else {}

@@ -14,7 +14,7 @@ import torch
 import torch.optim as optim
 from tqdm import tqdm
 
-from src.embedder import EpochMasker, as_category_strings
+from src.embedder import EncodedTable, EpochMasker, as_category_strings
 from src.models import TridentDecoder
 from src.utils import preprocess_table
 
@@ -79,13 +79,19 @@ def train_and_evaluate_decoder(
     # is drawn once too: a re-rolled one would move the loss for reasons that have
     # nothing to do with the model, making checkpoint selection meaningless.
     embedder = model.embedder
+    # What the model sees at a row's real gap: the [NULL] it stores, or [MASK] as the induced
+    # scoring presents it (``DECODE_GAP_TOKEN``, T02 step 2). Applied to every input the decode
+    # stage shows the model, never to the clean targets; the loss positions do not move.
+    shown = embedder.gaps_as_mask if hyperparameters.decode_gap_token == "mask" else _as_is
     clean_train = embedder.encode(_clean(train_frame), device)
     clean_validation = embedder.encode(_clean(validation_frame), device)
-    hidden_validation = embedder.encode(
-        evaluation_mask(
-            validation_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal
-        ),
-        device,
+    hidden_validation = shown(
+        embedder.encode(
+            evaluation_mask(
+                validation_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal
+            ),
+            device,
+        )
     )
 
     train_losses: list[float] = []
@@ -98,7 +104,7 @@ def train_and_evaluate_decoder(
     # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
     train_masker = EpochMasker(embedder, train_frame, device)
     for epoch in tqdm(range(hyperparameters.decode_epochs), desc="Decode epochs"):
-        hidden_train = train_masker.draw(hyperparameters.mask_probability)
+        hidden_train = shown(train_masker.draw(hyperparameters.mask_probability))
         model.train()
         order = torch.randperm(len(train_frame)).to(device)
         running = torch.zeros((), dtype=torch.float64, device=device)
@@ -151,8 +157,10 @@ def train_and_evaluate_decoder(
     baseline_scorer = BaselineScorer(
         train_frame, dataset.numerical_columns, dataset.categorical_columns, baseline_cache_dir
     )
-    hidden_test = embedder.encode(
-        evaluation_mask(test_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal), device
+    hidden_test = shown(
+        embedder.encode(
+            evaluation_mask(test_frame, hyperparameters.eval_mask_rate, seed, fold_ordinal), device
+        )
     )
     raw_variant = (
         dataset.raw_numerical.iloc[fold.test_indices].reset_index(drop=True)
@@ -188,7 +196,7 @@ def train_and_evaluate_decoder(
     for extra in hyperparameters.eval_mask_rates_extra:
         at_rate = _score_population(
             model,
-            embedder.encode(evaluation_mask(test_frame, extra, seed, fold_ordinal), device),
+            shown(embedder.encode(evaluation_mask(test_frame, extra, seed, fold_ordinal), device)),
             clean_test,
             "masked",
         )
@@ -399,6 +407,10 @@ def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dic
             "as misses, since the decoder cannot produce them."
         )
     return frame, unseen
+
+
+def _as_is(encoded: EncodedTable) -> EncodedTable:
+    return encoded
 
 
 def _select(encoded, positions: torch.Tensor):
