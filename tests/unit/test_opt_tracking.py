@@ -443,15 +443,16 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
         "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
-        "DECODE_PATIENCE", "DECODER_HEADS",
+        "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE",
     }
     assert promoted["DECODE_PATIENCE"] == 0
     assert promoted["DECODER_HEADS"] == "batched"
-    # Held at the defaults by the reduced profile (vehicle is all numerical, so the loss
-    # balance is held too), and written out rather than left to the reader.
+    # Held at the task's defaults by the reduced profile (vehicle is all numerical, so the
+    # loss balance is held too), and written out rather than left to the reader.
     assert promoted["DIM"] == 128
     assert promoted["EPOCHS_PRE"] == 300
-    assert promoted["EPOCHS_DECODE"] == 150
+    assert promoted["EPOCHS_DECODE"] == 450
+    assert promoted["PRETRAIN_OBJECTIVE"] == "embedding_normalized"
     assert promoted["LAMBDA_NUM"] == 1.0
     assert promoted["LR_SCHEDULER"] == "cosine"
     # The sampled values are the winning trial's (0.4 beats 0.9 when minimising).
@@ -464,6 +465,50 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
     assert study.data.metrics["optuna/best_trial_number"] == 1.0
     assert promoted["LR_DECODE"] == float(study.data.params["best_LR_DECODE"])
     assert promoted["PROB_MASCARA"] == float(study.data.params["best_PROB_MASCARA"])
+
+
+def test_an_imputation_study_holds_and_promotes_the_task_defaults_unless_flags_say_otherwise(
+    mlflow_backend, monkeypatch
+) -> None:
+    """ADR 0013: a search holds a knob where a plain imputation run would put it.
+
+    A study without ``--lr_scheduler`` follows imputation's per-epoch cosine and says so on
+    every run it opens, and its promoted file writes the held objective, decode length and
+    schedule out. The configuration flags reach every trial and the promoted file, so the
+    search before ADR 0013 stays one command away.
+    """
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4})
+    monkeypatch.setattr(opt, "train_main", stub)
+    promoted_path = Path("datasets") / "hiperparams" / "vehicle" / "vehicle_00nan.imputation.json"
+
+    opt.run_hyperparameter_optimization(_optuna_args(task="imputation", n_trials=2, promote_best=True))
+
+    promoted = json.loads(promoted_path.read_text())
+    assert (promoted["PRETRAIN_OBJECTIVE"], promoted["EPOCHS_DECODE"], promoted["LR_SCHEDULER"]) == (
+        "embedding_normalized", 450, "cosine",
+    )
+    runs = _runs_by_name(MlflowClient(tracking_uri=mlflow_backend))
+    assert {run.data.tags["lr_scheduler"] for run in runs.values()} == {"cosine"}
+
+    stub.calls.clear()
+    opt.run_hyperparameter_optimization(
+        _optuna_args(
+            task="imputation", n_trials=2, promote_best=True, lr_scheduler="cosine_legacy",
+            pretrain_objective="embedding", decode_epochs=150, decode_patience=20,
+        )
+    )
+
+    assert len(stub.calls) == 2
+    assert all(
+        (call.pretrain_objective, call.decode_epochs, call.decode_patience, call.lr_scheduler)
+        == ("embedding", 150, 20, "cosine_legacy")
+        for call in stub.calls
+    )
+    promoted = json.loads(promoted_path.read_text())
+    assert (promoted["PRETRAIN_OBJECTIVE"], promoted["EPOCHS_DECODE"], promoted["LR_SCHEDULER"]) == (
+        "embedding", 150, "cosine_legacy",
+    )
+    assert promoted["DECODE_PATIENCE"] == 20
 
 
 def test_promotion_writes_a_complete_classification_configuration_to_the_shared_file(

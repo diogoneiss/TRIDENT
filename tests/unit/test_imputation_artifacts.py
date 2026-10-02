@@ -1,5 +1,6 @@
 """The files an imputation run leaves behind (ADR 0004, decision 8)."""
 
+import json
 from pathlib import Path
 
 import pandas as pd
@@ -7,6 +8,8 @@ import pytest
 from sklearn.preprocessing import StandardScaler
 
 from src.training.artifacts import ArtifactWriter
+from src.training.config import complete_configuration
+from src.training.types import CLASSIFICATION, IMPUTATION, Hyperparameters
 
 
 def _scored_cells() -> pd.DataFrame:
@@ -246,3 +249,26 @@ def test_a_truth_the_run_knows_exactly_is_shown_exactly(tmp_path) -> None:
     assert float(ledger["actual_original_units"].iloc[0]) == 500.0
     # The imputed side has no exact counterpart: float32 is the model's real precision.
     assert float(ledger["imputed_original_units"].iloc[0]) == pytest.approx(750.0)
+
+
+def test_a_runs_hyperparameter_file_names_every_value_an_imputation_run_trained_with(tmp_path) -> None:
+    """The objective, the patience and the head mode move what an imputation run computes,
+    and since ADR 0013 the objective's default depends on the task, so a results directory
+    that left them out could not say which configuration it holds. The file carries the same
+    key set a promoted configuration does; classification's is unchanged."""
+    values = Hyperparameters(pretraining_objective="embedding_normalized", decode_epochs=450)
+    imputation = ArtifactWriter(tmp_path / "i", tmp_path / "m", "credit-g_20nan").write_hyperparameters(
+        values, IMPUTATION
+    )
+    classification = ArtifactWriter(tmp_path / "c", tmp_path / "m", "vehicle_00nan").write_hyperparameters(
+        Hyperparameters(), CLASSIFICATION
+    )
+
+    written = json.loads(imputation.read_text())
+    assert written == complete_configuration(values, "imputation")
+    assert written["PRETRAIN_OBJECTIVE"] == "embedding_normalized"
+    assert list(json.loads(classification.read_text())) == [
+        "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE", "BATCH",
+        "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER", "EPOCH_FINE", "LR_FINE",
+        "WEIGHT_DECAY_FINE", "LABELS",
+    ]

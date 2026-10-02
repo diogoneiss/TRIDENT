@@ -1,7 +1,7 @@
 import os
 import json
 import copy
-import dataclasses
+from typing import Mapping
 import pandas as pd
 import numpy as np
 import torch
@@ -27,18 +27,19 @@ from src.mlflow_utils import (
     get_or_create_experiment,
 )
 from src.training.config import (
+    CONFIGURATION_FLAGS,
     build_training_parser,
     complete_configuration,
     hyperparameter_file,
+    load_hyperparameters,
     validate_parsed_args,
 )
 from src.training.data import PROCESSED_DATASETS, declared_column_types, has_complete_sibling
 from src.training.tracking import execution_tags, mirror_root_safely
 from src.training.types import (
-    DEFAULT_LR_SCHEDULER,
     DEFAULT_SEARCH_OBJECTIVE_POPULATION,
     DatasetSpec,
-    Hyperparameters,
+    default_lr_scheduler,
     task_spec,
     validation_objective_key,
 )
@@ -189,7 +190,9 @@ class ObjectiveFunctionWrapper:
         # MLflow parent run ID — set by run_hyperparameter_optimization before calling study.optimize
         self.mlflow_parent_run_id: str | None = None
         self.mlflow_experiment_id: str | None = None
-        self.lr_scheduler: str | None = None
+        # The configuration flags the study was given (``CONFIGURATION_FLAGS``), None where
+        # absent, copied onto every trial so a trial resolves its configuration as a run would.
+        self.configuration_flags: dict[str, object] = {}
         # trial number -> MLflow run id, filled as trials run.
         self.trial_run_ids: dict[int, str] = {}
 
@@ -229,9 +232,11 @@ class ObjectiveFunctionWrapper:
         # comparable run, never sets it.
         args.score_search_objective = self.task == 'imputation'
         args.hyperparams_override = params  # Add custom field for hyperparams
-        # The schedule is not part of the search space; every trial uses the one
-        # chosen on the command line (or the default) so trials stay comparable.
-        args.lr_scheduler = self.lr_scheduler
+        # The schedule and the other configuration flags are not part of the search space;
+        # every trial uses the ones chosen on the command line (or the task's defaults) so
+        # trials stay comparable.
+        for flag in CONFIGURATION_FLAGS:
+            setattr(args, flag, self.configuration_flags.get(flag))
         # The runner logs into this trial's run instead of opening a second
         # top-level run, which MLflow refuses while the trial run is active.
         args.mlflow_run_role = "optuna_trial"
@@ -249,7 +254,9 @@ class ObjectiveFunctionWrapper:
             "dataset": self.dataset_name,
             "run_type": "optuna_trial",
             "run_role": "optuna_trial",
-            LR_SCHEDULER_TAG: self.lr_scheduler or DEFAULT_LR_SCHEDULER,
+            LR_SCHEDULER_TAG: str(
+                self.configuration_flags.get("lr_scheduler") or default_lr_scheduler(self.task)
+            ),
             # Both tags are dense on every run kind; a trial that crashes before the
             # runner sets its own would otherwise be a run of no known task.
             TASK_TAG: self.task,
@@ -338,18 +345,22 @@ class ObjectiveFunctionWrapper:
 
 
 def promote_best_configuration(
-    best_config: dict, task: str, dataset_name: str, lr_scheduler: str
+    best_config: dict, task: str, dataset_name: str, configuration_flags: Mapping[str, object]
 ) -> Path:
     """Publish a study's winning configuration where the task's runs will find it.
 
-    The file is complete: the task's full key set with resolved values, held knobs
-    included, and ``LR_SCHEDULER`` set to the schedule the study ran under (the trials
-    took it from the command line, so the sampled mapping does not carry it). A file
+    The file is complete: the task's full key set with the values the winning trial trained
+    with, resolved the way the trial resolved them: held knobs at the task's defaults, and
+    the configuration flags the study was given (``LR_SCHEDULER`` among them), which the
+    trials took from the command line, so the sampled mapping does not carry them. A file
     that names every value cannot silently move when a default changes (ADR 0005,
-    decision 5).
+    decision 5; ADR 0013).
     """
-    resolved = dataclasses.replace(
-        Hyperparameters.from_mapping(best_config), lr_scheduler=lr_scheduler
+    resolved, _ = load_hyperparameters(
+        argparse.Namespace(
+            dataset_name=dataset_name, task=task, hyperparams_override=best_config,
+            **configuration_flags,
+        )
     )
     path = hyperparameter_file(dataset_name, task)
     path.parent.mkdir(exist_ok=True, parents=True)
@@ -427,7 +438,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     )
     objective.metrics_dir = getattr(args, "metrics_dir", "metrics")
     objective.disable_mlflow = getattr(args, "disable_mlflow", False)
-    objective.lr_scheduler = getattr(args, "lr_scheduler", None)
+    objective.configuration_flags = {flag: getattr(args, flag, None) for flag in CONFIGURATION_FLAGS}
     task = task_spec(getattr(args, "task", None) or "classification")
     objective.task = task.name
     objective.ranking_metric = task.ranking_metric
@@ -482,7 +493,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
         run_type="optuna_study",
         seed=args.seed,
         cv_folds=None,
-        lr_scheduler=getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
+        lr_scheduler=getattr(args, "lr_scheduler", None) or default_lr_scheduler(task.name),
         environment=None,
         extra_tags={
             "n_trials": str(args.n_trials),
@@ -565,8 +576,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     # (backlog I2, ADR 0005 decision 5).
     if getattr(args, "promote_best", False):
         promoted_path = promote_best_configuration(
-            best_config, task.name, args.dataset_name,
-            getattr(args, "lr_scheduler", None) or DEFAULT_LR_SCHEDULER,
+            best_config, task.name, args.dataset_name, objective.configuration_flags
         )
         logger.info(f"Promoted for --task {task.name}: {promoted_path}")
     else:
@@ -598,7 +608,8 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
         # Same hand-built namespace as a trial: the task travels with it.
         final_args.task = task.name
         final_args.hyperparams_override = best_config
-        final_args.lr_scheduler = getattr(args, "lr_scheduler", None)
+        for flag in CONFIGURATION_FLAGS:
+            setattr(final_args, flag, getattr(args, flag, None))
         # A normal comparable parent run, linked back to the study that chose it.
         final_args.mlflow_tags = {"optuna_study_run_id": study_run_id}
         

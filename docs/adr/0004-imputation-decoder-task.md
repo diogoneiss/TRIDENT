@@ -15,6 +15,10 @@ The backfill of decision 7 was **applied on 2026-09-10** to the 251 runs recorde
 2026-07-03 and that date. The six imputation runs already present were skipped, keeping
 their own `task = imputation`.
 
+**Amended 2026-10-02** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): the decode stage defaults to 450 epochs (`--decode_epochs`),
+and the imputation task's pre-training objective and schedule default to `embedding_normalized`
+and `cosine`; classification is untouched.
+
 ## Context
 
 TRIDENT trains in two stages that share one embedder and one transformer: masked-cell

@@ -884,7 +884,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   biodeg and both vehicle variants, spambase_20nan and kr-vs-kp_80nan; no credit-g or kc2
   variant shows a detectable difference. P stopped after a mean of 100 and 151 decode epochs
   where it lost (kr-vs-kp_40nan, spambase_40nan); whether a longer patience recovers those is
-  T11's question.
+  T11's question. **Decided 2026-10-02:** M is the imputation default, with the `cosine`
+  schedule it ran under ([ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md)).
 - **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md` (Outcome);
   `scripts/experiments/confirmatory_report.py`; report, tally and secondary measures in
   `/scratch2/diogoneiss/trident-2026-10-01-confirmatory/`.

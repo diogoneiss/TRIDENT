@@ -164,6 +164,7 @@ Exactly one of `--dataset_name` or `--all` is required.
 
 - `--task`: What to train, one of `classification` (default) or `imputation`. Classification predicts the label from the `[CLS]` token and is what every run did before [ADR 0004](docs/adr/0004-imputation-decoder-task.md); imputation replaces the classifier with a decoder that reconstructs hidden cell values. Command-line only, never from a hyperparameter file, so an `--all` batch cannot end up training a different task per dataset
 - `--score_null_path`: Also score the dataset's own missing cells with the model seeing `[NULL]` rather than `[MASK]`, as a diagnostic that never ranks folds. Requires `--task imputation` and is refused at parse time otherwise
+- `--decode_epochs`: How many epochs the decode stage trains. Overrides `EPOCHS_DECODE`. Requires `--task imputation`. Default: `450` since [ADR 0013](docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md); `--pretrain_objective embedding --decode_epochs 150 --lr_scheduler cosine_legacy` gives an imputation run the defaults it had before
 - `--decode_patience`: Stop the decode stage once its validation loss has not improved for this many epochs, keeping the best epoch; the schedule still spans the configured epochs. Overrides `DECODE_PATIENCE`. Requires `--task imputation`. Default: `0`, every epoch trains
 - `--decoder_heads`: How the decoder applies its per-column heads: `batched` (default since 2026-10-01, [ADR 0012](docs/adr/0012-batched-decoder-heads-by-default.md): the same arithmetic in a few operations, 1.4x to 1.6x faster a cell, equal up to rounding, so a different training draw) or `per_column` (one operation per column, which reproduces every earlier run to the last digit). Overrides `DECODER_HEADS`
 - `--no_baseline_cache`: Compute the baseline imputers' scores every time instead of reusing the ones cached under `results/baseline_cache/` for the same fold and cells ([ADR 0007](docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md) decision 10; a hit is identical to the computation). `python3 scripts/prune_cache.py [--max_mb N] [--max_age_days D] [--apply]` keeps the cache under a size or age limit, least recently used first
@@ -173,8 +174,8 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--plot_losses`: Generate training loss visualizations
 - `--save_model`: Save trained model checkpoints
 - `--cv_folds`: Number of folds for cross-validation (default: `None`, uses pre-defined split)
-- `--lr_scheduler`: Learning-rate schedule for both stages, one of `cosine_legacy`, `cosine`, `warmup_cosine`, `constant`, `plateau`. Overrides `LR_SCHEDULER` from the hyperparameter file and applies to every dataset of an `--all` batch and every Optuna trial. Default: `cosine_legacy`, the schedule of every run before [ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md)
-- `--pretrain_objective`: What pre-training reconstructs at a masked cell, one of `embedding` (the cell's detached clean embedding), `value` (the value itself, through fresh decoder heads) or `embedding_normalized` (a layer-normalised embedding target read through a predictor head). Overrides `PRETRAIN_OBJECTIVE`. Default: `embedding`, the objective of every run before [ADR 0011](docs/adr/0011-selectable-pretraining-objective.md)
+- `--lr_scheduler`: Learning-rate schedule for both stages, one of `cosine_legacy`, `cosine`, `warmup_cosine`, `constant`, `plateau`. Overrides `LR_SCHEDULER` from the hyperparameter file and applies to every dataset of an `--all` batch and every Optuna trial. Default: `cosine_legacy`, the schedule of every run before [ADR 0003](docs/adr/0003-selectable-learning-rate-schedule.md), for classification; `cosine` for imputation ([ADR 0013](docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md))
+- `--pretrain_objective`: What pre-training reconstructs at a masked cell, one of `embedding` (the cell's detached clean embedding), `value` (the value itself, through fresh decoder heads) or `embedding_normalized` (a layer-normalised embedding target read through a predictor head). Overrides `PRETRAIN_OBJECTIVE`. Default: `embedding`, the objective of every run before [ADR 0011](docs/adr/0011-selectable-pretraining-objective.md), for classification; `embedding_normalized` for imputation ([ADR 0013](docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md))
 
 ### Optuna Optimization
 
@@ -271,12 +272,12 @@ Every key is optional and defaulted, so a file written before a key existed keep
 - `LR_FINE`: Fine-tuning learning rate
 - `WEIGHT_DECAY_PRE`: Pre-training weight decay
 - `WEIGHT_DECAY_FINE`: Fine-tuning weight decay
-- `LR_SCHEDULER`: Learning-rate schedule name, see `--lr_scheduler` (default: `cosine_legacy`)
-- `PRETRAIN_OBJECTIVE`: Pre-training objective, see `--pretrain_objective` (default: `embedding`)
+- `LR_SCHEDULER`: Learning-rate schedule name, see `--lr_scheduler` (default: `cosine_legacy`; `cosine` for imputation)
+- `PRETRAIN_OBJECTIVE`: Pre-training objective, see `--pretrain_objective` (default: `embedding`; `embedding_normalized` for imputation)
 
 #### Imputation (`--task imputation` only)
 
-- `EPOCHS_DECODE`: Number of decode-stage epochs (default: `150`)
+- `EPOCHS_DECODE`: Number of decode-stage epochs, see `--decode_epochs` (default: `450`; `150` before ADR 0013)
 - `LR_DECODE`: Decode-stage learning rate (default: `0.001`)
 - `DECODE_PATIENCE`: Decode-stage early-stopping patience in epochs, see `--decode_patience` (default: `0`, off)
 - `DECODER_HEADS`: `batched` or `per_column`, see `--decoder_heads` (default: `batched`)

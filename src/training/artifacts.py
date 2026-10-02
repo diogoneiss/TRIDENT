@@ -12,6 +12,7 @@ import pandas as pd
 import torch
 from sklearn.preprocessing import StandardScaler
 
+from .config import complete_configuration
 from .summary import final_metrics_for_tracking, fold_timings_for_tracking
 from .types import (
     CLASSIFICATION,
@@ -39,39 +40,11 @@ class ArtifactWriter:
         """Record the values this run used, and only those.
 
         A file claiming a fine-tuning rate on a run that never fine-tuned misleads
-        whoever reads it later, the same way a logged-but-unused parameter does.
+        whoever reads it later, the same way a logged-but-unused parameter does. The key set
+        is the one a promoted configuration holds, so the file names every value the task
+        trained with.
         """
-        shared = {
-            "DIM": hyperparameters.dimension,
-            "HIDDEN_DIM": hyperparameters.hidden_dimension,
-            "HEADS": hyperparameters.heads,
-            "LAYERS": hyperparameters.layers,
-            "DIM_FEED": hyperparameters.feedforward_dimension,
-            "DROPOUT": hyperparameters.dropout,
-            "EPOCHS_PRE": hyperparameters.pretraining_epochs,
-            "BATCH": hyperparameters.batch_size,
-            "LR_PRE": hyperparameters.pretraining_learning_rate,
-            "WEIGHT_DECAY_PRE": hyperparameters.pretraining_weight_decay,
-            "PROB_MASCARA": hyperparameters.mask_probability,
-            "LR_SCHEDULER": hyperparameters.lr_scheduler,
-        }
-        if task.name == "imputation":
-            values = {
-                **shared,
-                "EPOCHS_DECODE": hyperparameters.decode_epochs,
-                "LR_DECODE": hyperparameters.decode_learning_rate,
-                "WEIGHT_DECAY_DECODE": hyperparameters.decode_weight_decay,
-                "LAMBDA_NUM": hyperparameters.lambda_num,
-                "EVAL_MASK_RATE": hyperparameters.eval_mask_rate,
-            }
-        else:
-            values = {
-                **shared,
-                "EPOCH_FINE": hyperparameters.finetuning_epochs,
-                "LR_FINE": hyperparameters.finetuning_learning_rate,
-                "WEIGHT_DECAY_FINE": hyperparameters.finetuning_weight_decay,
-                "LABELS": hyperparameters.labels,
-            }
+        values = complete_configuration(hyperparameters, task.name)
         path = self.results_dir / "hyperparameters.json"
         path.write_text(json.dumps(values, indent=4))
         print(f"Hyperparameters saved to: {path}")

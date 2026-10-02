@@ -46,9 +46,15 @@ def test_credit_g_imputation_matches_regression_fixture(tmp_path, monkeypatch) -
     # The runner picks its device from this call, so hiding CUDA runs every fold on the CPU.
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     fixture = json.loads(FIXTURE_PATH.read_text())
+    hyperparameters = Hyperparameters.from_mapping(fixture["hyperparameters"])
+    # The fixture predates ADR 0013 and stays on the configuration it was recorded with: read
+    # without a task, the mapping takes the dataclass defaults, not imputation's new ones.
+    assert (hyperparameters.pretraining_objective, hyperparameters.lr_scheduler) == (
+        "embedding", "cosine_legacy",
+    )
     request = TrainingRequest(
         dataset=DatasetSpec.from_name("credit-g_20nan", "class"),
-        hyperparameters=Hyperparameters.from_mapping(fixture["hyperparameters"]),
+        hyperparameters=hyperparameters,
         runtime=RuntimeOptions(
             output_dir=tmp_path / "results",
             metrics_dir=tmp_path / "metrics",

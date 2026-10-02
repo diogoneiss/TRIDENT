@@ -19,6 +19,15 @@ from .types import (
     Hyperparameters,
     RuntimeOptions,
     TrainingRequest,
+    task_defaults,
+)
+
+
+# The command-line flags that override a configuration's values in ``load_hyperparameters``.
+# A study builds each trial's namespace itself, so it copies these on, or a flag given to the
+# study would silently not reach its trials.
+CONFIGURATION_FLAGS: tuple[str, ...] = (
+    "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
 )
 
 
@@ -50,16 +59,23 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
         hyperparameters = dataclasses.replace(
             hyperparameters, pretraining_objective=pretraining_objective
         )
+    # ``--decode_epochs`` wins the same way (ADR 0013).
+    decode_epochs = getattr(args, "decode_epochs", None)
+    if decode_epochs is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_epochs=decode_epochs)
     return hyperparameters, source
 
 
 def _load_base_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str]:
+    task = getattr(args, "task", None) or DEFAULT_TASK
+    # Beneath every source, so a key a source leaves out takes the task's value wherever the
+    # run came from: a plain run, a promoted file, or an Optuna trial holding a knob (ADR 0013).
+    defaults = task_defaults(task)
     override = getattr(args, "hyperparams_override", None)
     if override is not None:
-        return Hyperparameters.from_mapping(override), "override"
+        return Hyperparameters.from_mapping({**defaults, **override}), "override"
 
     dataset_name = getattr(args, "dataset_name")
-    task = getattr(args, "task", None) or DEFAULT_TASK
     # The shared file names no task, so a promoted imputation configuration lives beside
     # it under a task-keyed name and is read first; the fallback keeps a variant with no
     # promoted configuration behaving as before. Classification never reads the
@@ -71,9 +87,12 @@ def _load_base_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameter
         if hyperparameters_path.exists():
             values = json.loads(hyperparameters_path.read_text())
             if isinstance(values, Mapping):
-                return Hyperparameters.from_mapping(values), hyperparameters_path.as_posix()
+                return (
+                    Hyperparameters.from_mapping({**defaults, **values}),
+                    hyperparameters_path.as_posix(),
+                )
 
-    return Hyperparameters(), "defaults"
+    return Hyperparameters.from_mapping(defaults), "defaults"
 
 
 def hyperparameter_file(dataset_name: str, task: str) -> Path:
@@ -115,6 +134,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
     if task == "imputation":
         return {
             **shared,
+            "PRETRAIN_OBJECTIVE": values.pretraining_objective,
             "EPOCHS_DECODE": values.decode_epochs,
             "LR_DECODE": values.decode_learning_rate,
             "WEIGHT_DECAY_DECODE": values.decode_weight_decay,
@@ -213,6 +233,13 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
 
+    # Only imputation has a decode stage to size.
+    if (
+        getattr(args, "decode_epochs", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --decode_epochs requires --task imputation")
+
     # Only imputation has validation populations to choose between; classification ranks
     # by macro F1 (ADR 0008). Refused here rather than mid-study.
     if (
@@ -280,7 +307,8 @@ def build_training_parser() -> argparse.ArgumentParser:
         choices=LR_SCHEDULER_NAMES,
         help=(
             "Learning-rate schedule for both training stages. Overrides LR_SCHEDULER from the "
-            "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003)."
+            "hyperparameter file. Default: cosine_legacy (the schedule of every run before ADR 0003) "
+            "for classification, cosine for imputation (ADR 0013)."
         ),
     )
     parser.add_argument(
@@ -291,6 +319,16 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: stop the decode stage once its validation loss has not improved "
             "for this many epochs, keeping the best epoch. Overrides DECODE_PATIENCE from the "
             "hyperparameter file. Default: 0, every epoch trains."
+        ),
+    )
+    parser.add_argument(
+        "--decode_epochs",
+        type=int,
+        default=None,
+        help=(
+            "Imputation only: how many epochs the decode stage trains. Overrides EPOCHS_DECODE "
+            "from the hyperparameter file. Default: 450 since ADR 0013; 150 is the decode "
+            "stage of every run before it."
         ),
     )
     parser.add_argument(
@@ -313,7 +351,8 @@ def build_training_parser() -> argparse.ArgumentParser:
         help=(
             "What pre-training reconstructs at a masked cell (ADR 0011). Overrides "
             "PRETRAIN_OBJECTIVE from the hyperparameter file. Default: embedding (the cell's "
-            "clean embedding, as every run before ADR 0011)."
+            "clean embedding, as every run before ADR 0011) for classification, "
+            "embedding_normalized for imputation (ADR 0013)."
         ),
     )
     parser.add_argument(

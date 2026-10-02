@@ -7,6 +7,9 @@ decision, stays the default, so every run launched as before trains as before. W
 either new objective should become the imputation default is left to the pre-registered
 study [imputation-pretraining/02](../tickets/imputation-pretraining/02-pretraining-objectives.md).
 
+**Amended 2026-10-02** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): after the confirmatory study on all 21 variants,
+`embedding_normalized` is the imputation task's default; `embedding` stays classification's.
+
 ## Context
 
 Pre-training (`TridentPretrainer`) regresses the transformer's output at a `[MASK]` cell

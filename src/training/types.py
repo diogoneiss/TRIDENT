@@ -6,7 +6,8 @@ from typing import Any, Mapping, Protocol, Sequence, TypeAlias
 
 # Learning-rate schedule names accepted by ``Hyperparameters.lr_scheduler`` and
 # the ``--lr_scheduler`` flag. ``cosine_legacy`` is the schedule every run before
-# ADR 0003 used, so it stays the default to keep old configs reproducible.
+# ADR 0003 used, so it stays the default to keep old configs reproducible; the
+# imputation task defaults to ``cosine`` instead (``task_defaults``, ADR 0013).
 LR_SCHEDULER_NAMES: tuple[str, ...] = (
     "cosine_legacy",
     "cosine",
@@ -19,9 +20,11 @@ DEFAULT_LR_SCHEDULER = "cosine_legacy"
 # What pre-training regresses a masked cell onto (ADR 0011), accepted by
 # ``Hyperparameters.pretraining_objective`` and the ``--pretrain_objective`` flag.
 # ``embedding`` is the cell's detached clean embedding, what every run before that decision
-# trained on, so it stays the default. ``value`` is the cell's value itself, through fresh
-# decoder heads that the stage discards; ``embedding_normalized`` keeps the embedding target
-# but layer-normalises it and reads the transformer through a predictor head.
+# trained on, so it stays the default for classification; the imputation task defaults to
+# ``embedding_normalized`` (``task_defaults``, ADR 0013). ``value`` is the cell's value
+# itself, through fresh decoder heads that the stage discards; ``embedding_normalized`` keeps
+# the embedding target but layer-normalises it and reads the transformer through a predictor
+# head.
 PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_normalized")
 DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
 
@@ -110,6 +113,32 @@ _TASK_SPECS: Mapping[str, TaskSpec] = {
 }
 CLASSIFICATION = _TASK_SPECS["classification"]
 IMPUTATION = _TASK_SPECS["imputation"]
+
+
+# What a task trains with where its configuration names no value, under the config-file
+# names, layered beneath every source a run reads (the defaults, a promoted file, an override
+# mapping) and beneath the flags. Classification has none, so it keeps the dataclass defaults
+# below and stays bit-identical. Imputation trains the configuration study E30 found never
+# worse than the old one on any of the 21 variants (ADR 0013).
+_TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
+    "classification": {},
+    "imputation": {
+        "PRETRAIN_OBJECTIVE": "embedding_normalized",
+        "EPOCHS_DECODE": 450,
+        "LR_SCHEDULER": "cosine",
+    },
+}
+
+
+def task_defaults(task: str) -> Mapping[str, object]:
+    """The values a task's runs take where their configuration names none."""
+    task_spec(task)
+    return _TASK_DEFAULTS[task]
+
+
+def default_lr_scheduler(task: str) -> str:
+    """The schedule a task's runs follow when neither a flag nor a configuration names one."""
+    return str(task_defaults(task).get("LR_SCHEDULER", DEFAULT_LR_SCHEDULER))
 
 
 def task_spec(name: str) -> TaskSpec:

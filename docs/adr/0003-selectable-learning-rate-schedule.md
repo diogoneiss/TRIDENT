@@ -4,6 +4,9 @@
 
 Accepted (2026-09-09). Resolves backlog item B1 in `docs/BACKLOG.md`.
 
+**Amended 2026-10-02** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): `cosine_legacy` stays the default for classification; the
+imputation task defaults to `cosine`, the schedule of every imputation run in the store.
+
 ## Context
 
 Both training stages built `CosineAnnealingLR(T_max=<epochs>)` and then called

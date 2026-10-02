@@ -269,7 +269,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
-        "DECODE_PATIENCE", "DECODER_HEADS",
+        "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE",
     }
 
 
@@ -378,19 +378,20 @@ def test_the_search_objective_population_is_a_choice_only_imputation_offers() ->
         parser.parse_args(["--dataset_name", "credit-g_20nan", "--search_objective", "test"])
 
 
-def test_pretraining_keeps_its_embedding_target_unless_a_run_asks_for_another() -> None:
-    """Every run before ADR 0011 regressed onto the clean embedding, so that stays the default.
+def test_classification_pretrains_on_the_embedding_target_unless_a_run_asks_for_another() -> None:
+    """Every classification run before ADR 0011 regressed onto the clean embedding, so that
+    stays its default (imputation's moved with ADR 0013).
 
     The flag wins over the configuration, as ``--lr_scheduler`` does, so one invocation can
     re-run any stored configuration under another objective.
     """
     parser = build_training_parser()
-    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    classification = ["--dataset_name", "credit-g_20nan"]
     override = {"PRETRAIN_OBJECTIVE": "embedding_normalized"}
 
-    default = resolve_training_request(parser.parse_args(imputation))
+    default = resolve_training_request(parser.parse_args(classification))
     from_flag = resolve_training_request(
-        parser.parse_args([*imputation, "--pretrain_objective", "value"])
+        parser.parse_args([*classification, "--pretrain_objective", "value"])
     )
     from_mapping = resolve_training_request(
         Namespace(dataset_name="credit-g_20nan", hyperparams_override=override)
@@ -462,3 +463,57 @@ def test_decoder_heads_are_batched_unless_a_run_asks_for_the_per_column_path() -
         parser.parse_args([*imputation, "--decoder_heads", "fused"])
     with pytest.raises(ValueError, match="decoder heads"):
         Hyperparameters.from_mapping({"DECODER_HEADS": "fused"})
+
+
+def test_an_imputation_run_trains_the_configuration_e30_chose_unless_told_otherwise(
+    tmp_path, monkeypatch
+) -> None:
+    """ADR 0013: where its configuration names no value, an imputation run pre-trains on the
+    normalised embedding target, decodes for 450 epochs and follows the per-epoch cosine
+    schedule, the configuration study E30 found never worse than the old one on any of the
+    21 variants. Classification keeps the dataclass defaults, so it stays bit-identical.
+    """
+    monkeypatch.chdir(tmp_path)
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "vehicle_00nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation)).hyperparameters
+    classification = resolve_training_request(
+        parser.parse_args(["--dataset_name", "vehicle_00nan"])
+    ).hyperparameters
+    assert (default.pretraining_objective, default.decode_epochs, default.lr_scheduler) == (
+        "embedding_normalized", 450, "cosine",
+    )
+    assert classification == Hyperparameters()
+
+    # An override mapping (an Optuna trial, a study runner) gets the same values for every
+    # key it leaves out, so a search holds a knob where a plain run would put it.
+    overridden = resolve_training_request(
+        Namespace(dataset_name="vehicle_00nan", task="imputation", hyperparams_override={"DIM": 64})
+    ).hyperparameters
+    assert (overridden.dimension, overridden.pretraining_objective, overridden.decode_epochs) == (
+        64, "embedding_normalized", 450,
+    )
+    assert overridden.lr_scheduler == "cosine"
+
+    # A value the file names wins over the task's default.
+    config_dir = tmp_path / "datasets" / "hiperparams" / "vehicle"
+    config_dir.mkdir(parents=True)
+    (config_dir / "vehicle_00nan.imputation.json").write_text(json.dumps({"EPOCHS_DECODE": 200}))
+    from_file = resolve_training_request(parser.parse_args(imputation)).hyperparameters
+    assert (from_file.decode_epochs, from_file.pretraining_objective) == (200, "embedding_normalized")
+
+    # The flags win over everything, so the old default stays one command away.
+    old = resolve_training_request(
+        parser.parse_args(
+            [*imputation, "--pretrain_objective", "embedding", "--decode_epochs", "150",
+             "--lr_scheduler", "cosine_legacy"]
+        )
+    ).hyperparameters
+    assert (old.pretraining_objective, old.decode_epochs, old.lr_scheduler) == (
+        "embedding", 150, "cosine_legacy",
+    )
+    with pytest.raises(SystemExit, match="decode_epochs"):
+        validate_parsed_args(
+            parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_epochs", "150"])
+        )
