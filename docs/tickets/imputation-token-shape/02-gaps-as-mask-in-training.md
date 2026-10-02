@@ -157,13 +157,21 @@ imputation default**, through an ADR as ADR 0013 was. The user takes the decisio
   (0.620 against hgb's 0.606) and kc2_20nan (0.578 against knn5's 0.567).
 - **Masked population (secondary):** G better on 10 variants, M better on none.
 - **Time.** Planned about 5.8 h of wall time; it took 5 h 38 min, 0.97x the plan (speedup 1.03).
-  The cells ran at the same speed as E30's arm M: the token shown at a gap costs nothing.
+  The cells ran at the same speed as E30's arm M (electricity 100.7 against 100.3 min a cell): the
+  token shown at a gap costs nothing. The report's "M" times are E31's runs, which carried the
+  column-wise passes, so they read higher than G's.
+- **Pairing.** The transformation draws nothing, so a G cell and its M cell consume the same
+  random stream: the same folds, masks and initialisation. The pairs are tighter than two
+  independent draws would be, which the pre-registration did not anticipate.
 
 **Caveats, stated rather than ruled on.**
 - Two of the five heavy verdicts have a wide interval that just excludes zero (spambase_60nan
   −0.030 [−0.059, −0.001], kc2_60nan −0.067 [−0.127, −0.006]); the other three are clear
-  (kr-vs-kp_60nan, vehicle_60nan, biodeg_60nan). Six more variants have every seed negative
-  without a verdict (credit-g_40nan, _60nan, _80nan, kr-vs-kp_40nan, spambase_80nan, pendigits).
+  (kr-vs-kp_60nan, vehicle_60nan, biodeg_60nan). Four more variants lean G's way without a
+  verdict: credit-g_40nan and _80nan have intervals that exclude zero but one seed positive each
+  (+0.0055 and +0.0025), which the seed-agreement rule refuses; kr-vs-kp_40nan has all three
+  seeds negative and an interval reaching +0.0004; spambase_80nan has all three negative and a
+  wide interval.
 - The pre-training stage still shows gaps as `[NULL]`; whether aligning it too helps is untested.
 - The three variants at or above 1.0 under both arms (credit-g_60nan and _80nan, kr-vs-kp_80nan)
   say the token shape was not the only cause of the model's losses at high missingness.
