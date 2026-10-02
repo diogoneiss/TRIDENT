@@ -1,7 +1,7 @@
 # Does training the decode stage on the scored row shape close the gap? (pre-registered 2026-10-02)
 
-This ticket was written and committed before the first run, in the morning of 2026-10-02
-GMT-3 (the commit and the queues' start time are in the Running notes). It is step 2 of task T02
+This ticket was written and committed before the first run, at 10:43 GMT-3 on 2026-10-02 (commit
+`4058764`; the queues started 10:44:03 GMT-3). It is step 2 of task T02
 in [TASKS.md](../../TASKS.md), the follow-up the user chose after step 1
 ([01](01-column-wise-scoring.md), E31).
 
@@ -86,3 +86,13 @@ already looked like the scored ones.
 - **The `[NULL]` token's own signal** (the paper's claim, for classification) is not what this
   study measures; E01 already found the null path worse for imputation.
 - **Multiplicity:** 21 tests with the seed-agreement rule, as in E30 and E31.
+
+## Running notes
+
+- **Checks before launch, done:** the default run of credit-g_20nan at seed 42 equalled E30's
+  arm-M cell on all 55 `impute/*` metrics; the smoke run of the arm at seed 1 finished and
+  recorded `DECODE_GAP_TOKEN mask` in its `hyperparameters.json`, its params and its tag (a plain
+  run in the store, outside the study; scores not read).
+- **The tag backfill was stopped mid-mirroring** so the study could start: all 2137 earlier
+  imputation runs are stamped `null`, but only 88 of their 616 trees had their mirrors re-done.
+  The rest is re-mirrored after the study, with no trainer running.
