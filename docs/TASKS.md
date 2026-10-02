@@ -45,7 +45,14 @@ on the server), M ≈ 2x A and P ≈ 0.26–0.86x M as measured on 2026-09-30. e
 the four spambase variants are more than half of it; P on electricity and letter is the largest
 uncertainty.
 
-### T02 · Train/score token-shape mismatch — in progress (step 1: ticket [imputation-token-shape/01](tickets/imputation-token-shape/01-column-wise-scoring.md), E31)
+### T02 · Train/score token-shape mismatch — step 1 done, step 2 waits on a decision (ticket [imputation-token-shape/01](tickets/imputation-token-shape/01-column-wise-scoring.md), E31)
+
+**Step 1 done 2026-10-02:** scoring the induced cells one gap column at a time, the other gaps as
+`[NULL]`, is better than the headline on 5 of the 9 variants at 60nan or more and worse on none;
+the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan). Supported by the
+pre-stated rule. Wall time 5 h 59 min against 5.2 h planned (1.15x). **The user decides** between
+step 2 below and an ADR making column-wise scoring the headline (mean 0.7745 → 0.7673, at a cost
+of up to 0.013 on six light variants).
 
 The lead hypothesis for why the model loses to simple imputers (handoff items 1 and 2). In
 training, real gaps are `[NULL]` and about 2% of cells are `[MASK]`; in induced scoring every gap

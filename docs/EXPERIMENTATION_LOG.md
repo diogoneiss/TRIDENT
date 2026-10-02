@@ -57,7 +57,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
-| E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – | in progress | pending |
+| E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
 
 ## Entries
 
@@ -891,10 +891,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/confirmatory_report.py`; report, tally and secondary measures in
   `/scratch2/diogoneiss/trident-2026-10-01-confirmatory/`.
 
-### E31 · The induced gaps asked one column at a time, the rest as `[NULL]` (2026-10-01 – )
+### E31 · The induced gaps asked one column at a time, the rest as `[NULL]` (2026-10-01 – 2026-10-02)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
-  2026-10-02).
+- **Status:** done, 23:36 GMT-3 to 05:35 GMT-3 on gorgona8, all 63 cells; the mask path matched
+  E30's arm M to the last digit on every cell.
 - **Hypothesis:** the decode stage trains on rows whose real gaps are `[NULL]` and only a share of
   the other cells is `[MASK]` (about 2% of an 80nan row), but the induced headline shows every gap
   as `[MASK]` at once. Scoring the same cells in the trained shape, one gap column at a time with
@@ -912,7 +912,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     - mixed otherwise.
   - **Secondary:** D by missing level; variants below the best baseline under each path; the mask
     path must equal E30's M cells to the last digit.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/01-column-wise-scoring.md`;
+- **Results (column-wise − mask, induced, 15 fold pairs per variant):** on the 9 variants at
+  60nan or more, column-wise better on 5 (credit-g_80nan −0.015, kr-vs-kp_60nan −0.016,
+  spambase_80nan −0.032, biodeg_60nan −0.038, kc2_60nan −0.042), mask better on none, no verdict
+  on 4. On the 12 light variants, mask better on 6 (pendigits +0.001, letter +0.001, kr-vs-kp_20nan
+  +0.012, kr-vs-kp_40nan +0.009, spambase_20nan +0.013, vehicle_20nan +0.009), column-wise on
+  none. Mean difference by level: +0.0043 (20nan), −0.0072 (40), −0.0222 (60), −0.0120 (80).
+  Means over 21: mask 0.7745, column-wise 0.7673, best baseline 0.7781; below the best baseline
+  on 11 and 12 variants. Wall time 5 h 59 min against about 5.2 h planned (1.15x).
+- **Conclusion:** supported by the rule fixed in advance. The train/score token-shape mismatch
+  costs real score where gaps are many and nothing where they are few, so it is a cause of the
+  model's losses at high missingness, not the only one (credit-g_60nan and _80nan and
+  kr-vs-kp_80nan stay at or above the mean/mode fill under both paths). The two pre-stated
+  follow-ups, step 2 of T02 (train on the induced row shape) and an ADR making column-wise the
+  headline, wait on the user's decision.
+- **Sources:** `docs/tickets/imputation-token-shape/01-column-wise-scoring.md` (Outcome);
   `scripts/experiments/column_wise_report.py`.
