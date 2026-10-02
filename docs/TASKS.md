@@ -11,7 +11,7 @@ Created 2026-09-30 from the proposals after studies 04 and 05 (E27, E28).
 
 ## Waiting on a decision
 
-Nothing waits on a decision. T00 was decided on 2026-10-02: the imputation default is now M, as recorded in [ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md).
+Nothing waits on a decision. T00 was decided on 2026-10-01: the imputation default is now M, as recorded in [ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md).
 
 | ID | Task | Evidence | Status |
 |---|---|---|---|
@@ -135,4 +135,4 @@ check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312
 | Speed check, kr-vs-kp_40nan arm A, 5 folds, one trainer: 20.1 min on 2026-09-29 (hard-disk store) → 4.0 min per-column (same scores to the last digit) → 2.95 min batched heads | 2026-10-01 |
 | T04 · Pre-training cache: **dropped** by the user's decision (an exact cache hits only fold 1 in most studies; a per-fold reseed would change the numbers) | 2026-09-30 |
 | Experimentation log (E01–E28) | `0849c4c` and later |
-| T00 · Imputation defaults from E30: `embedding_normalized`, decode 450, `cosine` ([ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md)); default runs reproduce E30's M cells to the last digit | 2026-10-02 |
+| T00 · Imputation defaults from E30: `embedding_normalized`, decode 450, `cosine` ([ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md)); default runs reproduce E30's M cells to the last digit | 2026-10-01 |

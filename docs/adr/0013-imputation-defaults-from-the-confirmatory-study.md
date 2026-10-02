@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted (2026-10-02). The user decided this after the confirmatory study
+Accepted (2026-10-01, late evening GMT-3). The user decided this after the confirmatory study
 [imputation-pretraining/07](../tickets/imputation-pretraining/07-confirmatory-21-variants.md)
 (E30), which settled task T00. It is a deliberate exception to the rule that old behaviour stays
 the default, as ADRs 0006 and 0012 were. It amends the defaults stated in ADRs

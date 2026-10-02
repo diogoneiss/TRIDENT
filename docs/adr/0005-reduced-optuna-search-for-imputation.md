@@ -17,7 +17,7 @@ validation split's induced gaps instead of its masked cells (default unchanged).
 open and out of scope. Records the repair of the shipped Optuna path (commit `161fc92`),
 which also fixed `--retrain_best` for both tasks.
 
-**Amended 2026-10-02** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): a held knob takes the task's default, so the reduced
+**Amended 2026-10-01** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): a held knob takes the task's default, so the reduced
 profile now holds `EPOCHS_DECODE` at 450, the normalised objective and `cosine`; the five promoted
 files were rewritten to those values (their old contents are at `f147c39`); and the
 configuration flags reach every trial, the retrain and the promoted file.
