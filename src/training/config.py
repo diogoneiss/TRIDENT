@@ -177,6 +177,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         save_model=getattr(args, "save_model", False),
         task=getattr(args, "task", None) or DEFAULT_TASK,
         score_null_path=getattr(args, "score_null_path", False),
+        score_column_wise=getattr(args, "score_column_wise", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
         config_source=config_source,
@@ -203,6 +204,8 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
     # no decoder, so there would be nothing to score. Caught here rather than mid-run.
     if getattr(args, "score_null_path", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_null_path requires --task imputation")
+    if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
+        raise SystemExit("error: --score_column_wise requires --task imputation")
 
     # One fold is not cross-validation: build_folds derives the validation ratio as
     # 0.1 / (1 - 1/cv_folds), which divides by zero at 1 (backlog B2). Omitting the flag
@@ -373,6 +376,15 @@ def build_training_parser() -> argparse.ArgumentParser:
         help=(
             "Also score induced-missing cells with the model seeing [NULL] rather than "
             "[MASK], as a diagnostic. Requires --task imputation. Never ranks folds."
+        ),
+    )
+    parser.add_argument(
+        "--score_column_wise",
+        action="store_true",
+        help=(
+            "Also score induced-missing cells one gap column at a time: that column's gaps "
+            "as [MASK], every other gap as [NULL], the row shape the decode stage trains on. "
+            "A diagnostic (task T02). Requires --task imputation. Never ranks folds."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")

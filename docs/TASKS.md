@@ -45,7 +45,7 @@ on the server), M ≈ 2x A and P ≈ 0.26–0.86x M as measured on 2026-09-30. e
 the four spambase variants are more than half of it; P on electricity and letter is the largest
 uncertainty.
 
-### T02 · Train/score token-shape mismatch — next
+### T02 · Train/score token-shape mismatch — in progress (step 1: ticket [imputation-token-shape/01](tickets/imputation-token-shape/01-column-wise-scoring.md), E31)
 
 The lead hypothesis for why the model loses to simple imputers (handoff items 1 and 2). In
 training, real gaps are `[NULL]` and about 2% of cells are `[MASK]`; in induced scoring every gap

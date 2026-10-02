@@ -205,6 +205,22 @@ def test_the_null_path_diagnostic_is_refused_without_the_imputation_task() -> No
     assert resolve_training_request(with_imputation).score_null_path is True
 
 
+def test_the_column_wise_diagnostic_is_refused_without_the_imputation_task() -> None:
+    """Like the null path: classification has no decoder, so nothing would be scored."""
+    parser = build_training_parser()
+    with_classification = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--score_column_wise"]
+    )
+    with_imputation = parser.parse_args(
+        ["--dataset_name", "credit-g_20nan", "--task", "imputation", "--score_column_wise"]
+    )
+
+    with pytest.raises(SystemExit, match="score_column_wise"):
+        validate_parsed_args(with_classification)
+    assert resolve_training_request(with_imputation).score_column_wise is True
+    assert resolve_training_request(parser.parse_args(["--dataset_name", "credit-g_20nan"])).score_column_wise is False
+
+
 def test_a_reduced_search_space_exists_only_for_imputation_until_someone_defines_it() -> None:
     """The reduced profile holds the shared knobs and samples the decode stage, so for
     classification it would sample a space no one has asked to run (ADR 0005, decision 1).

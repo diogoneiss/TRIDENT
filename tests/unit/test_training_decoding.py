@@ -9,7 +9,7 @@ import torch
 from sklearn.preprocessing import StandardScaler
 
 from src.embedder import TabularEmbedder
-from src.models import TridentPretrainer
+from src.models import TridentDecoder, TridentPretrainer
 from src.training.data import evaluation_mask
 from src.training.decoding import train_and_evaluate_decoder
 from src.training.imputation_metrics import mean_mode_baselines
@@ -270,6 +270,70 @@ def test_the_null_path_scores_exactly_the_gaps_whatever_the_column_order() -> No
 
     assert positions("induced")
     assert positions("induced_null_token") == positions("induced")
+
+
+def test_the_column_wise_path_asks_each_gap_with_only_its_own_column_hidden(monkeypatch) -> None:
+    """T02's training-shaped diagnostic. The decode stage learns with a row's real gaps as
+    [NULL] and a share of its other cells as [MASK]; induced scoring shows every gap as
+    [MASK] at once, a row shape it never trained on when gaps are many. The column-wise path
+    asks the same induced cells one gap column at a time: that column's gaps as [MASK], every
+    other gap as the [NULL] the variant stores. Off unless asked for; it never ranks a fold.
+    """
+    dataset = _dataset()
+    unasked, _ = _run(dataset=dataset, sibling=_complete_frame())
+    calls = []
+    predict = TridentDecoder.predict
+
+    def recording(self, hidden):
+        calls.append(hidden)
+        return predict(self, hidden)
+
+    monkeypatch.setattr(TridentDecoder, "predict", recording)
+    asked, _ = _run(dataset=dataset, sibling=_complete_frame(), score_column_wise=True)
+
+    assert "impute/induced/column_wise/impute_score" in asked.result.metrics
+    assert not any("column_wise" in key for key in unasked.result.metrics)
+    assert not any("column_wise/baseline" in key for key in asked.result.metrics)
+    cells = asked.scored_cells
+
+    def positions(population: str) -> set[tuple[int, str]]:
+        chosen = cells[cells["population"] == population]
+        return set(zip(chosen["row"], chosen["column"]))
+
+    assert positions("induced")
+    assert positions("induced_column_wise") == positions("induced")
+
+    # Each column-wise pass hides exactly one column, only at its gaps, and shows every
+    # other gap as [NULL].
+    embedder = asked.model.embedder
+    order = list(embedder.categorical_columns) + list(embedder.numerical_columns)
+    features = dataset.frame.drop(columns=[dataset.label_column])
+    test = features.iloc[_fold(len(dataset.frame)).test_indices].reset_index(drop=True)
+    gaps = torch.tensor(test[order].isna().to_numpy())
+    one_column = [
+        hidden for hidden in calls
+        if hidden.masked_positions.shape == gaps.shape
+        and bool(hidden.masked_positions.any())
+        and not bool((hidden.masked_positions & ~gaps).any())
+        and int(hidden.masked_positions.any(dim=0).sum()) == 1
+    ]
+    asked_columns = [order[int(hidden.masked_positions.any(dim=0).nonzero())] for hidden in one_column]
+    assert sorted(asked_columns) == sorted(column for column in order if bool(test[column].isna().any()))
+    null_id = {
+        column: int(embedder.label_encoders[column].transform(["[NULL]"])[0])
+        for column in embedder.categorical_columns
+    }
+    offset = len(embedder.categorical_columns)
+    for hidden, asked_column in zip(one_column, asked_columns):
+        assert bool(hidden.masked_positions[:, order.index(asked_column)].equal(gaps[:, order.index(asked_column)]))
+        for index, column in enumerate(order):
+            if column == asked_column:
+                continue
+            other_gaps = gaps[:, index]
+            if index < offset:
+                assert bool((hidden.cat_indices[index][other_gaps] == null_id[column]).all())
+            else:
+                assert bool(hidden.null_flags[index - offset][other_gaps].all())
 
 
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:

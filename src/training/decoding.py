@@ -46,6 +46,7 @@ def train_and_evaluate_decoder(
     score_null_path: bool = False,
     score_search_objective: bool = False,
     baseline_cache_dir: Path | None = None,
+    score_column_wise: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -232,6 +233,22 @@ def train_and_evaluate_decoder(
                     for name, value in score_cells(through_null, baselines).metrics.items()
                 }
             )
+        if score_column_wise:
+            # The same gaps asked one column at a time, that column's as [MASK] and every
+            # other gap as the [NULL] the variant stores: the row shape the decode stage
+            # trains on, where the headline shows every gap as [MASK] at once (task T02).
+            # Diagnostic only; it never ranks a fold, and its baselines are the induced ones.
+            column_wise = _score_induced_missing(
+                model, dataset, test_frame, complete_sibling, fold.test_indices, device,
+                column_wise=True,
+            )
+            cells = pd.concat([cells, column_wise], ignore_index=True)
+            metrics.update(
+                {
+                    f"impute/induced/column_wise/{name}": value
+                    for name, value in score_cells(column_wise, baselines).metrics.items()
+                }
+            )
 
     # The search objective: the same masked-population score on the fixed validation
     # mask the checkpoint watched, so a search never ranks trials on the test split. Its
@@ -285,17 +302,23 @@ def _score_induced_missing(
     rows,
     device: torch.device,
     as_mask: bool = True,
+    column_wise: bool = False,
 ) -> pd.DataFrame:
     """Score the cells the dataset is actually missing, against the complete sibling.
 
     These are the real imputation benchmark: a generator took them away, so their true
     value is known. By default they are shown to the model as ``[MASK]``, the token the
     decoder was trained to fill. With ``as_mask=False`` they keep the ``[NULL]`` the
-    variant stores, which is the diagnostic path. ``rows`` are the positions of
-    ``frame``'s rows in the whole table, so the sibling's truths line up with them.
+    variant stores, which is the diagnostic path. With ``column_wise`` the gaps are asked
+    one column at a time, that column's as ``[MASK]`` and every other gap as ``[NULL]``.
+    ``rows`` are the positions of ``frame``'s rows in the whole table, so the sibling's
+    truths line up with them.
     """
     hidden = frame.mask(frame.isna(), "[MASK]" if as_mask else "[NULL]")
-    population = "induced" if as_mask else "induced_null_token"
+    if column_wise:
+        population = "induced_column_wise"
+    else:
+        population = "induced" if as_mask else "induced_null_token"
 
     truth = complete_sibling.iloc[rows].reset_index(drop=True)
     truth = in_variant_dtypes(
@@ -327,9 +350,23 @@ def _score_induced_missing(
     # as [NULL], which no prediction ever equals, and its recorded value is put back on
     # the scored cell so the artifact and the metrics see what was really there.
     encodable_truth, unseen = _within_vocabulary(_clean(truth), embedder)
-    scored = _score_population(
-        model, encoded, embedder.encode(encodable_truth, device), population, raw_truth
-    )
+    if column_wise:
+        encoded_truth = embedder.encode(encodable_truth, device)
+        shown = frame.mask(frame.isna(), "[NULL]")
+        parts = []
+        for column in [name for name in frame.columns if bool(frame[name].isna().any())]:
+            asked = shown.copy()
+            asked[column] = frame[column].mask(frame[column].isna(), "[MASK]")
+            parts.append(
+                _score_population(
+                    model, embedder.encode(asked, device), encoded_truth, population, raw_truth
+                )
+            )
+        scored = pd.concat(parts, ignore_index=True)
+    else:
+        scored = _score_population(
+            model, encoded, embedder.encode(encodable_truth, device), population, raw_truth
+        )
     for (row, column), value in unseen.items():
         hit = (scored["row"] == row) & (scored["column"] == column)
         scored.loc[hit, ["actual", "actual_original"]] = value

@@ -57,6 +57,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E28 | Batch 1024 with a scaled learning rate | 2026-09-30 | done | helps only pendigits (x4: −0.011, best yet); hurts credit-g_20nan (x4) and kr-vs-kp (x2) |
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
+| E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – | in progress | pending |
 
 ## Entries
 
@@ -889,3 +890,29 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md` (Outcome);
   `scripts/experiments/confirmatory_report.py`; report, tally and secondary measures in
   `/scratch2/diogoneiss/trident-2026-10-01-confirmatory/`.
+
+### E31 · The induced gaps asked one column at a time, the rest as `[NULL]` (2026-10-01 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
+  2026-10-02).
+- **Hypothesis:** the decode stage trains on rows whose real gaps are `[NULL]` and only a share of
+  the other cells is `[MASK]` (about 2% of an 80nan row), but the induced headline shows every gap
+  as `[MASK]` at once. Scoring the same cells in the trained shape, one gap column at a time with
+  the other gaps as `[NULL]`, should score better, and more so where gaps are many (T02 step 1).
+- **Scenarios:** one arm, today's defaults (ADR 0013, E30's M), with `--score_column_wise`; the
+  same model scores the induced cells both ways. All 21 variants, seeds 42, 7, 13, five folds; 63
+  cells tagged `experiment=column-wise-2026-10-02`.
+- **Measures and decision rule:**
+  - **Primary:** D = column-wise − mask on `impute/induced/impute_score`, 15 fold pairs per
+    variant from one model each. A verdict needs the interval to exclude zero and all three seeds
+    to agree in sign.
+  - **Reading on the 9 variants at 60nan or more:**
+    - supported if column-wise is better on at least 5 and mask better on none;
+    - refuted if mask is better on at least 5, or if at least 7 have no verdict;
+    - mixed otherwise.
+  - **Secondary:** D by missing level; variants below the best baseline under each path; the mask
+    path must equal E30's M cells to the last digit.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/01-column-wise-scoring.md`;
+  `scripts/experiments/column_wise_report.py`.

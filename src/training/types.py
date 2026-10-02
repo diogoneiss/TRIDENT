@@ -475,6 +475,9 @@ class TrainingRequest:
     # vehicle_00nan regression fixture -- keeps meaning what it meant.
     task: str = DEFAULT_TASK
     score_null_path: bool = False
+    # T02's diagnostic: score the induced cells one gap column at a time, the other gaps
+    # left as [NULL], the row shape the decode stage trains on. Never ranks a fold.
+    score_column_wise: bool = False
     # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.
