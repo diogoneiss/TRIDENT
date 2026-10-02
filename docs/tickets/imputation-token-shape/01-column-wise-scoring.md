@@ -1,6 +1,6 @@
 # Does asking the gaps one column at a time, the rest as [NULL], score better? (pre-registered 2026-10-01)
 
-This ticket was written and committed before the first run, at about 23:45 GMT-3 on 2026-10-01.
+This ticket was written and committed before the first run, at 23:36 GMT-3 on 2026-10-01 (commit `91fabfd`; the queues started 23:36:48).
 It is step 1 of task T02 in [TASKS.md](../../TASKS.md).
 
 ## Why

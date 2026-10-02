@@ -1,23 +1,22 @@
 # Graph Report - TRIDENT  (2026-10-02)
 
 ## Corpus Check
-- 235 files · ~331,084 words
+- 239 files · ~334,642 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2746 nodes · 5202 edges · 191 communities (172 shown, 11 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 196 edges (avg confidence: 0.93)
+- 2778 nodes · 5261 edges · 204 communities (183 shown, 11 thin omitted)
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 197 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f147c398`
+- Built from commit: `91fabfd8`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - EncoderLayer
 - test_opt_search_space.py
-- 0005-reduced-optuna-search-for-imputation.md
 - test_training_config.py
 - Answer
 - test_mirroring.py
@@ -31,9 +30,9 @@
 - Hyperparameters
 - trident
 - ArtifactWriter
-- mlflow_utils.py
+- mirror_run_tree
 - score_cells
-- finetuning.py
+- test_training_schedulers.py
 - TRIDENT Backlog: Bugs, Pendencies and Improvements
 - test_imputation_baselines.py
 - test_training_tracking.py
@@ -47,22 +46,22 @@
 - preprocess_table
 - test_training_decoding.py
 - mirroring.py
-- BACKLOG.md
+- Ticket 0003: Training Loop Performance (Behavior-Preserving)
 - test_prune_cache.py
-- types.py
+- FoldTrackingRecord
 - run_hyperparameter_optimization
-- main
+- backfill_baseline_imputers.py
 - Imputation Decoder Task Implementation Plan
 - Resolution
 - TridentDecoder
 - Answer
 - 05. Third-party stubs for sklearn and scipy
-- 01. Per-task fold-ranking contract
+- imputation-decoder/spec.md
 - runtime_environment_tags
 - Findings
 - 02. Request, hyperparameters and command line
 - Reduce the imputation search to the knobs that move it, score it on the validation split, and promote its result explicitly
-- test_every_run_stores_its_metrics_in_the_order_they_were_logged
+- column_wise_report.py
 - 03. Imputation metrics as pure functions
 - 04. The decoder model
 - 05. Data support for evaluation
@@ -71,11 +70,10 @@
 - 08. Runner, MLflow identity, batch summary
 - 09. Tag backfill
 - 10. Optuna for the imputation task
-- 11. Regression fixture and documentation
+- TRIDENT Agent Guide (AGENTS.md)
 - Map: Imputation decoder task
 - 08. Record the design: ADR 0005 and the implementation plan
-- _Run
-- imputation-decoder/map.md
+- 01. Research: how do imputation papers score mixed-type tabular imputation?
 - 02. Research: how do tabular masked-modeling transformers decode a masked cell back to a value?
 - 10. Record the design: ADR and implementation plan
 - 03. What is the imputation ground truth, and on which cells is error scored?
@@ -103,16 +101,17 @@
 - as_category_strings
 - run_confirmatory_queue.sh
 - sync_remote.py
-- test_disabled_tracker_never_calls_mlflow_apis
-- mlflow_backend
+- Mirror every run into one derived MLflow experiment per task
+- Make the learning-rate schedule selectable, keep the legacy one as default, and tag it in MLflow
 - 04. Where a promoted configuration lives and how a run finds it
 - 05. The search-space profile flag and its record
 - 06. Checking the reduction and proving the tuning helped
 - test_sync_remote.py
-- runner.py
+- types.py
+- Ticket 0004: Exact original units in the imputation preview
 - Research: third-party stub strategy for sklearn and scipy
 - CLAUDE.md
-- mean_mode_baselines
+- test_baseline_cache.py
 - 06. The hyperparameter JSON schema and the three naming layers
 - 07. Enforcing the constants convention beyond what the checker catches
 - 09. Record the design: ADR 0006 and the implementation plan
@@ -141,7 +140,7 @@
 - Verdicts
 - Verdicts
 - Verdicts
-- data.py
+- DatasetSpec
 - Fidelity audit of `CONSOLIDATED.md`
 - test_backfill_baseline_imputers.py
 - §8 — Experiments run 2026-09-17
@@ -149,27 +148,33 @@
 - Consolidated report — the imputation work on `feat/imputation-task`
 - 4. What the experiments can and cannot support
 - _step_frame
-- Keep gorgona8's store on its SSD, copied to its hard disk every ten minutes
-- test_training_pretraining.py
+- test_training_artifacts.py
+- PreparedDataset
 - Entries
 - RsyncTransport
-- build_fold_result
+- finetuning.py
 - DirectoryServer
 - batched_heads_report.py
 - Transport
-- TabularEmbedder
-- Hand the tracking store to a remote server whole, one writer at a time
+- EncodedTable
+- Correctness and methodology
 - pretrain_decode_budget_report.py
 - imputation_baselines.py
+- Code health
 - cli.py
-- 0004-imputation-decoder-task.md
+- Add an imputation task with a value decoder, keep classification the default, and tag it in MLflow
+- 03. Task-keyed lookup and explicit promotion
 - Overnight on gorgona8, 2026-09-29/30
 - 8. The configuration for ticket 08
 - _columns_holding
+- test_embedder.py
 - _MetricClock
+- Bugs
+- compute_cv_summary
 - What does pre-training contribute to imputation? (pre-registered 2026-09-29)
 - decode_patience_batch_report.py
 - 01. The held set and the ranges
+- _Spy
 - Let an imputation study rank its trials by the validation split's induced gaps
 - pretrain_objective_report.py
 - start_mlflow.sh script
@@ -177,25 +182,31 @@
 - Does stopping the decode stage on a validation plateau lose anything? (pre-registered 2026-09-30)
 - opt.py
 - Does a larger batch with a scaled learning rate keep M's scores? (pre-registered 2026-09-30)
-- Does normalised-target pre-training still help once the decoder gets 450 epochs? (pre-registered 2026-09-30)
+- 01-pretraining-ablation.md
 - test_backfill_pretrain_objective_tag.py
 - backfill_pretrain_objective_tag.py
 - Ticket 0005: Batched MLflow Metric Writes (Behavior-Preserving)
 - Does a value target or a normalised embedding target make pre-training useful? (pre-registered 2026-09-30)
 - backfill_search_objective_tag.py
 - test_backfill_search_objective_tag.py
-- recompute_folds
-- Let pre-training regress a masked cell onto its value, or onto a normalised embedding
+- _frame_values
+- Reduced Optuna search for imputation: implementation tickets
 - run_pretrain_decode_budget_queue.sh
 - Backlog
 - decoding.py
 - run_decode_patience_batch_queue.sh
 - test_backfill_decode_patience_tag.py
 - test_backfill_decoder_heads_tag.py
+- 13. Optuna for the imputation task
 - run_pretrain_objective_queue.sh
-- PreparedDataset
-- _DisabledMlflow
-- backfill_decoder_heads_tag.py
+- BufferedFoldTracker
+- 02. The search objective is scored on the validation split
+- mlflow_utils.py
+- 03. Study protocol: datasets, variants, budget, schedule, seed
+- 07. Task: repair the imputation Optuna path and prove it with a two-trial study
+- _BudgetSpent
+- _sanitize
+- run_column_wise_queue.sh
 - 0013-imputation-defaults-from-the-confirmatory-study.md
 - run_batched_heads_queue.sh
 
@@ -207,17 +218,17 @@
 5. `run_training()` - 38 edges
 6. `Hyperparameters` - 37 edges
 7. `FoldResult` - 33 edges
-8. `mean_mode_baselines()` - 32 edges
-9. `resolve_training_request()` - 31 edges
-10. `Entries` - 31 edges
+8. `resolve_training_request()` - 32 edges
+9. `mean_mode_baselines()` - 32 edges
+10. `Entries` - 32 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `compute_cv_summary()` --semantically_similar_to--> `CrossValidationSummary`  [INFERRED] [semantically similar]
-  README.md → docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md
 - `TRIDENT README` --conceptually_related_to--> `kr-vs-kp Categorical Columns`  [AMBIGUOUS]
   README.md → datasets/categorical_columns/kr-vs-kp.txt
 - `TRIDENT README` --conceptually_related_to--> `src/training Package`  [AMBIGUOUS]
   README.md → AGENTS.md
+- `compute_cv_summary()` --semantically_similar_to--> `CrossValidationSummary`  [INFERRED] [semantically similar]
+  README.md → docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md
 - `run_hyperparameter_optimization()` --uses--> `DatasetSpec`  [INFERRED]
   opt.py → src/training/types.py
 - `_frame_values()` --uses--> `PreparedDataset`  [INFERRED]
@@ -231,7 +242,7 @@
 - **Training Refactor Documentation Trail** — docs_tickets_0001_training_refactor, docs_superpowers_specs_2026_08_02_training_refactor_design, docs_superpowers_plans_2026_08_02_training_refactor, docs_adr_0001_training_package_with_compatibility_facade, _superpowers_sdd_2026_08_02_training_refactor_task_3_report [INFERRED 0.85]
 - **TRIDENT Model Architecture Pipeline** — readme_tabularembedder, readme_tabulartransformerencoder, readme_tridentpretrainer, readme_tridentclassifier [INFERRED 0.85]
 
-## Communities (191 total, 11 thin omitted)
+## Communities (204 total, 11 thin omitted)
 
 ### Community 0 - "EncoderLayer"
 Cohesion: 0.17
@@ -241,13 +252,9 @@ Nodes (8): EncoderLayer, FeedForwardNetwork, initialize_weight(), MultiHeadAtten
 Cohesion: 0.08
 Nodes (30): build_parser(), define_search_space(), ObjectiveFunctionWrapper, ArgumentParser, Path, Wrapper class for the Optuna objective function to maintain state, Save the best parameters found so far, inside the study's own directory. The…, The training parser, so a study launched here accepts every flag main.py… (+22 more)
 
-### Community 2 - "0005-reduced-optuna-search-for-imputation.md"
-Cohesion: 0.10
-Nodes (16): Global constraints (apply to every ticket), Reduced Optuna search for imputation: implementation tickets, Status vocabulary, Tickets, 02. The search objective is scored on the validation split, Answer, Comments, Question (+8 more)
-
 ### Community 3 - "test_training_config.py"
-Cohesion: 0.09
-Nodes (45): build_training_parser(), ArgumentParser, Post-parse validation for mutually exclusive and dependent flags., resolve_training_request(), validate_parsed_args(), ADR 0006, decision 4: default on by the user's explicit decision;…, Classification is what every run did before, so it is what a run does by…, There is no decoder under classification, so there would be nothing to score.… (+37 more)
+Cohesion: 0.08
+Nodes (46): build_training_parser(), ArgumentParser, Post-parse validation for mutually exclusive and dependent flags., resolve_training_request(), validate_parsed_args(), ADR 0006, decision 4: default on by the user's explicit decision;…, Classification is what every run did before, so it is what a run does by…, There is no decoder under classification, so there would be nothing to score.… (+38 more)
 
 ### Community 4 - "Answer"
 Cohesion: 0.22
@@ -258,8 +265,8 @@ Cohesion: 0.14
 Nodes (33): _artifact_paths(), _bare_run(), _dataset(), _history(), fixture, MlflowClient, Path, Mirroring run trees into the derived per-task experiments (ADR 0006). (+25 more)
 
 ### Community 6 - "TRIDENT Experiment Tracking Context (CONTEXT.md)"
-Cohesion: 0.17
-Nodes (22): TRIDENT Experiment Tracking Context (CONTEXT.md), Component-Ablation Benchmark, CV Summary, Dataset Provenance, Diagnostic Fold Run, Experiment Family, Fold-Ranking Metric, Full-Factorial Ablation (+14 more)
+Cohesion: 0.26
+Nodes (14): TRIDENT Experiment Tracking Context (CONTEXT.md), Component-Ablation Benchmark, CV Summary, Dataset Provenance, Diagnostic Fold Run, Experiment Family, Fold-Ranking Metric, Full-Factorial Ablation (+6 more)
 
 ### Community 7 - "3. Design and methodology critiques judged sound"
 Cohesion: 0.17
@@ -286,48 +293,48 @@ Cohesion: 0.25
 Nodes (8): 03. Five StrEnums, and where constants live, Answer, Decision: homes split keys from values, Decision: `StrEnum`, with the tuples derived, Domain-modeling note: no CONTEXT.md changes, Implementation cautions for the execution tickets, Question, What the diagnosis actually was
 
 ### Community 13 - "Hyperparameters"
-Cohesion: 0.11
-Nodes (26): DatasetSpec, Hyperparameters, Any, RuntimeOptions, TrainingRequest, integration, Opt-in regression baseline for a short credit-g imputation run. `credit-…, A deterministic short imputation run on the CPU stays within the recorded… (+18 more)
+Cohesion: 0.21
+Nodes (11): Hyperparameters, Any, integration, A deterministic short imputation run on the CPU stays within the recorded…, test_credit_g_imputation_matches_regression_fixture(), The objective, the patience and the head mode move what an imputation run…, test_a_runs_hyperparameter_file_names_every_value_an_imputation_run_trained_with(), Every stored config predates the decode stage and must keep working untouched.… (+3 more)
 
 ### Community 15 - "ArtifactWriter"
-Cohesion: 0.11
-Nodes (20): ArtifactWriter, Any, DataFrame, Path, StandardScaler, Filesystem artifacts emitted by a training runtime., Write prepared-dataset lineage for a parent training run., A readable sample of what the model filled in, and the full record behind it.… (+12 more)
+Cohesion: 0.13
+Nodes (16): ArtifactWriter, Any, DataFrame, Path, StandardScaler, Write prepared-dataset lineage for a parent training run., A readable sample of what the model filled in, and the full record behind it.…, Every fold's per-column errors in one long-form table on the parent run. Pooled… (+8 more)
 
-### Community 17 - "mlflow_utils.py"
-Cohesion: 0.14
-Nodes (17): backfill(), BackfillReport, main(), MlflowClient, Stamp the ``decode_patience`` tag on imputation runs recorded before it…, Active parent and trial runs in the experiment families, never in the mirrors., _training_runs(), build_hyperparams_dict() (+9 more)
+### Community 17 - "mirror_run_tree"
+Cohesion: 0.29
+Nodes (9): backfill(), BackfillReport, main(), MlflowClient, Stamp the ``decode_patience`` tag on imputation runs recorded before it…, Active parent and trial runs in the experiment families, never in the mirrors., _training_runs(), mirror_run_tree() (+1 more)
 
 ### Community 18 - "score_cells"
-Cohesion: 0.11
-Nodes (28): _error_metrics(), DataFrame, _ratio(), Imputation error, and the score that ranks folds by it. Pure functions over a…, Model error as a share of the naive imputer's, guarding a flawless baseline. A…, Score a fold's reconstructed cells against their true values. ``cells`` carries…, How far off the guesses were, pooled within each kind of cell., score_cells() (+20 more)
-
-### Community 19 - "finetuning.py"
 Cohesion: 0.10
-Nodes (25): Optimizer, Classifier fine-tuning and fold metric calculation., batches_per_epoch(), Selectable learning-rate schedules shared by both training stages. Every…, Number of optimizer steps one epoch performs over ``row_count`` rows., Linear warmup to the base rate, then cosine decay to zero, measured in steps.…, One training stage's learning-rate schedule behind a uniform hook interface., StageScheduler (+17 more)
+Nodes (30): _error_metrics(), DataFrame, _ratio(), Model error as a share of the naive imputer's, guarding a flawless baseline. A…, Score a fold's reconstructed cells against their true values. ``cells`` carries…, How far off the guesses were, pooled within each kind of cell., score_cells(), _per_column_scores() (+22 more)
+
+### Community 19 - "test_training_schedulers.py"
+Cohesion: 0.11
+Nodes (21): Optimizer, Linear warmup to the base rate, then cosine decay to zero, measured in steps.…, One training stage's learning-rate schedule behind a uniform hook interface., StageScheduler, validate_lr_scheduler_name(), WarmupCosineMultiplier, _optimizer(), parametrize (+13 more)
 
 ### Community 20 - "TRIDENT Backlog: Bugs, Pendencies and Improvements"
-Cohesion: 0.08
-Nodes (26): B1. The learning-rate schedule completes a full cosine cycle — protected, B2. `--cv_folds 1` crashes, B3. Optuna proposes head counts that crash, and scores them as 0.0, B4. Optuna with MLflow enabled scored every trial 0.0, Bugs, C1. Scaler and encoders are fit before splitting — protected, C2. `"nan"` is a real category next to `[NULL]` — protected, C3. `LABELS` is logged but never used (+18 more)
+Cohesion: 0.22
+Nodes (9): Fixed already, I1. Hyperparameters cannot be set from the CLI, I2. Optuna overwrites the dataset's hyperparameter file, Improvements, Open housekeeping, P1. `preprocess_table` falls back to a Python loop per row, P2. Hand-rolled attention instead of fused SDPA — protected, Performance still on the table (+1 more)
 
 ### Community 21 - "test_imputation_baselines.py"
 Cohesion: 0.10
-Nodes (45): KnnImputer, The stronger baseline: each hidden cell filled from its nearest training rows.…, Each baseline imputer's error on the scored cells, keyed…, score_baselines(), _cells(), _dependent_frame(), _fitted(), _frame() (+37 more)
+Nodes (47): KnnImputer, MeanModeImputer, The stronger baseline: each hidden cell filled from its nearest training rows.…, Each baseline imputer's error on the scored cells, keyed…, The naive baseline: each column's training mean or mode, whatever was hidden., score_baselines(), mean_mode_baselines(), What a naive imputer would fill each column's cells with. The mean of a… (+39 more)
 
 ### Community 22 - "test_training_tracking.py"
-Cohesion: 0.23
-Nodes (29): get_or_create_experiment(), Return the experiment_id for the given dataset, creating it if absent.…, create_tracker(), Return an MLflow-backed tracker only when tracking has been requested., _artifact_files(), _artifact_paths(), _buffered_record(), _dataset() (+21 more)
+Cohesion: 0.12
+Nodes (48): get_or_create_experiment(), Return the experiment_id for the given dataset, creating it if absent.…, create_tracker(), Return an MLflow-backed tracker only when tracking has been requested., Disabled tracking must keep every MLflow API completely untouched., test_disabled_tracker_never_calls_mlflow_apis(), _artifact_files(), _artifact_paths() (+40 more)
 
 ### Community 23 - "summarize_cross_validation"
 Cohesion: 0.14
-Nodes (34): Build the per-fold timing events from the two measured stage durations., Aggregate completed CV folds into comparable final and loss statistics.…, stage_timing_metrics(), summarize_cross_validation(), FoldResult, LoggedMetric, A run may skip pre-training (zero epochs) to measure what it contributes. No…, Folds that disagree about whether a stage ran are not comparable, as before. (+26 more)
+Nodes (32): Build the per-fold timing events from the two measured stage durations., Aggregate completed CV folds into comparable final and loss statistics.…, stage_timing_metrics(), summarize_cross_validation(), FoldResult, A run may skip pre-training (zero epochs) to measure what it contributes. No…, Folds that disagree about whether a stage ran are not comparable, as before., An imputation fold whose decode stage stopped after ``epochs`` epochs… (+24 more)
 
 ### Community 24 - "test_training_tasks.py"
-Cohesion: 0.15
-Nodes (20): Return the ranking contract for a task name, rejecting unknown names., task_spec(), The per-task fold-ranking contract (ADR 0004, decisions 6 and 12)., One metric to read beside the model's: per population, the baseline whose mean…, How far the model is from the bar, as a number to sort and minimise: per fold,…, A search ranks its trials by its own objective, which need not be the fold-…, Nothing about baselines appears in a task that has none., One cross-validation fold of an imputation run, logging decode-stage losses. (+12 more)
+Cohesion: 0.14
+Nodes (19): The per-task fold-ranking contract (ADR 0004, decisions 6 and 12)., One metric to read beside the model's: per population, the baseline whose mean…, How far the model is from the bar, as a number to sort and minimise: per fold,…, A search ranks its trials by its own objective, which need not be the fold-…, Nothing about baselines appears in a task that has none., One cross-validation fold of an imputation run, logging decode-stage losses., _record(), test_a_classification_summary_names_no_best_baseline() (+11 more)
 
 ### Community 25 - "tracking.py"
-Cohesion: 0.08
-Nodes (26): RuntimeError, build_fold_tags(), build_run_tags(), parse_missingness_percent(), Return the normalized percentage encoded by a ``_<n>nan`` suffix., Build a flat dict of MLflow tags for a training run. Parameters ----------…, Build tags for a per-fold child run. Parameters ---------- fold_idx: Zero-based…, fold_timings_for_tracking() (+18 more)
+Cohesion: 0.09
+Nodes (25): build_fold_tags(), build_run_tags(), parse_missingness_percent(), Return the normalized percentage encoded by a ``_<n>nan`` suffix., Build a flat dict of MLflow tags for a training run. Parameters ----------…, Build tags for a per-fold child run. Parameters ---------- fold_idx: Zero-based…, execution_tags(), _flag() (+17 more)
 
 ### Community 26 - "backfill"
 Cohesion: 0.13
@@ -346,36 +353,36 @@ Cohesion: 0.22
 Nodes (9): File structure, Global Constraints, Reduced Optuna Search for Imputation: Implementation Plan, Task 1: Search-space profiles, Task 2: The search objective on the validation split, Task 3: Task-keyed lookup and explicit promotion, Task 4: The importance artifact, Task 5: The launcher and the six studies (+1 more)
 
 ### Community 30 - "preprocess_table"
-Cohesion: 0.10
-Nodes (32): create_pretrain_datasets(), preprocess_table(), Example function that: 1) Splits train/val (e.g., 90/10) 2) Generates masked DF…, Preprocesses the table to replace null values with the `[NULL]` token, applies…, _decoder(), _frame(), _interleaved_frame(), DataFrame (+24 more)
+Cohesion: 0.07
+Nodes (44): EpochMasker, An epoch's fresh mask over a frame encoded once, without going back through…, create_pretrain_datasets(), draw_dynamic_mask(), preprocess_table(), ndarray, Example function that: 1) Splits train/val (e.g., 90/10) 2) Generates masked DF…, Preprocesses the table to replace null values with the `[NULL]` token, applies… (+36 more)
 
 ### Community 31 - "test_training_decoding.py"
-Cohesion: 0.10
-Nodes (43): evaluation_mask(), Hide cells for scoring, the same way every time this fold is scored. Training…, _complete_frame(), _dataset(), _fold(), _hyperparameters(), DataFrame, The decode stage: training a decoder and scoring what it reconstructs. (+35 more)
+Cohesion: 0.11
+Nodes (43): _complete_frame(), _dataset(), _fold(), _hyperparameters(), DataFrame, The decode stage: training a decoder and scoring what it reconstructs., Its loss curves are what a reader plots, so every epoch has to be on them., A search ranks trials on the validation split, so the test split never chooses… (+35 more)
 
 ### Community 32 - "mirroring.py"
-Cohesion: 0.13
-Nodes (27): _Entry, RunTag, describe(), main(), Mirror every run in every experiment family into ``TRIDENT/mirror/<task>`` (ADR…, is_mirror_experiment(), Whether an experiment holds mirror runs, so it is never mirrored itself., children_of() (+19 more)
+Cohesion: 0.10
+Nodes (29): _Entry, RunTag, get_or_create_mirror_experiment(), is_mirror_experiment(), mirror_experiment_name(), The mirror experiment for a task, e.g. ``TRIDENT/mirror/imputation``., Whether an experiment holds mirror runs, so it is never mirrored itself., Return the experiment_id of the task's mirror experiment, creating it if… (+21 more)
 
-### Community 33 - "BACKLOG.md"
-Cohesion: 0.08
-Nodes (21): Exactness standard and result, Fixes included, Found and deliberately NOT fixed, Measured speedup, Problem, Status, Ticket 0003: Training Loop Performance (Behavior-Preserving), What changed (+13 more)
+### Community 33 - "Ticket 0003: Training Loop Performance (Behavior-Preserving)"
+Cohesion: 0.25
+Nodes (8): Exactness standard and result, Fixes included, Found and deliberately NOT fixed, Measured speedup, Problem, Status, Ticket 0003: Training Loop Performance (Behavior-Preserving), What changed
 
 ### Community 34 - "test_prune_cache.py"
 Cohesion: 0.19
 Nodes (12): main(), prune(), PruneReport, Path, Keep a result cache under a size limit, dropping the entries used longest ago.…, _entry(), Path, Keeping a result cache under its size limit by dropping what was used longest… (+4 more)
 
-### Community 35 - "types.py"
-Cohesion: 0.09
-Nodes (36): Exception, _BudgetSpent, _fold_value(), plan_gap(), plan_run(), The pass has recomputed as many folds as it was allowed to; the cache keeps…, What the backfill would write to one run tree, or why it will not., Check the recomputation against the run's own baselines, then list what is… (+28 more)
+### Community 35 - "FoldTrackingRecord"
+Cohesion: 0.13
+Nodes (24): Filesystem artifacts emitted by a training runtime., Write the parent-run CSV, summary, diagnostic manifest, and lineage. The…, _best_baseline_copies(), _best_baselines(), _diagnostic_roles(), final_metrics_for_tracking(), fold_timings_for_tracking(), _is_finite_number() (+16 more)
 
 ### Community 36 - "run_hyperparameter_optimization"
-Cohesion: 0.09
-Nodes (55): log_param_importances(), Namespace, Rank the knobs the study sampled and record the ranking on the study parent.…, Run hyperparameter optimization with Optuna Annotated ahead of the rest of this…, run_hyperparameter_optimization(), mlflow_backend(), _optuna_args(), fixture (+47 more)
+Cohesion: 0.07
+Nodes (58): _DisabledMlflow, log_param_importances(), Namespace, Rank the knobs the study sampled and record the ranking on the study parent.…, Run hyperparameter optimization with Optuna Annotated ahead of the rest of this…, Drop-in no-op used when an Optuna invocation disables tracking., run_hyperparameter_optimization(), RuntimeError (+50 more)
 
-### Community 37 - "main"
-Cohesion: 0.15
-Nodes (19): apply_plan(), candidate_runs(), _children(), _dataset_bytes(), _fold_rows(), _imputation_parents(), main(), _needs_backfill() (+11 more)
+### Community 37 - "backfill_baseline_imputers.py"
+Cohesion: 0.10
+Nodes (41): info, _Run, apply_plan(), _arguments(), candidate_runs(), _children(), _dataset_bytes(), _fold_rows() (+33 more)
 
 ### Community 38 - "Imputation Decoder Task Implementation Plan"
 Cohesion: 0.14
@@ -386,8 +393,8 @@ Cohesion: 0.14
 Nodes (14): 08. Configure the checker and make it green, Acceptance, Acceptance, Left for ticket 09, Notes, Question, Resolution, The bump: verified, not assumed (+6 more)
 
 ### Community 41 - "TridentDecoder"
-Cohesion: 0.10
-Nodes (17): dtype, DecodedCells, Tensor, What the decoder would fill every cell of a batch with. ``categorical_ids`` are…, Reconstructs actual cell values from the encoder's output at each column. One…, Stack per-column tensors feature-major, keeping the shape when there are none., Contextual output for every column token, dropping the [CLS] position., Reconstruction loss over the cells hidden from the model. ``hidden`` is the… (+9 more)
+Cohesion: 0.11
+Nodes (15): dtype, DecodedCells, Tensor, What the decoder would fill every cell of a batch with. ``categorical_ids`` are…, Reconstructs actual cell values from the encoder's output at each column. One…, Stack per-column tensors feature-major, keeping the shape when there are none., Contextual output for every column token, dropping the [CLS] position., Reconstruction loss over the cells hidden from the model. ``hidden`` is the… (+7 more)
 
 ### Community 42 - "Answer"
 Cohesion: 0.29
@@ -397,9 +404,9 @@ Nodes (7): 04. The task-branch union and exhaustiveness, Answer, Question, Relat
 Cohesion: 0.29
 Nodes (7): 05. Third-party stubs for sklearn and scipy, Notes, Question, Resolution, The three candidate answers, Three things ticket 08 must not rediscover the hard way, What to find out
 
-### Community 44 - "01. Per-task fold-ranking contract"
-Cohesion: 0.33
-Nodes (5): 01. Per-task fold-ranking contract, Acceptance criteria, Comments, Goal, Seams under test
+### Community 44 - "imputation-decoder/spec.md"
+Cohesion: 0.18
+Nodes (9): 01. Per-task fold-ranking contract, Acceptance criteria, Comments, Goal, Seams under test, Global constraints (apply to every ticket), Imputation decoder task: implementation tickets, Status vocabulary (+1 more)
 
 ### Community 45 - "runtime_environment_tags"
 Cohesion: 0.36
@@ -417,9 +424,9 @@ Nodes (7): 02. Request, hyperparameters and command line, Acceptance criteria, C
 Cohesion: 0.25
 Nodes (8): Consequences, Considered options, Context, Decision, How to compare, Outcome (2026-09-12), Reduce the imputation search to the knobs that move it, score it on the validation split, and promote its result explicitly, Status
 
-### Community 50 - "test_every_run_stores_its_metrics_in_the_order_they_were_logged"
-Cohesion: 0.16
-Nodes (15): _epoch_history_record(), _logged_histories(), _logged_rows(), parametrize, One fold logged as the trainer logs it: a dict per epoch per stage, then the…, What each key's history should read, from the events in logged order. MLflow…, Every metric row of a run as ``(key, step, value, timestamp)``, key by key., A run's rows in timestamp order, after checking that no two rows share a… (+7 more)
+### Community 50 - "column_wise_report.py"
+Cohesion: 0.27
+Nodes (14): _best_baseline(), folds(), _folds(), integrity(), interval(), _path(), DataFrame, ndarray (+6 more)
 
 ### Community 51 - "03. Imputation metrics as pure functions"
 Cohesion: 0.29
@@ -453,9 +460,9 @@ Nodes (6): 09. Tag backfill, Acceptance criteria, Comments, Constraints, Goal, S
 Cohesion: 0.29
 Nodes (6): 10. Optuna for the imputation task, Acceptance criteria, Comments, Constraints, Goal, Seams under test
 
-### Community 59 - "11. Regression fixture and documentation"
-Cohesion: 0.29
-Nodes (6): 11. Regression fixture and documentation, Acceptance criteria, Comments, Constraints, Goal, Seams under test
+### Community 59 - "TRIDENT Agent Guide (AGENTS.md)"
+Cohesion: 0.10
+Nodes (20): TRIDENT Agent Guide (AGENTS.md), PyArrow <24 Pin Constraint, src/training Package, train.main(args, return_metrics=False) Compatibility Facade, ADR 0001: Training Package with Compatibility Facade, Compatibility Facade Pattern, Consequences, Context (+12 more)
 
 ### Community 60 - "Map: Imputation decoder task"
 Cohesion: 0.33
@@ -465,13 +472,9 @@ Nodes (6): Decisions so far, Destination, Map: Imputation decoder task, Not yet 
 Cohesion: 0.50
 Nodes (4): 08. Record the design: ADR 0005 and the implementation plan, Answer, Comments, Question
 
-### Community 62 - "_Run"
-Cohesion: 0.22
-Nodes (10): FoldMetrics, info, _Run, _arguments(), _naive_refusal(), Path, Why the run's own mean/mode numbers cannot be reproduced, if they cannot., _recompute_cached() (+2 more)
-
-### Community 63 - "imputation-decoder/map.md"
-Cohesion: 0.18
-Nodes (8): Global constraints (apply to every ticket), Imputation decoder task: implementation tickets, Status vocabulary, Tickets, 01. Research: how do imputation papers score mixed-type tabular imputation?, Answer, Comments, Question
+### Community 63 - "01. Research: how do imputation papers score mixed-type tabular imputation?"
+Cohesion: 0.40
+Nodes (4): 01. Research: how do imputation papers score mixed-type tabular imputation?, Answer, Comments, Question
 
 ### Community 64 - "02. Research: how do tabular masked-modeling transformers decode a masked cell back to a value?"
 Cohesion: 0.40
@@ -482,39 +485,39 @@ Cohesion: 0.40
 Nodes (4): 10. Record the design: ADR and implementation plan, Answer, Comments, Question
 
 ### Community 66 - "03. What is the imputation ground truth, and on which cells is error scored?"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 03. What is the imputation ground truth, and on which cells is error scored?, Answer, Comments, Question
 
 ### Community 67 - "04. Decoder architecture and the stage that trains it"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 04. Decoder architecture and the stage that trains it, Answer, Comments, Question
 
 ### Community 68 - "05. Loss, error metrics and the imputation fold-ranking metric"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 05. Loss, error metrics and the imputation fold-ranking metric, Answer, Comments, Question
 
 ### Community 69 - "06. How are imputation runs identified in MLflow?"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 06. How are imputation runs identified in MLflow?, Answer, Comments, Question
 
 ### Community 70 - "07. Prototype: the human-friendly imputed-vs-actual preview"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 07. Prototype: the human-friendly imputed-vs-actual preview, Answer, Comments, Question
 
 ### Community 71 - "08. CLI flag and hyperparameter schema for the imputation task"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 08. CLI flag and hyperparameter schema for the imputation task, Answer, Comments, Question
 
 ### Community 72 - "09. How does the training package branch per task without touching classification?"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 09. How does the training package branch per task without touching classification?, Answer, Comments, Question
 
 ### Community 73 - "11. Multi-rate evaluation: across runs or within one run?"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 11. Multi-rate evaluation: across runs or within one run?, Answer, Comments, Question
 
 ### Community 74 - "12. Should the [NULL] path be scored as a diagnostic?"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 12. Should the [NULL] path be scored as a diagnostic?, Answer, Comments, Question
 
 ### Community 75 - "confirmatory_report.py"
@@ -522,7 +525,7 @@ Cohesion: 0.24
 Nodes (9): folds(), interval(), _path(), DataFrame, ndarray, Pre-registered analysis of the confirmatory study on 21 variants (imputation-…, How many variants each primary comparison calls each way., report() (+1 more)
 
 ### Community 76 - "14. A regression fixture for the imputation task"
-Cohesion: 0.40
+Cohesion: 0.50
 Nodes (4): 14. A regression fixture for the imputation task, Answer, Comments, Question
 
 ### Community 78 - "01. Search-space profiles"
@@ -577,6 +580,14 @@ Nodes (17): bool_, _ColumnModel, float64, as_category_strings(), ndarray, String
 Cohesion: 0.09
 Nodes (48): artifact_prefix(), branch_tips(), _branches(), code_files(), delete_pushed_files(), held_open_by(), _held_open_linux(), _held_open_windows() (+40 more)
 
+### Community 93 - "Mirror every run into one derived MLflow experiment per task"
+Cohesion: 0.25
+Nodes (8): Consequences, Considered options, Context, Decision, How to compare, Mirror every run into one derived MLflow experiment per task, Outcome (2026-09-17), Status
+
+### Community 94 - "Make the learning-rate schedule selectable, keep the legacy one as default, and tag it in MLflow"
+Cohesion: 0.29
+Nodes (7): Consequences, Considered options, Context, Decision, How to compare, Make the learning-rate schedule selectable, keep the legacy one as default, and tag it in MLflow, Status
+
 ### Community 95 - "04. Where a promoted configuration lives and how a run finds it"
 Cohesion: 0.50
 Nodes (4): 04. Where a promoted configuration lives and how a run finds it, Answer, Comments, Question
@@ -593,21 +604,25 @@ Nodes (4): 06. Checking the reduction and proving the tuning helped, Answer, Com
 Cohesion: 0.19
 Nodes (35): pull(), Rewrite every artifact root under ``source_prefix`` to ``target_prefix``, in…, Fetch outputs and the store; this checkout's store becomes the server's., translate_store(), Workspace, skipif, client_for(), git() (+27 more)
 
-### Community 99 - "runner.py"
-Cohesion: 0.10
-Nodes (38): logged_hyperparameters(), The parameters this run actually used, under their config-file names., device, Fine-tune and evaluate the classifier using the legacy optimization loop., train_and_evaluate_classifier(), _per_column_scores(), DataFrame, Typed orchestration for TRIDENT training. (+30 more)
+### Community 99 - "types.py"
+Cohesion: 0.09
+Nodes (43): logged_hyperparameters(), The parameters this run actually used, under their config-file names., Typed orchestration for TRIDENT training., Run all folds and return raw folds plus the legacy aggregate metrics., run_training(), DecodingOutcome, default_lr_scheduler(), FinetuningOutcome (+35 more)
+
+### Community 100 - "Ticket 0004: Exact original units in the imputation preview"
+Cohesion: 0.29
+Nodes (7): Acceptance, Constraints, Decisions, Explicitly not in this ticket, Outcome, The reframing, Ticket 0004: Exact original units in the imputation preview
 
 ### Community 101 - "Research: third-party stub strategy for sklearn and scipy"
 Cohesion: 0.08
 Nodes (24): 10. Out of scope, but found, 11. What could not be verified, 12. Sources, 1. Answer, 2.1 typeshed — no, for either library, 2.2 scipy — `scipy-stubs` is official and current, 2.3 sklearn — nothing credible exists, 2. Does a maintained stub package exist? (+16 more)
 
 ### Community 102 - "CLAUDE.md"
-Cohesion: 0.08
-Nodes (21): Background & full reference, Experimentation log, gorgona8: the store lives on the SSD, graphify, MLflow run analysis, Times, Consequences, Considered options (+13 more)
+Cohesion: 0.12
+Nodes (13): Background & full reference, Experimentation log, gorgona8: the store lives on the SSD, graphify, MLflow run analysis, Times, Destination, Map: Mirror every run into one derived MLflow experiment per task (+5 more)
 
-### Community 103 - "mean_mode_baselines"
-Cohesion: 0.26
-Nodes (18): mean_mode_baselines(), What a naive imputer would fill each column's cells with. The mean of a…, _cells(), _direct(), _frame(), _hits(), DataFrame, Path (+10 more)
+### Community 103 - "test_baseline_cache.py"
+Cohesion: 0.28
+Nodes (16): _cells(), _direct(), _frame(), _hits(), DataFrame, Path, Caching the baseline imputers' scores across runs that share a fold (ADR 0007,…, Every arm fills the cells differently; the baselines must still be shared. (+8 more)
 
 ### Community 104 - "06. The hyperparameter JSON schema and the three naming layers"
 Cohesion: 0.25
@@ -622,8 +637,8 @@ Cohesion: 0.33
 Nodes (5): 09. Record the design: ADR 0006 and the implementation plan, Acceptance, Notes, Question, The work
 
 ### Community 107 - "TRIDENT README"
-Cohesion: 0.14
-Nodes (16): credit-g Categorical Columns, electricity Categorical Columns, kr-vs-kp Categorical Columns, Consequences, Considered options, Context, Decision, How to compare (+8 more)
+Cohesion: 0.11
+Nodes (25): credit-g Categorical Columns, electricity Categorical Columns, kr-vs-kp Categorical Columns, ADR 0002: Curated Cross-Validation MLflow Runs, Consequences, Considered options, Context, Decision (+17 more)
 
 ### Community 108 - "Map: Typing and naming standard for TRIDENT"
 Cohesion: 0.33
@@ -717,9 +732,9 @@ Nodes (8): 13 - What the shared pre-training stage contributes to imputation: ve
 Cohesion: 0.25
 Nodes (7): 05 - The embedder, [MASK] and [NULL] semantics: verdicts, F-05-1 - `_score_induced_missing` overrides `masked_positions` with a DataFrame-ordered `isna()` matrix, while every reader of that field indexes it categorical-then-numerical, so the `[NULL]` diagnostic scores the wrong cells, F-05-2 - `encode` on a frame that never went through `preprocess_table` represents a missing cell as raw `NaN` (numerical) or the `'nan'` category, and pre-training's clean targets are built that way, F-05-3 - the induced population is scored on rows where every gap has become `[MASK]` and no `[NULL]` survives, a missingness pattern the decoder essentially never trained on, F-05-4 - the `StandardScaler` that defines `rmse_num_z`'s unit is fitted on the whole table, including the rows the metric scores, Verdicts, What this critique missed
 
-### Community 133 - "data.py"
-Cohesion: 0.11
-Nodes (28): _assert_row_aligned(), build_folds(), declared_column_types(), has_complete_sibling(), load_complete_sibling(), prepare_dataset(), DataFrame, Path (+20 more)
+### Community 133 - "DatasetSpec"
+Cohesion: 0.08
+Nodes (46): FoldMetrics, Every current baseline's metrics on each fold's populations, as the run scored…, recompute_folds(), _assert_row_aligned(), build_folds(), declared_column_types(), evaluation_mask(), has_complete_sibling() (+38 more)
 
 ### Community 134 - "Fidelity audit of `CONSOLIDATED.md`"
 Cohesion: 0.29
@@ -734,8 +749,8 @@ Cohesion: 0.13
 Nodes (15): 8.10 The one separation in twelve, replicated: it does not hold, 8.11 The committed `credit-g_20nan` promoted file loses to the defaults; `credit-g_40nan` leans the same way, 8.12 The sign of tuned-versus-defaults follows the winner's rank, 8.13 Verification record for §8, 8.14 The control: what the best trial is worth once it is scored the way the comparison is, 8.1 The typing refactor preserved imputation behaviour exactly, 8.2 The noise floor N-1 asked for, 8.3 Mis-selection on the study's own split — and, in §8.14, how little of it survives five-fold (+7 more)
 
 ### Community 137 - "Training Refactor Implementation Plan"
-Cohesion: 0.12
-Nodes (23): Task 3 Report: Runtime Adapters and Regression Baseline, TRIDENT Agent Guide (AGENTS.md), PyArrow <24 Pin Constraint, src/training Package, train.main(args, return_metrics=False) Compatibility Facade, vehicle_00nan Regression Fixture, ADR 0001: Training Package with Compatibility Facade, Compatibility Facade Pattern (+15 more)
+Cohesion: 0.18
+Nodes (16): Task 3 Report: Runtime Adapters and Regression Baseline, vehicle_00nan Regression Fixture, Plan: Add --all CLI Flag for Batch Dataset Training, discover_datasets(), run_all(args), Training Refactor Implementation Plan, create_tracker(), FoldResult (+8 more)
 
 ### Community 138 - "Consolidated report — the imputation work on `feat/imputation-task`"
 Cohesion: 0.29
@@ -749,25 +764,25 @@ Nodes (6): 4. What the experiments can and cannot support, Cross-ladder reads (`
 Cohesion: 0.25
 Nodes (8): ``level`` jumps from -3 to 3 where ``x`` passes 10, and ``side`` follows the…, The third baseline trains one model per column on the training rows where that…, Boosting subsamples a validation split on large folds; with a fixed seed of its…, A column the training fold holds in one category only, or not at all, gives a…, _step_frame(), test_gradient_boosting_falls_back_to_a_constant_where_there_is_nothing_to_learn(), test_gradient_boosting_fills_the_same_way_every_time(), test_gradient_boosting_learns_each_column_from_the_others()
 
-### Community 141 - "Keep gorgona8's store on its SSD, copied to its hard disk every ten minutes"
-Cohesion: 0.33
-Nodes (6): Consequences, Context, Decision, How to use, Keep gorgona8's store on its SSD, copied to its hard disk every ten minutes, Status
+### Community 141 - "test_training_artifacts.py"
+Cohesion: 0.67
+Nodes (6): LoggedArtifact, _dataset(), _record(), _summary(), test_diagnostic_manifest_maps_selected_fold_artifacts_to_mlflow_destinations(), test_write_cv_tracking_artifacts_writes_parent_contract_with_builtin_json_values()
 
-### Community 142 - "test_training_pretraining.py"
-Cohesion: 0.10
-Nodes (31): Module, NormalizedEmbeddingPretrainer, Given a masked DataFrame, asks the Transformer to reconstruct, only at [MASK]…, Unified model for the classification task: 1) Generates tabular embeddings…, Parameters ---------- embedder : TabularEmbedder Responsible for generating…, data : pd.DataFrame or EncodedTable Input rows (possibly masked/null, but in…, The embedding objective with a layer-normalised target and a predictor head…, TridentModel (+23 more)
+### Community 142 - "PreparedDataset"
+Cohesion: 0.09
+Nodes (39): Module, Class that encapsulates the creation of embeddings for tabular data: -…, TabularEmbedder, NormalizedEmbeddingPretrainer, Given a masked DataFrame, asks the Transformer to reconstruct, only at [MASK]…, Unified model for the classification task: 1) Generates tabular embeddings…, Parameters ---------- embedder : TabularEmbedder Responsible for generating…, data : pd.DataFrame or EncodedTable Input rows (possibly masked/null, but in… (+31 more)
 
 ### Community 143 - "Entries"
 Cohesion: 0.06
-Nodes (34): E01 · `[MASK]` vs `[NULL]` token path for induced cells (2026-09-10; re-checked 2026-09-11), E02 · Reduced Optuna search: six studies under cosine (2026-09-11), E03 · Promoted configuration vs defaults, cosine, seed 42 (2026-09-11 – 2026-09-12), E04 · Does the pre-training loss drop mean learning? (critique probe, 2026-09-11), E05 · Pre-training epochs 300 vs 2 (critique ablation, 2026-09-11), E06 · Decode checkpoint criterion vs ranking metric (critique probe, 2026-09-11), E07 · Plateau halvings driven by pre-training's re-rolled validation mask (critique read, 2026-09-11), E08 · Resolution and fidelity of the masked search objective (critique reads, 2026-09-11) (+26 more)
+Nodes (35): E01 · `[MASK]` vs `[NULL]` token path for induced cells (2026-09-10; re-checked 2026-09-11), E02 · Reduced Optuna search: six studies under cosine (2026-09-11), E03 · Promoted configuration vs defaults, cosine, seed 42 (2026-09-11 – 2026-09-12), E04 · Does the pre-training loss drop mean learning? (critique probe, 2026-09-11), E05 · Pre-training epochs 300 vs 2 (critique ablation, 2026-09-11), E06 · Decode checkpoint criterion vs ranking metric (critique probe, 2026-09-11), E07 · Plateau halvings driven by pre-training's re-rolled validation mask (critique read, 2026-09-11), E08 · Resolution and fidelity of the masked search objective (critique reads, 2026-09-11) (+27 more)
 
 ### Community 144 - "RsyncTransport"
 Cohesion: 0.30
 Nodes (5): CompletedProcess, A Windows path as WSL mounts it: ``C:/Users/x`` becomes ``/mnt/c/Users/x``., rsync and ssh; through WSL on Windows, where their keys and known_hosts live., RsyncTransport, to_wsl()
 
-### Community 145 - "build_fold_result"
-Cohesion: 0.22
-Nodes (12): build_fold_result(), ndarray, Build the legacy per-fold classification metric set., compute_cv_summary(), DataFrame, Path, Return the legacy mean, sample standard deviation, and display string., test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold() (+4 more)
+### Community 145 - "finetuning.py"
+Cohesion: 0.23
+Nodes (11): build_fold_result(), device, ndarray, Classifier fine-tuning and fold metric calculation., Build the legacy per-fold classification metric set., Fine-tune and evaluate the classifier using the legacy optimization loop., train_and_evaluate_classifier(), test_build_fold_result_keeps_binary_confusion_fields_for_single_class_fold() (+3 more)
 
 ### Community 146 - "DirectoryServer"
 Cohesion: 0.21
@@ -781,29 +796,37 @@ Nodes (7): folds(), interval(), _path(), DataFrame, ndarray, Pre-registered anal
 Cohesion: 0.22
 Nodes (3): Protocol, How files and commands reach the server. Paths are relative to each side's root., Transport
 
-### Community 149 - "TabularEmbedder"
-Cohesion: 0.07
-Nodes (28): EncodedTable, EpochMasker, Class that encapsulates the creation of embeddings for tabular data: -…, Reduce a column name to a valid ModuleDict/ParameterDict key., Convert a whole DataFrame into the tensors ``forward`` consumes. Doing this…, For each row, generates the resulting embedding: 1) Transforms each categorical…, A whole DataFrame converted to tensors once, then sliced per batch. The per-…, Select rows with a slice or an index tensor, keeping the layout. (+20 more)
+### Community 149 - "EncodedTable"
+Cohesion: 0.20
+Nodes (5): EncodedTable, Convert a whole DataFrame into the tensors ``forward`` consumes. Doing this…, For each row, generates the resulting embedding: 1) Transforms each categorical…, A whole DataFrame converted to tensors once, then sliced per batch. The per-…, Select rows with a slice or an index tensor, keeping the layout.
 
-### Community 150 - "Hand the tracking store to a remote server whole, one writer at a time"
-Cohesion: 0.29
-Nodes (7): Consequences, Context, Decision, Hand the tracking store to a remote server whole, one writer at a time, How to use, Outcome (2026-09-29, rehearsal), Status
+### Community 150 - "Correctness and methodology"
+Cohesion: 0.33
+Nodes (6): C1. Scaler and encoders are fit before splitting — protected, C2. `"nan"` is a real category next to `[NULL]` — protected, C3. `LABELS` is logged but never used, C4. Pre-training re-initializes already-initialized layers — protected, C5. Numeric precision and scaling, Correctness and methodology
 
 ### Community 151 - "pretrain_decode_budget_report.py"
 Cohesion: 0.25
 Nodes (8): folds(), interval(), _path(), DataFrame, ndarray, Pre-registered analysis of the decode-budget study, read from the store read-…, report(), source_of()
 
 ### Community 152 - "imputation_baselines.py"
-Cohesion: 0.15
-Nodes (18): BaselineScorer, _environment_digest(), _frame_digest(), _load(), DataFrame, Path, The baseline imputers' scores, cached across runs that share a fold (ADR 0007).…, Scores one fold's baseline imputers on any population of its cells, from the… (+10 more)
+Cohesion: 0.14
+Nodes (19): BaselineScorer, _environment_digest(), _frame_digest(), _load(), DataFrame, Path, The baseline imputers' scores, cached across runs that share a fold (ADR 0007).…, Scores one fold's baseline imputers on any population of its cells, from the… (+11 more)
+
+### Community 153 - "Code health"
+Cohesion: 0.33
+Nodes (6): Code health, H1. `create_pretrain_datasets` is dead code, H2. The padding-mask branch is unreachable, H3. `torch.save` pickles the whole model object, H4. `opt.py` rebinds the module-level `mlflow` name, H5. The decode stage logs its timing under `time/finetune_seconds`
 
 ### Community 154 - "cli.py"
 Cohesion: 0.16
 Nodes (16): _format_duration(), main(), Namespace, Return a human-readable duration string., Command-line entry point for TRIDENT., Run training sequentially on every discovered dataset., run_all(), parse_args() (+8 more)
 
-### Community 155 - "0004-imputation-decoder-task.md"
-Cohesion: 0.09
-Nodes (19): Add an imputation task with a value decoder, keep classification the default, and tag it in MLflow, Consequences, Considered options, Context, Decision, How to compare, Status, Consequences (+11 more)
+### Community 155 - "Add an imputation task with a value decoder, keep classification the default, and tag it in MLflow"
+Cohesion: 0.29
+Nodes (7): Add an imputation task with a value decoder, keep classification the default, and tag it in MLflow, Consequences, Considered options, Context, Decision, How to compare, Status
+
+### Community 156 - "03. Task-keyed lookup and explicit promotion"
+Cohesion: 0.33
+Nodes (6): 03. Task-keyed lookup and explicit promotion, Acceptance criteria, Comments, Constraints, Goal, Seams under test
 
 ### Community 157 - "Overnight on gorgona8, 2026-09-29/30"
 Cohesion: 0.18
@@ -817,9 +840,21 @@ Nodes (5): 8.1 `pyproject.toml`, 8.2 Where the stubs live, 8.3 Resolver impact �
 Cohesion: 0.40
 Nodes (5): _columns_holding(), _foreign_roots(), Connection, Artifact roots under neither prefix; ``mlflow-artifacts:`` roots belong to no…, Every ``table.column`` of the store in which some value contains ``text``.
 
+### Community 160 - "test_embedder.py"
+Cohesion: 0.40
+Nodes (5): _embedder(), DataFrame, Behaviour of the shared TabularEmbedder, used by both tasks., ``None`` and ``NaN`` are the same absence, so they share one vocabulary entry.…, test_a_missing_category_is_one_category_however_it_was_written()
+
 ### Community 161 - "_MetricClock"
 Cohesion: 0.40
 Nodes (3): _MetricClock, Hand out metric timestamps that only ever increase within this process. A flush…, Claim ``count`` consecutive milliseconds; return the first.
+
+### Community 162 - "Bugs"
+Cohesion: 0.40
+Nodes (5): B1. The learning-rate schedule completes a full cosine cycle — protected, B2. `--cv_folds 1` crashes, B3. Optuna proposes head counts that crash, and scores them as 0.0, B4. Optuna with MLflow enabled scored every trial 0.0, Bugs
+
+### Community 163 - "compute_cv_summary"
+Cohesion: 0.40
+Nodes (5): compute_cv_summary(), DataFrame, Path, Return the legacy mean, sample standard deviation, and display string., test_compute_cv_summary_retains_legacy_mean_std_format()
 
 ### Community 164 - "What does pre-training contribute to imputation? (pre-registered 2026-09-29)"
 Cohesion: 0.22
@@ -851,15 +886,15 @@ Nodes (8): Arms (fixed before launch), Does stopping the decode stage on a valid
 
 ### Community 175 - "opt.py"
 Cohesion: 0.10
-Nodes (33): promote_best_configuration(), Publish a study's winning configuration where the task's runs will find it. The…, configuration(), main(), One cell of the batched-heads check (imputation-pretraining/06). uv run…, main(), One cell of the confirmatory study on the 21 imputation variants (imputation-…, configuration() (+25 more)
+Nodes (31): promote_best_configuration(), Publish a study's winning configuration where the task's runs will find it. The…, configuration(), main(), One cell of the batched-heads check (imputation-pretraining/06). uv run…, main(), One cell of the column-wise scoring study (imputation-token-shape/01, task T02…, main() (+23 more)
 
 ### Community 176 - "Does a larger batch with a scaled learning rate keep M's scores? (pre-registered 2026-09-30)"
 Cohesion: 0.25
 Nodes (7): Arms (fixed before launch), Does a larger batch with a scaled learning rate keep M's scores? (pre-registered 2026-09-30), Known limits, stated in advance, Measures, Outcome (2026-09-30, 15:27 GMT-3), Question, Why
 
-### Community 177 - "Does normalised-target pre-training still help once the decoder gets 450 epochs? (pre-registered 2026-09-30)"
-Cohesion: 0.29
-Nodes (7): Arms (fixed before launch), Does normalised-target pre-training still help once the decoder gets 450 epochs? (pre-registered 2026-09-30), Known limits, stated in advance, Measures, Outcome (2026-09-30, 05:00 GMT-3), Question, Why
+### Community 177 - "01-pretraining-ablation.md"
+Cohesion: 0.13
+Nodes (13): Consequences, Considered options, Context, Decision, Let pre-training regress a masked cell onto its value, or onto a normalised embedding, Status, Arms (fixed before launch), Does normalised-target pre-training still help once the decoder gets 450 epochs? (pre-registered 2026-09-30) (+5 more)
 
 ### Community 178 - "test_backfill_pretrain_objective_tag.py"
 Cohesion: 0.36
@@ -870,8 +905,8 @@ Cohesion: 0.36
 Nodes (7): backfill(), BackfillReport, main(), _pretraining_runs(), MlflowClient, Stamp the ``pretrain_objective`` tag on runs recorded before ADR 0011. Every…, Active runs that pre-trained, in the experiment families, never in the mirrors.
 
 ### Community 180 - "Ticket 0005: Batched MLflow Metric Writes (Behavior-Preserving)"
-Cohesion: 0.29
-Nodes (7): Exactness standard and result, Measured speedup, Problem, Status, Tests, Ticket 0005: Batched MLflow Metric Writes (Behavior-Preserving), What changed
+Cohesion: 0.13
+Nodes (13): Consequences, Context, Decision, How to use, Keep gorgona8's store on its SSD, copied to its hard disk every ten minutes, Status, Exactness standard and result, Measured speedup (+5 more)
 
 ### Community 181 - "Does a value target or a normalised embedding target make pre-training useful? (pre-registered 2026-09-30)"
 Cohesion: 0.22
@@ -885,21 +920,21 @@ Nodes (11): backfill(), BackfillReport, default_objective(), main(), _optuna_run
 Cohesion: 0.31
 Nodes (10): client(), fixture, MlflowClient, Stamping the search objective on Optuna runs recorded before ADR 0008., Every study before ADR 0008 ranked imputation trials by the masked validation…, Mirrors copy their source's tags (ADR 0006), so a stamped tree is re-mirrored;…, _seed_runs(), test_a_dry_run_writes_nothing_and_a_second_apply_finds_nothing() (+2 more)
 
-### Community 184 - "recompute_folds"
-Cohesion: 0.22
-Nodes (9): _cells(), _frame_values(), DataFrame, ndarray, The scored-cell table the decode stage builds, without the model's guesses.…, Every current baseline's metrics on each fold's populations, as the run scored…, recompute_folds(), MeanModeImputer (+1 more)
+### Community 184 - "_frame_values"
+Cohesion: 0.50
+Nodes (5): _cells(), _frame_values(), DataFrame, ndarray, The scored-cell table the decode stage builds, without the model's guesses.…
 
-### Community 185 - "Let pre-training regress a masked cell onto its value, or onto a normalised embedding"
-Cohesion: 0.33
-Nodes (6): Consequences, Considered options, Context, Decision, Let pre-training regress a masked cell onto its value, or onto a normalised embedding, Status
+### Community 185 - "Reduced Optuna search for imputation: implementation tickets"
+Cohesion: 0.50
+Nodes (4): Global constraints (apply to every ticket), Reduced Optuna search for imputation: implementation tickets, Status vocabulary, Tickets
 
 ### Community 187 - "Backlog"
 Cohesion: 0.15
 Nodes (13): Backlog, Done (2026-09-30), Model selection, Next up, in the recommended order, Process, Specific follow-ups, Speed, T01 · Confirmatory study on all 21 variants — done (ticket [07](tickets/imputation-pretraining/07-confirmatory-21-variants.md), E30) (+5 more)
 
 ### Community 188 - "decoding.py"
-Cohesion: 0.12
-Nodes (25): in_variant_dtypes(), The sibling's categories, spelt the way the variant spells them. A category…, _already_missing(), _clean(), _exact(), DataFrame, device, Path (+17 more)
+Cohesion: 0.11
+Nodes (26): _already_missing(), _clean(), _exact(), DataFrame, device, Path, Tensor, Decode stage: train a decoder to reconstruct hidden cells, then score what it… (+18 more)
 
 ### Community 190 - "test_backfill_decode_patience_tag.py"
 Cohesion: 0.36
@@ -909,17 +944,37 @@ Nodes (9): client(), fixture, MlflowClient, Stamping the decode patience on impu
 Cohesion: 0.36
 Nodes (9): client(), fixture, MlflowClient, Stamping the decoder heads on imputation runs recorded before they could be…, Every imputation run before the flag applied its heads per column. A parent and…, _seed_runs(), test_a_dry_run_writes_nothing_and_a_second_apply_finds_nothing(), test_every_imputation_run_gets_per_column_heads_and_nothing_else_is_touched() (+1 more)
 
-### Community 194 - "PreparedDataset"
-Cohesion: 0.12
-Nodes (14): BufferedFoldTracker, DisabledTracker, Collect one fold's MLflow events until its diagnostic role is known., A tracker whose methods deliberately avoid importing MLflow side effects., CrossValidationSummary, FoldTrackingRecord, LoggedArtifact, PreparedDataset (+6 more)
+### Community 192 - "13. Optuna for the imputation task"
+Cohesion: 0.50
+Nodes (4): 13. Optuna for the imputation task, Answer, Comments, Question
 
-### Community 196 - "backfill_decoder_heads_tag.py"
-Cohesion: 0.36
-Nodes (7): backfill(), BackfillReport, main(), MlflowClient, Stamp the ``decoder_heads`` tag on imputation runs recorded before it existed.…, Active parent and trial runs in the experiment families, never in the mirrors., _training_runs()
+### Community 194 - "BufferedFoldTracker"
+Cohesion: 0.10
+Nodes (5): BufferedFoldTracker, DisabledTracker, Collect one fold's MLflow events until its diagnostic role is known., A tracker whose methods deliberately avoid importing MLflow side effects., FakeTracker
+
+### Community 195 - "02. The search objective is scored on the validation split"
+Cohesion: 0.50
+Nodes (4): 02. The search objective is scored on the validation split, Answer, Comments, Question
+
+### Community 196 - "mlflow_utils.py"
+Cohesion: 0.16
+Nodes (15): backfill(), BackfillReport, main(), MlflowClient, Stamp the ``decoder_heads`` tag on imputation runs recorded before it existed.…, Active parent and trial runs in the experiment families, never in the mirrors., _training_runs(), describe() (+7 more)
+
+### Community 197 - "03. Study protocol: datasets, variants, budget, schedule, seed"
+Cohesion: 0.50
+Nodes (4): 03. Study protocol: datasets, variants, budget, schedule, seed, Answer, Comments, Question
+
+### Community 198 - "07. Task: repair the imputation Optuna path and prove it with a two-trial study"
+Cohesion: 0.50
+Nodes (4): 07. Task: repair the imputation Optuna path and prove it with a two-trial study, Answer, Comments, Question
+
+### Community 199 - "_BudgetSpent"
+Cohesion: 0.67
+Nodes (3): Exception, _BudgetSpent, The pass has recomputed as many folds as it was allowed to; the cache keeps…
 
 ### Community 202 - "0013-imputation-defaults-from-the-confirmatory-study.md"
-Cohesion: 0.13
-Nodes (13): Consequences, Context, Decision, Give the imputation task the configuration the confirmatory study chose, Status, Verification, Arms (fixed before launch), Does the candidate configuration hold on all 21 imputation variants? (pre-registered 2026-10-01) (+5 more)
+Cohesion: 0.09
+Nodes (18): Consequences, Context, Decision, Give the imputation task the configuration the confirmatory study chose, Status, Verification, Arms (fixed before launch), Does the candidate configuration hold on all 21 imputation variants? (pre-registered 2026-10-01) (+10 more)
 
 ## Ambiguous Edges - Review These
 - `kr-vs-kp Categorical Columns` → `TRIDENT README`  [AMBIGUOUS]
@@ -928,8 +983,8 @@ Nodes (13): Consequences, Context, Decision, Give the imputation task the config
   README.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
-- **807 isolated node(s):** `info`, `trident`, `run_batched_heads_queue.sh script`, `run_confirmatory_queue.sh script`, `run_decode_patience_batch_queue.sh script` (+802 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1464 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **813 isolated node(s):** `info`, `trident`, `run_batched_heads_queue.sh script`, `run_column_wise_queue.sh script`, `run_confirmatory_queue.sh script` (+808 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1477 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
@@ -939,12 +994,12 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **What is the exact relationship between `TRIDENT README` and `src/training Package`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `SyncError` connect `StoreError` to `RsyncTransport`, `tracking.py`, `test_sync_remote.py`, `sync_remote.py`?**
-  _High betweenness centrality (0.074) - this node is a cross-community bridge._
-- **Why does `_log_metric_events()` connect `tracking.py` to `mirroring.py`, `summarize_cross_validation`?**
-  _High betweenness centrality (0.048) - this node is a cross-community bridge._
-- **Why does `mean_mode_baselines()` connect `mean_mode_baselines` to `types.py`, `runner.py`, `score_cells`, `test_imputation_baselines.py`, `recompute_folds`, `decoding.py`, `imputation_baselines.py`, `test_training_decoding.py`?**
-  _High betweenness centrality (0.025) - this node is a cross-community bridge._
+- **Why does `SyncError` connect `StoreError` to `RsyncTransport`, `test_sync_remote.py`, `sync_remote.py`, `run_hyperparameter_optimization`?**
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+- **Why does `_log_metric_events()` connect `tracking.py` to `mirroring.py`, `run_hyperparameter_optimization`?**
+  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Why does `mean_mode_baselines()` connect `test_imputation_baselines.py` to `types.py`, `backfill_baseline_imputers.py`, `DatasetSpec`, `test_baseline_cache.py`, `score_cells`, `imputation_baselines.py`, `decoding.py`, `test_training_decoding.py`?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
 - **Are the 2 inferred relationships involving `summarize_cross_validation()` (e.g. with `FoldTrackingRecord` and `TaskSpec`) actually correct?**
   _`summarize_cross_validation()` has 2 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 12 inferred relationships involving `PreparedDataset` (e.g. with `_frame_values()` and `ArtifactWriter`) actually correct?**
