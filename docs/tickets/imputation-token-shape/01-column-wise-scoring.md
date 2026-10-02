@@ -140,8 +140,11 @@ difference on 10. On the nine ★ variants: column-wise better on 5 (credit-g_80
 kr-vs-kp_60nan, spambase_80nan, biodeg_60nan, kc2_60nan), mask better on none, no detectable
 difference on 4. Every "mask better" verdict is on a 20nan or 40nan variant.
 
-**Reading, by the rule fixed in advance: supported.** Column-wise is better on at least 5 of
-the 9 heavy variants and mask on none of them.
+**Reading, by the rule fixed in advance: supported, at the rule's threshold.** Column-wise is
+better on exactly the 5 heavy variants the rule asked for, and mask on none of them. Two of the
+five verdicts sit close to zero (spambase_80nan's upper bound −0.0008, kc2_60nan's −0.0038); the
+other three (credit-g_80nan, kr-vs-kp_60nan, biodeg_60nan) are clear. The verdict stands; the
+weight it carries is that of a result at the threshold.
 
 **Secondary measures.**
 - **The effect grows with the missing level, as the hypothesis predicted:** mean difference

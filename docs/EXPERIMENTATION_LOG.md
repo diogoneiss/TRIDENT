@@ -920,7 +920,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   none. Mean difference by level: +0.0043 (20nan), −0.0072 (40), −0.0222 (60), −0.0120 (80).
   Means over 21: mask 0.7745, column-wise 0.7673, best baseline 0.7781; below the best baseline
   on 11 and 12 variants. Wall time 5 h 59 min against about 5.2 h planned (1.15x).
-- **Conclusion:** supported by the rule fixed in advance. The train/score token-shape mismatch
+- **Conclusion:** supported by the rule fixed in advance, at its threshold (5 of 9, two of them
+  with an upper bound just under zero). The train/score token-shape mismatch
   costs real score where gaps are many and nothing where they are few, so it is a cause of the
   model's losses at high missingness, not the only one (credit-g_60nan and _80nan and
   kr-vs-kp_80nan stay at or above the mean/mode fill under both paths). The two pre-stated
