@@ -96,6 +96,10 @@ already looked like the scored ones.
 - **The tag backfill was stopped mid-mirroring** so the study could start: all 2137 earlier
   imputation runs are stamped `null`, but only 88 of their 616 trees had their mirrors re-done.
   The rest is re-mirrored after the study, with no trainer running.
+- **Re-mirroring finished at about 20:20 GMT-3** (a one-off script, run with no trainer on the
+  store). Of the 1737 stamped source runs, 1727 have a mirror carrying the tag; the 10 without
+  are 9 `FAILED` sources, which ADR 0006 as amended does not mirror, and one Optuna trial under a
+  deleted study, whose subtree the mirroring skips by design.
 
 ## Outcome (2026-10-02, 16:40 GMT-3)
 
