@@ -106,7 +106,9 @@ objective and the decode length would therefore have made the default an unteste
   them.
 - **Re-running finished studies:** the study runners under `scripts/experiments/` read "the
   configuration a run of it loads today". Re-running a finished study after this decision needs
-  the promoted files as of `f147c39` (`git show f147c39:datasets/hiperparams/...`). Any arm that
-  names no objective now also needs the objective pinned, as the kit was.
+  the promoted files as of `f147c39` (`git show f147c39:datasets/hiperparams/...`). An old arm
+  also needs every value it leaves to the defaults pinned, as the kit was. For example, the A
+  arms of `confirmatory_run.py` and `batched_heads_run.py` name the objective but not
+  `EPOCHS_DECODE`, so on a variant without a promoted file they would now decode for 450 epochs.
 - **P is not adopted:** P (patience 50) remains the cheaper candidate. Tasks T07 (checkpoint by
   validation `impute_score`) and T11 (longer patience) are what could make it qualify.
