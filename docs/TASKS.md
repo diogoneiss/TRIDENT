@@ -45,7 +45,14 @@ on the server), M ≈ 2x A and P ≈ 0.26–0.86x M as measured on 2026-09-30. e
 the four spambase variants are more than half of it; P on electricity and letter is the largest
 uncertainty.
 
-### T02 · Train/score token-shape mismatch — step 1 done (E31), step 2 in progress (ticket [imputation-token-shape/02](tickets/imputation-token-shape/02-gaps-as-mask-in-training.md), E32)
+### T02 · Train/score token-shape mismatch — both steps done; the default waits on a decision (tickets [01](tickets/imputation-token-shape/01-column-wise-scoring.md), [02](tickets/imputation-token-shape/02-gaps-as-mask-in-training.md); E31, E32)
+
+**Step 2 done 2026-10-02 16:22 GMT-3:** training the decode stage with the gaps shown as `[MASK]`
+(`--decode_gap_token mask`) is better than today's default on 11 of 21 variants and worse on none,
+with gains at every missing level (mean over 21: 0.7745 → 0.7542; below the best baseline on 16
+variants, from 11). By the pre-stated rule G qualifies as the imputation default. **Decision
+pending: adopt `DECODE_GAP_TOKEN mask` as the default (ADR).** Wall time 5 h 38 min against 5.8 h
+planned (0.97x).
 
 **Step 1 done 2026-10-02:** scoring the induced cells one gap column at a time, the other gaps as
 `[NULL]`, is better than the headline on 5 of the 9 variants at 60nan or more and worse on none;

@@ -58,7 +58,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E29 | Batched decoder heads against per-column | 2026-09-30 – 2026-10-01 | done | no detectable difference on all four (pendigits +0.0008, lower bound at zero) |
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
-| E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 – | in progress | pending |
+| E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
 
 ## Entries
 
@@ -931,10 +931,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/01-column-wise-scoring.md` (Outcome);
   `scripts/experiments/column_wise_report.py`.
 
-### E32 · Training the decode stage with the gaps shown as `[MASK]` (2026-10-02 – )
+### E32 · Training the decode stage with the gaps shown as `[MASK]` (2026-10-02)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 22:00 GMT-3 on
-  2026-10-02).
+- **Status:** done, 10:44 to 16:22 GMT-3 on gorgona8, all 63 cells, none failed or missing.
 - **Hypothesis:** E31 showed the train/score token-shape mismatch costs score where gaps are
   many. Showing every real gap as `[MASK]` in the decode stage (`DECODE_GAP_TOKEN mask`), the
   shape the induced headline scores in, should recover those gains from the training side
@@ -951,7 +950,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     21 shows M better.
   - **Secondary:** D by missing level; G against M scored column-wise (E31); the masked
     population; variants below the best baseline and at or above 1.0; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md`;
+- **Results (G − M, induced, 15 fold pairs per variant):** G better on 11 of 21 variants
+  (kr-vs-kp_20nan −0.022, kr-vs-kp_60nan −0.026, spambase_20nan −0.018, spambase_40nan −0.051,
+  spambase_60nan −0.030, vehicle_20nan −0.017, vehicle_60nan −0.024, biodeg_20nan −0.026,
+  biodeg_60nan −0.058, kc2_60nan −0.067, letter −0.001), M better on none; on the 9 heavy
+  variants, 5 and 0. Mean by level: −0.011 (20nan), −0.026 (40), −0.036 (60), −0.012 (80).
+  Against M scored column-wise (E31): G better on 12, worse on none. Means over 21: G 0.7542,
+  M 0.7745, column-wise 0.7673, best baseline 0.7781; below the best baseline on 16 variants
+  (M: 11). Masked population: G better on 10, worse on none. Wall time 5 h 38 min against about
+  5.8 h planned (0.97x); a cell costs the same as M.
+- **Conclusion:** supported by the rule fixed in advance, and G qualifies as the default (no
+  variant shows M better). Showing the gaps as `[MASK]` in the decode stage, the shape the
+  headline scores in, gains at every missing level, where column-wise scoring (E31) gained only
+  where gaps were many and cost a little elsewhere: aligning the training beats aligning the
+  scoring. The recommendation is `DECODE_GAP_TOKEN mask` as the imputation default, by an ADR;
+  the user decides. credit-g_60nan and _80nan and kr-vs-kp_80nan stay at the mean/mode fill
+  under both arms, so the token shape was not the only cause there.
+- **Sources:** `docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md` (Outcome);
   `scripts/experiments/gap_token_report.py`.
