@@ -60,7 +60,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
-| E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 – | in progress | pending |
+| E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
 
 ## Entries
 
@@ -1003,10 +1003,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md` (Outcome);
   `scripts/experiments/gap_token_replication_report.py`.
 
-### E34 · Checkpoint by the validation gaps, and calibration on them (2026-10-03 – )
+### E34 · Checkpoint by the validation gaps, and calibration on them (2026-10-03)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 02:00 GMT-3 on
-  2026-10-04).
+- **Status:** done, 12:52 to 18:43 GMT-3 on gorgona8, all 63 cells; H equals E33's G cells to
+  the last digit on every cell.
 - **Hypothesis:** the decode stage chooses its checkpoint on a few noisy masked cells instead of
   the validation split's own gaps, the population it is scored on (T07), and its guesses are
   overconfident (median slope of truth on guess 0.85 in E30's ledgers). Choosing the epoch by the
@@ -1024,7 +1024,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     if neither qualifies, nothing changes. A default switch needs its own ADR.
   - **Secondary:** KC against H, K and C; K's masked score; the two criteria's epochs; the
     calibration's reach; by level; means; best-baseline counts; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md`;
+- **Results (within-run, 15 fold pairs per variant):** K − H: K better on 3 (credit-g_80nan
+  −0.020, kr-vs-kp_80nan −0.029, spambase_80nan −0.010), H better on none. C − H: C better on 13,
+  H better on 1 (spambase_20nan +0.005). KC − H: KC better on 9, H on none; KC − K: KC better on
+  12, K on 1 (spambase_20nan). Means over 21: H 0.7519, C 0.7453, K 0.7446, KC 0.7412; below the
+  best baseline on 15, 18, 17, 18 variants. Both mechanisms help most at 80nan (K −0.020, C
+  −0.022, KC −0.026), where the gap criterion stops earlier than the loss. Wall time 5 h 51 min
+  against 5.5 to 6 h planned.
+- **Conclusion:** by the rule fixed in advance, K qualifies and is the recommendation; C and KC
+  fail on one variant each (spambase_20nan, by about 0.005), while gaining on most others. The
+  user decides whether K becomes the default (ADR, flag, tag); a calibration that leaves
+  well-calibrated columns alone would be a new pre-registered study.
+- **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md` (Outcome);
   `scripts/experiments/selection_report.py`.

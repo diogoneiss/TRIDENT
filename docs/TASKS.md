@@ -104,7 +104,7 @@ check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312
 
 ### Model selection
 
-- **T07 · Checkpoint by validation `impute_score`** — in progress with the calibration idea (ticket [imputation-token-shape/04](tickets/imputation-token-shape/04-checkpoint-and-calibration.md), E34). instead of the λ-weighted loss (critique
+- **T07 · Checkpoint by validation `impute_score`** — measured (ticket [imputation-token-shape/04](tickets/imputation-token-shape/04-checkpoint-and-calibration.md), E34, 2026-10-03): the checkpoint by the validation rows' own gaps is better on 3 variants (all 80nan) and worse on none, so it qualifies; **the default switch waits on the user's decision**. The calibration tested beside it failed on one variant (spambase_20nan). instead of the λ-weighted loss (critique
   F-02-1, handoff item 6); also a better criterion for early stopping.
 - **T08 · A second validation mask:** one to choose the checkpoint, one to score the search
   objective (critique F-07-2).
