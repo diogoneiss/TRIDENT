@@ -372,6 +372,57 @@ def test_the_decode_stage_can_show_every_real_gap_as_mask_and_still_learns_only_
     assert any(bool(hidden.null_flags.any()) for hidden in training)
 
 
+def test_the_induced_checkpoint_tracks_the_validation_gaps_score_without_touching_the_headline() -> None:
+    """``score_induced_checkpoint`` keeps a second checkpoint, the epoch whose validation induced
+    score is lowest, and scores the test split there too. The score it tracks each epoch must be
+    the one the end-of-run path computes, and the run's own model, metrics and losses must be
+    the ones the run would have had without it."""
+    dataset = _dataset()
+    np.random.seed(0)
+    plain, _ = _run(dataset=dataset, sibling=_complete_frame(), score_search_objective=True)
+    np.random.seed(0)
+    asked, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True,
+        score_induced_checkpoint=True, score_calibrated=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6),
+    )
+    np.random.seed(0)
+    reference, _ = _run(dataset=dataset, sibling=_complete_frame(), score_search_objective=True, hyperparameters=_hyperparameters(EPOCHS_DECODE=6))
+
+    metrics = asked.result.metrics
+    for key, value in reference.result.metrics.items():
+        assert metrics[key] == value, key
+    assert asked.train_losses == reference.train_losses
+    for name, tensor in reference.model.state_dict().items():
+        assert bool((asked.model.state_dict()[name] == tensor).all()), name
+    series = {event.step: event.value for event in tracker.metric_events if event.key == "decode/val_induced_score"}
+    assert sorted(series) == list(range(6))
+    losses = [event.value for event in sorted((e for e in tracker.metric_events if e.key == "decode/val_loss"), key=lambda e: e.step)]
+    best_epoch = int(np.argmin(losses))
+    assert series[best_epoch] == pytest.approx(metrics["validation/impute/induced/impute_score"], abs=1e-9)
+    epoch = int(metrics["decode/induced_checkpoint_epoch"])
+    assert series[epoch] == min(series.values())
+    assert metrics["decode/loss_checkpoint_epoch"] == best_epoch
+    for prefix in ("impute/induced/induced_checkpoint", "impute/masked/induced_checkpoint",
+                   "impute/induced/calibrated", "impute/induced/induced_checkpoint_calibrated"):
+        assert f"{prefix}/impute_score" in metrics, prefix
+    assert metrics["impute/induced/calibrated/n_num_cells"] == metrics["impute/induced/n_num_cells"]
+    assert metrics["impute/induced/calibrated/n_cat_cells"] == metrics["impute/induced/n_cat_cells"]
+    assert not any("induced_checkpoint" in key or "calibrated" in key for key in plain.result.metrics)
+
+
+def test_with_nothing_to_learn_the_induced_checkpoint_is_the_first_epoch_and_scores_as_the_headline() -> None:
+    outcome, _ = _run(
+        sibling=_complete_frame(), score_induced_checkpoint=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=4, LR_DECODE=0.0),
+    )
+    metrics = outcome.result.metrics
+    assert metrics["decode/induced_checkpoint_epoch"] == 0
+    for name in ("impute_score", "rmse_num_z", "acc_cat"):
+        assert metrics[f"impute/induced/induced_checkpoint/{name}"] == metrics[f"impute/induced/{name}"]
+        assert metrics[f"impute/masked/induced_checkpoint/{name}"] == metrics[f"impute/masked/{name}"]
+
+
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
     """Ticket 0004: a known truth should not be reported at the model's precision.
 

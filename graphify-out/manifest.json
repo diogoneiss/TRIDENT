@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1790998417.6091805,
-    "seen": 1790999068.8663108,
-    "ast_hash": "c662df2e23c372ca698bea02f37bbc94",
+    "mtime": 1791042235.2894022,
+    "seen": 1791042721.5905268,
+    "ast_hash": "a131378ca34d5718948fafb08fa84bca",
     "semantic_hash": ""
   },
   "src/training/data.py": {
@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "src/training/runner.py": {
-    "mtime": 1790946847.4944813,
-    "seen": 1790947763.3883345,
-    "ast_hash": "52878a1c895572015063e2a102d71674",
+    "mtime": 1791042235.2884023,
+    "seen": 1791042721.5905378,
+    "ast_hash": "2ae67233d757fa408a55d2f005aa657e",
     "semantic_hash": ""
   },
   "src/training/summary.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1790998417.6091805,
-    "seen": 1790999068.8663225,
-    "ast_hash": "23ba95eb102387c0fe591eed9bc372ea",
+    "mtime": 1791042235.2884023,
+    "seen": 1791042721.5905418,
+    "ast_hash": "7a3735bd1035153e6496e570386fd0a7",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1790998367.661401,
-    "seen": 1790999068.866348,
-    "ast_hash": "52247ded6e49476efab29a1689201719",
+    "mtime": 1791042116.214641,
+    "seen": 1791042721.5905797,
+    "ast_hash": "374c0ed6ab55199d3b4344b935d338ed",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1790998417.6091805,
-    "seen": 1790999068.8663614,
-    "ast_hash": "a3fcc4284ee84c1e6818d9049b98e76c",
+    "mtime": 1791042422.7030265,
+    "seen": 1791042721.590598,
+    "ast_hash": "ac6fb0f8e9488c7c6ff094eb85f5cc69",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1790946871.6404357,
-    "seen": 1790947763.388329,
-    "ast_hash": "e10f5aeaa881dffbe514430b7c0d242d",
+    "mtime": 1791042325.0442224,
+    "seen": 1791042721.5905292,
+    "ast_hash": "413242ef135cad053e66ba164da61d86",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_decoding.py": {
-    "mtime": 1790946703.8767045,
-    "seen": 1790947763.3883636,
-    "ast_hash": "9e60a050592e94e0829d3233b6018573",
+    "mtime": 1791042325.0442224,
+    "seen": 1791042721.5905824,
+    "ast_hash": "2c7ef0948f7fe835bdd4595dd7c56c1d",
     "semantic_hash": ""
   },
   "tests/unit/test_training_tasks.py": {
@@ -1182,9 +1182,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1790998583.431453,
-    "seen": 1790999068.8663664,
-    "ast_hash": "d933694923d55505066860d178bfe741",
+    "mtime": 1791042422.7020266,
+    "seen": 1791042721.5906048,
+    "ast_hash": "f15007d740f372a65388f529497bfb7f",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "docs/TASKS.md": {
-    "mtime": 1790998583.431453,
-    "seen": 1790999068.8663673,
-    "ast_hash": "3772207cb61852f1bb5eaa9f024ba7c5",
+    "mtime": 1791042422.7020266,
+    "seen": 1791042721.5906057,
+    "ast_hash": "5377f964d4d404a29b318c72ab9d5452",
     "semantic_hash": ""
   },
   "tests/unit/test_epoch_masker.py": {
@@ -1512,9 +1512,45 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md": {
-    "mtime": 1790999065.716369,
-    "seen": 1790999068.8664343,
-    "ast_hash": "a7294950743a392f5233244dab6bfe1e",
+    "mtime": 1791040053.258693,
+    "seen": 1791042721.5906956,
+    "ast_hash": "fd4c354af4bae97e53ff51e933ca8dea",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_selection_queue.sh": {
+    "mtime": 1791042325.0502224,
+    "seen": 1791042721.5905082,
+    "ast_hash": "2b6882ef671b6c2248999f486690f9d6",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/selection_report.py": {
+    "mtime": 1791042339.251194,
+    "seen": 1791042721.5905097,
+    "ast_hash": "b9fb56793acc601317589b5198ca51a6",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/selection_run.py": {
+    "mtime": 1791042325.0482225,
+    "seen": 1791042721.5905106,
+    "ast_hash": "1a18b4f1b2cda11b2ca73a4d20b8b0ae",
+    "semantic_hash": ""
+  },
+  "src/training/calibration.py": {
+    "mtime": 1791042140.2395928,
+    "seen": 1791042721.5905247,
+    "ast_hash": "b5709972f32875dcb38413ff12287a12",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_calibration.py": {
+    "mtime": 1791042116.203641,
+    "seen": 1791042721.5905628,
+    "ast_hash": "447e28fd28c5de100522405177ca2645",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md": {
+    "mtime": 1791042718.2994337,
+    "seen": 1791042721.5906963,
+    "ast_hash": "eaf4233660a1e04702010c7d077dc587",
     "semantic_hash": ""
   }
 }

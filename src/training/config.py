@@ -185,6 +185,8 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         task=getattr(args, "task", None) or DEFAULT_TASK,
         score_null_path=getattr(args, "score_null_path", False),
         score_column_wise=getattr(args, "score_column_wise", False),
+        score_induced_checkpoint=getattr(args, "score_induced_checkpoint", False),
+        score_calibrated=getattr(args, "score_calibrated", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
         config_source=config_source,
@@ -213,6 +215,9 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         raise SystemExit("error: --score_null_path requires --task imputation")
     if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_column_wise requires --task imputation")
+    for flag in ("score_induced_checkpoint", "score_calibrated"):
+        if getattr(args, flag, False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
+            raise SystemExit(f"error: --{flag} requires --task imputation")
 
     # One fold is not cross-validation: build_folds derives the validation ratio as
     # 0.1 / (1 - 1/cv_folds), which divides by zero at 1 (backlog B2). Omitting the flag
@@ -412,6 +417,25 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Also score induced-missing cells one gap column at a time: that column's gaps "
             "as [MASK], every other gap as [NULL], the row shape the decode stage trains on. "
             "A diagnostic (task T02). Requires --task imputation. Never ranks folds."
+        ),
+    )
+    parser.add_argument(
+        "--score_induced_checkpoint",
+        action="store_true",
+        help=(
+            "Also keep the decode epoch whose validation rows' own gaps score best (against the "
+            "complete sibling) and score the test split there, as impute/*/induced_checkpoint/*. "
+            "A diagnostic (ticket imputation-token-shape/04). Requires --task imputation."
+        ),
+    )
+    parser.add_argument(
+        "--score_calibrated",
+        action="store_true",
+        help=(
+            "Also score the induced test cells after a calibration fitted on the validation "
+            "rows' own gaps: numbers shrunk toward the training mean, low-confidence categories "
+            "answered with the mode. As impute/induced/calibrated/*. A diagnostic (ticket "
+            "imputation-token-shape/04). Requires --task imputation."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")

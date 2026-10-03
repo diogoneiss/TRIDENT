@@ -60,6 +60,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
+| E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 – | in progress | pending |
 
 ## Entries
 
@@ -1001,3 +1002,29 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   variant leaning M (+0.002, no verdict, as in E32).
 - **Sources:** `docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md` (Outcome);
   `scripts/experiments/gap_token_replication_report.py`.
+
+### E34 · Checkpoint by the validation gaps, and calibration on them (2026-10-03 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 02:00 GMT-3 on
+  2026-10-04).
+- **Hypothesis:** the decode stage chooses its checkpoint on a few noisy masked cells instead of
+  the validation split's own gaps, the population it is scored on (T07), and its guesses are
+  overconfident (median slope of truth on guess 0.85 in E30's ledgers). Choosing the epoch by the
+  validation gaps' `impute_score` (K), or calibrating the guesses on those gaps (C), should score
+  better.
+- **Scenarios:** one run per cell under ADR 0014's defaults with `--score_induced_checkpoint` and
+  `--score_calibrated`; four readouts of one trajectory: H (headline), C, K, KC. All 21 variants,
+  seeds 101, 202, 303 (H must equal E33's G cells), five folds; 63 cells tagged
+  `experiment=selection-2026-10-03`. Calibration constants fixed in the ticket.
+- **Measures and decision rule:**
+  - **Primary:** C − H and K − H on `impute/induced/impute_score`, 15 within-run fold pairs per
+    variant; a verdict needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading on all 21:** a candidate qualifies if no variant shows H better; each qualifying
+    candidate is recommended on its own; KC over them only if it qualifies and loses to neither;
+    if neither qualifies, nothing changes. A default switch needs its own ADR.
+  - **Secondary:** KC against H, K and C; K's masked score; the two criteria's epochs; the
+    calibration's reach; by level; means; best-baseline counts; time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md`;
+  `scripts/experiments/selection_report.py`.

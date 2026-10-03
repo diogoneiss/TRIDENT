@@ -140,6 +140,8 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         complete_sibling=complete_sibling,
                         score_null_path=request.score_null_path,
                         score_column_wise=request.score_column_wise,
+                        score_induced_checkpoint=request.score_induced_checkpoint,
+                        score_calibrated=request.score_calibrated,
                         score_search_objective=request.score_search_objective,
                         baseline_cache_dir=request.runtime.baseline_cache_dir,
                     )

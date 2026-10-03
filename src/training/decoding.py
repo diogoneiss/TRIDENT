@@ -20,7 +20,8 @@ from src.utils import preprocess_table
 
 from .data import evaluation_mask, in_variant_dtypes
 from .baseline_cache import BaselineScorer
-from .imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines, score_cells
+from .calibration import apply_calibration, fit_calibration
+from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import (
     DecodingOutcome,
@@ -47,6 +48,8 @@ def train_and_evaluate_decoder(
     score_search_objective: bool = False,
     baseline_cache_dir: Path | None = None,
     score_column_wise: bool = False,
+    score_induced_checkpoint: bool = False,
+    score_calibrated: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -99,6 +102,21 @@ def train_and_evaluate_decoder(
     best_validation_loss = float("inf")
     best_state = None
     best_epoch = 0
+    # A second checkpoint, kept only as a diagnostic (``score_induced_checkpoint``): the epoch
+    # whose validation rows' own gaps score best, against the complete sibling, where the
+    # checkpoint above is the epoch of the lowest loss on the fixed validation mask. Watching it
+    # costs one extra forward pass an epoch, in eval mode, so training draws nothing more.
+    gap_score = None
+    if score_induced_checkpoint and complete_sibling is not None:
+        model.eval()
+        gap_score = _ValidationGapScore(
+            model, dataset, validation_frame, complete_sibling, fold.validation_indices,
+            mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
+            device,
+        )
+    best_gap_score = float("inf")
+    gap_state = None
+    gap_epoch = 0
 
     print("\n=== Starting Decoding (reconstructing hidden cells) ===")
     # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
@@ -137,6 +155,13 @@ def train_and_evaluate_decoder(
             best_validation_loss = validation_losses[-1]
             best_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
             best_epoch = epoch
+        if gap_score is not None:
+            epoch_gap_score = gap_score.score(model)
+            tracker.log_metrics({"decode/val_induced_score": epoch_gap_score}, step=epoch)
+            if epoch_gap_score < best_gap_score:
+                best_gap_score = epoch_gap_score
+                gap_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
+                gap_epoch = epoch
         # Early stopping only ends the loop: the checkpoint is the best epoch either way.
         if hyperparameters.decode_patience and epoch - best_epoch >= hyperparameters.decode_patience:
             break
@@ -257,6 +282,50 @@ def train_and_evaluate_decoder(
                     for name, value in score_cells(column_wise, baselines).metrics.items()
                 }
             )
+        if score_calibrated or gap_state is not None:
+            # Diagnostics on the same trajectory (ticket imputation-token-shape/04): the test
+            # split scored after calibrating on the validation rows' own gaps, and at the epoch
+            # those gaps scored best. The run's own checkpoint is put back before anything else
+            # reads the model.
+            headline_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
+            if score_calibrated:
+                metrics.update(
+                    _calibrated_scores(
+                        "impute/induced/calibrated", model, dataset, validation_frame,
+                        complete_sibling, fold.validation_indices, device, induced, baselines,
+                    )
+                )
+            if gap_state is not None:
+                model.load_state_dict(gap_state)
+                model.eval()
+                metrics["decode/induced_checkpoint_epoch"] = gap_epoch
+                metrics["decode/loss_checkpoint_epoch"] = best_epoch
+                at_gap = _score_induced_missing(
+                    model, dataset, test_frame, complete_sibling, fold.test_indices, device
+                )
+                metrics.update(
+                    {
+                        f"impute/induced/induced_checkpoint/{name}": value
+                        for name, value in score_cells(at_gap, baselines).metrics.items()
+                    }
+                )
+                masked_at_gap = _score_population(model, hidden_test, clean_test, "masked", raw_variant)
+                metrics.update(
+                    {
+                        f"impute/masked/induced_checkpoint/{name}": value
+                        for name, value in score_cells(masked_at_gap, baselines).metrics.items()
+                    }
+                )
+                if score_calibrated:
+                    metrics.update(
+                        _calibrated_scores(
+                            "impute/induced/induced_checkpoint_calibrated", model, dataset,
+                            validation_frame, complete_sibling, fold.validation_indices, device,
+                            at_gap, baselines,
+                        )
+                    )
+            model.load_state_dict(headline_state)
+            model.eval()
 
     # The search objective: the same masked-population score on the fixed validation
     # mask the checkpoint watched, so a search never ranks trials on the test split. Its
@@ -407,6 +476,94 @@ def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dic
             "as misses, since the decoder cannot produce them."
         )
     return frame, unseen
+
+
+class _ValidationGapScore:
+    """The validation rows' induced ``impute_score`` of the model's current weights, every epoch.
+
+    Equal to ``score_cells`` on ``_score_induced_missing``'s cells for the same weights, which a
+    test holds it to, without the per-call pandas work: the cells, their truths and the naive
+    errors are fixed for the fold, so they are read once from one pass of the pandas path, and
+    an epoch costs one forward pass and a few reductions.
+    """
+
+    def __init__(self, model, dataset, frame, complete_sibling, rows, baselines, device) -> None:
+        cells = _score_induced_missing(model, dataset, frame, complete_sibling, rows, device)
+        embedder = model.embedder
+        self._hidden = embedder.encode(frame.mask(frame.isna(), "[MASK]"), device)
+        numerical = cells[cells["kind"] == NUMERICAL]
+        categorical = cells[cells["kind"] == CATEGORICAL]
+        self._n_numerical, self._n_categorical = len(numerical), len(categorical)
+        self._numerical = []
+        for index, column in enumerate(embedder.numerical_columns):
+            group = numerical[numerical["column"] == column]
+            if len(group):
+                self._numerical.append((
+                    index,
+                    torch.tensor(group["row"].to_numpy(dtype=np.int64), device=device),
+                    torch.tensor(group["actual"].to_numpy(dtype=float), dtype=torch.float64, device=device),
+                ))
+        self._categorical = []
+        for index, column in enumerate(embedder.categorical_columns):
+            group = categorical[categorical["column"] == column]
+            if len(group):
+                classes = {str(name): position for position, name in enumerate(embedder.label_encoders[column].classes_)}
+                # A category the variant never shows has no id; -1 matches no prediction, as the
+                # pandas path scores it a miss.
+                ids = [classes.get(str(value), -1) for value in group["actual"]]
+                self._categorical.append((
+                    index,
+                    torch.tensor(group["row"].to_numpy(dtype=np.int64), device=device),
+                    torch.tensor(ids, dtype=torch.long, device=device),
+                ))
+        self._naive_rmse = 0.0
+        if self._n_numerical:
+            naive = numerical["column"].map(baselines).to_numpy(dtype=float)
+            self._naive_rmse = float(np.sqrt(np.mean((naive - numerical["actual"].to_numpy(dtype=float)) ** 2)))
+        self._naive_error = 0.0
+        if self._n_categorical:
+            naive_labels = categorical["column"].map(baselines).to_numpy()
+            self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
+
+    def score(self, model) -> float:
+        with torch.no_grad():
+            prediction = model.predict(self._hidden)
+        total = self._n_numerical + self._n_categorical
+        if not total:
+            return 0.0
+        score = 0.0
+        if self._n_numerical:
+            squared = sum(
+                float(((prediction.numerical_values[index][rows].double() - truth) ** 2).sum().item())
+                for index, rows, truth in self._numerical
+            )
+            rmse = float(np.sqrt(squared / self._n_numerical))
+            score += (self._n_numerical / total) * _ratio(rmse, self._naive_rmse)
+        if self._n_categorical:
+            wrong = sum(
+                int((prediction.categorical_ids[index][rows] != truth).sum().item())
+                for index, rows, truth in self._categorical
+            )
+            score += (self._n_categorical / total) * _ratio(wrong / self._n_categorical, self._naive_error)
+        return score
+
+
+def _calibrated_scores(
+    prefix, model, dataset, validation_frame, complete_sibling, validation_rows, device, test_cells, baselines
+) -> dict[str, float | int | str]:
+    """The test cells scored after calibrating on the validation rows' own gaps at these weights."""
+    validation_cells = _score_induced_missing(
+        model, dataset, validation_frame, complete_sibling, validation_rows, device
+    )
+    calibration = fit_calibration(validation_cells, baselines)
+    scores: dict[str, float | int | str] = {
+        f"{prefix}/{name}": value
+        for name, value in score_cells(apply_calibration(test_cells, calibration, baselines), baselines).metrics.items()
+    }
+    if calibration.alpha:
+        scores[f"{prefix}/mean_alpha"] = float(np.mean(list(calibration.alpha.values())))
+    scores[f"{prefix}/n_thresholded_columns"] = sum(cut is not None for cut in calibration.threshold.values())
+    return scores
 
 
 def _as_is(encoded: EncodedTable) -> EncodedTable:

@@ -104,7 +104,7 @@ check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312
 
 ### Model selection
 
-- **T07 · Checkpoint by validation `impute_score`** instead of the λ-weighted loss (critique
+- **T07 · Checkpoint by validation `impute_score`** — in progress with the calibration idea (ticket [imputation-token-shape/04](tickets/imputation-token-shape/04-checkpoint-and-calibration.md), E34). instead of the λ-weighted loss (critique
   F-02-1, handoff item 6); also a better criterion for early stopping.
 - **T08 · A second validation mask:** one to choose the checkpoint, one to score the search
   objective (critique F-07-2).

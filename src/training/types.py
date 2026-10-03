@@ -497,6 +497,11 @@ class TrainingRequest:
     # T02's diagnostic: score the induced cells one gap column at a time, the other gaps
     # left as [NULL], the row shape the decode stage trains on. Never ranks a fold.
     score_column_wise: bool = False
+    # Diagnostics on the same decode trajectory (ticket imputation-token-shape/04): the test
+    # split also scored at the epoch whose validation induced score is lowest, and after a
+    # calibration fitted on the validation rows' own gaps. Neither ranks a fold.
+    score_induced_checkpoint: bool = False
+    score_calibrated: bool = False
     # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.

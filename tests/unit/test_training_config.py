@@ -562,3 +562,15 @@ def test_the_decode_stage_shows_gaps_as_mask_unless_a_run_asks_for_null() -> Non
         parser.parse_args([*imputation, "--decode_gap_token", "zero"])
     with pytest.raises(ValueError, match="gap token"):
         Hyperparameters.from_mapping({"DECODE_GAP_TOKEN": "zero"})
+
+
+def test_the_selection_diagnostics_are_imputation_flags_and_off_unless_asked() -> None:
+    """The induced checkpoint and the calibration are scored only when asked, and only where a
+    decoder exists."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    for flag, field in (("--score_induced_checkpoint", "score_induced_checkpoint"), ("--score_calibrated", "score_calibrated")):
+        assert getattr(resolve_training_request(parser.parse_args(imputation)), field) is False
+        assert getattr(resolve_training_request(parser.parse_args([*imputation, flag])), field) is True
+        with pytest.raises(SystemExit, match=flag.lstrip("-")):
+            validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", flag]))
