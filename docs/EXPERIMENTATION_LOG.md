@@ -59,7 +59,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
-| E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 – | in progress | pending |
+| E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
 
 ## Entries
 
@@ -972,10 +972,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md` (Outcome);
   `scripts/experiments/gap_token_report.py`.
 
-### E33 · The gaps-as-mask default on fresh seeds (2026-10-03 – )
+### E33 · The gaps-as-mask default on fresh seeds (2026-10-03)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 18:00 GMT-3 on
-  2026-10-03).
+- **Status:** done, 00:44 to 12:05 GMT-3 on gorgona8, all 126 cells, none failed or missing.
 - **Hypothesis:** E32's "better on 11 of 21, worse on none" is a property of showing the gaps as
   `[MASK]` in the decode stage, not of the three seeds it was chosen on.
 - **Scenarios:** arms G (ADR 0014's defaults, naming nothing) and M (`--decode_gap_token null`),
@@ -989,7 +988,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     not replicated if any variant shows M better, which goes back to the user.
   - **Secondary:** D by level; E32 and E33 pooled (six seeds); masked; means and the best-baseline
     count; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md`;
+- **Results (G − M, induced, 15 fold pairs per variant, fresh seeds):** G better on 13 of 21
+  variants, M better on none; on the 9 heavy variants, 6 and 0 (credit-g_80nan −0.026,
+  kr-vs-kp_60nan −0.025, spambase_60nan −0.076, vehicle_60nan −0.022, biodeg_60nan −0.056,
+  kc2_60nan −0.093). Mean by level: −0.018 (20nan), −0.019 (40), −0.048 (60), −0.019 (80).
+  Pooled with E32 (six seeds): G better on 12, M on none. Means over 21: G 0.7519, M 0.7786;
+  below the best baseline on 15 and 9 variants. Masked: G better on 8, M on none. Wall time 11 h
+  21 min against about 11.3 h planned (1.00x).
+- **Conclusion:** replicated by the rule fixed in advance; the effect is larger on the fresh seeds
+  than on E32's, not smaller. ADR 0014 stands on six seeds. credit-g_60nan and _80nan and
+  kr-vs-kp_80nan remain at the mean/mode fill under both arms; kr-vs-kp_80nan is the only
+  variant leaning M (+0.002, no verdict, as in E32).
+- **Sources:** `docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md` (Outcome);
   `scripts/experiments/gap_token_replication_report.py`.
