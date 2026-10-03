@@ -1,7 +1,7 @@
 # Does choosing the checkpoint, or calibrating the guesses, on the validation gaps help? (pre-registered 2026-10-03)
 
-This ticket was written and committed before the first run (the commit and the queues' start
-time are in the Running notes). The user chose these two ideas on 2026-10-03 after E33, to be
+This ticket was written and committed before the first run, at 12:52 GMT-3 on 2026-10-03 (commit
+`4cfde31`; the queues started 12:52:04 GMT-3, so about 18:30–19:00 GMT-3 is the expected end). The user chose these two ideas on 2026-10-03 after E33, to be
 studied on top of ADR 0014's default.
 
 ## Why
