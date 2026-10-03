@@ -18,5 +18,6 @@
     "LAMBDA_NUM": 0.23102018878452935,
     "EVAL_MASK_RATE": 0.2,
     "DECODE_PATIENCE": 0,
-    "DECODER_HEADS": "batched"
+    "DECODER_HEADS": "batched",
+    "DECODE_GAP_TOKEN": "mask"
 }

@@ -38,9 +38,10 @@ DEFAULT_DECODER_HEADS = "batched"
 
 # What the decode stage shows the model at a row's real gap, accepted by
 # ``Hyperparameters.decode_gap_token`` and ``--decode_gap_token``. ``null`` is the ``[NULL]``
-# token every run before the choice showed (ADR 0004); ``mask`` shows the gap as ``[MASK]``,
-# the token the induced scoring presents every gap as, so the decode stage trains on the row
-# shape it is scored in (T02 step 2). A gap has no truth, so it never enters the loss either way.
+# token every run before the choice showed (ADR 0004), and the dataclass default; ``mask`` shows
+# the gap as ``[MASK]``, the token the induced scoring presents every gap as, so the decode stage
+# trains on the row shape it is scored in. The imputation task defaults to ``mask``
+# (``task_defaults``, ADR 0014). A gap has no truth, so it never enters the loss either way.
 DECODE_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
 DEFAULT_DECODE_GAP_TOKEN = "null"
 
@@ -127,13 +128,15 @@ IMPUTATION = _TASK_SPECS["imputation"]
 # names, layered beneath every source a run reads (the defaults, a promoted file, an override
 # mapping) and beneath the flags. Classification has none, so it keeps the dataclass defaults
 # below and stays bit-identical. Imputation trains the configuration study E30 found never
-# worse than the old one on any of the 21 variants (ADR 0013).
+# worse than the old one on any of the 21 variants (ADR 0013), with its gaps shown as [MASK]
+# in the decode stage, which study E32 found better on 11 of them and worse on none (ADR 0014).
 _TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
     "classification": {},
     "imputation": {
         "PRETRAIN_OBJECTIVE": "embedding_normalized",
         "EPOCHS_DECODE": 450,
         "LR_SCHEDULER": "cosine",
+        "DECODE_GAP_TOKEN": "mask",
     },
 }
 

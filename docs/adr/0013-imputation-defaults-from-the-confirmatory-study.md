@@ -10,6 +10,10 @@ the default, as ADRs 0006 and 0012 were. It amends the defaults stated in ADRs
 [0005](0005-reduced-optuna-search-for-imputation.md) and
 [0011](0011-selectable-pretraining-objective.md), for the imputation task only.
 
+**Amended 2026-10-03** by [ADR 0014](0014-gaps-shown-as-mask-in-the-decode-stage.md): imputation's
+task defaults gain `DECODE_GAP_TOKEN mask`, and an old arm that leaves the gap token to the
+default must now pin `null` too.
+
 ## Context
 
 E30 compared three arms on all 21 imputation variants, three seeds each:

@@ -453,6 +453,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
     assert promoted["EPOCHS_PRE"] == 300
     assert promoted["EPOCHS_DECODE"] == 450
     assert promoted["PRETRAIN_OBJECTIVE"] == "embedding_normalized"
+    assert promoted["DECODE_GAP_TOKEN"] == "mask"
     assert promoted["LAMBDA_NUM"] == 1.0
     assert promoted["LR_SCHEDULER"] == "cosine"
     # The sampled values are the winning trial's (0.4 beats 0.9 when minimising).

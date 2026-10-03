@@ -354,11 +354,11 @@ def build_training_parser() -> argparse.ArgumentParser:
         default=None,
         choices=DECODE_GAP_TOKENS,
         help=(
-            "Imputation only: what the decode stage shows the model at a row's real gap. 'null' "
-            "(the default, every run before the choice) shows the [NULL] token; 'mask' shows "
-            "[MASK], the token the induced scoring presents every gap as, so the stage trains on "
-            "the row shape it is scored in. A gap never enters the loss either way. Overrides "
-            "DECODE_GAP_TOKEN from the hyperparameter file."
+            "Imputation only: what the decode stage shows the model at a row's real gap. 'mask' "
+            "(the default since ADR 0014) shows [MASK], the token the induced scoring presents "
+            "every gap as, so the stage trains on the row shape it is scored in; 'null' shows "
+            "the [NULL] token, as every run before it. A gap never enters the loss either way. "
+            "Overrides DECODE_GAP_TOKEN from the hyperparameter file."
         ),
     )
     parser.add_argument(

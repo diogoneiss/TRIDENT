@@ -214,9 +214,8 @@ class TabularEmbedder(nn.Module):
         is left alone, because a gap has no truth and must never enter the loss.
         """
         device = encoded.cat_indices.device
-        ids = self._gap_token_ids.get(str(device))
-        if ids is None:
-            ids = tuple(
+        if str(device) not in self._gap_token_ids:
+            null_token, mask_token = (
                 torch.tensor(
                     [int(self.label_encoders[column].transform([token])[0]) for column in self.categorical_columns],
                     dtype=torch.long,
@@ -224,8 +223,8 @@ class TabularEmbedder(nn.Module):
                 ).unsqueeze(1)
                 for token in ("[NULL]", "[MASK]")
             )
-            self._gap_token_ids[str(device)] = ids
-        null_ids, mask_ids = ids
+            self._gap_token_ids[str(device)] = (null_token, mask_token)
+        null_ids, mask_ids = self._gap_token_ids[str(device)]
         cat_indices = encoded.cat_indices
         if len(self.categorical_columns):
             cat_indices = torch.where(cat_indices == null_ids, mask_ids, cat_indices)

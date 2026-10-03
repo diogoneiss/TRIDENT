@@ -59,6 +59,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E30 | The candidate configuration on all 21 imputation variants | 2026-10-01 | done | M better than A on 9 of 21, worse on none; P loses on 2 (kr-vs-kp_40nan, spambase_40nan); M recommended, 1.65x A's time |
 | E31 | The induced gaps asked one column at a time, the rest as `[NULL]` | 2026-10-01 – 2026-10-02 | done | supported: column-wise better on 5 of the 9 variants at ≥60nan, mask on none; the effect grows with the missing level (+0.004 at 20nan, −0.022 at 60nan); mask wins on 6 light variants by ≤0.013 |
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
+| E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 – | in progress | pending |
 
 ## Entries
 
@@ -965,6 +966,30 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   where gaps were many and cost a little elsewhere: aligning the training beats aligning the
   scoring. The recommendation is `DECODE_GAP_TOKEN mask` as the imputation default, by an ADR;
   the user decides. credit-g_60nan and _80nan and kr-vs-kp_80nan stay at the mean/mode fill
-  under both arms, so the token shape was not the only cause there.
+  under both arms, so the token shape was not the only cause there. **Decided 2026-10-03:** the
+  user adopted it ([ADR 0014](adr/0014-gaps-shown-as-mask-in-the-decode-stage.md)) and asked for
+  a replication on fresh seeds (E33).
 - **Sources:** `docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md` (Outcome);
   `scripts/experiments/gap_token_report.py`.
+
+### E33 · The gaps-as-mask default on fresh seeds (2026-10-03 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 18:00 GMT-3 on
+  2026-10-03).
+- **Hypothesis:** E32's "better on 11 of 21, worse on none" is a property of showing the gaps as
+  `[MASK]` in the decode stage, not of the three seeds it was chosen on.
+- **Scenarios:** arms G (ADR 0014's defaults, naming nothing) and M (`--decode_gap_token null`),
+  both fresh; all 21 variants; seeds 101, 202, 303, unused by any earlier imputation study; five
+  folds; 126 cells tagged `experiment=gap-token-replication-2026-10-03`.
+- **Measures and decision rule:**
+  - **Primary:** D = G − M on `impute/induced/impute_score`, 15 fold pairs per variant; a verdict
+    needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading:** replicated if no variant shows M better and G is better on at least 5 of the 9
+    heavy variants; safe but weaker if no variant shows M better and G wins fewer than 5;
+    not replicated if any variant shows M better, which goes back to the user.
+  - **Secondary:** D by level; E32 and E33 pooled (six seeds); masked; means and the best-baseline
+    count; time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md`;
+  `scripts/experiments/gap_token_replication_report.py`.

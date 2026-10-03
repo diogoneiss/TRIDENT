@@ -19,6 +19,10 @@ their own `task = imputation`.
 and the imputation task's pre-training objective and schedule default to `embedding_normalized`
 and `cosine`; classification is untouched.
 
+**Amended 2026-10-03** by [ADR 0014](0014-gaps-shown-as-mask-in-the-decode-stage.md): the decode
+stage shows a row's real gaps as `[MASK]`, the token the induced scoring shows them as, instead
+of `[NULL]` (`--decode_gap_token null` restores it); a gap still never enters the loss.
+
 ## Context
 
 TRIDENT trains in two stages that share one embedder and one transformer: masked-cell

@@ -535,9 +535,11 @@ def test_an_imputation_run_trains_the_configuration_e30_chose_unless_told_otherw
         )
 
 
-def test_the_decode_stage_shows_gaps_as_null_unless_an_imputation_run_asks_for_mask() -> None:
-    """T02 step 2: ``--decode_gap_token mask`` shows a row's real gaps as [MASK] in the decode
-    stage. ``null`` is every run before it and stays the default; the flag is imputation's."""
+def test_the_decode_stage_shows_gaps_as_mask_unless_a_run_asks_for_null() -> None:
+    """ADR 0014: an imputation run shows a row's real gaps as [MASK] in the decode stage, the
+    shape E32 found better on 11 of 21 variants and worse on none. ``--decode_gap_token null``
+    is every run before it, one flag away; the flag is imputation's, and a mapping read without
+    a task (the regression fixture) keeps the dataclass's ``null``."""
     parser = build_training_parser()
     imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
 
@@ -547,9 +549,13 @@ def test_the_decode_stage_shows_gaps_as_null_unless_an_imputation_run_asks_for_m
         Namespace(dataset_name="credit-g_20nan", task="imputation", hyperparams_override={"DECODE_GAP_TOKEN": "null"}, decode_gap_token="mask")
     )
 
-    assert default.hyperparameters.decode_gap_token == "null"
+    old = resolve_training_request(parser.parse_args([*imputation, "--decode_gap_token", "null"]))
+
+    assert default.hyperparameters.decode_gap_token == "mask"
+    assert old.hyperparameters.decode_gap_token == "null"
     assert from_flag.hyperparameters.decode_gap_token == "mask"
     assert flag_over_mapping.hyperparameters.decode_gap_token == "mask"
+    assert Hyperparameters.from_mapping({}).decode_gap_token == "null"
     with pytest.raises(SystemExit, match="decode_gap_token"):
         validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_gap_token", "mask"]))
     with pytest.raises(SystemExit):
