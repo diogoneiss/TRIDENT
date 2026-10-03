@@ -160,12 +160,13 @@ A default switch to K needs its own ADR, flag and tag, and the user's decision.
   stops earlier (credit-g 25 → 12, kr-vs-kp 32 → 21, spambase 92 → 61), the loss on the few
   masked cells having kept training into overfitting; at 20nan it usually picks a later epoch.
 - **The calibration's reach:** mean α from 0.51 (spambase_80nan) to 0.98 (vehicle_20nan), lowest
-  where gaps are many; a categorical threshold in 4 to 7 columns per fold on credit-g and 13 to 18
-  on kr-vs-kp, none on the numerical tables' few categorical columns.
+  where gaps are many; a categorical threshold in up to 7 columns per fold on credit-g (none at
+  20nan) and 13 to 18 on kr-vs-kp, and almost none elsewhere (0.5 per fold on electricity).
 - **The only loss, spambase_20nan,** is a table where the model is already below the best
   baseline (0.8495 against 0.8597) and α (0.83) shrinks guesses that were not overconfident.
-- **K's masked population** is better or equal on every variant but three tiny ones
-  (credit-g_20nan +0.004, spambase_20nan +0.001, vehicle_20nan +0.001).
+- **K's masked population** has a lower mean than H's on 17 variants and a higher one on four
+  light ones, by little (credit-g_20nan +0.004, spambase_20nan +0.001, vehicle_20nan +0.001,
+  kr-vs-kp_20nan +0.000); these are means, not verdicts.
 - **Time.** Planned about 5.5 to 6 h of wall time, ending 18:30 to 19:00 GMT-3; it took 5 h 51 min
   and ended at 18:43, within the plan (about 1.02x its midpoint). The per-epoch scoring cost no
   measurable time: electricity's cells took 101 min against 100 for E30's arm M.
