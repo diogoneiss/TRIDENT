@@ -152,6 +152,8 @@ check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312
 | Cache prune script (`scripts/prune_cache.py`) | `c9be71f` |
 | Epoch masks drawn on the encoded tensors instead of the DataFrame (exact; pre-training's pandas re-encoding was 25–30% of an epoch on categorical tables) | `2e0e85a` |
 | Tag backfill `decoder_heads` (1473 runs) | applied 2026-10-01 |
+| ADR 0014 · gaps shown as `[MASK]` in the decode stage (E32, replicated in E33) | `e2f4e47`, 2026-10-03 |
+| ADR 0015 · decode checkpoint chosen on the validation gaps (E34); tag `decode_checkpoint` backfilled on 1990 runs | `815f6d8`, 2026-10-03 |
 | Speed check, kr-vs-kp_40nan arm A, 5 folds, one trainer: 20.1 min on 2026-09-29 (hard-disk store) → 4.0 min per-column (same scores to the last digit) → 2.95 min batched heads | 2026-10-01 |
 | T04 · Pre-training cache: **dropped** by the user's decision (an exact cache hits only fold 1 in most studies; a per-fold reseed would change the numbers) | 2026-09-30 |
 | Experimentation log (E01–E28) | `0849c4c` and later |

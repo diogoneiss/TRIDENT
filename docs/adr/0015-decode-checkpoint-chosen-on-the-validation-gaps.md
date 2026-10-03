@@ -47,7 +47,9 @@ and scored the test split there too (K), on the 21 variants and seeds 101, 202 a
 5. **The `decode_checkpoint` tag** is on every imputation parent and trial; earlier runs are
    stamped `loss` by `scripts/backfill_decode_checkpoint_tag.py` and marked
    `decode_checkpoint_backfilled=true`. Its mirrors are stamped in place, and a tree is mirrored
-   from scratch only when it has no mirror yet.
+   from scratch only when it has no mirror yet. **Applied 2026-10-03, 19:28 to 19:33 GMT-3:** 1990
+   runs stamped; 1980 have a mirror carrying the tag, and the 10 without are 9 `FAILED` sources
+   (not mirrored, ADR 0006) and one trial under a deleted study.
 6. **The five promoted `*.imputation.json` files** name `DECODE_CHECKPOINT induced`, the
    configuration E34's K readout scored on those variants.
 7. **`--decode_checkpoint loss` recovers the old behaviour**; the command for every imputation
