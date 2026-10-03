@@ -1,7 +1,7 @@
 # Does the gaps-as-mask default hold on seeds it was not chosen on? (pre-registered 2026-10-03)
 
-This ticket was written and committed before the first run, in the night of 2026-10-03 GMT-3
-(the commit and the queues' start time are in the Running notes). The user adopted
+This ticket was written and committed before the first run, at 00:44 GMT-3 on 2026-10-03 (commit
+`e2f4e47`; the queues started 00:44:31 GMT-3). The user adopted
 `DECODE_GAP_TOKEN mask` as the imputation default (ADR 0014) and asked for an overnight study to
 validate it.
 
@@ -26,7 +26,7 @@ property of the change or of those draws.
   1..4`), one trainer each, CPU threads capped at 4. (variant, seed) pairs are assigned longest
   first by twice E30's arm-M cell time, about 627 minutes of those per queue; each pair runs G
   then M. E32's cells ran at about 1.08x those times, so about 11.3 h of wall time is expected,
-  ending near 13:00 GMT-3. No cell starts after 18:00 GMT-3 on 2026-10-03 (21:00 UTC); a cell not
+  ending near 12:05 GMT-3. No cell starts after 18:00 GMT-3 on 2026-10-03 (21:00 UTC); a cell not
   started by then is reported missing. Nothing is rerun or extended on its result; a crash is
   fixed, its cell rerun from the start, and the rerun noted here.
 - **Checks before launch:** default runs of credit-g_40nan (promoted) and vehicle_20nan (no
