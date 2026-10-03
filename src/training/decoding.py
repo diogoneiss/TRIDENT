@@ -106,8 +106,11 @@ def train_and_evaluate_decoder(
     # whose validation rows' own gaps score best, against the complete sibling, where the
     # checkpoint above is the epoch of the lowest loss on the fixed validation mask. Watching it
     # costs one extra forward pass an epoch, in eval mode, so training draws nothing more.
+    # ADR 0015: with ``DECODE_CHECKPOINT induced`` that second checkpoint is the one the run
+    # keeps; without a complete sibling there are no gaps to score and the loss's epoch is kept.
+    by_gaps = hyperparameters.decode_checkpoint == "induced" and complete_sibling is not None
     gap_score = None
-    if score_induced_checkpoint and complete_sibling is not None:
+    if (score_induced_checkpoint or by_gaps) and complete_sibling is not None:
         model.eval()
         gap_score = _ValidationGapScore(
             model, dataset, validation_frame, complete_sibling, fold.validation_indices,
@@ -162,12 +165,15 @@ def train_and_evaluate_decoder(
                 best_gap_score = epoch_gap_score
                 gap_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
                 gap_epoch = epoch
-        # Early stopping only ends the loop: the checkpoint is the best epoch either way.
-        if hyperparameters.decode_patience and epoch - best_epoch >= hyperparameters.decode_patience:
+        # Early stopping only ends the loop: the checkpoint is the best epoch either way, counted
+        # from the epoch the run's own criterion would keep.
+        kept_epoch = gap_epoch if by_gaps else best_epoch
+        if hyperparameters.decode_patience and epoch - kept_epoch >= hyperparameters.decode_patience:
             break
 
-    if best_state is not None:
-        model.load_state_dict(best_state)
+    kept_state = gap_state if by_gaps else best_state
+    if kept_state is not None:
+        model.load_state_dict(kept_state)
     model.eval()
 
     test_frame = features.iloc[fold.test_indices].reset_index(drop=True)
@@ -282,7 +288,13 @@ def train_and_evaluate_decoder(
                     for name, value in score_cells(column_wise, baselines).metrics.items()
                 }
             )
-        if score_calibrated or gap_state is not None:
+        if gap_score is not None:
+            metrics["decode/induced_checkpoint_epoch"] = gap_epoch
+            metrics["decode/loss_checkpoint_epoch"] = best_epoch
+        # Under the induced criterion the run's own checkpoint already is that epoch, so the
+        # diagnostic family would repeat the headline; it is scored only under the loss.
+        diagnose_gap_epoch = gap_state is not None and score_induced_checkpoint and not by_gaps
+        if score_calibrated or diagnose_gap_epoch:
             # Diagnostics on the same trajectory (ticket imputation-token-shape/04): the test
             # split scored after calibrating on the validation rows' own gaps, and at the epoch
             # those gaps scored best. The run's own checkpoint is put back before anything else
@@ -295,11 +307,9 @@ def train_and_evaluate_decoder(
                         complete_sibling, fold.validation_indices, device, induced, baselines,
                     )
                 )
-            if gap_state is not None:
+            if diagnose_gap_epoch and gap_state is not None:
                 model.load_state_dict(gap_state)
                 model.eval()
-                metrics["decode/induced_checkpoint_epoch"] = gap_epoch
-                metrics["decode/loss_checkpoint_epoch"] = best_epoch
                 at_gap = _score_induced_missing(
                     model, dataset, test_frame, complete_sibling, fold.test_indices, device
                 )

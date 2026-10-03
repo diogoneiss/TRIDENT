@@ -45,6 +45,15 @@ DEFAULT_DECODER_HEADS = "batched"
 DECODE_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
 DEFAULT_DECODE_GAP_TOKEN = "null"
 
+# Which decode epoch an imputation run keeps, accepted by ``Hyperparameters.decode_checkpoint``
+# and ``--decode_checkpoint``. ``loss`` is the epoch of the lowest loss on the fixed validation
+# mask, every run before the choice and the dataclass default; ``induced`` is the epoch whose
+# validation rows' own gaps score best against the complete sibling, the population the headline
+# scores, which the imputation task defaults to (``task_defaults``, ADR 0015). A run with no
+# complete sibling has no gaps to score and keeps the loss's epoch.
+DECODE_CHECKPOINTS: tuple[str, ...] = ("loss", "induced")
+DEFAULT_DECODE_CHECKPOINT = "loss"
+
 # Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
 # checkout root every run starts from (ADR 0009). Never under a run's own output directory:
 # the study runners give every cell its own, and a cache there would never be shared.
@@ -129,7 +138,9 @@ IMPUTATION = _TASK_SPECS["imputation"]
 # mapping) and beneath the flags. Classification has none, so it keeps the dataclass defaults
 # below and stays bit-identical. Imputation trains the configuration study E30 found never
 # worse than the old one on any of the 21 variants (ADR 0013), with its gaps shown as [MASK]
-# in the decode stage, which study E32 found better on 11 of them and worse on none (ADR 0014).
+# in the decode stage, which study E32 found better on 11 of them and worse on none (ADR 0014),
+# and its checkpoint chosen on the validation rows' own gaps, which E34 found better on 3 and
+# worse on none (ADR 0015).
 _TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
     "classification": {},
     "imputation": {
@@ -137,6 +148,7 @@ _TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
         "EPOCHS_DECODE": 450,
         "LR_SCHEDULER": "cosine",
         "DECODE_GAP_TOKEN": "mask",
+        "DECODE_CHECKPOINT": "induced",
     },
 }
 
@@ -199,6 +211,7 @@ class Hyperparameters:
     decode_patience: int = 0
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
+    decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -216,6 +229,10 @@ class Hyperparameters:
         if self.decoder_heads not in DECODER_HEADS:
             raise ValueError(
                 f"Unknown decoder heads {self.decoder_heads!r}; expected one of {', '.join(DECODER_HEADS)}"
+            )
+        if self.decode_checkpoint not in DECODE_CHECKPOINTS:
+            raise ValueError(
+                f"Unknown decode checkpoint {self.decode_checkpoint!r}; expected one of {', '.join(DECODE_CHECKPOINTS)}"
             )
         if self.decode_gap_token not in DECODE_GAP_TOKENS:
             raise ValueError(
@@ -278,6 +295,9 @@ class Hyperparameters:
             ),
             decode_gap_token=str(
                 values.get("DECODE_GAP_TOKEN", values.get("decode_gap_token", DEFAULT_DECODE_GAP_TOKEN))
+            ),
+            decode_checkpoint=str(
+                values.get("DECODE_CHECKPOINT", values.get("decode_checkpoint", DEFAULT_DECODE_CHECKPOINT))
             ),
             eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
             eval_mask_rates_extra=tuple(

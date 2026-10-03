@@ -1034,6 +1034,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** by the rule fixed in advance, K qualifies and is the recommendation; C and KC
   fail on one variant each (spambase_20nan, by about 0.005), while gaining on most others. The
   user decides whether K becomes the default (ADR, flag, tag); a calibration that leaves
-  well-calibrated columns alone would be a new pre-registered study.
+  well-calibrated columns alone would be a new pre-registered study. **Decided 2026-10-03:** the
+  user adopted K ([ADR 0015](adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md)).
 - **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md` (Outcome);
   `scripts/experiments/selection_report.py`.

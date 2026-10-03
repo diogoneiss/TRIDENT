@@ -565,3 +565,35 @@ def test_a_loss_plot_is_named_after_the_stage_that_produced_it(monkeypatch, tmp_
 
     plots = {path.name for path in (tmp_path / "run" / "results").rglob("*.png")}
     assert plots == {"pretrain_losses.png", "decode_losses.png"}
+
+
+def test_an_imputation_run_without_a_complete_table_records_the_loss_checkpoint_it_used(
+    monkeypatch, tmp_path
+) -> None:
+    """ADR 0015's criterion scores the validation rows' own gaps against the complete table; a
+    variant without one (a complete variant, or real gaps with no truth) cannot use it. The run
+    falls back to the loss and says so: the decode stage, the logged parameters and the
+    hyperparameter file all read ``loss``."""
+    import dataclasses
+    import src.training.runner as runner
+
+    _stub_stages(monkeypatch, tmp_path)
+    seen: list[Hyperparameters] = []
+    stub = runner.train_and_evaluate_decoder
+
+    def recording(**kwargs):
+        seen.append(kwargs["hyperparameters"])
+        return stub(**kwargs)
+
+    monkeypatch.setattr(runner, "train_and_evaluate_decoder", recording)
+    monkeypatch.setattr(runner, "load_complete_sibling", lambda spec: None)
+    request = dataclasses.replace(
+        _minimal_request(tmp_path, "imputation"),
+        hyperparameters=Hyperparameters(decode_checkpoint="induced"),
+    )
+
+    run_training(request)
+
+    assert [hyperparameters.decode_checkpoint for hyperparameters in seen] == ["loss"]
+    written = json.loads(next((tmp_path / "results").rglob("hyperparameters.json")).read_text())
+    assert written["DECODE_CHECKPOINT"] == "loss"

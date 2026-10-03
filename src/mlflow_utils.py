@@ -87,6 +87,12 @@ DECODER_HEADS_BACKFILLED_TAG = "decoder_heads_backfilled"
 # DECODE_GAP_TOKEN_BACKFILLED_TAG.
 DECODE_GAP_TOKEN_TAG = "decode_gap_token"
 DECODE_GAP_TOKEN_BACKFILLED_TAG = "decode_gap_token_backfilled"
+# Which decode epoch an imputation run kept, "induced" (the default since ADR 0015) or "loss";
+# the value the run actually used, so a variant without a complete table records "loss". On
+# every imputation parent and trial; runs recorded before it are stamped "loss" by
+# ``scripts/backfill_decode_checkpoint_tag.py`` and marked DECODE_CHECKPOINT_BACKFILLED_TAG.
+DECODE_CHECKPOINT_TAG = "decode_checkpoint"
+DECODE_CHECKPOINT_BACKFILLED_TAG = "decode_checkpoint_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

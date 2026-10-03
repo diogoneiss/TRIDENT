@@ -23,6 +23,10 @@ and `cosine`; classification is untouched.
 stage shows a row's real gaps as `[MASK]`, the token the induced scoring shows them as, instead
 of `[NULL]` (`--decode_gap_token null` restores it); a gap still never enters the loss.
 
+**Amended 2026-10-03** by [ADR 0015](0015-decode-checkpoint-chosen-on-the-validation-gaps.md): the decode stage keeps the epoch whose validation
+rows' own gaps score best instead of the epoch of the lowest validation-mask loss
+(`--decode_checkpoint loss` restores it; a variant without a complete table falls back to it).
+
 ## Context
 
 TRIDENT trains in two stages that share one embedder and one transformer: masked-cell

@@ -19,5 +19,6 @@
     "EVAL_MASK_RATE": 0.2,
     "DECODE_PATIENCE": 0,
     "DECODER_HEADS": "batched",
-    "DECODE_GAP_TOKEN": "mask"
+    "DECODE_GAP_TOKEN": "mask",
+    "DECODE_CHECKPOINT": "induced"
 }

@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
+    DECODE_CHECKPOINTS,
     DECODE_GAP_TOKENS,
     DECODER_HEADS,
     DEFAULT_TASK,
@@ -29,7 +30,7 @@ from .types import (
 # study would silently not reach its trials.
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
-    "decode_gap_token",
+    "decode_gap_token", "decode_checkpoint",
 )
 
 
@@ -65,6 +66,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_gap_token = getattr(args, "decode_gap_token", None)
     if decode_gap_token is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_gap_token=decode_gap_token)
+    # ``--decode_checkpoint`` wins the same way (ADR 0015).
+    decode_checkpoint = getattr(args, "decode_checkpoint", None)
+    if decode_checkpoint is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_checkpoint=decode_checkpoint)
     # ``--decode_epochs`` wins the same way (ADR 0013).
     decode_epochs = getattr(args, "decode_epochs", None)
     if decode_epochs is not None:
@@ -149,6 +154,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODE_PATIENCE": values.decode_patience,
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
+            "DECODE_CHECKPOINT": values.decode_checkpoint,
         }
     return {
         **shared,
@@ -247,6 +253,13 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
+
+    # Only imputation has a decode checkpoint to choose.
+    if (
+        getattr(args, "decode_checkpoint", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --decode_checkpoint requires --task imputation")
 
     # Only imputation has a decode stage with gaps to show.
     if (
@@ -351,6 +364,19 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: how many epochs the decode stage trains. Overrides EPOCHS_DECODE "
             "from the hyperparameter file. Default: 450 since ADR 0013; 150 is the decode "
             "stage of every run before it."
+        ),
+    )
+    parser.add_argument(
+        "--decode_checkpoint",
+        type=str,
+        default=None,
+        choices=DECODE_CHECKPOINTS,
+        help=(
+            "Imputation only: which decode epoch the run keeps. 'induced' (the default since "
+            "ADR 0015) keeps the epoch whose validation rows' own gaps score best against the "
+            "complete table; 'loss' keeps the epoch of the lowest loss on the fixed validation "
+            "mask, as every run before it. A variant without a complete table falls back to "
+            "'loss'. Overrides DECODE_CHECKPOINT from the hyperparameter file."
         ),
     )
     parser.add_argument(

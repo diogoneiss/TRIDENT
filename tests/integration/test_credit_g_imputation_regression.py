@@ -47,13 +47,14 @@ def test_credit_g_imputation_matches_regression_fixture(tmp_path, monkeypatch) -
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     fixture = json.loads(FIXTURE_PATH.read_text())
     hyperparameters = Hyperparameters.from_mapping(fixture["hyperparameters"])
-    # The fixture predates ADRs 0013 and 0014 and stays on the configuration it was recorded
+    # The fixture predates ADRs 0013 to 0015 and stays on the configuration it was recorded
     # with: read without a task, the mapping takes the dataclass defaults, not imputation's.
     assert (
         hyperparameters.pretraining_objective,
         hyperparameters.lr_scheduler,
         hyperparameters.decode_gap_token,
-    ) == ("embedding", "cosine_legacy", "null")
+        hyperparameters.decode_checkpoint,
+    ) == ("embedding", "cosine_legacy", "null", "loss")
     request = TrainingRequest(
         dataset=DatasetSpec.from_name("credit-g_20nan", "class"),
         hyperparameters=hyperparameters,

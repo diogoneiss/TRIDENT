@@ -1,5 +1,6 @@
 """Typed orchestration for TRIDENT training."""
 
+import dataclasses
 import time
 from typing import Mapping
 
@@ -11,6 +12,7 @@ from src.mlflow_utils import (
     DECODE_PATIENCE_TAG,
     DECODER_HEADS_TAG,
     DECODE_GAP_TOKEN_TAG,
+    DECODE_CHECKPOINT_TAG,
     PRETRAIN_OBJECTIVE_TAG,
 )
 from src.utils import set_global_seed
@@ -73,6 +75,19 @@ def run_training(request: TrainingRequest) -> TrainingResult:
     complete_sibling = (
         load_complete_sibling(request.dataset) if task.name == "imputation" else None
     )
+    if (
+        task.name == "imputation"
+        and complete_sibling is None
+        and request.hyperparameters.decode_checkpoint == "induced"
+    ):
+        # The induced criterion scores the validation rows' own gaps against the complete
+        # table (ADR 0015); without one there is nothing to score, so the run keeps the loss's
+        # epoch and every record of it (parameters, tag, hyperparameter file) says so.
+        print("No complete table to score the validation gaps against: the decode checkpoint falls back to the loss.")
+        request = dataclasses.replace(
+            request,
+            hyperparameters=dataclasses.replace(request.hyperparameters, decode_checkpoint="loss"),
+        )
     folds = build_folds(dataset.frame, dataset.label_column, request.cv_folds, request.seed)
     artifacts = ArtifactWriter(request.runtime.output_dir, request.runtime.metrics_dir, request.dataset.dataset_name)
     tracker = create_tracker(
@@ -103,6 +118,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     DECODE_PATIENCE_TAG: str(request.hyperparameters.decode_patience),
                     DECODER_HEADS_TAG: request.hyperparameters.decoder_heads,
                     DECODE_GAP_TOKEN_TAG: request.hyperparameters.decode_gap_token,
+                    DECODE_CHECKPOINT_TAG: request.hyperparameters.decode_checkpoint,
                 }
                 if task.name == "imputation"
                 else {}

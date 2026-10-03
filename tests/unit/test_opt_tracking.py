@@ -444,6 +444,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
+        "DECODE_CHECKPOINT",
     }
     assert promoted["DECODE_PATIENCE"] == 0
     assert promoted["DECODER_HEADS"] == "batched"
@@ -454,6 +455,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
     assert promoted["EPOCHS_DECODE"] == 450
     assert promoted["PRETRAIN_OBJECTIVE"] == "embedding_normalized"
     assert promoted["DECODE_GAP_TOKEN"] == "mask"
+    assert promoted["DECODE_CHECKPOINT"] == "induced"
     assert promoted["LAMBDA_NUM"] == 1.0
     assert promoted["LR_SCHEDULER"] == "cosine"
     # The sampled values are the winning trial's (0.4 beats 0.9 when minimising).

@@ -7,6 +7,11 @@ decision 3, which fixed the imputation search objective to the masked validation
 by making the population a choice; the masked population stays the default, so every
 study launched as before ranks as before.
 
+**Amended 2026-10-03** by [ADR 0015](0015-decode-checkpoint-chosen-on-the-validation-gaps.md): the induced validation population this ADR
+introduced now also chooses each imputation run's decode checkpoint by default, so a search
+ranked by it would score trials on the cells that chose their checkpoints; the default `masked`
+objective is unaffected.
+
 ## Context
 
 ADR 0005 scores an imputation search on the validation split so the test split never

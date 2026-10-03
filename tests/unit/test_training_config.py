@@ -286,6 +286,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
+        "DECODE_CHECKPOINT",
     }
 
 
@@ -574,3 +575,26 @@ def test_the_selection_diagnostics_are_imputation_flags_and_off_unless_asked() -
         assert getattr(resolve_training_request(parser.parse_args([*imputation, flag])), field) is True
         with pytest.raises(SystemExit, match=flag.lstrip("-")):
             validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", flag]))
+
+
+def test_the_decode_checkpoint_is_chosen_on_the_validation_gaps_unless_a_run_asks_for_the_loss() -> None:
+    """ADR 0015: an imputation run keeps the decode epoch whose validation rows' own gaps score
+    best, which E34 found better on 3 of 21 variants and worse on none. ``--decode_checkpoint
+    loss`` is every run before it; a mapping read without a task keeps the dataclass's ``loss``,
+    and classification has no decode stage to choose in."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation)).hyperparameters
+    old = resolve_training_request(parser.parse_args([*imputation, "--decode_checkpoint", "loss"])).hyperparameters
+
+    assert default.decode_checkpoint == "induced"
+    assert old.decode_checkpoint == "loss"
+    assert Hyperparameters.from_mapping({}).decode_checkpoint == "loss"
+    assert resolve_training_request(parser.parse_args(["--dataset_name", "credit-g_20nan"])).hyperparameters == Hyperparameters()
+    with pytest.raises(SystemExit, match="decode_checkpoint"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_checkpoint", "loss"]))
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--decode_checkpoint", "masked"])
+    with pytest.raises(ValueError, match="decode checkpoint"):
+        Hyperparameters.from_mapping({"DECODE_CHECKPOINT": "masked"})

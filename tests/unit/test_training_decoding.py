@@ -423,6 +423,38 @@ def test_with_nothing_to_learn_the_induced_checkpoint_is_the_first_epoch_and_sco
         assert metrics[f"impute/masked/induced_checkpoint/{name}"] == metrics[f"impute/masked/{name}"]
 
 
+def test_the_induced_criterion_keeps_the_epoch_the_diagnostic_scored_as_k() -> None:
+    """ADR 0015: with ``DECODE_CHECKPOINT induced`` the run's own checkpoint is the epoch whose
+    validation rows' own gaps score best, so its headline equals what E34's diagnostic scored
+    as K on the same trajectory. Without a complete sibling there are no gaps to score, and the
+    criterion falls back to the loss."""
+    dataset = _dataset()
+    np.random.seed(0)
+    by_loss, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_induced_checkpoint=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6),
+    )
+    np.random.seed(0)
+    by_gaps, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(),
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT="induced"),
+    )
+
+    diagnostic, headline = by_loss.result.metrics, by_gaps.result.metrics
+    for population in ("induced", "masked"):
+        for name in ("impute_score", "rmse_num_z", "acc_cat"):
+            assert headline[f"impute/{population}/{name}"] == diagnostic[f"impute/{population}/induced_checkpoint/{name}"]
+    assert headline["decode/induced_checkpoint_epoch"] == diagnostic["decode/induced_checkpoint_epoch"]
+    assert any(event.key == "decode/val_induced_score" for event in tracker.metric_events)
+    assert not any("induced_checkpoint/" in key for key in headline)
+
+    np.random.seed(0)
+    without_truth, _ = _run(dataset=dataset, sibling=None, hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT="induced"))
+    np.random.seed(0)
+    loss_without_truth, _ = _run(dataset=dataset, sibling=None, hyperparameters=_hyperparameters(EPOCHS_DECODE=6))
+    assert without_truth.result.metrics == loss_without_truth.result.metrics
+
+
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
     """Ticket 0004: a known truth should not be reported at the model's precision.
 
