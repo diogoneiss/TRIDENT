@@ -104,7 +104,7 @@ check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312
 
 ### Model selection
 
-- **T07 · Checkpoint by validation `impute_score`** — measured (ticket [imputation-token-shape/04](tickets/imputation-token-shape/04-checkpoint-and-calibration.md), E34, 2026-10-03): the checkpoint by the validation rows' own gaps is better on 3 variants (all 80nan) and worse on none, so it qualifies; **Decided 2026-10-03: adopted as the imputation default ([ADR 0015](adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md)).** A replication on E32's seeds runs overnight (ticket [05](tickets/imputation-token-shape/05-checkpoint-replication.md), E35). The calibration tested beside it failed on one variant (spambase_20nan). instead of the λ-weighted loss (critique
+- **T07 · Checkpoint by validation `impute_score`** — done; measured (ticket [imputation-token-shape/04](tickets/imputation-token-shape/04-checkpoint-and-calibration.md), E34, 2026-10-03): the checkpoint by the validation rows' own gaps is better on 3 variants (all 80nan) and worse on none, so it qualifies; **Decided 2026-10-03: adopted as the imputation default ([ADR 0015](adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md)).** **Replicated 2026-10-04 (E35, ticket [05](tickets/imputation-token-shape/05-checkpoint-replication.md)):** on seeds 42, 7, 13, K better on 6 variants and worse on none; T07 is done. The calibration tested beside it failed on one variant (spambase_20nan). instead of the λ-weighted loss (critique
   F-02-1, handoff item 6); also a better criterion for early stopping.
 - **T08 · A second validation mask:** one to choose the checkpoint, one to score the search
   objective (critique F-07-2).

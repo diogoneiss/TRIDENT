@@ -61,7 +61,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
 | E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
-| E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 – | in progress | pending |
+| E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
 
 ## Entries
 
@@ -1040,10 +1040,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md` (Outcome);
   `scripts/experiments/selection_report.py`.
 
-### E35 · The gap-chosen checkpoint on E32's seeds (2026-10-04 – )
+### E35 · The gap-chosen checkpoint on E32's seeds (2026-10-04)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
-  2026-10-04).
+- **Status:** done, 00:23 to 06:14 GMT-3 on gorgona8, all 63 cells; H equals E32's G cells to the
+  last digit on every cell.
 - **Hypothesis:** E34's result, the checkpoint chosen on the validation gaps (K) better than the
   loss's (H) on 3 variants at 80nan and worse on none, is a property of the criterion, not of
   seeds 101, 202 and 303. ADR 0015 adopted it on those seeds alone.
@@ -1060,7 +1060,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     goes back to the user.
   - **Secondary:** K − H pooled with E34; C, KC on these seeds and pooled; epochs; by level;
     means; best-baseline counts; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/05-checkpoint-replication.md`;
+- **Results (within-run, 15 fold pairs per variant, seeds 42, 7, 13):** K − H: K better on 6
+  (kr-vs-kp_80nan −0.034, spambase_40nan −0.004, spambase_60nan −0.003, spambase_80nan −0.010,
+  biodeg_60nan −0.008, kc2_60nan −0.045), H better on none; on E34's three, K better on
+  kr-vs-kp_80nan and spambase_80nan, credit-g_80nan leaning (−0.008) without a verdict. Pooled with
+  E34 (six seeds): K better on 6, H on none; the mean difference is negative on 19 variants. By
+  level −0.007, −0.005, −0.012, −0.017. Means over 21: H 0.7542, K 0.7446, C 0.7480, KC 0.7422;
+  below the best baseline on 16, 19, 18, 19 variants. C − H again "H better" on spambase_20nan
+  (+0.0055) and "C better" on 13. Wall time 5 h 51 min against about 5.8 h planned (1.01x).
+- **Conclusion:** replicated by the rule fixed in advance; ADR 0015 stands on six seeds. The
+  calibration fails the same way on both seed sets (only spambase_20nan, where the model is
+  already well calibrated), which points to a calibration that leaves the 20nan tables alone as
+  a possible next study.
+- **Sources:** `docs/tickets/imputation-token-shape/05-checkpoint-replication.md` (Outcome);
   `scripts/experiments/selection_replication_report.py`.
