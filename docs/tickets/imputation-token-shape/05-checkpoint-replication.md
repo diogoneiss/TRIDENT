@@ -1,7 +1,7 @@
 # Does the gap-chosen checkpoint hold on E32's seeds? (pre-registered 2026-10-04)
 
-This ticket was written and committed before the first run (the commit and the queues' start
-time are in the Running notes). The user adopted E34's K as the imputation default (ADR 0015)
+This ticket was written and committed before the first run, at 00:23 GMT-3 on 2026-10-04 (commit
+`64f6d54`; the queues started 00:23:12 GMT-3, so about 06:15 GMT-3 is the expected end). The user adopted E34's K as the imputation default (ADR 0015)
 and chose to replicate it on other seeds before anything else.
 
 ## Why
