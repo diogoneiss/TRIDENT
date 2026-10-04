@@ -1182,9 +1182,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1791066326.3844762,
-    "seen": 1791066488.1767378,
-    "ast_hash": "15f6a365da14405a53eb9b5108ccb583",
+    "mtime": 1791084063.8730185,
+    "seen": 1791084189.1695616,
+    "ast_hash": "f018c35164dcf9a126d4b8726ec0a5c9",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "docs/TASKS.md": {
-    "mtime": 1791066326.3844762,
-    "seen": 1791066488.1767385,
-    "ast_hash": "8449f69a1b2d24baa7c8942d3e489757",
+    "mtime": 1791084063.8730185,
+    "seen": 1791084189.1695626,
+    "ast_hash": "aaf38e85557da9c67e271be068b36d25",
     "semantic_hash": ""
   },
   "tests/unit/test_epoch_masker.py": {
@@ -1566,9 +1566,33 @@
     "semantic_hash": ""
   },
   "docs/adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md": {
-    "mtime": 1791066484.8968763,
-    "seen": 1791066488.1767519,
-    "ast_hash": "df11e2422ddb5ce98a67390a7230459f",
+    "mtime": 1791066836.492668,
+    "seen": 1791084189.1695795,
+    "ast_hash": "16e503acde53b5c38965880b56ee8fe6",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_selection_replication_queue.sh": {
+    "mtime": 1791083878.3670042,
+    "seen": 1791084189.1694632,
+    "ast_hash": "43c7a5b41f3d6a50610a9797afebfc40",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/selection_replication_report.py": {
+    "mtime": 1791083916.357794,
+    "seen": 1791084189.1694643,
+    "ast_hash": "220296aeb66d09870b7e17c8782adda6",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/selection_replication_run.py": {
+    "mtime": 1791083878.362004,
+    "seen": 1791084189.1694655,
+    "ast_hash": "5c5e2f30dce09a247584b3ad76161c86",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-token-shape/05-checkpoint-replication.md": {
+    "mtime": 1791084063.7060194,
+    "seen": 1791084189.1696537,
+    "ast_hash": "5f50379260ffb5627c3e1cf1e3c1d556",
     "semantic_hash": ""
   }
 }

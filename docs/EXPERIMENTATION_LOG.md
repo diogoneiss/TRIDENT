@@ -61,6 +61,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E32 | Training the decode stage with the gaps shown as `[MASK]` | 2026-10-02 | done | supported: G better than M on 11 of 21 (5 of the 9 heavy), worse on none; gains at every missing level; beats column-wise scoring on 12; G qualifies as the default |
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
 | E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
+| E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 – | in progress | pending |
 
 ## Entries
 
@@ -1038,3 +1039,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   user adopted K ([ADR 0015](adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md)).
 - **Sources:** `docs/tickets/imputation-token-shape/04-checkpoint-and-calibration.md` (Outcome);
   `scripts/experiments/selection_report.py`.
+
+### E35 · The gap-chosen checkpoint on E32's seeds (2026-10-04 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
+  2026-10-04).
+- **Hypothesis:** E34's result, the checkpoint chosen on the validation gaps (K) better than the
+  loss's (H) on 3 variants at 80nan and worse on none, is a property of the criterion, not of
+  seeds 101, 202 and 303. ADR 0015 adopted it on those seeds alone.
+- **Scenarios:** E34's cell on seeds 42, 7, 13: `--decode_checkpoint loss` with
+  `--score_induced_checkpoint` and `--score_calibrated`, so one trajectory gives H, K, C and KC.
+  All 21 variants, five folds; 63 cells tagged `experiment=selection-replication-2026-10-04`;
+  H must equal E32's G cells.
+- **Measures and decision rule:**
+  - **Primary:** K − H on `impute/induced/impute_score`, 15 within-run fold pairs per variant;
+    a verdict needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading:** replicated if no variant shows H better and K is better on at least 2 of
+    credit-g_80nan, kr-vs-kp_80nan and spambase_80nan; safe but weaker if no variant shows H
+    better and K wins fewer than 2 of them; not replicated if any variant shows H better, which
+    goes back to the user.
+  - **Secondary:** K − H pooled with E34; C, KC on these seeds and pooled; epochs; by level;
+    means; best-baseline counts; time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/05-checkpoint-replication.md`;
+  `scripts/experiments/selection_replication_report.py`.
