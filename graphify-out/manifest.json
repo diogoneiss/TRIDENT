@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "src/mlflow_utils.py": {
-    "mtime": 1791066195.8680089,
-    "seen": 1791066488.1766713,
-    "ast_hash": "9c39d6034c5c416cfbe6077dd8acdbb3",
+    "mtime": 1791169247.1362572,
+    "seen": 1791170187.2937198,
+    "ast_hash": "42425e0b20946c281e4a3cb6a3d9c5ee",
     "semantic_hash": ""
   },
   "src/models.py": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1791066195.8680089,
-    "seen": 1791066488.1766772,
-    "ast_hash": "2e11a03da4629f33ce30552eddfa7ae6",
+    "mtime": 1791169247.1362572,
+    "seen": 1791170187.2937286,
+    "ast_hash": "9123a5dc233532132c6215013f8bfd62",
     "semantic_hash": ""
   },
   "src/training/data.py": {
@@ -84,15 +84,15 @@
     "semantic_hash": ""
   },
   "src/training/pretraining.py": {
-    "mtime": 1790810723.232204,
-    "seen": 1790814311.9775214,
-    "ast_hash": "eacecbdd98227a05a9203e60ec9a3ca0",
+    "mtime": 1791169247.1382573,
+    "seen": 1791170187.2937396,
+    "ast_hash": "ccddf4c36e68df5648fbf88e29aacb51",
     "semantic_hash": ""
   },
   "src/training/runner.py": {
-    "mtime": 1791066195.8710086,
-    "seen": 1791066488.1766853,
-    "ast_hash": "0a025e817bb9cfe60a7792adde59c719",
+    "mtime": 1791169247.1382573,
+    "seen": 1791170187.2937407,
+    "ast_hash": "3c267dcf1176de73913d4e2d761add76",
     "semantic_hash": ""
   },
   "src/training/summary.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1791066195.8680089,
-    "seen": 1791066488.1766884,
-    "ast_hash": "6fbb427656cbf2f74fed62f82fb0314e",
+    "mtime": 1791169247.1352572,
+    "seen": 1791170187.2937448,
+    "ast_hash": "3fb9eab20e37f93b10fecc0504484593",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -150,9 +150,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_config.py": {
-    "mtime": 1791066121.8063304,
-    "seen": 1791066488.1767175,
-    "ast_hash": "4923c1fbfc53cc4eb4549bdd01860962",
+    "mtime": 1791169151.5816557,
+    "seen": 1791170187.2937872,
+    "ast_hash": "407432cf9fcc23d80ef5ac7a39e82370",
     "semantic_hash": ""
   },
   "tests/unit/test_training_data.py": {
@@ -168,9 +168,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_runtime.py": {
-    "mtime": 1791066121.8063304,
-    "seen": 1791066488.1767225,
-    "ast_hash": "abc1fe82cffdd996492aafa605266b90",
+    "mtime": 1791169605.875745,
+    "seen": 1791170187.2937937,
+    "ast_hash": "09ae3a01ec99bb552a1234a0289279a8",
     "semantic_hash": ""
   },
   "tests/unit/test_training_summary.py": {
@@ -210,9 +210,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791066297.8785892,
-    "seen": 1791066488.176732,
-    "ast_hash": "dad1ba52255c4bffe0fbb5452d3f0c23",
+    "mtime": 1791169407.7425828,
+    "seen": 1791170187.293806,
+    "ast_hash": "d1236f378915e352dd347c3eba37b9ef",
     "semantic_hash": ""
   },
   "datasets/categorical_columns/credit-g.txt": {
@@ -360,9 +360,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_opt_tracking.py": {
-    "mtime": 1791066121.8063304,
-    "seen": 1791066488.1767125,
-    "ast_hash": "63d0efaaa81c83922cdcc1aecfe9d92d",
+    "mtime": 1791169151.5816557,
+    "seen": 1791170187.2937796,
+    "ast_hash": "1a41ab1b68a5b6af914ce959233f1601",
     "semantic_hash": ""
   },
   "scripts/__init__.py": {
@@ -1182,9 +1182,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1791084063.8730185,
-    "seen": 1791084189.1695616,
-    "ast_hash": "f018c35164dcf9a126d4b8726ec0a5c9",
+    "mtime": 1791170182.1292882,
+    "seen": 1791170187.293813,
+    "ast_hash": "43d7640ad0b1eebc4303a57192e34745",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1230,9 +1230,9 @@
     "semantic_hash": ""
   },
   "tests/unit/test_training_pretraining.py": {
-    "mtime": 1790741551.5444257,
-    "seen": 1790741997.6348057,
-    "ast_hash": "33423c7e4daf32d677314f6c0771f6ee",
+    "mtime": 1791169151.5606558,
+    "seen": 1791170187.2937927,
+    "ast_hash": "1fe6385d0f324912673bf2a35b6015fa",
     "semantic_hash": ""
   },
   "docs/adr/0011-selectable-pretraining-objective.md": {
@@ -1356,9 +1356,9 @@
     "semantic_hash": ""
   },
   "docs/TASKS.md": {
-    "mtime": 1791084063.8730185,
-    "seen": 1791084189.1695626,
-    "ast_hash": "aaf38e85557da9c67e271be068b36d25",
+    "mtime": 1791169407.7425828,
+    "seen": 1791170187.2938144,
+    "ast_hash": "402cd0fe1c171258b4072e55b73fad9d",
     "semantic_hash": ""
   },
   "tests/unit/test_epoch_masker.py": {
@@ -1590,9 +1590,45 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-token-shape/05-checkpoint-replication.md": {
-    "mtime": 1791084063.7060194,
-    "seen": 1791084189.1696537,
-    "ast_hash": "5f50379260ffb5627c3e1cf1e3c1d556",
+    "mtime": 1791105345.3057117,
+    "seen": 1791170187.293913,
+    "ast_hash": "d3eeb34e43309502762754586d06bc6f",
+    "semantic_hash": ""
+  },
+  "scripts/backfill_pretrain_gap_token_tag.py": {
+    "mtime": 1791169247.0052578,
+    "seen": 1791170187.2936594,
+    "ast_hash": "f0dd4e5e3b25c62cb58d69ddfc2d815f",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_gap_token_report.py": {
+    "mtime": 1791169342.4998574,
+    "seen": 1791170187.2936864,
+    "ast_hash": "bbd8b7abea3dc8ca6e672132e1cbaba8",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/pretrain_gap_token_run.py": {
+    "mtime": 1791169342.4008577,
+    "seen": 1791170187.2936876,
+    "ast_hash": "074cd71466c747e3c5e566e437d72452",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/run_pretrain_gap_token_queue.sh": {
+    "mtime": 1791170182.1292882,
+    "seen": 1791170187.293701,
+    "ast_hash": "4a1e9351795d511708387d5ebb1dcb2d",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_backfill_pretrain_gap_token_tag.py": {
+    "mtime": 1791169247.0052578,
+    "seen": 1791170187.293763,
+    "ast_hash": "6e7da36976188c74d0fd92ee257287a5",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md": {
+    "mtime": 1791170182.1292882,
+    "seen": 1791170187.2939138,
+    "ast_hash": "d7497bb3440422594c252c80262a9e6f",
     "semantic_hash": ""
   }
 }

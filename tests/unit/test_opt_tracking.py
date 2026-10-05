@@ -444,7 +444,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
-        "DECODE_CHECKPOINT",
+        "DECODE_CHECKPOINT", "PRETRAIN_GAP_TOKEN",
     }
     assert promoted["DECODE_PATIENCE"] == 0
     assert promoted["DECODER_HEADS"] == "batched"

@@ -286,7 +286,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
-        "DECODE_CHECKPOINT",
+        "DECODE_CHECKPOINT", "PRETRAIN_GAP_TOKEN",
     }
 
 
@@ -598,3 +598,23 @@ def test_the_decode_checkpoint_is_chosen_on_the_validation_gaps_unless_a_run_ask
         parser.parse_args([*imputation, "--decode_checkpoint", "masked"])
     with pytest.raises(ValueError, match="decode checkpoint"):
         Hyperparameters.from_mapping({"DECODE_CHECKPOINT": "masked"})
+
+
+def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:
+    """``--pretrain_gap_token mask`` shows the real gaps as [MASK] to the pre-training stage.
+    ``null`` is every run before it and stays the default for both tasks; pre-training is shared,
+    so the flag is accepted for classification too, like ``--pretrain_objective``."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    classification = ["--dataset_name", "credit-g_20nan"]
+
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.pretrain_gap_token == "null"
+    assert resolve_training_request(parser.parse_args(classification)).hyperparameters == Hyperparameters()
+    for args in (imputation, classification):
+        asked = resolve_training_request(parser.parse_args([*args, "--pretrain_gap_token", "mask"]))
+        assert asked.hyperparameters.pretrain_gap_token == "mask"
+        assert validate_parsed_args(parser.parse_args([*args, "--pretrain_gap_token", "mask"])).pretrain_gap_token == "mask"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--pretrain_gap_token", "zero"])
+    with pytest.raises(ValueError, match="pre-training gap token"):
+        Hyperparameters.from_mapping({"PRETRAIN_GAP_TOKEN": "zero"})

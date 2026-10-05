@@ -14,6 +14,7 @@ from src.mlflow_utils import (
     DECODE_GAP_TOKEN_TAG,
     DECODE_CHECKPOINT_TAG,
     PRETRAIN_OBJECTIVE_TAG,
+    PRETRAIN_GAP_TOKEN_TAG,
 )
 from src.utils import set_global_seed
 
@@ -112,6 +113,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
         extra_tags={
             **request.runtime.tracking_tags,
             PRETRAIN_OBJECTIVE_TAG: request.hyperparameters.pretraining_objective,
+            PRETRAIN_GAP_TOKEN_TAG: request.hyperparameters.pretrain_gap_token,
             **(
                 {
                     BASELINE_CACHE_TAG: "off" if request.runtime.baseline_cache_dir is None else "on",

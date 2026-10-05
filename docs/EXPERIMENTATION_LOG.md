@@ -62,6 +62,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
 | E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
 | E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
+| E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 – | in progress | pending |
 
 ## Entries
 
@@ -1074,3 +1075,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   a possible next study.
 - **Sources:** `docs/tickets/imputation-token-shape/05-checkpoint-replication.md` (Outcome);
   `scripts/experiments/selection_replication_report.py`.
+
+### E36 · Showing the gaps as `[MASK]` to pre-training too (2026-10-05 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 11:00 GMT-3 on
+  2026-10-05).
+- **Hypothesis:** the pre-training stage still shows the real gaps as `[NULL]` while the decode
+  stage and the scoring show `[MASK]` (ADR 0014); aligning pre-training too might score better.
+  The prior is weak: the decode stage retrains the encoder for 450 epochs (E05: 300 pre-training
+  epochs no better than 2).
+- **Scenarios:** arm PG = today's defaults with `--pretrain_gap_token mask`; reference R = E35's
+  K readout of the same cells, equal to a default run to the last digit. All 21 variants, seeds
+  42, 7, 13, five folds; 63 new cells tagged `experiment=pretrain-gap-token-2026-10-05`. Pairs
+  share their random stream.
+- **Measures and decision rule:**
+  - **Primary:** PG − R on `impute/induced/impute_score`, 15 fold pairs per variant; a verdict
+    needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading on all 21:** any R better → keep `null`; no R better and PG better on at least 3 →
+    recommend PG as the default (ADR, user decides, then replicate); otherwise keep `null`.
+  - **Secondary:** by level; masked; decode epochs; means and best-baseline counts; time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md`;
+  `scripts/experiments/pretrain_gap_token_report.py`.

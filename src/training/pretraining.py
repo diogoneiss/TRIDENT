@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 
-from src.embedder import EpochMasker, TabularEmbedder
+from src.embedder import EncodedTable, EpochMasker, TabularEmbedder
 from src.models import NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 
@@ -33,6 +33,10 @@ def _stage_model(
     if hyperparameters.pretraining_objective == "embedding_normalized":
         return NormalizedEmbeddingPretrainer(embedder, transformer)
     return TridentPretrainer(embedder, transformer)
+
+
+def _as_is(encoded: EncodedTable) -> EncodedTable:
+    return encoded
 
 
 def train_pretrainer(
@@ -90,10 +94,16 @@ def train_pretrainer(
     # tensors encoded once per fold, so no epoch goes back through pandas.
     train_masker = EpochMasker(model.embedder, train_frame, device)
     validation_masker = EpochMasker(model.embedder, validation_frame, device)
+    # What the model sees at a row's real gap (``PRETRAIN_GAP_TOKEN``): the [NULL] it stores,
+    # or [MASK] as the decode stage shows it since ADR 0014. Applied to the corrupted inputs
+    # only; the targets and the loss positions do not move, and nothing is drawn.
+    embedder = model.embedder
+    assert isinstance(embedder, TabularEmbedder)
+    shown = embedder.gaps_as_mask if hyperparameters.pretrain_gap_token == "mask" else _as_is
 
     for epoch in tqdm(range(hyperparameters.pretraining_epochs), desc="Pre train epochs"):
-        masked_train = train_masker.draw(hyperparameters.mask_probability)
-        masked_validation = validation_masker.draw(hyperparameters.mask_probability)
+        masked_train = shown(train_masker.draw(hyperparameters.mask_probability))
+        masked_validation = shown(validation_masker.draw(hyperparameters.mask_probability))
         model.train()
         # Drawn on the CPU generator, then moved once so batch slicing stays on device.
         indices = torch.randperm(len(train_frame)).to(device)

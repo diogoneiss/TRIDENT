@@ -45,7 +45,9 @@ on the server), M ≈ 2x A and P ≈ 0.26–0.86x M as measured on 2026-09-30. e
 the four spambase variants are more than half of it; P on electricity and letter is the largest
 uncertainty.
 
-### T02 · Train/score token-shape mismatch — done (ADR 0014, replicated in E33) (tickets [01](tickets/imputation-token-shape/01-column-wise-scoring.md), [02](tickets/imputation-token-shape/02-gaps-as-mask-in-training.md); E31, E32)
+### T02 · Train/score token-shape mismatch — done (ADR 0014, replicated in E33)
+
+**Follow-up 2026-10-05:** the pre-training stage's gap token (still `[NULL]`) is studied in ticket [06](tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md), E36. (tickets [01](tickets/imputation-token-shape/01-column-wise-scoring.md), [02](tickets/imputation-token-shape/02-gaps-as-mask-in-training.md); E31, E32)
 
 **Step 2 done 2026-10-02 16:22 GMT-3:** training the decode stage with the gaps shown as `[MASK]`
 (`--decode_gap_token mask`) is better than today's default on 11 of 21 variants and worse on none,

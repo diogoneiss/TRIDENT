@@ -93,6 +93,11 @@ DECODE_GAP_TOKEN_BACKFILLED_TAG = "decode_gap_token_backfilled"
 # ``scripts/backfill_decode_checkpoint_tag.py`` and marked DECODE_CHECKPOINT_BACKFILLED_TAG.
 DECODE_CHECKPOINT_TAG = "decode_checkpoint"
 DECODE_CHECKPOINT_BACKFILLED_TAG = "decode_checkpoint_backfilled"
+# What a run's pre-training stage showed at a real gap, "null" (the default) or "mask". On
+# every parent and trial of either task; runs recorded before it are stamped "null" by
+# ``scripts/backfill_pretrain_gap_token_tag.py`` and marked PRETRAIN_GAP_TOKEN_BACKFILLED_TAG.
+PRETRAIN_GAP_TOKEN_TAG = "pretrain_gap_token"
+PRETRAIN_GAP_TOKEN_BACKFILLED_TAG = "pretrain_gap_token_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

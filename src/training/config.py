@@ -10,6 +10,7 @@ from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
     DECODE_CHECKPOINTS,
     DECODE_GAP_TOKENS,
+    PRETRAIN_GAP_TOKENS,
     DECODER_HEADS,
     DEFAULT_TASK,
     LR_SCHEDULER_NAMES,
@@ -30,7 +31,7 @@ from .types import (
 # study would silently not reach its trials.
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
-    "decode_gap_token", "decode_checkpoint",
+    "decode_gap_token", "decode_checkpoint", "pretrain_gap_token",
 )
 
 
@@ -66,6 +67,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_gap_token = getattr(args, "decode_gap_token", None)
     if decode_gap_token is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_gap_token=decode_gap_token)
+    # ``--pretrain_gap_token`` wins the same way.
+    pretrain_gap_token = getattr(args, "pretrain_gap_token", None)
+    if pretrain_gap_token is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, pretrain_gap_token=pretrain_gap_token)
     # ``--decode_checkpoint`` wins the same way (ADR 0015).
     decode_checkpoint = getattr(args, "decode_checkpoint", None)
     if decode_checkpoint is not None:
@@ -155,6 +160,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
+            "PRETRAIN_GAP_TOKEN": values.pretrain_gap_token,
         }
     return {
         **shared,
@@ -364,6 +370,18 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: how many epochs the decode stage trains. Overrides EPOCHS_DECODE "
             "from the hyperparameter file. Default: 450 since ADR 0013; 150 is the decode "
             "stage of every run before it."
+        ),
+    )
+    parser.add_argument(
+        "--pretrain_gap_token",
+        type=str,
+        default=None,
+        choices=PRETRAIN_GAP_TOKENS,
+        help=(
+            "What the pre-training stage shows the model at a row's real gap: 'null' (the "
+            "default, every run before the choice) shows the [NULL] token; 'mask' shows [MASK], "
+            "as ADR 0014 does for the decode stage. A gap never enters the loss either way. "
+            "Both tasks. Overrides PRETRAIN_GAP_TOKEN from the hyperparameter file."
         ),
     )
     parser.add_argument(

@@ -155,3 +155,56 @@ def test_each_objective_trains_its_own_stage_model() -> None:
         "embedding": TridentPretrainer,
         "embedding_normalized": NormalizedEmbeddingPretrainer,
     }
+
+
+def test_the_pretraining_stage_can_show_every_real_gap_as_mask_and_still_learns_only_from_truths(
+    monkeypatch,
+) -> None:
+    """``PRETRAIN_GAP_TOKEN mask`` shows a row's real gaps as ``[MASK]`` to the pre-training
+    stage too, on its training and validation rows, as ADR 0014 does for the decode stage. No
+    gap enters the loss, since it has no truth; ``null``, the default, leaves every input as it
+    was."""
+    frame = _learnable_dataset().frame.copy()
+    frame.loc[frame.index % 5 == 0, "x"] = np.nan
+    frame.loc[frame.index % 7 == 0, "sign"] = np.nan
+    dataset = _learnable_dataset()
+    dataset = PreparedDataset(**{**dataset.__dict__, "frame": frame})
+    seen: list = []
+    forward = NormalizedEmbeddingPretrainer.forward
+
+    def recording(self, masked, original):
+        seen.append(masked)
+        return forward(self, masked, original)
+
+    monkeypatch.setattr(NormalizedEmbeddingPretrainer, "forward", recording)
+    hyperparameters = _hyperparameters(PRETRAIN_OBJECTIVE="embedding_normalized", EPOCHS_PRE=2)
+
+    torch.manual_seed(0)
+    np.random.seed(0)
+    outcome = train_pretrainer(
+        dataset, _fold(), Hyperparameters.from_mapping({**_mapping(hyperparameters), "PRETRAIN_GAP_TOKEN": "mask"}),
+        torch.device("cpu"), BufferedFoldTracker(),
+    )
+
+    embedder = outcome.model.embedder
+    null_id = int(embedder.label_encoders["sign"].transform(["[NULL]"])[0])
+    sign = list(embedder.categorical_columns).index("sign")
+    assert seen
+    for masked in seen:
+        assert not bool((masked.cat_indices[sign] == null_id).any())
+        assert not bool(masked.null_flags.any())
+    # The loss positions are the epoch mask's, never a gap: drawn from the same stream, they
+    # equal the ones the default run draws.
+    shown_mask = [masked.masked_positions.clone() for masked in seen]
+    seen.clear()
+    torch.manual_seed(0)
+    np.random.seed(0)
+    train_pretrainer(dataset, _fold(), hyperparameters, torch.device("cpu"), BufferedFoldTracker())
+    assert any(bool(masked.null_flags.any()) for masked in seen)
+    assert all(torch.equal(a, b.masked_positions) for a, b in zip(shown_mask, seen))
+
+
+def _mapping(hyperparameters: Hyperparameters) -> dict[str, object]:
+    from src.training.config import complete_configuration
+
+    return complete_configuration(hyperparameters, "imputation")

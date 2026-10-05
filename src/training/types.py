@@ -45,6 +45,14 @@ DEFAULT_DECODER_HEADS = "batched"
 DECODE_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
 DEFAULT_DECODE_GAP_TOKEN = "null"
 
+# What the pre-training stage shows the model at a row's real gap, accepted by
+# ``Hyperparameters.pretrain_gap_token`` and ``--pretrain_gap_token``, for both tasks since
+# pre-training is shared. ``null`` is the ``[NULL]`` token every run before the choice showed,
+# and the default; ``mask`` shows ``[MASK]``, as ADR 0014 does for the decode stage. A gap has
+# no truth, so it never enters the loss either way (ticket imputation-token-shape/06).
+PRETRAIN_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
+DEFAULT_PRETRAIN_GAP_TOKEN = "null"
+
 # Which decode epoch an imputation run keeps, accepted by ``Hyperparameters.decode_checkpoint``
 # and ``--decode_checkpoint``. ``loss`` is the epoch of the lowest loss on the fixed validation
 # mask, every run before the choice and the dataclass default; ``induced`` is the epoch whose
@@ -212,6 +220,7 @@ class Hyperparameters:
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
+    pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -229,6 +238,10 @@ class Hyperparameters:
         if self.decoder_heads not in DECODER_HEADS:
             raise ValueError(
                 f"Unknown decoder heads {self.decoder_heads!r}; expected one of {', '.join(DECODER_HEADS)}"
+            )
+        if self.pretrain_gap_token not in PRETRAIN_GAP_TOKENS:
+            raise ValueError(
+                f"Unknown pre-training gap token {self.pretrain_gap_token!r}; expected one of {', '.join(PRETRAIN_GAP_TOKENS)}"
             )
         if self.decode_checkpoint not in DECODE_CHECKPOINTS:
             raise ValueError(
@@ -298,6 +311,9 @@ class Hyperparameters:
             ),
             decode_checkpoint=str(
                 values.get("DECODE_CHECKPOINT", values.get("decode_checkpoint", DEFAULT_DECODE_CHECKPOINT))
+            ),
+            pretrain_gap_token=str(
+                values.get("PRETRAIN_GAP_TOKEN", values.get("pretrain_gap_token", DEFAULT_PRETRAIN_GAP_TOKEN))
             ),
             eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
             eval_mask_rates_extra=tuple(
