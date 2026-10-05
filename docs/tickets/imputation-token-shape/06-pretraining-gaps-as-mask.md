@@ -1,7 +1,7 @@
 # Does showing the gaps as [MASK] to pre-training help too? (pre-registered 2026-10-05)
 
-This ticket was written and committed before the first run (the commit and the queues' start
-time are in the Running notes). The user chose this thread on 2026-10-04, after E35, from the
+This ticket was written and committed before the first run, at 00:16 GMT-3 on 2026-10-05 (commit
+`d0744ad`; the queues started 00:16:30 GMT-3, so about 06:05 GMT-3 is the expected end). The user chose this thread on 2026-10-04, after E35, from the
 open questions ADR 0014 left.
 
 ## Why
