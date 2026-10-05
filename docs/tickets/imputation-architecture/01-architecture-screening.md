@@ -1,7 +1,8 @@
 # Does a deeper, wider or normed encoder impute better? A screening (pre-registered 2026-10-05)
 
-This ticket was written and committed before the first run (the commit and the queues' start
-time are in the Running notes). It is task T03 in [TASKS.md](../../TASKS.md), which the user chose
+This ticket was written and committed before the first run, at 19:20 GMT-3 on 2026-10-05 (commit
+`1d1aff1`; the queues started 19:20:51 GMT-3, so about 00:45 GMT-3 on 2026-10-06 is the expected
+end). It is task T03 in [TASKS.md](../../TASKS.md), which the user chose
 on 2026-10-05 after the token-shape line closed (E36).
 
 ## Why
