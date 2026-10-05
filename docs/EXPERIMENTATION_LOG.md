@@ -62,7 +62,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E33 | The gaps-as-mask default on fresh seeds | 2026-10-03 | done | replicated: G better on 13 of 21 (6 of 9 heavy), worse on none, on seeds 101/202/303; larger gains than E32 at every level; ADR 0014 stands |
 | E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
 | E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
-| E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 – | in progress | pending |
+| E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
 
 ## Entries
 
@@ -1076,10 +1076,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/05-checkpoint-replication.md` (Outcome);
   `scripts/experiments/selection_replication_report.py`.
 
-### E36 · Showing the gaps as `[MASK]` to pre-training too (2026-10-05 – )
+### E36 · Showing the gaps as `[MASK]` to pre-training too (2026-10-05)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 11:00 GMT-3 on
-  2026-10-05).
+- **Status:** done, 00:16 to 06:08 GMT-3 on gorgona8, all 63 cells; every pair's baselines equal.
 - **Hypothesis:** the pre-training stage still shows the real gaps as `[NULL]` while the decode
   stage and the scoring show `[MASK]` (ADR 0014); aligning pre-training too might score better.
   The prior is weak: the decode stage retrains the encoder for 450 epochs (E05: 300 pre-training
@@ -1094,7 +1093,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Reading on all 21:** any R better → keep `null`; no R better and PG better on at least 3 →
     recommend PG as the default (ADR, user decides, then replicate); otherwise keep `null`.
   - **Secondary:** by level; masked; decode epochs; means and best-baseline counts; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md`;
+- **Results (PG − R, induced, 15 fold pairs per variant):** R better on 1 (electricity_20nan
+  +0.0105 [+0.0020, +0.0190]), PG better on none, no detectable difference on 20. Mean by level
+  +0.0003 (20nan), −0.0001 (40), +0.0016 (60), −0.0012 (80). Means over 21: PG 0.7450, R 0.7446;
+  below the best baseline on 19 under both. Masked: no detectable difference on all 21. Wall time
+  5 h 52 min against about 5.8 h planned (1.01x).
+- **Conclusion:** by the rule fixed in advance, keep `null`. The pre-training gap token does not
+  matter once the decode stage shows `[MASK]` and retrains the encoder for 450 epochs, as the
+  ticket's weak prior and E05 suggested. The flag stays, default `null`.
+- **Sources:** `docs/tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md` (Outcome);
   `scripts/experiments/pretrain_gap_token_report.py`.

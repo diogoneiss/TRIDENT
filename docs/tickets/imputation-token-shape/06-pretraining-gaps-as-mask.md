@@ -89,3 +89,58 @@ token may already be overwritten. A null result is plausible and informative.
 - **Tag backfill applied** before launch, 4 min 37 s: 2140 earlier runs of both tasks stamped
   `null`; 2128 have a mirror carrying the tag, the rest being `FAILED` sources or under a deleted
   study, as for the earlier backfills.
+
+## Outcome (2026-10-05, 06:20 GMT-3)
+
+All 63 cells ran (00:16 to 06:08 GMT-3), none failed, none missing. The integrity check passed:
+every pair's baseline scores are equal, so each PG cell lines up with its E35 cell. Numbers from
+`scripts/experiments/pretrain_gap_token_report.py` (kept with `--tally` in the state directory).
+Lower is better; a negative difference favours PG. Induced cells, 15 fold pairs per variant; the
+epochs are the decode stage's chosen epochs, fold means.
+
+| variant | PG | R | best baseline | PG − R (seeds 42, 7, 13) | verdict | epoch, R → PG |
+|---|---|---|---|---|---|---|
+| `credit-g_20nan` | 0.8813 | 0.8818 | 0.9180 | −0.0005 [−0.0098, +0.0088] (+0.0040, −0.0034, −0.0021) | none | 136 → 144 |
+| `credit-g_40nan` | 0.9573 | 0.9556 | 0.9638 | +0.0017 [−0.0165, +0.0200] (−0.0258, +0.0345, −0.0035) | none | 63 → 71 |
+| `credit-g_60nan` | 0.9914 | 0.9922 | 1.0000 | −0.0008 [−0.0101, +0.0085] (−0.0069, −0.0029, +0.0075) | none | 43 → 43 |
+| `credit-g_80nan` | 1.0027 | 1.0079 | 1.0000 | −0.0052 [−0.0120, +0.0016] (−0.0068, −0.0007, −0.0081) | none | 14 → 11 |
+| `kr-vs-kp_20nan` | 0.5874 | 0.5863 | 0.6119 | +0.0011 [−0.0098, +0.0121] (−0.0050, +0.0014, +0.0071) | none | 249 → 264 |
+| `kr-vs-kp_40nan` | 0.7576 | 0.7582 | 0.7725 | −0.0006 [−0.0086, +0.0075] (−0.0043, +0.0034, −0.0008) | none | 130 → 152 |
+| `kr-vs-kp_60nan` | 0.8675 | 0.8649 | 0.9030 | +0.0026 [−0.0046, +0.0098] (−0.0018, −0.0013, +0.0109) | none | 84 → 82 |
+| `kr-vs-kp_80nan` | 0.9775 | 0.9759 | 1.0000 | +0.0017 [−0.0039, +0.0072] (+0.0080, +0.0005, −0.0036) | none | 22 → 16 |
+| `spambase_20nan` | 0.8451 | 0.8481 | 0.8664 | −0.0029 [−0.0114, +0.0056] (−0.0127, +0.0016, +0.0023) | none | 295 → 330 |
+| `spambase_40nan` | 0.9015 | 0.9030 | 0.9371 | −0.0015 [−0.0062, +0.0033] (+0.0023, −0.0056, −0.0010) | none | 260 → 252 |
+| `spambase_60nan` | 0.9410 | 0.9422 | 0.9845 | −0.0012 [−0.0031, +0.0006] (−0.0033, +0.0005, −0.0009) | none | 184 → 165 |
+| `spambase_80nan` | 0.9869 | 0.9871 | 1.0000 | −0.0002 [−0.0024, +0.0021] (+0.0025, −0.0006, −0.0025) | none | 55 → 51 |
+| `vehicle_20nan` | 0.4197 | 0.4178 | 0.4731 | +0.0019 [−0.0042, +0.0079] (+0.0063, +0.0014, −0.0021) | none | 309 → 278 |
+| `vehicle_60nan` | 0.6377 | 0.6449 | 0.7006 | −0.0072 [−0.0175, +0.0031] (−0.0136, −0.0125, +0.0045) | none | 225 → 213 |
+| `biodeg_20nan` | 0.5833 | 0.5865 | 0.6356 | −0.0032 [−0.0139, +0.0075] (−0.0038, −0.0189, +0.0131) | none | 285 → 261 |
+| `biodeg_60nan` | 0.7639 | 0.7605 | 0.8658 | +0.0033 [−0.0042, +0.0108] (+0.0058, −0.0014, +0.0056) | none | 299 → 294 |
+| `kc2_20nan` | 0.5341 | 0.5414 | 0.5665 | −0.0073 [−0.0295, +0.0149] (−0.0223, −0.0040, +0.0043) | none | 195 → 206 |
+| `kc2_60nan` | 0.5851 | 0.5723 | 0.7129 | +0.0128 [−0.0040, +0.0296] (+0.0101, +0.0304, −0.0021) | none | 227 → 248 |
+| `pendigits_20nan` | 0.3342 | 0.3324 | 0.3500 | +0.0018 [−0.0001, +0.0036] (−0.0000, +0.0033, +0.0021) | none | 406 → 396 |
+| `letter_20nan` | 0.4603 | 0.4593 | 0.4729 | +0.0010 [−0.0006, +0.0026] (+0.0015, −0.0009, +0.0024) | none | 421 → 408 |
+| `electricity_20nan` | 0.6284 | 0.6179 | 0.6058 | +0.0105 [+0.0020, +0.0190] (+0.0130, +0.0102, +0.0083) | R better | 345 → 342 |
+
+**Tally.** PG − R: R better on 1 variant (electricity_20nan, +0.0105 [+0.0020, +0.0190], all three
+seeds), PG better on none, no detectable difference on 20.
+
+**Reading, by the rule fixed in advance: keep `null`.** A variant shows "R better", and no variant
+shows "PG better". Showing the gaps as `[MASK]` to pre-training adds nothing to ADR 0014's
+decode-stage change and costs a little on electricity.
+
+**Secondary measures.**
+- **No effect at any missing level:** mean PG − R +0.0003 at 20nan, −0.0001 at 40nan, +0.0016 at
+  60nan, −0.0012 at 80nan.
+- **Means over the 21 variants:** PG 0.7450, R 0.7446; below the best baseline on 19 variants
+  under both.
+- **Masked population:** no detectable difference on all 21.
+- **The decode stage's chosen epoch moves little** (for example credit-g_80nan 14 → 11,
+  kr-vs-kp_40nan 130 → 152), with no pattern in direction.
+- **Time.** Planned about 5.8 h of wall time, ending near 06:05 GMT-3; it took 5 h 52 min and ended
+  at 06:08, 1.01x the plan. A PG cell costs the same as a default one.
+
+**Reading against the prior.** The ticket expected a weak effect, since the decode stage retrains
+the encoder for 450 epochs: what pre-training learns about the gap token does not survive it.
+This is consistent with E05 (300 pre-training epochs no better than 2): the decode stage, not
+pre-training, decides how the model treats a gap. The flag stays available, default `null`.
