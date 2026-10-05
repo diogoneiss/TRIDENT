@@ -286,7 +286,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
-        "DECODE_CHECKPOINT", "PRETRAIN_GAP_TOKEN",
+        "DECODE_CHECKPOINT", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
     }
 
 
@@ -618,3 +618,23 @@ def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:
         parser.parse_args([*imputation, "--pretrain_gap_token", "zero"])
     with pytest.raises(ValueError, match="pre-training gap token"):
         Hyperparameters.from_mapping({"PRETRAIN_GAP_TOKEN": "zero"})
+
+
+def test_the_encoder_has_no_final_norm_unless_a_run_asks_for_one() -> None:
+    """``--encoder_final_norm layer`` closes the encoder with a LayerNorm (T03). ``none`` is
+    every run before it and the default for both tasks; the encoder is shared, so the flag is
+    accepted for classification too."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    classification = ["--dataset_name", "credit-g_20nan"]
+
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.encoder_final_norm == "none"
+    assert resolve_training_request(parser.parse_args(classification)).hyperparameters == Hyperparameters()
+    for args in (imputation, classification):
+        asked = parser.parse_args([*args, "--encoder_final_norm", "layer"])
+        assert validate_parsed_args(asked).encoder_final_norm == "layer"
+        assert resolve_training_request(asked).hyperparameters.encoder_final_norm == "layer"
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--encoder_final_norm", "rms"])
+    with pytest.raises(ValueError, match="encoder final norm"):
+        Hyperparameters.from_mapping({"ENCODER_FINAL_NORM": "rms"})

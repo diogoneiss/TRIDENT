@@ -94,13 +94,17 @@ class TabularTransformerEncoder(nn.Module):
     Complete transformer encoder for tabular data
     """
     def __init__(self, d_model=4, nhead=2, num_layers=2,
-                 dim_feedforward=128, dropout=0.1):
+                 dim_feedforward=128, dropout=0.1, final_norm="none"):
         super().__init__()
         self.pre_norm = nn.LayerNorm(d_model)
         self.layers = nn.ModuleList([
             EncoderLayer(d_model, dim_feedforward, nhead, dropout)
             for _ in range(num_layers)
         ])
+        # ``ENCODER_FINAL_NORM`` (T03): a pre-norm stack usually ends with a LayerNorm before
+        # whatever reads it. ``none``, every run before the choice, is an Identity: no parameter,
+        # no draw, the same outputs; a LayerNorm draws nothing either.
+        self.final_norm: nn.Module = nn.LayerNorm(d_model) if final_norm == "layer" else nn.Identity()
 
     def forward(self, x, src_key_padding_mask=None):
         # x: B, T, d_model
@@ -108,4 +112,4 @@ class TabularTransformerEncoder(nn.Module):
         x = self.pre_norm(x)
         for layer in self.layers:
             x = layer(x, mask)
-        return x 
+        return self.final_norm(x) 

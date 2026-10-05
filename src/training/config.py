@@ -10,6 +10,7 @@ from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
     DECODE_CHECKPOINTS,
     DECODE_GAP_TOKENS,
+    ENCODER_FINAL_NORMS,
     PRETRAIN_GAP_TOKENS,
     DECODER_HEADS,
     DEFAULT_TASK,
@@ -31,7 +32,7 @@ from .types import (
 # study would silently not reach its trials.
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
-    "decode_gap_token", "decode_checkpoint", "pretrain_gap_token",
+    "decode_gap_token", "decode_checkpoint", "pretrain_gap_token", "encoder_final_norm",
 )
 
 
@@ -67,6 +68,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_gap_token = getattr(args, "decode_gap_token", None)
     if decode_gap_token is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_gap_token=decode_gap_token)
+    # ``--encoder_final_norm`` wins the same way.
+    encoder_final_norm = getattr(args, "encoder_final_norm", None)
+    if encoder_final_norm is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, encoder_final_norm=encoder_final_norm)
     # ``--pretrain_gap_token`` wins the same way.
     pretrain_gap_token = getattr(args, "pretrain_gap_token", None)
     if pretrain_gap_token is not None:
@@ -161,6 +166,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
             "PRETRAIN_GAP_TOKEN": values.pretrain_gap_token,
+            "ENCODER_FINAL_NORM": values.encoder_final_norm,
         }
     return {
         **shared,
@@ -370,6 +376,17 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: how many epochs the decode stage trains. Overrides EPOCHS_DECODE "
             "from the hyperparameter file. Default: 450 since ADR 0013; 150 is the decode "
             "stage of every run before it."
+        ),
+    )
+    parser.add_argument(
+        "--encoder_final_norm",
+        type=str,
+        default=None,
+        choices=ENCODER_FINAL_NORMS,
+        help=(
+            "How the encoder ends: 'none' (the default, every run before the choice) or 'layer', "
+            "a LayerNorm after the last encoder layer, the usual closing of a pre-norm "
+            "transformer. Both tasks. Overrides ENCODER_FINAL_NORM from the hyperparameter file."
         ),
     )
     parser.add_argument(

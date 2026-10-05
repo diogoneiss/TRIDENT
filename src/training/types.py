@@ -53,6 +53,13 @@ DEFAULT_DECODE_GAP_TOKEN = "null"
 PRETRAIN_GAP_TOKENS: tuple[str, ...] = ("null", "mask")
 DEFAULT_PRETRAIN_GAP_TOKEN = "null"
 
+# How the encoder ends, accepted by ``Hyperparameters.encoder_final_norm`` and
+# ``--encoder_final_norm``, for both tasks since the encoder is shared. ``none`` is every run
+# before the choice and the default; ``layer`` adds a LayerNorm after the last encoder layer, the
+# usual closing of a pre-norm transformer (T03).
+ENCODER_FINAL_NORMS: tuple[str, ...] = ("none", "layer")
+DEFAULT_ENCODER_FINAL_NORM = "none"
+
 # Which decode epoch an imputation run keeps, accepted by ``Hyperparameters.decode_checkpoint``
 # and ``--decode_checkpoint``. ``loss`` is the epoch of the lowest loss on the fixed validation
 # mask, every run before the choice and the dataclass default; ``induced`` is the epoch whose
@@ -221,6 +228,7 @@ class Hyperparameters:
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
     pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
+    encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -238,6 +246,10 @@ class Hyperparameters:
         if self.decoder_heads not in DECODER_HEADS:
             raise ValueError(
                 f"Unknown decoder heads {self.decoder_heads!r}; expected one of {', '.join(DECODER_HEADS)}"
+            )
+        if self.encoder_final_norm not in ENCODER_FINAL_NORMS:
+            raise ValueError(
+                f"Unknown encoder final norm {self.encoder_final_norm!r}; expected one of {', '.join(ENCODER_FINAL_NORMS)}"
             )
         if self.pretrain_gap_token not in PRETRAIN_GAP_TOKENS:
             raise ValueError(
@@ -314,6 +326,9 @@ class Hyperparameters:
             ),
             pretrain_gap_token=str(
                 values.get("PRETRAIN_GAP_TOKEN", values.get("pretrain_gap_token", DEFAULT_PRETRAIN_GAP_TOKEN))
+            ),
+            encoder_final_norm=str(
+                values.get("ENCODER_FINAL_NORM", values.get("encoder_final_norm", DEFAULT_ENCODER_FINAL_NORM))
             ),
             eval_mask_rate=float(values.get("EVAL_MASK_RATE", values.get("eval_mask_rate", 0.2))),
             eval_mask_rates_extra=tuple(

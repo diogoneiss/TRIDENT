@@ -98,6 +98,11 @@ DECODE_CHECKPOINT_BACKFILLED_TAG = "decode_checkpoint_backfilled"
 # ``scripts/backfill_pretrain_gap_token_tag.py`` and marked PRETRAIN_GAP_TOKEN_BACKFILLED_TAG.
 PRETRAIN_GAP_TOKEN_TAG = "pretrain_gap_token"
 PRETRAIN_GAP_TOKEN_BACKFILLED_TAG = "pretrain_gap_token_backfilled"
+# How a run's encoder ends, "none" (the default) or "layer" (a final LayerNorm). On every parent
+# and trial of either task; runs recorded before it are stamped "none" by
+# ``scripts/backfill_encoder_final_norm_tag.py`` and marked ENCODER_FINAL_NORM_BACKFILLED_TAG.
+ENCODER_FINAL_NORM_TAG = "encoder_final_norm"
+ENCODER_FINAL_NORM_BACKFILLED_TAG = "encoder_final_norm_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto

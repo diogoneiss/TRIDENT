@@ -208,3 +208,39 @@ def _mapping(hyperparameters: Hyperparameters) -> dict[str, object]:
     from src.training.config import complete_configuration
 
     return complete_configuration(hyperparameters, "imputation")
+
+
+def test_a_final_layer_norm_closes_the_encoder_only_when_asked() -> None:
+    """``ENCODER_FINAL_NORM layer`` adds a LayerNorm after the last encoder layer, the usual
+    closing of a pre-norm transformer (T03). ``none``, every run before it, adds nothing: no
+    parameter, no draw, the same outputs; and the norm draws nothing either, so the two
+    encoders start from the same weights."""
+    from src.transformer import TabularTransformerEncoder
+
+    torch.manual_seed(0)
+    plain = TabularTransformerEncoder(d_model=16, nhead=2, num_layers=1, dim_feedforward=32, dropout=0.0)
+    after_plain = torch.rand(1)
+    torch.manual_seed(0)
+    normed = TabularTransformerEncoder(
+        d_model=16, nhead=2, num_layers=1, dim_feedforward=32, dropout=0.0, final_norm="layer"
+    )
+    after_normed = torch.rand(1)
+
+    assert torch.equal(after_plain, after_normed)
+    assert set(normed.state_dict()) - set(plain.state_dict()) == {"final_norm.weight", "final_norm.bias"}
+    for name, tensor in plain.state_dict().items():
+        assert torch.equal(normed.state_dict()[name], tensor), name
+    x = torch.randn(4, 5, 16) * 3 + 1
+    out = normed.eval()(x)
+    assert torch.allclose(out.mean(-1), torch.zeros(4, 5), atol=1e-5)
+    assert not torch.allclose(plain.eval()(x).mean(-1), torch.zeros(4, 5), atol=1e-2)
+
+
+def test_the_pretraining_stage_builds_the_encoder_its_configuration_names() -> None:
+    dataset = _learnable_dataset()
+    for norm, expected in (("none", "Identity"), ("layer", "LayerNorm")):
+        outcome = train_pretrainer(
+            dataset, _fold(), Hyperparameters.from_mapping({**_mapping(_hyperparameters(EPOCHS_PRE=1)), "ENCODER_FINAL_NORM": norm}),
+            torch.device("cpu"), BufferedFoldTracker(),
+        )
+        assert type(outcome.model.transformer.final_norm).__name__ == expected

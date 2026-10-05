@@ -64,6 +64,7 @@ def train_pretrainer(
         num_layers=hyperparameters.layers,
         dim_feedforward=hyperparameters.feedforward_dimension,
         dropout=hyperparameters.dropout,
+        final_norm=hyperparameters.encoder_final_norm,
     )
     model = _stage_model(embedder, transformer, hyperparameters).to(device)
 
