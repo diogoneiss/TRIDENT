@@ -125,9 +125,10 @@ _Avoid_: original value, clean dataset, target table
 **Baseline imputer**:
 A fixed imputer scored on exactly the cells the decoder is scored on, so that its
 error sits beside the model's on every scored population: the mean/mode baseline,
-which the fold-ranking score divides by, and three learned baselines: KNN at two
-neighbourhood sizes and one gradient-boosting model per column. All learn from the
-training fold alone and never rank a fold.
+which the fold-ranking score divides by, and five learned baselines: KNN at two
+neighbourhood sizes, one gradient-boosting model per column, and missForest, iterated
+per-column models, with random forests and with LightGBM. All learn from the training
+fold alone and never rank a fold.
 
 **Baseline bar**:
 The lowest score any baseline imputer reached on one population of one run: the bar a

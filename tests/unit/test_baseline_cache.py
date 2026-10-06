@@ -12,10 +12,11 @@ import numpy as np
 import pandas as pd
 import pandas.testing as pdt
 
-from src.training import baseline_cache
+from src.training import baseline_cache, imputation_baselines, missforest
 from src.training.baseline_cache import BaselineScorer
 from src.training.imputation_baselines import fit_baseline_imputers, score_baselines
 from src.training.imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines
+from src.training.missforest import fit_missforest_imputers
 
 NUMERICAL_COLUMNS = ["size", "weight"]
 CATEGORICAL_COLUMNS = ["colour"]
@@ -43,7 +44,10 @@ def _cells(test: pd.DataFrame) -> pd.DataFrame:
 
 def _direct(train: pd.DataFrame, test: pd.DataFrame, cells: pd.DataFrame):
     baselines = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
-    imputers = fit_baseline_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
+    imputers = [
+        *fit_baseline_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
+        *fit_missforest_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
+    ]
     return score_baselines(imputers, test, cells, baselines)
 
 
@@ -69,7 +73,11 @@ def test_a_cached_score_is_exactly_the_computed_one(tmp_path) -> None:
     second = _scorer(train, tmp_path)
     cached = second.score(test, cells, baselines)
 
-    assert (first.hits, second.hits) == (0, 1)
+    # One lookup per family of baselines: ADR 0007's four, and the two missForests.
+    assert (first.hits, second.hits) == (0, 2)
+    assert [key.split("/")[1] for key in expected.metrics if key.endswith("/impute_score")] == [
+        "mean_mode", "knn5", "knn10", "hgb", "missforest", "missforest_lgbm",
+    ]
     for scores in (computed, cached):
         assert scores.metrics.keys() == expected.metrics.keys()
         assert all(scores.metrics[key] == expected.metrics[key] for key in expected.metrics)
@@ -100,7 +108,7 @@ def test_anything_that_changes_the_computation_misses(tmp_path) -> None:
         baseline_cache.socket.gethostname = original
 
     assert hits == [0, 0, 0]
-    assert _hits(train, tmp_path, test, cells, baselines) == 1
+    assert _hits(train, tmp_path, test, cells, baselines) == 2
 
 
 def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
@@ -112,7 +120,43 @@ def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
 
     other_guesses = cells.assign(imputed=cells["imputed"].map(lambda v: 1.0 if isinstance(v, float) else "blue"))
 
-    assert _hits(train, tmp_path, test, other_guesses, baselines) == 1
+    assert _hits(train, tmp_path, test, other_guesses, baselines) == 2
+
+
+def _edited(module, tmp_path: Path, monkeypatch, name: str) -> None:
+    """The module as if its source had been edited, without touching the real file."""
+    edited = tmp_path / name
+    edited.write_bytes(Path(module.__file__).read_bytes() + b"\n# edited\n")
+    monkeypatch.setattr(module, "__file__", str(edited))
+
+
+def test_editing_missforest_leaves_the_earlier_baselines_cached(tmp_path, monkeypatch) -> None:
+    """Each family is keyed on the source of the modules its numbers come from. Adding
+    missForest (ADR 0016) or changing it later must not throw away the ADR 0007 entries,
+    whose KNN transforms take up to a minute per population on electricity."""
+    cache = tmp_path / "cache"
+    train, test = _frame(60), _frame(30, offset=60)
+    cells = _cells(test)
+    baselines = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
+    _scorer(train, cache).score(test, cells, baselines)
+
+    _edited(missforest, tmp_path, monkeypatch, "missforest.py")
+
+    assert _hits(train, cache, test, cells, baselines) == 1
+
+
+def test_editing_the_earlier_baselines_misses_both_families(tmp_path, monkeypatch) -> None:
+    """missForest reads its vocabulary rule and constant fill from the ADR 0007 module,
+    so a change there can change its numbers too."""
+    cache = tmp_path / "cache"
+    train, test = _frame(60), _frame(30, offset=60)
+    cells = _cells(test)
+    baselines = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
+    _scorer(train, cache).score(test, cells, baselines)
+
+    _edited(imputation_baselines, tmp_path, monkeypatch, "imputation_baselines.py")
+
+    assert _hits(train, cache, test, cells, baselines) == 0
 
 
 def test_without_a_cache_directory_nothing_is_written_or_read(tmp_path) -> None:

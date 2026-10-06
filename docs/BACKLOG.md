@@ -367,6 +367,25 @@ both tasks, `--promote_best` writes the shared file for classification and a tas
 The end-of-study write already skips the shared file for imputation studies since
 `161fc92`. **Fixed 2026-09-11** in `a24dcec` ([execution ticket 03](tickets/imputation-optuna-reduced/issues/03-lookup-and-promotion.md)).
 
+### I3. ReMasker as a baseline imputer
+
+ReMasker (Du, Melis and Wang, ICLR 2024) is a masked autoencoder for imputation: a
+transformer trained to reconstruct cells it re-masks. It is the published model closest
+to TRIDENT's decoder, so it is the comparison a reader of the thesis asks for after
+missForest. Deferred on 2026-10-06, when the user chose missForest
+([ADR 0016](adr/0016-missforest-baselines.md)); what the choice weighed then:
+
+- No new dependency: it would be written here in PyTorch, as a baseline under the
+  `BaselineImputer` protocol and its own cache family (`src/training/baseline_cache.py`).
+- It trains on the GPU, beside the model on a live run, at the paper's 600 epochs: an
+  estimated 40 GPU-hours to backfill the ~130 (variant, seed) pairs of 2026-10-06,
+  electricity and letter most of it.
+- It must draw from a torch generator of its own, never the global stream the regression
+  fixtures pin, and run with deterministic algorithms, or a rerun of the backfill fails
+  its own reproduction check.
+- Categories enter the paper's model as scaled numbers; one-hot blocks would be a
+  departure to state.
+
 ---
 
 ## Code health

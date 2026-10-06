@@ -57,8 +57,9 @@ import sys
 import tempfile
 import time
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
-from typing import Callable, Mapping, Sequence
+from typing import Callable, Collection, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -119,6 +120,10 @@ _METRICS_PER_BATCH = 1000
 _CELL_COLUMNS = ["row", "column", "kind", "population", "actual", "imputed", "confidence", "actual_original"]
 
 FoldMetrics = dict[int, dict[str, float]]
+# Scores one fold's baselines on a population: (test frame, scored cells, naive fills).
+FoldScorer = Callable[[pd.DataFrame, pd.DataFrame, Mapping[str, float | str]], Mapping[str, float]]
+# Builds a fold's scorer from its training split and column lists.
+FoldScorerFactory = Callable[[pd.DataFrame, Sequence[str], Sequence[str]], FoldScorer]
 
 
 class _BudgetSpent(Exception):
@@ -143,12 +148,15 @@ def plan_run(
     logged: Mapping[str, float],
     folds: Mapping[int, Mapping[str, float]],
     children: Mapping[str, int],
+    checked: Collection[str] | None = None,
 ) -> RunPlan:
     """Check the recomputation against the run's own baselines, then list what is missing.
 
     ``logged`` is the parent's latest metrics, ``folds`` the recomputed per-fold metrics
     keyed ``impute/<population>/baseline/<name>/<metric>``, and ``children`` each
-    diagnostic child's run id with the fold it replays.
+    diagnostic child's run id with the fold it replays. ``checked`` names the baselines
+    the run's own numbers are checked on, all it logged when None; a pass that recomputes
+    only some baselines checks those.
     """
     plan = RunPlan(run_id, name)
     ordered = [folds[fold] for fold in sorted(folds)]
@@ -157,6 +165,8 @@ def plan_run(
         if match is None:
             continue
         population, baseline, metric = match.groups()
+        if checked is not None and LEGACY_NAMES.get(baseline, baseline) not in checked:
+            continue
         fold_key = f"{population}/baseline/{LEGACY_NAMES.get(baseline, baseline)}/{metric}"
         values = [fold.get(fold_key) for fold in ordered]
         if not values or any(entry is None for entry in values):
@@ -197,6 +207,29 @@ def plan_best(logged: Mapping[str, float]) -> tuple[dict[str, float], dict[str, 
     A legacy name stands in for its current one only where the current one is absent,
     so a run carrying both ``knn`` and ``knn5`` is never said to be best at ``knn``.
     """
+    pending = {
+        population
+        for population in _baseline_populations(logged)
+        if f"cv/test/{population}/baseline/{BEST_BASELINE}/impute_score/mean" not in logged
+    }
+    return best_statistics(logged, pending)
+
+
+def _baseline_populations(logged: Mapping[str, float]) -> set[str]:
+    return {
+        match.group(1)
+        for key in logged
+        if (match := _BASELINE_STAT.fullmatch(key)) is not None and match.group(2) != BEST_BASELINE
+    }
+
+
+def best_statistics(
+    logged: Mapping[str, float], populations: Collection[str]
+) -> tuple[dict[str, float], dict[str, str]]:
+    """For each named population, the baseline with the lowest mean ``impute_score`` among
+    those logged, all its statistics copied under ``baseline/best``, and the tag naming it,
+    whatever ``baseline/best`` the run already carries. A tie goes to the name that sorts
+    first, as in a live run's summary."""
     held: dict[str, dict[str, str]] = {}
     for key in logged:
         match = _BASELINE_STAT.fullmatch(key)
@@ -210,7 +243,7 @@ def plan_best(logged: Mapping[str, float]) -> tuple[dict[str, float], dict[str, 
     metrics: dict[str, float] = {}
     tags: dict[str, str] = {}
     for population, names in sorted(held.items()):
-        if f"cv/test/{population}/baseline/{BEST_BASELINE}/impute_score/mean" in logged:
+        if population not in populations:
             continue
         scored = [
             (logged[f"cv/test/{population}/baseline/{logged_name}/impute_score/mean"], current, logged_name)
@@ -243,18 +276,21 @@ def plan_gap(
     logged: Mapping[str, float],
     best_baselines: Mapping[str, str],
     rows: Mapping[int, Mapping[str, float]],
+    redo: Collection[str] = (),
 ) -> tuple[dict[str, float], str | None]:
     """The gap-to-best-baseline statistics a run lacks, or why it will not get them.
 
     ``best_baselines`` is what the run's ``best_baseline/<population>`` tags name, and
     ``rows`` each fold's values, keyed as in ``raw_fold_metrics.csv``. The model's and the
     best baseline's fold values must average to the run's own logged means, or nothing is
-    planned: they would be some other folds' numbers.
+    planned: they would be some other folds' numbers. A population in ``redo`` is planned
+    even where the run already carries a gap, as when its best baseline changed.
     """
     pending = {
         population: name
         for population, name in best_baselines.items()
-        if f"cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean" not in logged
+        if population in redo
+        or f"cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean" not in logged
     }
     ordered = [rows[fold] for fold in sorted(rows)]
     folds: list[dict[str, float]] = [{} for _ in ordered]
@@ -348,13 +384,16 @@ def recompute_folds(
     naive_only: bool = False,
     done: Mapping[int, dict[str, float]] | None = None,
     on_fold: Callable[[int, dict[str, float]], None] | None = None,
+    fold_scorer: FoldScorerFactory | None = None,
 ) -> FoldMetrics:
     """Every current baseline's metrics on each fold's populations, as the run scored them.
 
     ``naive_only`` fits the mean/mode baseline alone, which takes seconds and is enough to
     tell whether these are the run's own cells. ``done`` holds folds already recomputed,
     which are not recomputed again, and ``on_fold`` hears each fold as it completes, so a
-    killed pass loses one fold at most.
+    killed pass loses one fold at most. ``fold_scorer``, given a fold's training split and
+    column lists, returns what scores that fold's populations in place of the ADR 0007
+    imputers, for a pass that recomputes other baselines.
     """
     spec = DatasetSpec.from_name(dataset_name, None)
     dataset = prepare_dataset(spec)
@@ -369,12 +408,17 @@ def recompute_folds(
             folds[ordinal] = dict(done[ordinal])
             continue
         naive = mean_mode_baselines(train, numerical, categorical)
-        imputers: list[BaselineImputer]
-        if naive_only:
-            imputers = [MeanModeImputer(numerical, categorical)]
-            imputers[0].fit(train)
+        score: FoldScorer
+        if fold_scorer is not None:
+            score = fold_scorer(train, numerical, categorical)
         else:
-            imputers = fit_baseline_imputers(train, numerical, categorical)
+            imputers: list[BaselineImputer]
+            if naive_only:
+                imputers = [MeanModeImputer(numerical, categorical)]
+                imputers[0].fit(train)
+            else:
+                imputers = fit_baseline_imputers(train, numerical, categorical)
+            score = partial(_score_with, imputers)
         columns = list(test.columns)
         numbers, categories = _frame_values(test, dataset)
         metrics: dict[str, float] = {}
@@ -384,7 +428,7 @@ def recompute_folds(
             drawn = evaluation_mask(test, at_rate, seed, ordinal)
             hidden = (drawn.astype(object) == "[MASK]").to_numpy()
             cells = _cells(hidden, columns, numbers, categories, "masked")
-            scored = score_baselines(imputers, test, cells, naive).metrics
+            scored = score(test, cells, naive)
             metrics.update({f"{prefix}/{key}": value for key, value in scored.items()})
         if sibling is not None:
             truth = in_variant_dtypes(
@@ -395,12 +439,18 @@ def recompute_folds(
             gaps = (test.isna() & truth.notna()).to_numpy()
             truth_numbers, truth_categories = _frame_values(truth, dataset)
             cells = _cells(gaps, columns, truth_numbers, truth_categories, "induced")
-            scored = score_baselines(imputers, test, cells, naive).metrics
+            scored = score(test, cells, naive)
             metrics.update({f"impute/induced/{key}": value for key, value in scored.items()})
         folds[ordinal] = metrics
         if on_fold is not None:
             on_fold(ordinal, metrics)
     return folds
+
+
+def _score_with(
+    imputers: Sequence[BaselineImputer], test: pd.DataFrame, cells: pd.DataFrame, naive: Mapping[str, float | str]
+) -> Mapping[str, float]:
+    return score_baselines(imputers, test, cells, naive).metrics
 
 
 def _needs_backfill(metrics: Mapping[str, float]) -> bool:

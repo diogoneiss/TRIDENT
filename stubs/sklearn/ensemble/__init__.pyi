@@ -55,3 +55,42 @@ class HistGradientBoostingClassifier:
     def fit(self, X: ArrayLike, y: ArrayLike, sample_weight: ArrayLike | None = ...) -> Self: ...
     def predict(self, X: ArrayLike) -> NDArray[Any]: ...
     def predict_proba(self, X: ArrayLike) -> NDArray[np.float64]: ...
+
+class RandomForestRegressor:
+    def __init__(
+        self,
+        n_estimators: int = ...,
+        *,
+        criterion: str = ...,
+        max_depth: int | None = ...,
+        min_samples_split: int | float = ...,
+        min_samples_leaf: int | float = ...,
+        max_features: int | float | Literal["sqrt", "log2"] | None = ...,
+        bootstrap: bool = ...,
+        n_jobs: int | None = ...,
+        random_state: int | None = ...,
+        verbose: int = ...,
+    ) -> None: ...
+    def fit(self, X: ArrayLike, y: ArrayLike, sample_weight: ArrayLike | None = ...) -> Self: ...
+    def predict(self, X: ArrayLike) -> NDArray[np.float64]: ...
+
+class RandomForestClassifier:
+    classes_: NDArray[Any]
+    def __init__(
+        self,
+        n_estimators: int = ...,
+        *,
+        criterion: str = ...,
+        max_depth: int | None = ...,
+        min_samples_split: int | float = ...,
+        min_samples_leaf: int | float = ...,
+        max_features: int | float | Literal["sqrt", "log2"] | None = ...,
+        bootstrap: bool = ...,
+        n_jobs: int | None = ...,
+        random_state: int | None = ...,
+        verbose: int = ...,
+        class_weight: dict[Any, float] | Literal["balanced", "balanced_subsample"] | None = ...,
+    ) -> None: ...
+    def fit(self, X: ArrayLike, y: ArrayLike, sample_weight: ArrayLike | None = ...) -> Self: ...
+    def predict(self, X: ArrayLike) -> NDArray[Any]: ...
+    def predict_proba(self, X: ArrayLike) -> NDArray[np.float64]: ...
