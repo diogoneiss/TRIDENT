@@ -157,3 +157,34 @@ def test_a_moved_best_baseline_is_what_the_run_and_its_mirror_now_read(client) -
         assert run.data.tags[MISSFOREST_BACKFILLED_TAG] == "true"
     assert client.get_run(child).data.tags[MISSFOREST_BACKFILLED_TAG] == "true"
     assert [entry.value for entry in client.get_metric_history(parent, best)] == pytest.approx([0.9, 0.75])
+
+
+def test_a_pass_cut_short_is_planned_again_and_a_live_run_is_left_alone(client) -> None:
+    """The parent's mark is the last write of a tree. A run that predates ADR 0016 and
+    carries missForest numbers without it was cut short, so it is planned again from its
+    numbers without them; a run that logged its missForests live never needs the pass."""
+    experiment = client.create_experiment("TRIDENT/toy")
+    before, after = backfill._LIVE_SINCE_MS - 60_000, backfill._LIVE_SINCE_MS + 60_000
+    forest = f"cv/test/{INDUCED}/baseline/missforest/impute_score/mean"
+    lightgbm = f"cv/test/{INDUCED}/baseline/missforest_lgbm/impute_score/mean"
+
+    def run(start: int, metrics: dict[str, float], tags: dict[str, str] | None = None):
+        run_id = client.create_run(experiment, start_time=start, tags=tags or {}).info.run_id
+        for key, value in metrics.items():
+            client.log_metric(run_id, key, value, step=0)
+        return client.get_run(run_id)
+
+    untouched = run(before, _logged())
+    cut_short = run(before, {**_logged(), forest: 0.75, lightgbm: 0.95})
+    finished = run(before, {**_logged(), forest: 0.75, lightgbm: 0.95}, {MISSFOREST_BACKFILLED_TAG: "true"})
+    live = run(after, {**_logged(), forest: 0.75, lightgbm: 0.95})
+    no_baselines = run(before, {f"cv/test/{INDUCED}/impute_score/mean": 0.8})
+
+    assert [backfill._pending(entry) for entry in (untouched, cut_short, finished, live, no_baselines)] == [
+        True, True, False, False, False,
+    ]
+    plan = backfill.plan_missforest(
+        "run", "impute_toy_20nan_x", backfill._without_missforest(cut_short.data.metrics), TAGS,
+        _recomputed((0.7, 0.8), (0.95, 0.95)), {}, ROWS,
+    )
+    assert plan.refused is None and plan.parent[forest] == pytest.approx(0.75)

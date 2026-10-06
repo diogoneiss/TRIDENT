@@ -216,9 +216,55 @@ and torch 2.5:
 
 ## Outcome
 
-Pending: the backfill's `--apply`, after the user's go-ahead. Live runs carry both names
-since this ADR; the dry runs of 2026-10-06 (874 runs to write, none refused so far) show
-the bar moving: on `kc2_60nan` and `biodeg_60nan` a missForest becomes the best baseline
-on every run and population checked, and the model's gap to it changes sign on many of
-them. The outcome table, the bar over six baselines on the 21 variants, comes with the
-apply.
+**Backfill applied 2026-10-06, 08:53 to 10:28 GMT-3.** 873 imputation parents now carry both
+missForests, marked `missforest_backfilled=true` with their children and mirrors; on 476 of
+them a missForest became the best baseline of some population, and `baseline/best`, its tag
+and both gaps moved with it. Refused: the superseded electricity run of 2026-09-25 (its
+mean/mode was scored before the spelling fix, as ADR 0007 found) and 53 runs that predate
+ADR 0007 and log no baseline to check. The store was copied first with SQLite's backup API to
+`/var/tmp/diogoneiss/backups/mlflow.db.before-missforest-backfill`. A first pass scanned the
+whole mirror experiment once per tree (23 s each); it was stopped after 24 trees, the one in
+flight re-mirrored, and the pass resumed with one shared index and the parent's mark written
+last, so a pass cut short is planned again.
+
+**The bar, before and after, on today's default** (E35: seeds 42, 7 and 13, five folds; the
+model's score is the K readout ADR 0015 adopted; each cell the mean over the three seeds of
+the logged CV means; lower is better; bold where the model is no longer below the bar):
+
+| variant | induced: model | bar of 4 | bar of 6 | masked: model | bar of 4 | bar of 6 |
+|---|---|---|---|---|---|---|
+| `biodeg_20nan` | 0.587 | hgb 0.636 | missforest 0.618 | 0.544 | hgb 0.627 | missforest 0.570 |
+| `biodeg_60nan` | 0.761 | hgb 0.866 | missforest 0.762 | **0.809** | hgb 0.873 | missforest 0.786 |
+| `credit-g_20nan` | 0.882 | hgb 0.918 | missforest 0.885 | 0.880 | hgb 0.931 | missforest 0.896 |
+| `credit-g_40nan` | **0.956** | hgb 0.964 | missforest 0.931 | **0.982** | hgb 0.997 | missforest 0.950 |
+| `credit-g_60nan` | 0.992 | mean_mode 1.000 | mean_mode 1.000 | 0.980 | mean_mode 1.000 | mean_mode 1.000 |
+| `credit-g_80nan` | 1.008 | mean_mode 1.000 | mean_mode 1.000 | 1.008 | mean_mode 1.000 | mean_mode 1.000 |
+| `electricity_20nan` | 0.618 | hgb 0.606 | hgb 0.606 | 0.686 | hgb 0.690 | hgb 0.690 |
+| `kc2_20nan` | 0.541 | knn5 0.567 | knn5 0.567 | 0.530 | knn5 0.559 | knn5 0.559 |
+| `kc2_60nan` | 0.572 | knn5 0.717 | missforest 0.675 | 0.552 | knn10 0.717 | missforest 0.626 |
+| `kr-vs-kp_20nan` | 0.586 | hgb 0.612 | hgb 0.612 | 0.649 | hgb 0.680 | hgb 0.680 |
+| `kr-vs-kp_40nan` | 0.758 | hgb 0.773 | hgb 0.773 | 0.781 | hgb 0.780 | hgb 0.780 |
+| `kr-vs-kp_60nan` | 0.865 | hgb 0.903 | hgb 0.903 | 0.887 | hgb 0.912 | hgb 0.912 |
+| `kr-vs-kp_80nan` | 0.976 | mean_mode 1.000 | mean_mode 1.000 | 1.000 | mean_mode 1.000 | mean_mode 1.000 |
+| `letter_20nan` | 0.459 | knn10 0.473 | missforest 0.462 | 0.496 | knn10 0.542 | missforest 0.535 |
+| `pendigits_20nan` | 0.332 | knn10 0.350 | missforest 0.334 | 0.369 | knn10 0.401 | knn10 0.401 |
+| `spambase_20nan` | 0.848 | hgb 0.866 | missforest 0.859 | 0.865 | hgb 0.887 | hgb 0.887 |
+| `spambase_40nan` | 0.903 | hgb 0.937 | hgb 0.937 | 0.897 | hgb 0.939 | hgb 0.939 |
+| `spambase_60nan` | 0.942 | hgb 0.984 | missforest 0.981 | 0.904 | hgb 0.983 | missforest 0.974 |
+| `spambase_80nan` | 0.987 | mean_mode 1.000 | mean_mode 1.000 | 0.993 | mean_mode 1.000 | mean_mode 1.000 |
+| `vehicle_20nan` | 0.418 | hgb 0.473 | missforest 0.452 | 0.420 | knn5 0.505 | missforest 0.472 |
+| `vehicle_60nan` | 0.645 | hgb 0.701 | missforest 0.647 | **0.616** | hgb 0.671 | missforest 0.616 |
+
+- **The model is below the bar on 18 of 21 variants induced (19 before) and 15 of 21 masked
+  (18 before).** It loses `credit-g_40nan` on both populations, and `biodeg_60nan` and
+  `vehicle_60nan` (a tie to three decimals) masked.
+- **`missforest` sets the bar on 11 of 21 induced and 9 of 21 masked;** `hgb` keeps it on
+  `kr-vs-kp`, `spambase_40nan` and `electricity`, KNN on `kc2_20nan`, the mean/mode fill at
+  80% missingness and on `credit-g_60nan`. **`missforest_lgbm` sets it nowhere**: below the
+  forest on every variant of both populations.
+- **Six of the 18 induced wins are inside the 0.016 the *Bias* section measured** between
+  inductive and transductive forests: `biodeg_60nan` (0.001), `pendigits_20nan` (0.002),
+  `vehicle_60nan` (0.002), `credit-g_20nan` (0.003), `letter_20nan` (0.003) and
+  `spambase_20nan` (0.011). They are ties to a canonical missForest, not wins.
+- The table reads means over three seeds; the per-run gaps and their paired intervals are
+  in the store (`gap_to_best_baseline*`), as for every run since ADR 0007 decision 9.

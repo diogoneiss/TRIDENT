@@ -52,7 +52,7 @@ import scripts.backfill_baseline_imputers as adr0007  # noqa: E402
 from src.mlflow_utils import MISSFOREST_BACKFILLED_TAG, setup_mlflow  # noqa: E402
 from src.training.baseline_cache import BaselineScorer  # noqa: E402
 from src.training.imputation_baselines import MeanModeImputer, score_baselines  # noqa: E402
-from src.training.mirroring import mirror_run_tree  # noqa: E402
+from src.training.mirroring import MirrorIndex, mirror_run_tree  # noqa: E402
 from src.training.summary import GAP_TO_BEST_BASELINE  # noqa: E402
 from src.training.types import DEFAULT_BASELINE_CACHE_DIR  # noqa: E402
 
@@ -127,17 +127,25 @@ def plan_missforest(
     return plan
 
 
-def apply_missforest_plan(client: MlflowClient, plan: Plan) -> None:
+def apply_missforest_plan(client: MlflowClient, plan: Plan, index: MirrorIndex | None = None) -> None:
     """Write a plan where a live run would have (step 0, each run's own id), mark every run
-    of the tree, rename the moved best baselines, and refresh the tree's mirror."""
+    of the tree, rename the moved best baselines, and refresh the tree's mirror.
+
+    The parent's mark is written last of the tree's own writes, so a pass cut short leaves
+    an unmarked parent, which the next pass plans again from scratch (``_pending``). One
+    ``index`` shared across trees spares a scan of the whole mirror experiment per tree
+    (23 s on gorgona8's store of 2026-10-06).
+    """
     if plan.refused is not None:
         return
-    for run_id, metrics in [(plan.run_id, plan.parent), *plan.children.items()]:
+    for run_id, metrics in plan.children.items():
         adr0007._write_at_step_zero(client, run_id, metrics)
         client.set_tag(run_id, MISSFOREST_BACKFILLED_TAG, "true")
+    adr0007._write_at_step_zero(client, plan.run_id, plan.parent)
     for key, value in plan.tags.items():
         client.set_tag(plan.run_id, key, value)
-    mirror_run_tree(client, plan.run_id)
+    client.set_tag(plan.run_id, MISSFOREST_BACKFILLED_TAG, "true")
+    mirror_run_tree(client, plan.run_id, index=index)
 
 
 def _missforest_scorer(cache_dir: Path | None) -> adr0007.FoldScorerFactory:
@@ -160,12 +168,40 @@ def _missforest_scorer(cache_dir: Path | None) -> adr0007.FoldScorerFactory:
     return make
 
 
-def _lacks_missforest(run: Run) -> bool:
-    populations = {
+# ADR 0016's code reached the checkout at 00:49 GMT-3 on 2026-10-06. A run started before
+# then never logged a missForest itself, so missForest numbers on it without the parent's
+# mark are a pass cut short.
+_LIVE_SINCE_MS = 1791258300000  # 2026-10-06 00:45 GMT-3
+
+
+def _pending(run: Run) -> bool:
+    """A run this pass has still to write: unmarked, carrying ADR 0007's baselines, and
+    either lacking a missForest or carrying one only because an earlier pass was cut short.
+    A run that logged no baseline at all predates ADR 0007 and has nothing to check against."""
+    if run.data.tags.get(MISSFOREST_BACKFILLED_TAG) == "true" or not _baseline_populations(run):
+        return False
+    return _lacks_missforest(run) or run.info.start_time < _LIVE_SINCE_MS
+
+
+def _baseline_populations(run: Run) -> set[str]:
+    return {
         match.group(1)
         for key in run.data.metrics
         if (match := adr0007._BASELINE_MEAN.fullmatch(key)) is not None
     }
+
+
+def _without_missforest(metrics: Mapping[str, float]) -> dict[str, float]:
+    """The run's metrics as they were before any pass of this script, for planning again."""
+    return {
+        key: value
+        for key, value in metrics.items()
+        if not any(f"/baseline/{name}/" in key for name in NEW_BASELINES)
+    }
+
+
+def _lacks_missforest(run: Run) -> bool:
+    populations = _baseline_populations(run)
     return any(
         f"cv/test/{population}/baseline/{baseline}/impute_score/mean" not in run.data.metrics
         for population in populations
@@ -190,13 +226,14 @@ def main(argv: list[str] | None = None) -> int:
         (
             run
             for run in adr0007._imputation_parents(client, args.run)
-            if _lacks_missforest(run)
+            if _pending(run)
             and (not args.dataset or run.data.params.get("dataset_name") in args.dataset)
         ),
         key=adr0007._dataset_bytes,
     )
     print(f"[{mode}] tracking URI: {tracking_uri}; {len(runs)} run(s) lack the missForest baselines", flush=True)
     written = refused = moved = 0
+    index = MirrorIndex(client)
     for run in runs:
         name = run.info.run_name or run.info.run_id
         started = time.perf_counter()
@@ -208,7 +245,13 @@ def main(argv: list[str] | None = None) -> int:
         folds = adr0007.recompute_folds(*adr0007._arguments(run), fold_scorer=_missforest_scorer(cache_dir))
         rows = adr0007._fold_rows(client, run.info.run_id)
         plan = plan_missforest(
-            run.info.run_id, name, run.data.metrics, run.data.tags, folds, adr0007._children(client, run), rows
+            run.info.run_id,
+            name,
+            _without_missforest(run.data.metrics),
+            run.data.tags,
+            folds,
+            adr0007._children(client, run),
+            rows,
         )
         seconds = time.perf_counter() - started
         if plan.refused is not None:
@@ -227,7 +270,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         moved += bool(plan.moved)
         if args.apply:
-            apply_missforest_plan(client, plan)
+            apply_missforest_plan(client, plan, index)
             written += 1
     print(
         f"[{mode}] {written} run tree(s) written and re-mirrored, {refused} refused, "
