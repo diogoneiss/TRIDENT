@@ -1,15 +1,16 @@
 """One cell of the architecture screening (imputation-architecture/01, task T03).
 
     uv run --python 3.11 python scripts/experiments/architecture_run.py \
-        <variant> <seed> <arm L4|F256|LN|ALL|R0> <output_dir> <metrics_dir> [--no-mlflow]
+        <variant> <seed> <arm L4|F256|LN|ALL|R0> <output_dir> <metrics_dir> [--no-mlflow] [--experiment <tag>]
 
 Each arm is today's imputation configuration (ADRs 0013 to 0015), read from the variant's
 promoted file or the defaults exactly as a run reads it, with one architectural change:
 L4 = ``LAYERS`` 4 (default 2), F256 = ``DIM_FEED`` 256 (default 32), LN = a final LayerNorm on the
 encoder (``ENCODER_FINAL_NORM layer``), ALL = the three together. R0 changes nothing: it is the
 pre-launch check that this path reproduces a default run, never a study cell. A trailing
-``--no-mlflow`` runs the cell without MLflow and without the study's tags. Five folds. Run from
-the checkout root.
+``--no-mlflow`` runs the cell without MLflow and without the study's tags; ``--experiment <tag>``
+tags the cell for another study of the same arms (imputation-architecture/02 on the large tables),
+the default being this screening's. Five folds. Run from the checkout root.
 """
 
 from __future__ import annotations
@@ -39,7 +40,9 @@ CHANGES: dict[str, dict[str, object]] = {
 
 def main(argv: list[str]) -> int:
     variant, seed, arm, output_dir, metrics_dir = argv[0], int(argv[1]), argv[2], argv[3], argv[4]
-    check_only = argv[5:] == ["--no-mlflow"]
+    rest = argv[5:]
+    check_only = "--no-mlflow" in rest
+    experiment = rest[rest.index("--experiment") + 1] if "--experiment" in rest else EXPERIMENT
     if arm not in CHANGES:
         sys.exit(f"unknown arm {arm!r}; expected one of {', '.join(CHANGES)}")
     promoted = hyperparameter_file(variant, "imputation")
@@ -58,7 +61,7 @@ def main(argv: list[str]) -> int:
         cv_folds=5,
         task="imputation",
         hyperparams_override=config,
-        mlflow_tags={} if check_only else {"experiment": EXPERIMENT, "arm": arm},
+        mlflow_tags={} if check_only else {"experiment": experiment, "arm": arm},
     )
     metrics = train_main(args, return_metrics=True) or {}
     scores = {k: v for k, v in metrics.items() if k.endswith("/impute_score") and "/baseline/" not in k}

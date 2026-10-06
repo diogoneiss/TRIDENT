@@ -64,6 +64,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
 | E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
+| E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – | in progress | pending |
 
 ## Entries
 
@@ -1137,3 +1138,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   confirmation under the "no variant worse" rule is at risk on the small tables.
 - **Sources:** `docs/tickets/imputation-architecture/01-architecture-screening.md` (Outcome);
   `scripts/experiments/architecture_report.py`.
+
+### E38 · The bigger encoder by table size, on fresh seeds (2026-10-06 – )
+
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
+  2026-10-06).
+- **Hypothesis:** the bigger encoder (4 layers, feed-forward 256, final LayerNorm), whose E37 gain
+  concentrated in pendigits (−4.0%), helps the large tables (10,000 rows or more). The user chose
+  in advance a size-dependent default if it holds, so the cost on smaller tables is described.
+- **Scenarios:** arm ALL on all 21 variants, seeds 101, 202, 303 (unused by E37); reference R =
+  E34's K readout on the same seeds. Groups by rows: large (pendigits, letter, electricity),
+  medium (kr-vs-kp, spambase), small (credit-g, vehicle, biodeg, kc2). 63 cells tagged
+  `experiment=architecture-large-2026-10-06`.
+- **Measures and decision rule:**
+  - **Primary:** ALL − R on `impute/induced/impute_score` on the three large variants, 15 fold
+    pairs each; a verdict needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading:** supported if ALL better on at least 2 of the 3 and worse on none (then a
+    size-dependent default by ADR, the user decides); refuted if worse on any; mixed otherwise.
+  - **Secondary:** per group, verdict counts, mean relative change with an interval, cost; masked;
+    time.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** `docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md`;
+  `scripts/experiments/architecture_size_report.py`.
