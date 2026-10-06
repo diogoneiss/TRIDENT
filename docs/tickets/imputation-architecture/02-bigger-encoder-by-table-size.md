@@ -1,7 +1,8 @@
 # Does a bigger encoder help the large tables? (pre-registered 2026-10-06)
 
-This ticket was written and committed before the first run (the commit and the queues' start
-time are in the Running notes). It tests the hypothesis the user chose after E37 (ticket
+This ticket was written and committed before the first run (`5292c4d`, 01:10 GMT-3 on 2026-10-06);
+the queues started at 14:48:45 GMT-3, after the amendment in the Running notes (`50451c6`), so about
+00:30 GMT-3 on 2026-10-07 is the expected end. It tests the hypothesis the user chose after E37 (ticket
 [01](01-architecture-screening.md)), on seeds E37 did not use.
 
 ## Why
