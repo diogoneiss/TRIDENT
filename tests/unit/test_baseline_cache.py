@@ -11,11 +11,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
+import pytest
 
-from src.training import baseline_cache, imputation_baselines, missforest
+from src.training import baseline_cache, imputation_baselines, lightgbm_baseline, missforest
 from src.training.baseline_cache import BaselineScorer
 from src.training.imputation_baselines import fit_baseline_imputers, score_baselines
 from src.training.imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines
+from src.training.lightgbm_baseline import fit_lightgbm_imputers
 from src.training.missforest import fit_missforest_imputers
 
 NUMERICAL_COLUMNS = ["size", "weight"]
@@ -46,6 +48,7 @@ def _direct(train: pd.DataFrame, test: pd.DataFrame, cells: pd.DataFrame):
     baselines = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
     imputers = [
         *fit_baseline_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
+        *fit_lightgbm_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
         *fit_missforest_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
     ]
     return score_baselines(imputers, test, cells, baselines)
@@ -73,10 +76,10 @@ def test_a_cached_score_is_exactly_the_computed_one(tmp_path) -> None:
     second = _scorer(train, tmp_path)
     cached = second.score(test, cells, baselines)
 
-    # One lookup per family of baselines: ADR 0007's four, and the two missForests.
-    assert (first.hits, second.hits) == (0, 2)
+    # One lookup per family of baselines: ADR 0007's four, lgbm, and missForest.
+    assert (first.hits, second.hits) == (0, 3)
     assert [key.split("/")[1] for key in expected.metrics if key.endswith("/impute_score")] == [
-        "mean_mode", "knn5", "knn10", "hgb", "missforest", "missforest_lgbm",
+        "mean_mode", "knn5", "knn10", "hgb", "lgbm", "missforest",
     ]
     for scores in (computed, cached):
         assert scores.metrics.keys() == expected.metrics.keys()
@@ -108,7 +111,7 @@ def test_anything_that_changes_the_computation_misses(tmp_path) -> None:
         baseline_cache.socket.gethostname = original
 
     assert hits == [0, 0, 0]
-    assert _hits(train, tmp_path, test, cells, baselines) == 2
+    assert _hits(train, tmp_path, test, cells, baselines) == 3
 
 
 def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
@@ -120,7 +123,7 @@ def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
 
     other_guesses = cells.assign(imputed=cells["imputed"].map(lambda v: 1.0 if isinstance(v, float) else "blue"))
 
-    assert _hits(train, tmp_path, test, other_guesses, baselines) == 2
+    assert _hits(train, tmp_path, test, other_guesses, baselines) == 3
 
 
 def _edited(module, tmp_path: Path, monkeypatch, name: str) -> None:
@@ -130,24 +133,25 @@ def _edited(module, tmp_path: Path, monkeypatch, name: str) -> None:
     monkeypatch.setattr(module, "__file__", str(edited))
 
 
-def test_editing_missforest_leaves_the_earlier_baselines_cached(tmp_path, monkeypatch) -> None:
-    """Each family is keyed on the source of the modules its numbers come from. Adding
-    missForest (ADR 0016) or changing it later must not throw away the ADR 0007 entries,
-    whose KNN transforms take up to a minute per population on electricity."""
+@pytest.mark.parametrize(("module", "name"), [(missforest, "missforest.py"), (lightgbm_baseline, "lightgbm_baseline.py")])
+def test_editing_one_family_leaves_the_other_families_cached(tmp_path, monkeypatch, module, name) -> None:
+    """Each family is keyed on the source of the modules its numbers come from. Changing
+    missForest (ADR 0017 did) or lgbm must not throw away the other families' entries,
+    the ADR 0007 KNN transforms among them: up to a minute per population on electricity."""
     cache = tmp_path / "cache"
     train, test = _frame(60), _frame(30, offset=60)
     cells = _cells(test)
     baselines = mean_mode_baselines(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS)
     _scorer(train, cache).score(test, cells, baselines)
 
-    _edited(missforest, tmp_path, monkeypatch, "missforest.py")
+    _edited(module, tmp_path, monkeypatch, name)
 
-    assert _hits(train, cache, test, cells, baselines) == 1
+    assert _hits(train, cache, test, cells, baselines) == 2
 
 
-def test_editing_the_earlier_baselines_misses_both_families(tmp_path, monkeypatch) -> None:
-    """missForest reads its vocabulary rule and constant fill from the ADR 0007 module,
-    so a change there can change its numbers too."""
+def test_editing_the_earlier_baselines_misses_every_family(tmp_path, monkeypatch) -> None:
+    """lgbm inherits hgb's recipe and missForest its vocabulary rule and constant fill from
+    the ADR 0007 module, so a change there can change their numbers too."""
     cache = tmp_path / "cache"
     train, test = _frame(60), _frame(30, offset=60)
     cells = _cells(test)

@@ -10,6 +10,13 @@ the forest, and deferred ReMasker ([BACKLOG I3](../BACKLOG.md)). Extends ADR 000
 protocol, metric layout, best baseline, gap and cache all apply; this ADR records only
 what differs.
 
+**Partly superseded by ADR [0017](0017-missforest-outside-the-bar.md) the same day:**
+missForest stays, computed and cached as decided here, but is an external baseline outside
+the bar, with a gap of its own; the LightGBM learner (`missforest_lgbm`) is withdrawn and a
+single-pass `lgbm` joins the bar. The Outcome table below, the bar of six, is superseded by
+0017's. `scripts/backfill_missforest_baselines.py` was replaced by
+`scripts/backfill_lgbm_baseline.py`.
+
 ## Context
 
 missForest (Stekhoven and Bühlmann, *Bioinformatics* 28(1), 2012) is the imputer the

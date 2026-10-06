@@ -1,19 +1,18 @@
-"""missForest baseline imputers: one model per column, iterated until the fills settle.
+"""The missForest baseline imputer: one forest per column, iterated until the fills settle.
 
 Stekhoven and Bühlmann's missForest (Bioinformatics, 2012) fills every gap with its
 column's mean or mode, then, column by column in order of increasing missingness, fits a
-model of that column on its observed rows with every other column as features and
-predicts its gaps, and repeats the round until the fills stop settling. Two learners:
-random forests with the R package's defaults (``missforest``), and LightGBM with its own
-defaults (``missforest_lgbm``). See ADR 0016.
+random forest of that column on its observed rows with every other column as features and
+predicts its gaps, and repeats the round until the fills stop settling (ADR 0016). It is an
+external baseline: logged and compared on its own, never part of the baseline bar, which
+it would set on most variants (ADR 0017). ADR 0016's LightGBM variant was withdrawn there.
 """
 
 from dataclasses import dataclass
-from typing import Literal, Sequence
+from typing import Sequence
 
 import numpy as np
 import pandas as pd
-from lightgbm import LGBMClassifier, LGBMRegressor
 from numpy.typing import NDArray
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
@@ -54,7 +53,7 @@ def still_converging(previous: RoundChange, latest: RoundChange) -> bool:
 MAX_ROUNDS = 10
 # Every model's own seed: a forest draws its bootstraps and split candidates from it, so
 # two fits of one fold fill alike and the global streams every seeded result depends on
-# are never touched. LightGBM's defaults draw nothing, but it gets the same seed.
+# are never touched.
 MISSFOREST_SEED = 0
 # The forest of the R package: 100 trees; a regression split weighs a third of the
 # features and stops at five rows a leaf; a classification split weighs their square
@@ -63,16 +62,11 @@ MISSFOREST_SEED = 0
 TREES = 100
 _REGRESSION_FEATURES = 1 / 3
 _REGRESSION_LEAF = 5
-# Threads per model. Neither learner's result depends on it (each tree is seeded from
-# the forest's seed; LightGBM runs ``deterministic`` and row-wise), so it only weighs
-# speed against the cores a training run shares with it.
+# Threads per forest. The result does not depend on it (each tree is seeded from the
+# forest's seed), so it only weighs speed against the cores a training run shares with it.
 THREADS = 8
 
-Learner = Literal["random_forest", "lightgbm"]
-_NAMES: dict[str, str] = {"random_forest": "missforest", "lightgbm": "missforest_lgbm"}
-_ColumnModel = (
-    RandomForestRegressor | RandomForestClassifier | LGBMRegressor | LGBMClassifier | _Constant
-)
+_ColumnModel = RandomForestRegressor | RandomForestClassifier | _Constant
 
 
 class MissForestImputer:
@@ -88,19 +82,14 @@ class MissForestImputer:
     test fold. A fill starts the hidden and missing cells at the training means and
     modes and runs the same rounds with those models, under the same rule.
 
-    Categories enter as their index in the training fold's vocabulary: numbers to the
-    forest, declared categorical to LightGBM. A category the training fold never shows
-    is a gap. A column with no observed value, a single one, or nothing to learn from is
+    Categories enter as their index in the training fold's vocabulary, read as numbers by
+    the forest. A category the training fold never shows is a gap. A column with no observed value, a single one, or nothing to learn from is
     filled with a constant, as the gradient-boosting baseline does.
     """
 
-    name: str
+    name: str = "missforest"
 
-    def __init__(
-        self, numerical_columns: Sequence[str], categorical_columns: Sequence[str], learner: Learner
-    ) -> None:
-        self.name = _NAMES[learner]
-        self._learner = learner
+    def __init__(self, numerical_columns: Sequence[str], categorical_columns: Sequence[str]) -> None:
         self._numerical = list(numerical_columns)
         self._categorical = list(categorical_columns)
         self._classes: dict[str, list[str]] = {}
@@ -212,36 +201,21 @@ class MissForestImputer:
             return _Constant(float(values[0]))
         if features.shape[1] == 0:
             return _Constant(float(target.mean()) if numerical else float(values[counts.argmax()]))
-        if self._learner == "random_forest":
-            if numerical:
-                return RandomForestRegressor(
-                    n_estimators=TREES,
-                    max_features=_REGRESSION_FEATURES,
-                    min_samples_leaf=_REGRESSION_LEAF,
-                    random_state=MISSFOREST_SEED,
-                    n_jobs=THREADS,
-                ).fit(features, target)
-            return RandomForestClassifier(
+        if numerical:
+            return RandomForestRegressor(
                 n_estimators=TREES,
-                max_features="sqrt",
-                min_samples_leaf=1,
+                max_features=_REGRESSION_FEATURES,
+                min_samples_leaf=_REGRESSION_LEAF,
                 random_state=MISSFOREST_SEED,
                 n_jobs=THREADS,
-            ).fit(features, target.astype(int))
-        declared = [
-            position
-            for position, other in enumerate(self._others(index).tolist())
-            if not self._is_numerical(other)
-        ]
-        # ``deterministic`` with a fixed histogram layout is what makes the fill the same at
-        # any thread count; LightGBM documents the pair.
-        if numerical:
-            return LGBMRegressor(
-                random_state=MISSFOREST_SEED, n_jobs=THREADS, deterministic=True, force_row_wise=True, verbose=-1
-            ).fit(features, target, categorical_feature=declared)
-        return LGBMClassifier(
-            random_state=MISSFOREST_SEED, n_jobs=THREADS, deterministic=True, force_row_wise=True, verbose=-1
-        ).fit(features, target.astype(int), categorical_feature=declared)
+            ).fit(features, target)
+        return RandomForestClassifier(
+            n_estimators=TREES,
+            max_features="sqrt",
+            min_samples_leaf=1,
+            random_state=MISSFOREST_SEED,
+            n_jobs=THREADS,
+        ).fit(features, target.astype(int))
 
     def _change(
         self, before: NDArray[np.float64], after: NDArray[np.float64], gaps: NDArray[np.bool_]
@@ -283,11 +257,7 @@ def fit_missforest_imputers(
     numerical_columns: Sequence[str],
     categorical_columns: Sequence[str],
 ) -> list[BaselineImputer]:
-    """The two missForest baselines, fit on this fold's training split. Once per fold."""
-    imputers: list[BaselineImputer] = [
-        MissForestImputer(numerical_columns, categorical_columns, learner)
-        for learner in ("random_forest", "lightgbm")
-    ]
-    for imputer in imputers:
-        imputer.fit(train_frame)
-    return imputers
+    """The missForest baseline, fit on this fold's training split. Once per fold."""
+    imputer = MissForestImputer(numerical_columns, categorical_columns)
+    imputer.fit(train_frame)
+    return [imputer]

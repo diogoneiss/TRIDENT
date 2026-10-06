@@ -1,4 +1,4 @@
-"""The missForest baseline imputers, with random forests and with LightGBM (ADR 0016)."""
+"""The missForest baseline imputer, an external comparison outside the bar (ADRs 0016, 0017)."""
 
 import random
 
@@ -45,9 +45,6 @@ def test_iteration_stops_once_neither_kind_of_column_changes_less_than_before(
     assert still_converging(previous, latest) is expected
 
 
-LEARNERS = ["random_forest", "lightgbm"]
-
-
 def _step_frame(rows: int) -> pd.DataFrame:
     """``level`` jumps from -3 to 3 where ``x`` passes 10, and ``side`` follows the same
     threshold, with an unrelated ``colour`` in between: a rule a per-column model finds
@@ -64,12 +61,11 @@ def _step_frame(rows: int) -> pd.DataFrame:
     )
 
 
-def _imputer(learner: str) -> MissForestImputer:
-    return MissForestImputer(["x", "level"], ["side", "colour"], learner=learner)
+def _imputer() -> MissForestImputer:
+    return MissForestImputer(["x", "level"], ["side", "colour"])
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_learns_each_column_from_the_others(learner: str) -> None:
+def test_missforest_learns_each_column_from_the_others() -> None:
     """Worked by hand: at ``x = 2`` the rule says ``level = -3``, and where ``level`` is 3
     it says ``side = "high"``. The training fold is complete, as on any ``_00nan``
     variant, so no column has a gap to fill while fitting: canonical missForest would fit
@@ -83,11 +79,11 @@ def test_missforest_learns_each_column_from_the_others(learner: str) -> None:
     hidden[0, test.columns.get_loc("level")] = True
     hidden[1, test.columns.get_loc("side")] = True
 
-    imputer = _imputer(learner)
+    imputer = _imputer()
     imputer.fit(train)
     filled = imputer.impute(test, hidden)
 
-    assert imputer.name == {"random_forest": "missforest", "lightgbm": "missforest_lgbm"}[learner]
+    assert imputer.name == "missforest"
     assert filled.columns.tolist() == test.columns.tolist()
     assert filled["level"].tolist() == pytest.approx([-3.0, 3.0], abs=0.1)
     assert filled["side"].tolist() == ["low", "high"]
@@ -101,8 +97,7 @@ def _gappy(frame: pd.DataFrame, share: float, seed: int = 3) -> pd.DataFrame:
     return frame.mask(stream.random(frame.shape) < share)
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_learns_the_rule_from_a_training_fold_full_of_gaps(learner: str) -> None:
+def test_missforest_learns_the_rule_from_a_training_fold_full_of_gaps() -> None:
     """Where a third of every training column is missing, the rounds have gaps to fill
     and the models of the round kept are trained on fills rather than on the truth;
     the rule is still the one found."""
@@ -112,7 +107,7 @@ def test_missforest_learns_the_rule_from_a_training_fold_full_of_gaps(learner: s
     hidden[::2, test.columns.get_loc("level")] = True
     hidden[1::2, test.columns.get_loc("side")] = True
 
-    imputer = _imputer(learner)
+    imputer = _imputer()
     imputer.fit(train)
     filled = imputer.impute(test, hidden)
 
@@ -121,8 +116,7 @@ def test_missforest_learns_the_rule_from_a_training_fold_full_of_gaps(learner: s
     assert filled["side"][1::2].tolist() == test["side"][1::2].tolist()
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_never_reads_the_truth_of_the_cell_it_fills(learner: str) -> None:
+def test_missforest_never_reads_the_truth_of_the_cell_it_fills() -> None:
     """The scored frame still holds the truth under every hidden cell. A fill that read
     it would make the bar unbeatable and look like a strong baseline."""
     train = _gappy(_step_frame(420), 0.2)
@@ -134,7 +128,7 @@ def test_missforest_never_reads_the_truth_of_the_cell_it_fills(learner: str) -> 
     tampered.loc[hidden[:, test.columns.get_loc("level")], "level"] = 1e6
     tampered.loc[hidden[:, test.columns.get_loc("side")], "side"] = "low"
 
-    imputer = _imputer(learner)
+    imputer = _imputer()
     imputer.fit(train)
 
     pd.testing.assert_frame_equal(
@@ -142,8 +136,7 @@ def test_missforest_never_reads_the_truth_of_the_cell_it_fills(learner: str) -> 
     )
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_fills_the_same_way_whatever_the_thread_count(learner: str, monkeypatch) -> None:
+def test_missforest_fills_the_same_way_whatever_the_thread_count(monkeypatch) -> None:
     """The cache keys an entry on the machine, not on its cores, and gorgona8 and the
     Windows PC have different numbers of them: two fits of one fold must fill alike at
     any thread count, or a cached bar would be some other computation's."""
@@ -155,7 +148,7 @@ def test_missforest_fills_the_same_way_whatever_the_thread_count(learner: str, m
     fills = []
     for threads in (1, 8, 8):
         monkeypatch.setattr(missforest, "THREADS", threads)
-        imputer = _imputer(learner)
+        imputer = _imputer()
         imputer.fit(train)
         fills.append(imputer.impute(test, hidden))
 
@@ -163,8 +156,7 @@ def test_missforest_fills_the_same_way_whatever_the_thread_count(learner: str, m
     pd.testing.assert_frame_equal(fills[1], fills[2])
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_leaves_every_global_random_stream_untouched(learner: str) -> None:
+def test_missforest_leaves_every_global_random_stream_untouched() -> None:
     """Every seeded result depends on the global draw sequences, and the regression
     fixtures pin them; a baseline that consumed from one would move numbers that have
     nothing to do with it."""
@@ -181,15 +173,14 @@ def test_missforest_leaves_every_global_random_stream_untouched(learner: str) ->
     np.random.seed(7)
     torch.manual_seed(7)
 
-    imputer = _imputer(learner)
+    imputer = _imputer()
     imputer.fit(train)
     imputer.impute(test, hidden)
 
     assert (random.random(), np.random.rand(3).tolist(), torch.rand(3).tolist()) == expected
 
 
-@pytest.mark.parametrize("learner", LEARNERS)
-def test_missforest_falls_back_to_a_constant_where_there_is_nothing_to_learn(learner: str) -> None:
+def test_missforest_falls_back_to_a_constant_where_there_is_nothing_to_learn() -> None:
     """A column the training fold holds in one category only, or not at all, gives a
     model nothing to fit. The fill is then that category, or the scaled mean of zero,
     never a crash or a NaN that would abort the run."""
@@ -201,7 +192,7 @@ def test_missforest_falls_back_to_a_constant_where_there_is_nothing_to_learn(lea
     hidden[:, test.columns.get_loc("colour")] = True
     hidden[:, test.columns.get_loc("level")] = True
 
-    imputer = _imputer(learner)
+    imputer = _imputer()
     imputer.fit(train)
     filled = imputer.impute(test, hidden)
 
@@ -214,10 +205,11 @@ def test_an_all_missing_training_categorical_column_is_refused_clearly() -> None
     train["side"] = np.nan
 
     with pytest.raises(ValueError, match="'side' has no observed category"):
-        _imputer("random_forest").fit(train)
+        _imputer().fit(train)
 
 
-def test_the_missforest_baselines_are_the_forest_and_lightgbm() -> None:
+def test_the_missforest_family_is_the_forest_alone() -> None:
+    """ADR 0017 withdrew the LightGBM learner; the single-pass ``lgbm`` replaces it."""
     imputers = fit_missforest_imputers(_step_frame(84), ["x", "level"], ["side", "colour"])
 
-    assert [imputer.name for imputer in imputers] == ["missforest", "missforest_lgbm"]
+    assert [imputer.name for imputer in imputers] == ["missforest"]

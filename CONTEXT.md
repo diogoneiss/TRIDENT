@@ -126,15 +126,24 @@ _Avoid_: original value, clean dataset, target table
 A fixed imputer scored on exactly the cells the decoder is scored on, so that its
 error sits beside the model's on every scored population: the mean/mode baseline,
 which the fold-ranking score divides by, and five learned baselines: KNN at two
-neighbourhood sizes, one gradient-boosting model per column, and missForest, iterated
-per-column models, with random forests and with LightGBM. All learn from the training
-fold alone and never rank a fold.
+neighbourhood sizes, one gradient-boosting model per column with scikit-learn's booster
+and with LightGBM, and missForest, per-column random forests iterated until the fills
+settle. All learn from the training fold alone and never rank a fold. missForest is an
+external baseline; the others make the bar.
 
 **Baseline bar**:
-The lowest score any baseline imputer reached on one population of one run: the bar a
-claim that the decoder beats the baselines has to clear. Never above 1.0, since the
-mean/mode baseline sits there. Runs log it as their best baseline.
+The lowest score any baseline imputer of the bar reached on one population of one run:
+the bar a claim that the decoder beats the baselines has to clear. Never above 1.0, since
+the mean/mode baseline sits there. External baselines are never part of it. Runs log it
+as their best baseline.
 _Avoid_: KNN bar, best baseline, reference score
+
+**External baseline**:
+A baseline imputer logged on the same cells but compared on its own, never part of the
+bar, because it would set the bar on most variants: missForest. Runs log the model's gap
+to it as `gap_to_missforest`. The withdrawn `missforest_lgbm`, still on runs backfilled on
+2026-10-06, is neither in the bar nor compared.
+_Avoid_: strong baseline, state-of-the-art bar
 
 **Gap to the bar**:
 The model's score minus the baseline bar, fold by fold on the same folds; negative

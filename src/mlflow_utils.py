@@ -119,9 +119,14 @@ BASELINES_BACKFILLED_TAG = "baselines_backfilled"
 # logged live got the gap backfilled all the same. Sparse, like the tag above.
 BEST_BASELINE_GAP_BACKFILLED_TAG = "best_baseline_gap_backfilled"
 # Marks a run whose missForest baselines (ADR 0016) were written after it finished, by
-# ``scripts/backfill_missforest_baselines.py``, which also rewrote its best baseline and
-# the gap to it wherever a missForest became the best. Sparse, like the tags above.
+# the since-replaced ``scripts/backfill_missforest_baselines.py``, which also rewrote its
+# best baseline and the gap to it wherever a missForest became the best (undone by ADR
+# 0017's backfill). Sparse, like the tags above.
 MISSFOREST_BACKFILLED_TAG = "missforest_backfilled"
+# Marks a run brought to ADR 0017 after it finished by ``scripts/backfill_lgbm_baseline.py``:
+# ``lgbm`` and the gap to missForest written, the best baseline chosen again without
+# missForest. Sparse, like the tags above.
+LGBM_BACKFILLED_TAG = "lgbm_backfilled"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:

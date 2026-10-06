@@ -101,6 +101,7 @@ from src.training.summary import (  # noqa: E402
     BEST_BASELINE,
     GAP_TO_BEST_BASELINE,
     GAP_TO_BEST_BASELINE_PCT,
+    OUTSIDE_THE_BAR,
     _summarize_metric,
     best_baseline_gaps,
 )
@@ -226,14 +227,15 @@ def _baseline_populations(logged: Mapping[str, float]) -> set[str]:
 def best_statistics(
     logged: Mapping[str, float], populations: Collection[str]
 ) -> tuple[dict[str, float], dict[str, str]]:
-    """For each named population, the baseline with the lowest mean ``impute_score`` among
-    those logged, all its statistics copied under ``baseline/best``, and the tag naming it,
-    whatever ``baseline/best`` the run already carries. A tie goes to the name that sorts
-    first, as in a live run's summary."""
+    """For each named population, the baseline of the bar with the lowest mean
+    ``impute_score`` among those logged, all its statistics copied under ``baseline/best``,
+    and the tag naming it, whatever ``baseline/best`` the run already carries. External and
+    withdrawn baselines are never chosen, and a tie goes to the name that sorts first, both
+    exactly as in a live run's summary (``summary.OUTSIDE_THE_BAR``)."""
     held: dict[str, dict[str, str]] = {}
     for key in logged:
         match = _BASELINE_STAT.fullmatch(key)
-        if match is None or match.group(2) == BEST_BASELINE:
+        if match is None or match.group(2) in OUTSIDE_THE_BAR:
             continue
         population, name = match.group(1), match.group(2)
         current = LEGACY_NAMES.get(name, name)

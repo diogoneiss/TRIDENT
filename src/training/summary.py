@@ -69,6 +69,7 @@ def summarize_cross_validation(
     best_baselines = _best_baselines(metrics)
     metrics.update(_best_baseline_copies(metrics, best_baselines))
     metrics.update(best_baseline_gaps(final_metrics, best_baselines))
+    metrics.update(external_baseline_gaps(final_metrics))
     loss_bands = _summarize_loss_bands(records, task)
     return CrossValidationSummary(
         metrics=metrics,
@@ -82,10 +83,18 @@ def summarize_cross_validation(
 # The name the best baseline's copied statistics are logged under (ADR 0007).
 BEST_BASELINE = "best"
 _BASELINE_SCORE = re.compile(r"(.+)/baseline/([^/]+)/impute_score")
+# Baselines logged and compared on their own, never part of the bar (ADR 0017): missForest
+# would set it on most variants. Each gets a gap of its own, ``gap_to_<name>``.
+EXTERNAL_BASELINES = ("missforest",)
+# Withdrawn by ADR 0017; runs backfilled before it still carry its numbers, which no bar
+# and no gap reads.
+WITHDRAWN_BASELINES = ("missforest_lgbm",)
+OUTSIDE_THE_BAR = frozenset((BEST_BASELINE, *EXTERNAL_BASELINES, *WITHDRAWN_BASELINES))
 
 
 def _best_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
-    """Per population, the baseline whose mean ``impute_score`` over the folds is lowest.
+    """Per population, the baseline of the bar whose mean ``impute_score`` over the folds
+    is lowest; external and withdrawn baselines never are.
 
     Chosen once per run, on the cross-validated mean, so every fold's numbers come from
     the same baseline; a tie goes to the name that sorts first.
@@ -93,7 +102,7 @@ def _best_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
     scores: dict[str, list[tuple[float, str]]] = {}
     for key, statistics in metrics.items():
         match = _BASELINE_SCORE.fullmatch(key)
-        if match is None or match.group(2) == BEST_BASELINE:
+        if match is None or match.group(2) in OUTSIDE_THE_BAR:
             continue
         scores.setdefault(match.group(1), []).append((float(statistics.mean), match.group(2)))
     return {population: min(entries)[1] for population, entries in sorted(scores.items())}
@@ -136,17 +145,41 @@ def best_baseline_gaps(
     would not: on ``kc2_20nan`` the folds' percentages average +2.6% where the means are
     2.1% apart in the model's favour. A bar whose mean is 0 leaves no percentage to take.
     """
+    return _paired_gaps(fold_metrics, best_baselines, GAP_TO_BEST_BASELINE, GAP_TO_BEST_BASELINE_PCT)
+
+
+def external_baseline_gaps(fold_metrics: Sequence[Mapping[str, float | int | str]]) -> dict[str, MetricSummary]:
+    """Per population, the model's gap to each external baseline, as ``gap_to_<name>`` and
+    ``gap_to_<name>_pct``: the same paired arithmetic as the gap to the bar (ADR 0017)."""
     gaps: dict[str, MetricSummary] = {}
-    for population, name in best_baselines.items():
+    for name in EXTERNAL_BASELINES:
+        populations = {
+            match.group(1)
+            for key in fold_metrics[0]
+            if (match := _BASELINE_SCORE.fullmatch(key)) is not None and match.group(2) == name
+        }
+        chosen = {population: name for population in sorted(populations)}
+        gaps.update(_paired_gaps(fold_metrics, chosen, f"gap_to_{name}", f"gap_to_{name}_pct"))
+    return gaps
+
+
+def _paired_gaps(
+    fold_metrics: Sequence[Mapping[str, float | int | str]],
+    baselines: Mapping[str, str],
+    gap: str,
+    gap_pct: str,
+) -> dict[str, MetricSummary]:
+    gaps: dict[str, MetricSummary] = {}
+    for population, name in baselines.items():
         model_key = f"{population}/impute_score"
         baseline_key = f"{population}/baseline/{name}/impute_score"
         if not all(model_key in fold and baseline_key in fold for fold in fold_metrics):
             continue
         differences = [float(fold[model_key]) - float(fold[baseline_key]) for fold in fold_metrics]
-        gaps[f"{population}/{GAP_TO_BEST_BASELINE}/impute_score"] = _summarize_metric(differences)
+        gaps[f"{population}/{gap}/impute_score"] = _summarize_metric(differences)
         bar = float(np.mean([float(fold[baseline_key]) for fold in fold_metrics]))
         if bar > 0:
-            gaps[f"{population}/{GAP_TO_BEST_BASELINE_PCT}/impute_score"] = _summarize_metric(
+            gaps[f"{population}/{gap_pct}/impute_score"] = _summarize_metric(
                 [100.0 * difference / bar for difference in differences]
             )
     return gaps

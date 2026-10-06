@@ -252,6 +252,46 @@ def test_the_summary_logs_the_models_gap_to_the_best_baseline_fold_by_fold() -> 
     assert "impute/induced/gap_to_best_baseline_pct/impute_score" not in summary.metrics
 
 
+def test_missforest_stays_outside_the_bar_and_gets_a_gap_of_its_own() -> None:
+    """missForest is an external comparison (ADR 0017): it would set the bar on most
+    variants, so the bar is chosen among the others even where missForest scores lowest,
+    and the model's distance to missForest is logged apart, by the same paired arithmetic.
+    The withdrawn ``missforest_lgbm`` is never the bar either.
+
+    Worked by hand: missForest 0.6 and 0.8 (mean 0.7) is lowest, lgbm 0.85 is the bar;
+    the model's 0.9 and 0.7 give a gap to the bar of 0.05 and -0.15 (mean -0.05) and to
+    missForest of 0.3 and -0.1 (mean 0.1, 100 * 0.1 / 0.7 = 14.3% of missForest's mean).
+    """
+    folds = {
+        1: {
+            "impute/masked/impute_score": 0.9,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/lgbm/impute_score": 0.85,
+            "impute/masked/baseline/missforest/impute_score": 0.6,
+            "impute/masked/baseline/missforest_lgbm/impute_score": 0.5,
+        },
+        2: {
+            "impute/masked/impute_score": 0.7,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/lgbm/impute_score": 0.85,
+            "impute/masked/baseline/missforest/impute_score": 0.8,
+            "impute/masked/baseline/missforest_lgbm/impute_score": 0.5,
+        },
+    }
+
+    summary = summarize_cross_validation([_record(fold, metrics) for fold, metrics in folds.items()], IMPUTATION)
+
+    assert summary.best_baselines == {"impute/masked": "lgbm"}
+    assert summary.metrics["impute/masked/baseline/best/impute_score"].mean == pytest.approx(0.85)
+    assert summary.metrics["impute/masked/gap_to_best_baseline/impute_score"].mean == pytest.approx(-0.05)
+    external = summary.metrics["impute/masked/gap_to_missforest/impute_score"]
+    assert (external.mean, external.minimum, external.maximum) == (
+        pytest.approx(0.1), pytest.approx(-0.1), pytest.approx(0.3)
+    )
+    assert summary.metrics["impute/masked/gap_to_missforest_pct/impute_score"].mean == pytest.approx(100 * 0.1 / 0.7)
+    assert not any("gap_to_missforest_lgbm" in key for key in summary.metrics)
+
+
 def test_a_classification_summary_names_no_best_baseline() -> None:
     """Nothing about baselines appears in a task that has none."""
     records = [

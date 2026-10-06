@@ -12,10 +12,10 @@ compute the numbers, the training and test frames, the scored cells' positions, 
 truths (never the model's guesses, which differ per arm), the naive baselines and the column
 lists. A change to any of them misses, so a stale entry cannot be read.
 
-Each family of baselines has entries of its own: ADR 0007's four, keyed exactly as before
-the missForests of ADR 0016 joined, so not one earlier entry was invalidated, and the two
-missForests, keyed also on their own module's source. Editing missForest misses only its
-entries; editing the ADR 0007 module, which missForest reads too, misses both.
+Each family of baselines has entries of its own, keyed also on its own module's source:
+ADR 0007's four, keyed exactly as before ADR 0016, so no later family invalidated one of
+their entries; ``lgbm`` (ADR 0017); and missForest (ADR 0016). Editing one family's module
+misses only its entries; editing the ADR 0007 module, which the other two read, misses all.
 """
 
 from __future__ import annotations
@@ -33,9 +33,10 @@ from typing import Callable, Collection, Mapping, Sequence
 import numpy as np
 import pandas as pd
 
-from . import imputation_baselines, imputation_metrics, missforest
+from . import imputation_baselines, imputation_metrics, lightgbm_baseline, missforest
 from .imputation_baselines import BaselineImputer, fit_baseline_imputers, score_baselines
 from .imputation_metrics import ImputationScores
+from .lightgbm_baseline import fit_lightgbm_imputers
 from .missforest import fit_missforest_imputers
 
 _PER_COLUMN = ["column", "metric", "value"]
@@ -63,11 +64,12 @@ class _Family:
 _FAMILIES = (
     _Family("adr0007", (imputation_baselines, imputation_metrics), (), fit_baseline_imputers),
     _Family(
-        "missforest",
-        (imputation_baselines, imputation_metrics, missforest),
+        "lgbm",
+        (imputation_baselines, imputation_metrics, lightgbm_baseline),
         ("lightgbm",),
-        fit_missforest_imputers,
+        fit_lightgbm_imputers,
     ),
+    _Family("missforest", (imputation_baselines, imputation_metrics, missforest), (), fit_missforest_imputers),
 )
 FAMILIES = tuple(family.name for family in _FAMILIES)
 
