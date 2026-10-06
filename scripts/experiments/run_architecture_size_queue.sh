@@ -5,7 +5,7 @@
 #   setsid nohup bash scripts/experiments/run_architecture_size_queue.sh <1|2|3|4> <state_dir> > /dev/null 2>&1 &
 # The queue is read from the store at start (finished cells are skipped), so relaunching
 # resumes. Stop between cells: touch <state_dir>/STOP. No cell starts after the
-# pre-registered cutoff, 14:00 GMT-3 on 2026-10-06 (17:00 UTC).
+# pre-registered cutoff, 08:00 GMT-3 on 2026-10-07 (11:00 UTC), amended before launch.
 set -u
 # Two trainers fit the baseline imputers at once; at 32 threads each they oversubscribe the
 # 32 cores and stall. Their fills are identical at 1, 4 and 32 threads (ticket 02, note).
@@ -16,7 +16,7 @@ STATE="$2"
 ROOT="$(pwd)"
 [ -f "$ROOT/train.py" ] || { echo "run from the checkout root" >&2; exit 2; }
 # Override for a later run, e.g. CUTOFF_UTC="2026-10-02 09:30:00"; past it no cell starts.
-CUTOFF_UTC="${CUTOFF_UTC:-2026-10-06 17:00:00}"
+CUTOFF_UTC="${CUTOFF_UTC:-2026-10-07 11:00:00}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 mkdir -p "$STATE/logs"
 P="$STATE/progress.log"

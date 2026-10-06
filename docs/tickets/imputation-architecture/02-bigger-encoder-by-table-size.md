@@ -84,3 +84,10 @@ reported, not ruled on.
   They ran with another session's uncommitted work in the tree (ADR 0016, missForest baselines),
   which adds baseline imputers but, as this check shows, leaves the model's scores and the four
   original baselines unchanged.
+- **Amended 2026-10-06, 14:50 GMT-3, before any cell ran (no score seen):** the user sequenced the
+  launch after another session's missForest work (ADR 0016) was committed (`8f77956`) and its store
+  backfill applied (finished 10:28 GMT-3), so that E37 and E38 share the six-baseline bar. The
+  launch therefore moved past the original cutoff, which becomes 08:00 GMT-3 on 2026-10-07
+  (11:00 UTC). Nothing else changes; the integrity check compares the four ADR 0007 baselines,
+  which the backfill did not alter. Every cell now also fits the two missForest baselines (cached
+  per fold), which adds time to the estimate.

@@ -1141,8 +1141,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E38 · The bigger encoder by table size, on fresh seeds (2026-10-06 – )
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 14:00 GMT-3 on
-  2026-10-06).
+- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 08:00 GMT-3 on
+  2026-10-07, amended before launch).
 - **Hypothesis:** the bigger encoder (4 layers, feed-forward 256, final LayerNorm), whose E37 gain
   concentrated in pendigits (−4.0%), helps the large tables (10,000 rows or more). The user chose
   in advance a size-dependent default if it holds, so the cost on smaller tables is described.
