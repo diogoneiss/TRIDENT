@@ -79,7 +79,12 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 2. **If step 1 confirms it:** train with decode rows shaped like induced scoring (part of the real
    gaps shown as `[MASK]`), behind a flag, as a pre-registered study.
 
-### T03 · Architecture defaults — in progress (screening: ticket [imputation-architecture/01](tickets/imputation-architecture/01-architecture-screening.md), E37)
+### T03 · Architecture defaults — screening done (ticket [imputation-architecture/01](tickets/imputation-architecture/01-architecture-screening.md), E37); confirmation waits on a decision
+
+**Screened 2026-10-06:** 4 layers + feed-forward 256 + a final LayerNorm (ALL) is better on 3 of 5
+variants and worse on none (credit-g_20nan a near miss), at 1.82x the time; it advances to a
+21-variant confirmation, which needs the user's go-ahead. F256 alone also advances (better on
+pendigits only); depth alone hurts credit-g_20nan; the final LayerNorm alone hurts pendigits.
 
 Every full-profile winner used 4–6 layers (default 2); the feed-forward width (32) is narrower
 than the model width (128), against the usual ~4x; there is no final LayerNorm before the heads

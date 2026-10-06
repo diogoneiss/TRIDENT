@@ -88,3 +88,42 @@ changes (ADRs 0014, 0015) are exhausted, and two variants still lose to the best
 - **Tag backfill applied** before launch, 5 min 31 s: 2204 earlier runs of both tasks stamped
   `none`; 2192 have a mirror carrying the tag, the rest being `FAILED` sources or under a deleted
   study.
+
+## Outcome (2026-10-06, 00:50 GMT-3)
+
+All 60 cells ran (19:20 GMT-3 on 2026-10-05 to 00:39 GMT-3 on 2026-10-06), none failed, none
+missing. The integrity check passed: every pair's baseline scores are equal. Numbers from
+`scripts/experiments/architecture_report.py` (kept with `--tally` in the state directory). Arm − R
+on the induced `impute_score`, 15 fold pairs per variant; lower is better; a verdict is marked in
+bold.
+
+| variant | R | L4 − R | F256 − R | LN − R | ALL − R |
+|---|---|---|---|---|---|
+| `credit-g_20nan` | 0.8818 | +0.0197 [+0.0105, +0.0289] **R better** | +0.0074 [−0.0040, +0.0188] | −0.0027 [−0.0118, +0.0064] | +0.0133 [−0.0008, +0.0274] |
+| `credit-g_80nan` | 1.0079 | +0.0053 [−0.0006, +0.0111] | +0.0028 [−0.0022, +0.0077] | −0.0000 [−0.0046, +0.0046] | −0.0057 [−0.0098, −0.0017] **ALL better** |
+| `kr-vs-kp_40nan` | 0.7582 | +0.0052 [−0.0053, +0.0156] | −0.0001 [−0.0106, +0.0105] | −0.0074 [−0.0154, +0.0005] | −0.0120 [−0.0222, −0.0017] **ALL better** |
+| `biodeg_60nan` | 0.7605 | +0.0054 [−0.0018, +0.0126] | −0.0019 [−0.0156, +0.0119] | +0.0070 [−0.0021, +0.0161] | +0.0077 [−0.0049, +0.0204] |
+| `pendigits_20nan` | 0.3324 | −0.0174 [−0.0197, −0.0151] **L4 better** | −0.0116 [−0.0137, −0.0095] **F256 better** | +0.0142 [+0.0117, +0.0166] **R better** | −0.0133 [−0.0155, −0.0111] **ALL better** |
+
+**Tally.** L4: better on 1 (pendigits), worse on 1 (credit-g_20nan). F256: better on 1
+(pendigits), worse on none. LN: worse on 1 (pendigits), better on none. ALL: better on 3
+(credit-g_80nan −0.006, kr-vs-kp_40nan −0.012, pendigits −0.013), worse on none.
+
+**Reading, by the rule fixed in advance: F256 and ALL advance; ALL goes to the confirmation.**
+Both show no "R better" and at least one "better"; ALL has three such verdicts, F256 one. The
+confirmation on all 21 variants is a separate pre-registration and waits on the user's go-ahead.
+
+**Secondary measures and caveats.**
+- **ALL nearly fails on credit-g_20nan:** +0.0133 [−0.0008, +0.0274], all three seeds positive,
+  one hair short of "R better"; its masked population there is "R better" (+0.0172). The depth
+  is the likely cause: L4 alone is "R better" on that variant (+0.0197). A confirmation under the
+  "no variant worse" rule may well fail on the small tables.
+- **The parts do not add up:** LN alone is worse on pendigits (+0.014) and neutral elsewhere, yet
+  ALL, which contains it, is better on pendigits and on two variants where no single change was.
+- **Mean difference over the five variants:** L4 +0.0036, F256 −0.0007, LN +0.0022, ALL −0.0020.
+  The gain is concentrated in pendigits, the largest table (10,992 rows), where depth and width
+  both help (L4 −0.017, F256 −0.012).
+- **Cost,** minutes a cell summed over the five variants against R's: L4 1.57x, F256 1.17x, LN
+  0.99x, ALL 1.82x (pendigits 71 against 38 min a cell).
+- **Time.** Planned about 5.4 h of wall time, ending near 00:45 GMT-3; it took 5 h 19 min and
+  ended at 00:39 GMT-3, 0.98x the plan (the arm factors were close: 0.95x of the estimate).

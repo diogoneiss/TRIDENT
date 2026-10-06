@@ -63,7 +63,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E34 | Checkpoint by the validation gaps, and calibration on them | 2026-10-03 | done | K (checkpoint by validation gaps) qualifies: better on 3 (all 80nan), worse on none; C better on 13 but worse on spambase_20nan, so it fails; KC loses to K there too |
 | E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
 | E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
-| E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – | in progress | pending |
+| E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
 
 ## Entries
 
@@ -1105,10 +1105,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-token-shape/06-pretraining-gaps-as-mask.md` (Outcome);
   `scripts/experiments/pretrain_gap_token_report.py`.
 
-### E37 · Architecture screening: deeper, wider or normed encoder (2026-10-05 – )
+### E37 · Architecture screening: deeper, wider or normed encoder (2026-10-05 – 2026-10-06)
 
-- **Status:** in progress (gorgona8, four concurrent queues; no cell starts after 08:00 GMT-3 on
-  2026-10-06).
+- **Status:** done, 19:20 GMT-3 to 00:39 GMT-3 on gorgona8, all 60 cells; every pair's baselines
+  equal.
 - **Hypothesis:** the encoder is small for the task (2 layers, feed-forward 32 against width 128,
   no final LayerNorm on a pre-norm stack; the full-profile winners used 4 to 6 layers). A deeper,
   wider or normed encoder should impute better (T03).
@@ -1124,7 +1124,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     21-variant confirmation, pre-registered separately with the user's go-ahead; none advancing
     closes T03.
   - **Secondary:** masked; minutes a cell per arm; means; time.
-- **Results:** pending.
-- **Conclusion:** pending.
-- **Sources:** `docs/tickets/imputation-architecture/01-architecture-screening.md`;
+- **Results (arm − R, induced, 15 fold pairs per variant):** ALL better on 3 (credit-g_80nan
+  −0.0057, kr-vs-kp_40nan −0.0120, pendigits −0.0133), worse on none, but credit-g_20nan +0.0133
+  [−0.0008, +0.0274] with every seed positive (masked there: R better). F256 better on 1
+  (pendigits −0.0116). L4 better on pendigits (−0.0174), worse on credit-g_20nan (+0.0197). LN
+  worse on pendigits (+0.0142). Mean over the five: L4 +0.0036, F256 −0.0007, LN +0.0022, ALL
+  −0.0020. Cost a cell against R: 1.57x, 1.17x, 0.99x, 1.82x. Wall time 5 h 19 min against about
+  5.4 h planned (0.98x).
+- **Conclusion:** by the rule fixed in advance, F256 and ALL advance and ALL goes to a 21-variant
+  confirmation, pending the user's go-ahead. The gain is concentrated in the largest table
+  (pendigits); depth hurts the smallest (credit-g_20nan), where ALL is a near miss, so a
+  confirmation under the "no variant worse" rule is at risk on the small tables.
+- **Sources:** `docs/tickets/imputation-architecture/01-architecture-screening.md` (Outcome);
   `scripts/experiments/architecture_report.py`.
