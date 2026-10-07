@@ -100,6 +100,14 @@ already looked like the scored ones.
   store). Of the 1737 stamped source runs, 1727 have a mirror carrying the tag; the 10 without
   are 9 `FAILED` sources, which ADR 0006 as amended does not mirror, and one Optuna trial under a
   deleted study, whose subtree the mirroring skips by design.
+- **Correction, 2026-10-07:** that one-off script chose its trees by raw SQL on
+  `decode_gap_token_backfilled` without excluding the mirror experiment, whose runs carry the tag
+  too, so it also re-mirrored 88 mirror trees and created 568 mirror-of-a-mirror runs in
+  `TRIDENT/mirror/imputation`. Another session found and soft-deleted them on 2026-10-07 at the
+  user's request (backup at `/var/tmp/diogoneiss/backups/mlflow.db.before-mirror-cleanup`); the
+  mirror experiment again holds one mirror per source. The later backfills (`decode_checkpoint`,
+  `pretrain_gap_token`, `encoder_final_norm`) select only non-mirror runs and stamp existing
+  mirrors in place, so they did not repeat it. The script is withdrawn.
 
 ## Outcome (2026-10-02, 16:40 GMT-3)
 
