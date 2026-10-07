@@ -116,4 +116,62 @@ the bar (worse than the forest on every variant of both populations).
 
 ## Outcome
 
-Pending: the backfill, after E38.
+**Backfill applied 2026-10-07, 00:37 to 02:29 GMT-3, plus a second pass at 02:35.** 887 imputation
+parents (ADR 0016's 873 and E38's 15, the `kc2_60nan` run of 2026-09-25 aside) carry `lgbm`
+and `gap_to_missforest*`, marked `lgbm_backfilled=true` with their children and mirrors; the
+bar moved on 660 of them (from
+missForest back to `hgb`, KNN or the mean/mode fill, or to `lgbm`). The store was copied first
+with SQLite's backup API to `/var/tmp/diogoneiss/backups/mlflow.db.before-lgbm-backfill`.
+
+- **missForest corrected on 102 runs, all `kr-vs-kp` and `vehicle`,** by up to 0.0056 on a CV
+  mean (decision 6): on tables of categories a flipped near-tie changes the next rounds'
+  features, so the threaded predictions had drifted further than the 1.4e-4 first seen. No
+  numerical table needed a correction.
+- **Refused:** the superseded electricity run of 2026-09-25 (its mean/mode, as always), and
+  `impute_kc2_60nan_20260925_031226`, whose masked bar moves back to `knn10` but whose
+  `knn10` fold values, logged on the Windows PC by ADR 0007's backfill and absent from its
+  artifact, are 2.3e-3 off when recomputed here. It is the one run whose
+  `best_baseline/*` still names missForest; 30 later runs of the variant supersede it.
+- **Second pass, `--fold_tolerance 1e-3`,** on `letter_20nan` and `credit-g_40nan` of
+  2026-09-24/25, refused at 1e-9 for the same reason (1.4e-5 and 6.0e-4): their gap to the
+  bar is taken from fold values recomputed here, within 6e-4 of the logged means.
+
+**The bar, before and after, on today's default** (E35: seeds 42, 7 and 13, five folds; the
+model's score is ADR 0015's K readout; each cell the mean over the three seeds; lower is
+better):
+
+| variant | induced: model | bar of 4 | bar of 5 | `lgbm` | missForest | masked: model | bar of 5 | missForest |
+|---|---|---|---|---|---|---|---|---|
+| `biodeg_20nan` | 0.587 | hgb 0.636 | lgbm 0.633 | 0.633 | 0.618 | 0.544 | lgbm 0.612 | 0.570 |
+| `biodeg_60nan` | 0.761 | hgb 0.866 | hgb 0.866 | 0.868 | 0.762 | 0.809 | hgb 0.873 | 0.786 |
+| `credit-g_20nan` | 0.882 | hgb 0.918 | hgb 0.918 | 0.922 | 0.885 | 0.880 | hgb 0.931 | 0.896 |
+| `credit-g_40nan` | 0.956 | hgb 0.964 | hgb 0.964 | 0.968 | 0.931 | 0.982 | hgb 0.997 | 0.950 |
+| `credit-g_60nan` | 0.992 | mean_mode 1.000 | mean_mode 1.000 | 1.079 | 1.021 | 0.980 | mean_mode 1.000 | 1.024 |
+| `credit-g_80nan` | 1.008 | mean_mode 1.000 | mean_mode 1.000 | 1.112 | 1.093 | 1.008 | mean_mode 1.000 | 1.081 |
+| `electricity_20nan` | 0.618 | hgb 0.606 | hgb 0.606 | 0.612 | 0.619 | 0.686 | hgb 0.690 | 0.710 |
+| `kc2_20nan` | 0.541 | knn5 0.567 | knn5 0.567 | 0.741 | 0.605 | 0.530 | knn5 0.559 | 0.592 |
+| `kc2_60nan` | 0.572 | knn5 0.717 | knn5 0.717 | 0.819 | 0.675 | 0.552 | knn10 0.717 | 0.626 |
+| `kr-vs-kp_20nan` | 0.586 | hgb 0.612 | lgbm 0.608 | 0.608 | 0.658 | 0.649 | hgb 0.680 | 0.713 |
+| `kr-vs-kp_40nan` | 0.758 | hgb 0.773 | lgbm 0.764 | 0.764 | 0.801 | 0.781 | hgb 0.780 | 0.826 |
+| `kr-vs-kp_60nan` | 0.865 | hgb 0.903 | hgb 0.903 | 0.905 | 0.935 | 0.887 | hgb 0.912 | 0.939 |
+| `kr-vs-kp_80nan` | 0.976 | mean_mode 1.000 | mean_mode 1.000 | 1.074 | 1.021 | 1.000 | mean_mode 1.000 | 1.017 |
+| `letter_20nan` | 0.459 | knn10 0.473 | knn10 0.473 | 0.499 | 0.462 | 0.496 | knn10 0.542 | 0.535 |
+| `pendigits_20nan` | 0.332 | knn10 0.350 | knn10 0.350 | 0.363 | 0.334 | 0.369 | knn10 0.401 | 0.409 |
+| `spambase_20nan` | 0.848 | hgb 0.866 | lgbm 0.865 | 0.865 | 0.859 | 0.865 | hgb 0.887 | 0.923 |
+| `spambase_40nan` | 0.903 | hgb 0.937 | lgbm 0.937 | 0.937 | 0.942 | 0.897 | hgb 0.939 | 0.972 |
+| `spambase_60nan` | 0.942 | hgb 0.984 | hgb 0.984 | 0.985 | 0.981 | 0.904 | hgb 0.983 | 0.974 |
+| `spambase_80nan` | 0.987 | mean_mode 1.000 | mean_mode 1.000 | 1.043 | 1.033 | 0.993 | mean_mode 1.000 | 1.058 |
+| `vehicle_20nan` | 0.418 | hgb 0.473 | lgbm 0.473 | 0.473 | 0.452 | 0.420 | knn5 0.505 | 0.472 |
+| `vehicle_60nan` | 0.645 | hgb 0.701 | hgb 0.701 | 0.702 | 0.647 | 0.616 | hgb 0.671 | 0.616 |
+
+- **The model is below the bar on 19 of 21 variants induced and 18 of 21 masked, as with
+  ADR 0007's four baselines:** `lgbm` sets the bar on six induced variants, by at most
+  0.009 below `hgb` (`kr-vs-kp_40nan`), and moves no verdict.
+- **Against missForest, compared apart, the model is lower on 20 of 21 induced** (all but
+  `credit-g_40nan`, 0.956 against 0.931) **and 18 of 21 masked** (not `biodeg_60nan`,
+  `credit-g_40nan`, nor `vehicle_60nan`, a tie at 0.616). Six of the induced wins are
+  within the 0.016 inductive-versus-transductive band of ADR 0016: `biodeg_60nan`,
+  `electricity_20nan`, `pendigits_20nan`, `vehicle_60nan`, `credit-g_20nan` and
+  `letter_20nan`, by 0.001 to 0.003. They are ties to a canonical missForest.
+- Where missForest is lowest it is so by a wide margin on the small mixed tables
+  (`biodeg_60nan` 0.762 against a bar of 0.866), which is the reason it stays outside the bar.

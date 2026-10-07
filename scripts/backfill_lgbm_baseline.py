@@ -110,6 +110,7 @@ def plan_lgbm(
     folds: Mapping[int, Mapping[str, float]],
     children: Mapping[str, int],
     rows: Mapping[int, Mapping[str, float]],
+    fold_tolerance: float = adr0007.TOLERANCE,
 ) -> Plan:
     """What ADR 0017 writes to one run: ``lgbm``, the gap to missForest, and the bar again.
 
@@ -153,7 +154,7 @@ def plan_lgbm(
     after = {**logged, **base.parent}
     merged = {fold: {**folds.get(fold, {}), **values} for fold, values in rows.items()}
 
-    external, refusal = plan_external_gaps(after, merged)
+    external, refusal = plan_external_gaps(after, merged, fold_tolerance)
     if refusal is not None:
         plan.refused = refusal
         return plan
@@ -173,6 +174,7 @@ def plan_lgbm(
             {population: new for population, (_, new) in moved.items()},
             merged,
             redo=moved,
+            tolerance=fold_tolerance,
         )
         if refusal is not None:
             plan.refused = f"best baseline moved but the gap cannot be taken again: {refusal}"
@@ -193,7 +195,7 @@ def _kept(pattern: re.Pattern[str], key: str, changed: Mapping[str, float]) -> b
 
 
 def plan_external_gaps(
-    logged: Mapping[str, float], rows: Mapping[int, Mapping[str, float]]
+    logged: Mapping[str, float], rows: Mapping[int, Mapping[str, float]], tolerance: float = adr0007.TOLERANCE
 ) -> tuple[dict[str, float], str | None]:
     """The gaps to each external baseline a run lacks, from each fold's own numbers, or why
     not: the model's and the baseline's fold values must average to the run's own means."""
@@ -215,7 +217,7 @@ def plan_external_gaps(
                 if not values or any(value is None for value in values):
                     return {}, f"no fold value for {key}"
                 found = [float(value) for value in values if value is not None]
-                if abs(float(np.mean(found)) - logged[logged_mean]) > adr0007.TOLERANCE:
+                if abs(float(np.mean(found)) - logged[logged_mean]) > tolerance:
                     return {}, f"{key}: fold mean {float(np.mean(found)):.6f}, logged {logged[logged_mean]:.6f}"
                 for fold, value in zip(folds, found):
                     fold[key] = value
@@ -302,6 +304,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dataset", action="append", default=None, help="Restrict to this variant (repeatable).")
     parser.add_argument("--no_cache", action="store_true", help="Neither read nor fill results/baseline_cache/.")
     parser.add_argument("--tracking_uri", default=None, help="Override MLFLOW_TRACKING_URI.")
+    parser.add_argument(
+        "--fold_tolerance",
+        type=float,
+        default=adr0007.TOLERANCE,
+        help=(
+            "How far fold values may average from the logged means before a gap is refused "
+            "(default 1e-9). Raise it, with --run, only for runs recorded on another machine "
+            "whose KNN or hgb fold values had to be recomputed here."
+        ),
+    )
     args = parser.parse_args(argv)
 
     mode = "APPLIED" if args.apply else "DRY RUN"
@@ -337,6 +349,7 @@ def main(argv: list[str] | None = None) -> int:
             folds,
             adr0007._children(client, run),
             rows,
+            args.fold_tolerance,
         )
         seconds = time.perf_counter() - started
         if plan.refused is not None:

@@ -279,6 +279,7 @@ def plan_gap(
     best_baselines: Mapping[str, str],
     rows: Mapping[int, Mapping[str, float]],
     redo: Collection[str] = (),
+    tolerance: float = TOLERANCE,
 ) -> tuple[dict[str, float], str | None]:
     """The gap-to-best-baseline statistics a run lacks, or why it will not get them.
 
@@ -310,7 +311,7 @@ def plan_gap(
                 return {}, f"no fold value for {key}"
             if logged_mean not in logged:
                 return {}, f"{logged_mean} is not logged"
-            if abs(float(np.mean(values)) - logged[logged_mean]) > TOLERANCE:
+            if abs(float(np.mean(values)) - logged[logged_mean]) > tolerance:
                 return {}, f"{key}: fold mean {float(np.mean(values)):.6f}, logged {logged[logged_mean]:.6f}"
             for fold, value in zip(folds, values):
                 fold[key] = value

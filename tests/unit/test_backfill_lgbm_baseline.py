@@ -140,6 +140,24 @@ def test_a_knn_or_hgb_that_differs_in_the_last_digits_is_not_a_refusal() -> None
     assert plan.parent[f"cv/test/{INDUCED}/gap_to_best_baseline/impute_score/mean"] == pytest.approx(-0.1)
 
 
+def test_a_gap_from_fold_values_recomputed_elsewhere_is_taken_only_within_the_tolerance_asked() -> None:
+    """A run recorded on the Windows PC whose hgb fold values are not in its artifact gets
+    them recomputed here, last digits apart (1.4e-5 on letter_20nan of 2026-09-25): refused
+    at 1e-9, taken at the looser tolerance a second pass asks for by run."""
+    rows = {fold: {key: value for key, value in values.items() if "/hgb/" not in key} for fold, values in ROWS.items()}
+    recomputed = _recomputed((0.95, 0.95))
+    for fold in recomputed.values():
+        fold[f"{INDUCED}/baseline/hgb/impute_score"] += 1.4e-5
+    arguments = ("run", "impute_toy_20nan_x", backfill._as_planned_from(_logged()), TAGS, recomputed, {}, rows)
+
+    strict = backfill.plan_lgbm(*arguments)
+    loose = backfill.plan_lgbm(*arguments, fold_tolerance=1e-4)
+
+    assert strict.refused is not None and "hgb" in strict.refused
+    assert loose.refused is None
+    assert loose.parent[f"cv/test/{INDUCED}/gap_to_best_baseline/impute_score/mean"] == pytest.approx(-0.1, abs=1e-4)
+
+
 @pytest.fixture
 def client(tmp_path, monkeypatch) -> MlflowClient:
     previous_tracking_uri = mlflow.get_tracking_uri()
