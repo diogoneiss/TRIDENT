@@ -107,6 +107,9 @@ reported, not ruled on.
   2026-10-07 (17:00 UTC) so the resumed cells (about 4 h) fit; nothing else changes. Their run
   records carry ADR 0017's baseline set; the model's scores and the four ADR 0007 baselines the
   integrity check reads do not depend on it.
+- **Resumed 2026-10-07 at 02:32 GMT-3**, after the other session's ADR 0017 backfill ended. A
+  re-check with ADR 0017's code (arm R0, credit-g_20nan, seed 101) equals E34's K readout on all 14
+  recorded metrics and the four ADR 0007 baselines.
 
 ## Outcome, primary (2026-10-06, 21:30 GMT-3)
 
