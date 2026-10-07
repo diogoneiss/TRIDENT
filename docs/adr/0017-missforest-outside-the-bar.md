@@ -142,31 +142,31 @@ better):
 
 | variant | induced: model | bar of 4 | bar of 5 | `lgbm` | missForest | masked: model | bar of 5 | missForest |
 |---|---|---|---|---|---|---|---|---|
-| `biodeg_20nan` | 0.587 | hgb 0.636 | lgbm 0.633 | 0.633 | 0.618 | 0.544 | lgbm 0.612 | 0.570 |
+| `biodeg_20nan` | 0.587 | hgb 0.636 | lgbm 0.633 | 0.633 | 0.618 | 0.544 | hgb 0.627 | 0.570 |
 | `biodeg_60nan` | 0.761 | hgb 0.866 | hgb 0.866 | 0.868 | 0.762 | 0.809 | hgb 0.873 | 0.786 |
-| `credit-g_20nan` | 0.882 | hgb 0.918 | hgb 0.918 | 0.922 | 0.885 | 0.880 | hgb 0.931 | 0.896 |
+| `credit-g_20nan` | 0.882 | hgb 0.918 | hgb 0.918 | 0.922 | 0.885 | 0.880 | lgbm 0.927 | 0.896 |
 | `credit-g_40nan` | 0.956 | hgb 0.964 | hgb 0.964 | 0.968 | 0.931 | 0.982 | hgb 0.997 | 0.950 |
 | `credit-g_60nan` | 0.992 | mean_mode 1.000 | mean_mode 1.000 | 1.079 | 1.021 | 0.980 | mean_mode 1.000 | 1.024 |
 | `credit-g_80nan` | 1.008 | mean_mode 1.000 | mean_mode 1.000 | 1.112 | 1.093 | 1.008 | mean_mode 1.000 | 1.081 |
 | `electricity_20nan` | 0.618 | hgb 0.606 | hgb 0.606 | 0.612 | 0.619 | 0.686 | hgb 0.690 | 0.710 |
 | `kc2_20nan` | 0.541 | knn5 0.567 | knn5 0.567 | 0.741 | 0.605 | 0.530 | knn5 0.559 | 0.592 |
 | `kc2_60nan` | 0.572 | knn5 0.717 | knn5 0.717 | 0.819 | 0.675 | 0.552 | knn10 0.717 | 0.626 |
-| `kr-vs-kp_20nan` | 0.586 | hgb 0.612 | lgbm 0.608 | 0.608 | 0.658 | 0.649 | hgb 0.680 | 0.713 |
-| `kr-vs-kp_40nan` | 0.758 | hgb 0.773 | lgbm 0.764 | 0.764 | 0.801 | 0.781 | hgb 0.780 | 0.826 |
-| `kr-vs-kp_60nan` | 0.865 | hgb 0.903 | hgb 0.903 | 0.905 | 0.935 | 0.887 | hgb 0.912 | 0.939 |
+| `kr-vs-kp_20nan` | 0.586 | hgb 0.612 | lgbm 0.608 | 0.608 | 0.658 | 0.649 | lgbm 0.674 | 0.716 |
+| `kr-vs-kp_40nan` | 0.758 | hgb 0.773 | lgbm 0.764 | 0.764 | 0.801 | 0.781 | lgbm 0.777 | 0.824 |
+| `kr-vs-kp_60nan` | 0.865 | hgb 0.903 | hgb 0.903 | 0.905 | 0.935 | 0.887 | lgbm 0.911 | 0.941 |
 | `kr-vs-kp_80nan` | 0.976 | mean_mode 1.000 | mean_mode 1.000 | 1.074 | 1.021 | 1.000 | mean_mode 1.000 | 1.017 |
 | `letter_20nan` | 0.459 | knn10 0.473 | knn10 0.473 | 0.499 | 0.462 | 0.496 | knn10 0.542 | 0.535 |
 | `pendigits_20nan` | 0.332 | knn10 0.350 | knn10 0.350 | 0.363 | 0.334 | 0.369 | knn10 0.401 | 0.409 |
-| `spambase_20nan` | 0.848 | hgb 0.866 | lgbm 0.865 | 0.865 | 0.859 | 0.865 | hgb 0.887 | 0.923 |
-| `spambase_40nan` | 0.903 | hgb 0.937 | lgbm 0.937 | 0.937 | 0.942 | 0.897 | hgb 0.939 | 0.972 |
-| `spambase_60nan` | 0.942 | hgb 0.984 | hgb 0.984 | 0.985 | 0.981 | 0.904 | hgb 0.983 | 0.974 |
+| `spambase_20nan` | 0.848 | hgb 0.866 | lgbm 0.865 | 0.865 | 0.859 | 0.865 | lgbm 0.886 | 0.923 |
+| `spambase_40nan` | 0.903 | hgb 0.937 | lgbm 0.937 | 0.937 | 0.942 | 0.897 | lgbm 0.936 | 0.972 |
+| `spambase_60nan` | 0.942 | hgb 0.984 | hgb 0.984 | 0.985 | 0.981 | 0.904 | lgbm 0.982 | 0.974 |
 | `spambase_80nan` | 0.987 | mean_mode 1.000 | mean_mode 1.000 | 1.043 | 1.033 | 0.993 | mean_mode 1.000 | 1.058 |
 | `vehicle_20nan` | 0.418 | hgb 0.473 | lgbm 0.473 | 0.473 | 0.452 | 0.420 | knn5 0.505 | 0.472 |
-| `vehicle_60nan` | 0.645 | hgb 0.701 | hgb 0.701 | 0.702 | 0.647 | 0.616 | hgb 0.671 | 0.616 |
+| `vehicle_60nan` | 0.645 | hgb 0.701 | hgb 0.701 | 0.702 | 0.647 | 0.616 | lgbm 0.668 | 0.616 |
 
 - **The model is below the bar on 19 of 21 variants induced and 18 of 21 masked, as with
-  ADR 0007's four baselines:** `lgbm` sets the bar on six induced variants, by at most
-  0.009 below `hgb` (`kr-vs-kp_40nan`), and moves no verdict.
+  ADR 0007's four baselines:** `lgbm` sets the bar on six variants induced and eight masked,
+  by at most 0.009 below `hgb` (`kr-vs-kp_40nan` induced), and moves no verdict.
 - **Against missForest, compared apart, the model is lower on 20 of 21 induced** (all but
   `credit-g_40nan`, 0.956 against 0.931) **and 18 of 21 masked** (not `biodeg_60nan`,
   `credit-g_40nan`, nor `vehicle_60nan`, a tie at 0.616). Six of the induced wins are
