@@ -79,13 +79,13 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 2. **If step 1 confirms it:** train with decode rows shaped like induced scoring (part of the real
    gaps shown as `[MASK]`), behind a flag, as a pre-registered study.
 
-### T03 · Architecture defaults — screening done (ticket [imputation-architecture/01](tickets/imputation-architecture/01-architecture-screening.md), E37); confirmation waits on a decision
+### T03 · Architecture defaults — done (E37, E38; [ADR 0018](adr/0018-bigger-encoder-on-the-large-tables.md): bigger encoder on pendigits_20nan and letter_20nan)
 
 **Screened 2026-10-06:** 4 layers + feed-forward 256 + a final LayerNorm (ALL) is better on 3 of 5
 variants and worse on none (credit-g_20nan a near miss), at 1.82x the time; it advances to a
 21-variant confirmation, which needs the user's go-ahead. F256 alone also advances (better on
 pendigits only); depth alone hurts credit-g_20nan; the final LayerNorm alone hurts pendigits. **The user chose instead (2026-10-06)** to test whether the bigger encoder helps the large
-tables, with a size-dependent default if so: ticket [02](tickets/imputation-architecture/02-bigger-encoder-by-table-size.md), E38. **Primary read 2026-10-06:** supported, ALL better on pendigits (−3.8%) and letter (−5.6%), no difference on electricity (+0.3%) at 1.77x its cost; **the size-dependent default waits on the user's decision.** **Completed 2026-10-07 (63 of 63):** medium tables −0.2% (neutral), small tables +1.9% (worse on 4 of 10), so the size dependence holds.
+tables, with a size-dependent default if so: ticket [02](tickets/imputation-architecture/02-bigger-encoder-by-table-size.md), E38. **Primary read 2026-10-06:** supported, ALL better on pendigits (−3.8%) and letter (−5.6%), no difference on electricity (+0.3%) at 1.77x its cost; **the size-dependent default waits on the user's decision.** **Completed 2026-10-07 (63 of 63):** medium tables −0.2% (neutral), small tables +1.9% (worse on 4 of 10), so the size dependence holds. **Decided 2026-10-07:** adopted on pendigits_20nan and letter_20nan by promoted files (ADR 0018); electricity, with no gain, keeps today's encoder.
 
 Every full-profile winner used 4–6 layers (default 2); the feed-forward width (32) is narrower
 than the model width (128), against the usual ~4x; there is no final LayerNorm before the heads

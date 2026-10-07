@@ -1167,6 +1167,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   size-dependent default the user chose, bigger encoder on the large tables, with the caveat that
   electricity, the largest, gains nothing at 1.77x the cost. The described cost confirms the size
   dependence: neutral on the medium tables, worse on the small ones, so the size-dependent choice
-  keeps today's encoder where the bigger one does not pay.
+  keeps today's encoder where the bigger one does not pay. **Decided 2026-10-07:** the user adopted the bigger encoder on
+  pendigits_20nan and letter_20nan only, leaving electricity out
+  ([ADR 0018](adr/0018-bigger-encoder-on-the-large-tables.md)).
 - **Sources:** `docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md`;
   `scripts/experiments/architecture_size_report.py`.
