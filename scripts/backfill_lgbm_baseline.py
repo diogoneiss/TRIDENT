@@ -206,9 +206,10 @@ def _scorer(cache_dir: Path | None) -> adr0007.FoldScorerFactory:
     return make
 
 
-# ADR 0017's code reached the checkout at LANDING. A run started before then never logged
-# ``lgbm`` itself, so ``lgbm`` numbers on it without the parent's mark are a pass cut short.
-_LIVE_SINCE_MS = 0  # set when ADR 0017 lands in the checkout
+# ADR 0017's code reached the checkout at 2026-10-06 22:06 GMT-3. A run started before then never
+# logged ``lgbm`` itself, so ``lgbm`` numbers on it without the parent's mark are a pass cut
+# short.
+_LIVE_SINCE_MS = 1791335174074  # 2026-10-06 22:06 GMT-3
 
 
 def _pending(run: Run) -> bool:
