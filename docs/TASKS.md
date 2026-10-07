@@ -85,7 +85,7 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 variants and worse on none (credit-g_20nan a near miss), at 1.82x the time; it advances to a
 21-variant confirmation, which needs the user's go-ahead. F256 alone also advances (better on
 pendigits only); depth alone hurts credit-g_20nan; the final LayerNorm alone hurts pendigits. **The user chose instead (2026-10-06)** to test whether the bigger encoder helps the large
-tables, with a size-dependent default if so: ticket [02](tickets/imputation-architecture/02-bigger-encoder-by-table-size.md), E38.
+tables, with a size-dependent default if so: ticket [02](tickets/imputation-architecture/02-bigger-encoder-by-table-size.md), E38. **Primary read 2026-10-06:** supported, ALL better on pendigits (−3.8%) and letter (−5.6%), no difference on electricity (+0.3%) at 1.77x its cost; **the size-dependent default waits on the user's decision.** E38 was stopped at 15 of 63 cells for ADR 0017; its 48 medium and small cells resume after it.
 
 Every full-profile winner used 4–6 layers (default 2); the feed-forward width (32) is narrower
 than the model width (128), against the usual ~4x; there is no final LayerNorm before the heads

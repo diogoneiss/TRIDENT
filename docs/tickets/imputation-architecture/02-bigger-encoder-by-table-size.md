@@ -92,3 +92,42 @@ reported, not ruled on.
   (11:00 UTC). Nothing else changes; the integrity check compares the four ADR 0007 baselines,
   which the backfill did not alter. Every cell now also fits the two missForest baselines (cached
   per fold), which adds time to the estimate.
+- **Stopped early, 2026-10-06, at the user's request** (relayed by another session and confirmed
+  by the user directly at 20:25 GMT-3), so that ADR 0017 (an `lgbm` baseline in the bar, missForest
+  outside it) could land: STOP files let each queue finish its running cell, the last at 21:12
+  GMT-3. **15 of 63 cells ran, none failed:** all 9 large-table cells (pendigits, letter,
+  electricity) and spambase_60nan and spambase_80nan, seeds 101, 202, 303. The primary reading
+  rests only on the large tables, so it is complete; the other 48 cells (the rest of the medium
+  group and the whole small group, the described cost) are paused and will resume after ADR 0017
+  under the same design. The model's scores do not depend on the baseline code, and the integrity
+  check reads only the four ADR 0007 baselines; the resumed cells' run records will carry ADR
+  0017's baseline set, which is noted when they finish.
+
+## Outcome, primary (2026-10-06, 21:30 GMT-3)
+
+The integrity check passed on all 15 completed pairs (baseline scores equal). ALL − R on the
+induced `impute_score`, 15 fold pairs per variant; lower is better.
+
+| variant | rows | R | ALL | change | ALL − R [95% interval] (seeds 101, 202, 303) | verdict | minutes a cell, R → ALL |
+|---|---|---|---|---|---|---|---|
+| `pendigits_20nan` | 10,992 | 0.3331 | 0.3203 | −3.8% | −0.0128 [−0.0151, −0.0105] (−0.0132, −0.0135, −0.0116) | ALL better | 38 → 73 |
+| `letter_20nan` | 20,000 | 0.4590 | 0.4331 | −5.6% | −0.0259 [−0.0283, −0.0234] (−0.0246, −0.0270, −0.0261) | ALL better | 59 → 111 |
+| `electricity_20nan` | 45,312 | 0.6183 | 0.6204 | +0.3% | +0.0021 [−0.0070, +0.0112] (+0.0049, −0.0000, +0.0015) | none | 101 → 179 |
+
+**Reading, by the rule fixed in advance: supported.** ALL is better on 2 of the 3 large tables and
+worse on none. The mean relative change over the nine (variant, seed) units is −3.0% [−5.1%,
+−1.0%]. By the user's pre-stated choice, the recommendation is the size-dependent default: the
+bigger encoder on the large tables, through their promoted files and an ADR; the user decides.
+
+**Caveats, stated rather than ruled on.**
+- **Electricity, the largest table, gains nothing** (+0.3%, no verdict, masked +0.013 without a
+  verdict) and would pay the cost: 1.77x a cell, about 3 h with four trainers. Its features are
+  few (8) and mostly categorical-time; table size alone does not decide where depth pays.
+- **pendigits replicated** E37's gain on new seeds (−3.8% here, −4.0% there); letter, a real test,
+  gained the most (−5.6%) and now beats its best baseline by a wider margin (0.4331 against
+  0.4722).
+- **Cost on the large tables:** 1.84x a cell summed (73, 111, 179 against 38, 59, 101 minutes).
+- **Medium group, partial (described):** spambase_60nan −0.2% and spambase_80nan −0.2%, both no
+  verdict, at 2.1x and 1.6x a cell. The rest waits for the resumed cells.
+- **Time:** the 15 cells ran 14:48 to 21:12 GMT-3; at stop, the queues were on plan (0.98x of the
+  estimate for the cells done).
