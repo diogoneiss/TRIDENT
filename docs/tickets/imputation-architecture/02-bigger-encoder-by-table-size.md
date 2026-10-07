@@ -102,6 +102,11 @@ reported, not ruled on.
   under the same design. The model's scores do not depend on the baseline code, and the integrity
   check reads only the four ADR 0007 baselines; the resumed cells' run records will carry ADR
   0017's baseline set, which is noted when they finish.
+- **Resumption planned, 2026-10-07:** the user asked to resume the 48 paused cells once the other
+  session's ADR 0017 backfill ends (about 03:30 GMT-3). The cutoff moves to 14:00 GMT-3 on
+  2026-10-07 (17:00 UTC) so the resumed cells (about 4 h) fit; nothing else changes. Their run
+  records carry ADR 0017's baseline set; the model's scores and the four ADR 0007 baselines the
+  integrity check reads do not depend on it.
 
 ## Outcome, primary (2026-10-06, 21:30 GMT-3)
 
