@@ -64,7 +64,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E35 | The gap-chosen checkpoint on E32's seeds | 2026-10-04 | done | replicated: K better on 6 of 21 (2 of E34's 3), worse on none, on seeds 42/7/13; pooled six seeds 6/0; ADR 0015 stands; calibration fails on spambase_20nan again |
 | E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
-| E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – | primary done, rest paused | supported: ALL better on pendigits (−3.8%) and letter (−5.6%), no difference on electricity (+0.3%); stopped early at 15 of 63 cells for ADR 0017 |
+| E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
 
 ## Entries
 
@@ -1141,8 +1141,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E38 · The bigger encoder by table size, on fresh seeds (2026-10-06 – )
 
-- **Status:** primary done; stopped early at the user's request at 15 of 63 cells (14:48 to 21:12
-  GMT-3) so that ADR 0017 could land; the 48 medium and small cells resume after it.
+- **Status:** done, all 63 cells: 15 from 14:48 to 21:12 GMT-3 on 2026-10-06, paused at the user's
+  request so that ADR 0017 could land, the other 48 from 02:32 to 07:15 GMT-3 on 2026-10-07.
 - **Hypothesis:** the bigger encoder (4 layers, feed-forward 256, final LayerNorm), whose E37 gain
   concentrated in pendigits (−4.0%), helps the large tables (10,000 rows or more). The user chose
   in advance a size-dependent default if it holds, so the cost on smaller tables is described.
@@ -1159,11 +1159,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     time.
 - **Results (primary, ALL − R, induced, 15 fold pairs):** pendigits −0.0128 (−3.8%), letter
   −0.0259 (−5.6%), both "ALL better"; electricity +0.0021 (+0.3%), no verdict. Mean relative change
-  over the large tables −3.0% [−5.1%, −1.0%]. Cost 1.84x a cell. Partial medium group:
-  spambase_60nan and _80nan −0.2% each, no verdict.
+  over the large tables −3.0% [−5.1%, −1.0%]. Cost 1.84x a cell. Medium group (8): −0.2%
+  [−0.6%, +0.2%], better on kr-vs-kp_40nan only, worse on none, 1.95x. Small group (10): +1.9%
+  [+0.5%, +3.2%], worse on credit-g_20nan, vehicle_20nan, vehicle_60nan and kc2_60nan, better on
+  none, 1.77x. Integrity: 63 of 63 pairs. The resumed 48 cells took 4 h 43 min against ~4 h.
 - **Conclusion (primary):** supported by the rule fixed in advance; the recommendation is the
   size-dependent default the user chose, bigger encoder on the large tables, with the caveat that
-  electricity, the largest, gains nothing at 1.77x the cost. The described cost on the small and
-  medium tables waits for the resumed cells.
+  electricity, the largest, gains nothing at 1.77x the cost. The described cost confirms the size
+  dependence: neutral on the medium tables, worse on the small ones, so the size-dependent choice
+  keeps today's encoder where the bigger one does not pay.
 - **Sources:** `docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md`;
   `scripts/experiments/architecture_size_report.py`.

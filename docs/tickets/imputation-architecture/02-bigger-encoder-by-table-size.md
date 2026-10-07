@@ -139,3 +139,52 @@ bigger encoder on the large tables, through their promoted files and an ADR; the
   verdict, at 2.1x and 1.6x a cell. The rest waits for the resumed cells.
 - **Time:** the 15 cells ran 14:48 to 21:12 GMT-3; at stop, the queues were on plan (0.98x of the
   estimate for the cells done).
+
+## Outcome, complete (2026-10-07, 07:30 GMT-3)
+
+All 63 cells ran, none failed: 15 from 14:48 to 21:12 GMT-3 on 2026-10-06, the other 48 from 02:32
+to 07:15 GMT-3 on 2026-10-07 after the pause. The integrity check passed on all 63 pairs. The primary
+reading above stands: **supported**. ALL − R on the induced `impute_score`, 15 fold pairs per
+variant; lower is better.
+
+| variant | group | R | ALL | change | ALL − R [95% interval] | verdict | minutes a cell, R → ALL |
+|---|---|---|---|---|---|---|---|
+| `pendigits_20nan` | large | 0.3331 | 0.3203 | −3.84% | −0.0128 [−0.0151, −0.0105] | ALL better | 38 → 73 |
+| `letter_20nan` | large | 0.4590 | 0.4331 | −5.64% | −0.0259 [−0.0283, −0.0234] | ALL better | 58 → 111 |
+| `electricity_20nan` | large | 0.6183 | 0.6204 | +0.34% | +0.0021 [−0.0070, +0.0112] | none | 101 → 179 |
+| `kr-vs-kp_20nan` | medium | 0.5866 | 0.5951 | +1.45% | +0.0085 [−0.0095, +0.0266] | none | 17 → 32 |
+| `kr-vs-kp_40nan` | medium | 0.7626 | 0.7532 | −1.23% | −0.0094 [−0.0171, −0.0016] | ALL better | 19 → 37 |
+| `kr-vs-kp_60nan` | medium | 0.8711 | 0.8697 | −0.15% | −0.0013 [−0.0107, +0.0081] | none | 19 → 36 |
+| `kr-vs-kp_80nan` | medium | 0.9815 | 0.9810 | −0.06% | −0.0006 [−0.0114, +0.0102] | none | 16 → 31 |
+| `spambase_20nan` | medium | 0.8529 | 0.8473 | −0.66% | −0.0056 [−0.0197, +0.0084] | none | 34 → 70 |
+| `spambase_40nan` | medium | 0.9068 | 0.9019 | −0.53% | −0.0048 [−0.0119, +0.0022] | none | 36 → 75 |
+| `spambase_60nan` | medium | 0.9404 | 0.9386 | −0.20% | −0.0019 [−0.0046, +0.0009] | none | 33 → 70 |
+| `spambase_80nan` | medium | 0.9846 | 0.9830 | −0.17% | −0.0016 [−0.0046, +0.0013] | none | 37 → 60 |
+| `credit-g_20nan` | small | 0.8751 | 0.8932 | +2.07% | +0.0181 [+0.0056, +0.0306] | R better | 6 → 11 |
+| `credit-g_40nan` | small | 0.9662 | 0.9549 | −1.17% | −0.0113 [−0.0242, +0.0016] | none | 4 → 9 |
+| `credit-g_60nan` | small | 0.9932 | 0.9852 | −0.81% | −0.0080 [−0.0215, +0.0055] | none | 4 → 7 |
+| `credit-g_80nan` | small | 1.0105 | 1.0078 | −0.26% | −0.0026 [−0.0097, +0.0044] | none | 5 → 8 |
+| `vehicle_20nan` | small | 0.4113 | 0.4255 | +3.44% | +0.0142 [+0.0074, +0.0210] | R better | 4 → 6 |
+| `vehicle_60nan` | small | 0.6398 | 0.6579 | +2.82% | +0.0180 [+0.0030, +0.0331] | R better | 3 → 6 |
+| `biodeg_20nan` | small | 0.5898 | 0.5913 | +0.25% | +0.0015 [−0.0122, +0.0151] | none | 8 → 15 |
+| `biodeg_60nan` | small | 0.7644 | 0.7702 | +0.76% | +0.0058 [−0.0081, +0.0197] | none | 7 → 12 |
+| `kc2_20nan` | small | 0.5363 | 0.5797 | +8.09% | +0.0434 [−0.0189, +0.1057] | none | 2 → 4 |
+| `kc2_60nan` | small | 0.5529 | 0.5739 | +3.80% | +0.0210 [+0.0001, +0.0419] | R better | 3 → 3 |
+
+**By group (described, as the user asked):**
+
+| group | variants | ALL better | R better | mean relative change [95% interval] | cost a cell |
+|---|---|---|---|---|---|
+| large (≥10,000 rows) | 3 | 2 | 0 | −3.0% [−5.1%, −1.0%] | 1.84x |
+| medium (3,196–4,601 rows) | 8 | 1 (kr-vs-kp_40nan) | 0 | −0.2% [−0.6%, +0.2%] | 1.95x |
+| small (~520–1,055 rows) | 10 | 0 | 4 | +1.9% [+0.5%, +3.2%] | 1.77x |
+
+**Reading.** The size dependence holds across all three groups: the bigger encoder helps the large
+tables, is neutral on the medium ones at almost twice the cost, and hurts the small ones (worse on
+credit-g_20nan +2.1%, vehicle_20nan +3.4%, vehicle_60nan +2.8%, kc2_60nan +3.8%; better on none).
+The size-dependent default the user chose fits that pattern: the large tables get it, the others
+keep today's encoder. Electricity, the largest table, remains the exception (no gain at 1.77x).
+
+**Time.** The 48 resumed cells took 4 h 43 min against about 4 h estimated (1.18x); the two
+baselines added by ADRs 0016 and 0017, computed in every fold, are the likely share of the
+difference.
