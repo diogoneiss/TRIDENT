@@ -112,6 +112,23 @@ def test_a_run_whose_missforest_is_not_reproduced_is_refused() -> None:
     assert plan.parent == {} and plan.tags == {}
 
 
+def test_a_knn_or_hgb_that_differs_in_the_last_digits_is_not_a_refusal() -> None:
+    """Runs recorded on the Windows PC carry KNN and hgb numbers this machine reproduces
+    only to about 1e-4 (KNN breaks distance ties differently). They are not checked; the
+    gap to a bar that moves to hgb reads hgb's fold values from the run's own artifact."""
+    logged = {**backfill._as_planned_from(_logged()), **_stats(f"{INDUCED}/baseline/knn5/impute_score", [0.95, 0.95])}
+    recomputed = _recomputed((0.95, 0.95))
+    for fold in recomputed.values():
+        fold[f"{INDUCED}/baseline/knn5/impute_score"] = 0.95034
+        fold[f"{INDUCED}/baseline/hgb/impute_score"] += 3e-4
+
+    plan = backfill.plan_lgbm("run", "impute_toy_20nan_x", logged, TAGS, recomputed, {}, ROWS)
+
+    assert plan.refused is None
+    assert plan.moved == {INDUCED: ("missforest", "hgb")}
+    assert plan.parent[f"cv/test/{INDUCED}/gap_to_best_baseline/impute_score/mean"] == pytest.approx(-0.1)
+
+
 @pytest.fixture
 def client(tmp_path, monkeypatch) -> MlflowClient:
     previous_tracking_uri = mlflow.get_tracking_uri()

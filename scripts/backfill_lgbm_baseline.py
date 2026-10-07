@@ -17,9 +17,12 @@ and each diagnostic child's fold value. With it, per run:
   fold. On the runs whose bar ADR 0016's backfill moved to missForest this moves it back.
 
 Every baseline is recomputed through the live cache (all three families), and a run is
-written only if that recomputation reproduces, within 1e-9, every baseline mean it logged
-(``missforest_lgbm`` aside, withdrawn and no longer computed): these are its own cells, and
-the edited missForest module still gives the numbers ADR 0016 logged. ``missforest_lgbm``'s
+written only if that recomputation reproduces, within 1e-9, every mean/mode and missForest
+mean it logged: these are its own cells, and the edited missForest module still gives the
+numbers ADR 0016 logged. KNN and hgb are recomputed but not checked: on runs recorded on
+the Windows PC their last digits differ by machine. Where the bar moves to one of them, its
+fold values come from the run's own ``raw_fold_metrics.csv`` when it has them, and the gap
+is written only if they average to the logged means. ``missforest_lgbm``'s
 numbers stay on the runs that carry them; no API deletes a metric. Rewritten values are
 logged again at step 0, MLflow's latest value is the newer one and the history keeps all;
 ``cv_summary.json`` artifacts are not rewritten. A tree is marked ``lgbm_backfilled=true``,
@@ -63,8 +66,12 @@ from src.training.tracking import _summary_metrics  # noqa: E402
 from src.training.types import DEFAULT_BASELINE_CACHE_DIR  # noqa: E402
 
 NEW_BASELINES = ("lgbm",)
-# Every baseline still computed: the run's own numbers for each are checked.
-_CHECKED = frozenset({"mean_mode", "knn5", "knn10", "hgb", "lgbm", "missforest"})
+# The baselines whose logged numbers this machine reproduces to 1e-9 on any run: mean/mode
+# (the run's own cells, truths and naive fills) and missForest (only ever computed here,
+# and the module ADR 0017 edited). KNN and hgb are not: on runs recorded on the Windows PC
+# their last digits differ (KNN breaks distance ties differently: 3.4e-4 on
+# vehicle_60nan of 2026-09-25), which is also why the cache keys on the machine.
+_CHECKED = frozenset({"mean_mode", "missforest"})
 _BEST_TAG = "best_baseline/"
 
 
