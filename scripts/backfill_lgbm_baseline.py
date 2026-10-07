@@ -38,6 +38,7 @@ a pass so dry runs fill the cache in parallel before a single ``--apply`` writes
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 import time
 from dataclasses import dataclass, field
@@ -66,13 +67,20 @@ from src.training.tracking import _summary_metrics  # noqa: E402
 from src.training.types import DEFAULT_BASELINE_CACHE_DIR  # noqa: E402
 
 NEW_BASELINES = ("lgbm",)
-# The baselines whose logged numbers this machine reproduces to 1e-9 on any run: mean/mode
-# (the run's own cells, truths and naive fills) and missForest (only ever computed here,
-# and the module ADR 0017 edited). KNN and hgb are not: on runs recorded on the Windows PC
-# their last digits differ (KNN breaks distance ties differently: 3.4e-4 on
-# vehicle_60nan of 2026-09-25), which is also why the cache keys on the machine.
-_CHECKED = frozenset({"mean_mode", "missforest"})
+# The baseline whose logged numbers must be reproduced to 1e-9: mean/mode, which says
+# these are the run's own cells, truths and naive fills. KNN and hgb are not checked: on
+# runs recorded on the Windows PC their last digits differ (KNN breaks distance ties
+# differently: 3.4e-4 on vehicle_60nan of 2026-09-25), which is also why the cache keys on
+# the machine. missForest is corrected rather than checked (``EXTERNAL``).
+_CHECKED = frozenset({"mean_mode"})
+# ADR 0016 logged missForest from forests that predicted on several threads, whose sums
+# depend on the order the trees finish (a CV mean 1.4e-4 off on kr-vs-kp_60nan, seed 7).
+# The single-threaded recomputation replaces the logged numbers wherever they differ.
+_CORRECTED = EXTERNAL_BASELINES
 _BEST_TAG = "best_baseline/"
+_NAMES = "|".join(EXTERNAL_BASELINES)
+_EXTERNAL_STAT = re.compile(rf"cv/test/(impute/.+)/baseline/({_NAMES})/([^/]+)/([^/]+)")
+_EXTERNAL_FOLD = re.compile(rf"test/(impute/.+)/baseline/({_NAMES})/([^/]+)")
 
 
 @dataclass
@@ -88,6 +96,9 @@ class Plan:
     children: dict[str, dict[str, float]] = field(default_factory=dict)
     tags: dict[str, str] = field(default_factory=dict)
     moved: dict[str, tuple[str, str]] = field(default_factory=dict)
+    # Per ``<population>/<metric>`` of an external baseline, how far the logged mean was
+    # from the recomputed one, where it was rewritten.
+    corrected: dict[str, float] = field(default_factory=dict)
     refused: str | None = None
 
 
@@ -107,10 +118,38 @@ def plan_lgbm(
     run's own fold values as ``raw_fold_metrics.csv`` keeps them.
     """
     plan = Plan(run_id, name)
-    base = adr0007.plan_run(run_id, name, logged, folds, children, checked=_CHECKED)
+    corrected_parts = [f"/baseline/{baseline}/" for baseline in _CORRECTED]
+    without = {key: value for key, value in logged.items() if not any(part in key for part in corrected_parts)}
+    base = adr0007.plan_run(run_id, name, without, folds, children, checked=_CHECKED)
     if base.refused is not None:
         plan.refused = base.refused
         return plan
+    # An external baseline's planned numbers are kept, for a population and metric, only
+    # where some statistic the run logged differs from them, or none was logged at all.
+    groups: dict[str, list[tuple[float | None, float]]] = {}
+    for key, value in base.parent.items():
+        match = _EXTERNAL_STAT.fullmatch(key)
+        if match is not None:
+            groups.setdefault(f"{match.group(1)}/{match.group(2)}/{match.group(3)}", []).append((logged.get(key), value))
+    changed: dict[str, float] = {}
+    for group, pairs in groups.items():
+        held = [(old, new) for old, new in pairs if old is not None]
+        if not held or any(abs(old - new) > adr0007.TOLERANCE for old, new in held):
+            population, baseline, metric = group.rsplit("/", 2)
+            mean = logged.get(f"cv/test/{population}/baseline/{baseline}/{metric}/mean")
+            planned = base.parent[f"cv/test/{population}/baseline/{baseline}/{metric}/mean"]
+            changed[group] = abs(planned - mean) if mean is not None else float("inf")
+    base.parent = {key: value for key, value in base.parent.items() if _kept(_EXTERNAL_STAT, key, changed)}
+    base.children = {
+        child: {key: value for key, value in metrics.items() if _kept(_EXTERNAL_FOLD, key, changed)}
+        for child, metrics in base.children.items()
+    }
+    plan.corrected = {
+        key.replace(f"/{baseline}/", "/"): distance
+        for key, distance in changed.items()
+        for baseline in _CORRECTED
+        if f"/{baseline}/" in key
+    }
     after = {**logged, **base.parent}
     merged = {fold: {**folds.get(fold, {}), **values} for fold, values in rows.items()}
 
@@ -144,6 +183,13 @@ def plan_lgbm(
     plan.tags = best_tags
     plan.moved = moved
     return plan
+
+
+def _kept(pattern: re.Pattern[str], key: str, changed: Mapping[str, float]) -> bool:
+    """Whether a planned key is written: anything but an external baseline's, and those
+    only for a population and metric whose logged numbers are being corrected."""
+    match = pattern.fullmatch(key)
+    return match is None or f"{match.group(1)}/{match.group(2)}/{match.group(3)}" in changed
 
 
 def plan_external_gaps(
@@ -302,9 +348,14 @@ def main(argv: list[str] | None = None) -> int:
             f"{plan.parent[f'cv/test/{population}/{GAP_TO_BEST_BASELINE}/impute_score/mean']:+.4f}"
             for population, (old, new) in sorted(plan.moved.items())
         )
+        fixes = (
+            f"; missForest corrected on {len(plan.corrected)} metric(s), up to {max(plan.corrected.values()):.2g}"
+            if plan.corrected
+            else ""
+        )
         print(
             f"[{mode}] {name}: +{len(plan.parent)} parent metrics on {len(plan.children)} children"
-            f"{'; ' + shifts if shifts else ''} ({seconds:.0f} s)",
+            f"{'; ' + shifts if shifts else ''}{fixes} ({seconds:.0f} s)",
             flush=True,
         )
         moved += bool(plan.moved)

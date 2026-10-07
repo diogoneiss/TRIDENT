@@ -76,6 +76,23 @@ def test_lightgbm_fills_the_same_way_whatever_the_thread_count(monkeypatch) -> N
     pd.testing.assert_frame_equal(fills[1], fills[2])
 
 
+def test_lightgbm_fills_bitwise_alike_every_time_it_is_asked() -> None:
+    """The check missForest's threaded forests failed (ADR 0017): on a noisy target every
+    leaf value is inexact, so a prediction summed in a varying order would move."""
+    stream = np.random.default_rng(1)
+    train = _step_frame(840)
+    train["level"] = train["level"] + stream.normal(0, 1, len(train))
+    test = _step_frame(420)
+    hidden = np.zeros(test.shape, dtype=bool)
+    hidden[:, test.columns.get_loc("level")] = True
+
+    imputer = _imputer()
+    imputer.fit(train)
+    fills = [imputer.impute(test, hidden)["level"].to_numpy() for _ in range(5)]
+
+    assert all(np.array_equal(fills[0], other) for other in fills[1:])
+
+
 def test_lightgbm_leaves_every_global_random_stream_untouched() -> None:
     train = _step_frame(420)
     test = _step_frame(21)

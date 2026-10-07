@@ -62,8 +62,11 @@ MISSFOREST_SEED = 0
 TREES = 100
 _REGRESSION_FEATURES = 1 / 3
 _REGRESSION_LEAF = 5
-# Threads per forest. The result does not depend on it (each tree is seeded from the
+# Threads a forest is grown on. The trees do not depend on it (each is seeded from the
 # forest's seed), so it only weighs speed against the cores a training run shares with it.
+# A forest predicts on one thread: on several it sums its trees in whatever order they
+# finish, which moves every fill in the last bits from call to call and can flip a
+# near-tied category (ADR 0017).
 THREADS = 8
 
 _ColumnModel = RandomForestRegressor | RandomForestClassifier | _Constant
@@ -201,21 +204,25 @@ class MissForestImputer:
             return _Constant(float(values[0]))
         if features.shape[1] == 0:
             return _Constant(float(target.mean()) if numerical else float(values[counts.argmax()]))
+        forest: RandomForestRegressor | RandomForestClassifier
         if numerical:
-            return RandomForestRegressor(
+            forest = RandomForestRegressor(
                 n_estimators=TREES,
                 max_features=_REGRESSION_FEATURES,
                 min_samples_leaf=_REGRESSION_LEAF,
                 random_state=MISSFOREST_SEED,
                 n_jobs=THREADS,
             ).fit(features, target)
-        return RandomForestClassifier(
-            n_estimators=TREES,
-            max_features="sqrt",
-            min_samples_leaf=1,
-            random_state=MISSFOREST_SEED,
-            n_jobs=THREADS,
-        ).fit(features, target.astype(int))
+        else:
+            forest = RandomForestClassifier(
+                n_estimators=TREES,
+                max_features="sqrt",
+                min_samples_leaf=1,
+                random_state=MISSFOREST_SEED,
+                n_jobs=THREADS,
+            ).fit(features, target.astype(int))
+        forest.n_jobs = 1
+        return forest
 
     def _change(
         self, before: NDArray[np.float64], after: NDArray[np.float64], gaps: NDArray[np.bool_]

@@ -57,6 +57,7 @@ class HistGradientBoostingClassifier:
     def predict_proba(self, X: ArrayLike) -> NDArray[np.float64]: ...
 
 class RandomForestRegressor:
+    n_jobs: int | None
     def __init__(
         self,
         n_estimators: int = ...,
@@ -76,6 +77,7 @@ class RandomForestRegressor:
 
 class RandomForestClassifier:
     classes_: NDArray[Any]
+    n_jobs: int | None
     def __init__(
         self,
         n_estimators: int = ...,

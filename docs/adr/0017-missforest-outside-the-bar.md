@@ -56,25 +56,42 @@ the bar (worse than the forest on every variant of both populations).
 
 5. **Three cache families:** ADR 0007's four (key unchanged since ADR 0007, so its entries
    stay valid), `lgbm`, and missForest. Editing `missforest.py` invalidated missForest's
-   entries; they are recomputed by the backfill below, which doubles as a check that the
-   edited module gives, to 1e-9, every missForest number ADR 0016 logged.
+   entries; the backfill below recomputes them.
 
-6. **The backfill, `scripts/backfill_lgbm_baseline.py`,** replaces
+6. **missForest predicts on one thread** (a defect of ADR 0016, found by this ADR's first
+   dry run). A forest grown on several threads is the same forest, but scikit-learn also
+   *predicts* on them, adding each tree's output into a shared sum in whatever order the
+   trees finish: every call moves the fills in the last bits (30 calls out of 30 on a toy
+   forest), and where a vote is nearly tied a category flips. ADR 0016's thread test passed
+   on data without ties. Caught on `kr-vs-kp_60nan`, seed 7: the logged induced
+   `acc_cat` mean was 0.824166, and two recomputations, by the module before and after
+   decision 4, both gave 0.824022. The forest is now set to one thread once grown;
+   repeated fills are bitwise identical (unit test on a noisy target, red before the
+   fix), and so are `lgbm`'s, whose LightGBM sums each row's trees in a fixed order.
+
+7. **The backfill, `scripts/backfill_lgbm_baseline.py`,** replaces
    `scripts/backfill_missforest_baselines.py` (which, left runnable, would re-derive a bar
    with missForest in it). For every imputation parent with ADR 0007 baselines that lacks
    `lgbm` or the mark `lgbm_backfilled`: recompute every baseline through the live cache;
-   refuse the run unless every baseline mean it logged (`missforest_lgbm` aside) is
-   reproduced within 1e-9; write `lgbm` on parent and children and `gap_to_missforest*` on
-   the parent; choose the bar again and, where it differs from the tag, rewrite
-   `baseline/best`, the tag and `gap_to_best_baseline*`. On the 476 runs ADR 0016 moved to
+   refuse the run unless its mean/mode means are reproduced within 1e-9 (its own cells);
+   **correct** its missForest numbers (parent statistics and the children's fold values)
+   wherever the single-threaded recomputation differs from what ADR 0016 logged, and report
+   by how much; write `lgbm` on parent and children and `gap_to_missforest*` on the parent;
+   choose the bar again and, where it differs from the tag, rewrite `baseline/best`, the
+   tag and `gap_to_best_baseline*`. KNN and hgb are recomputed but not checked: on runs
+   recorded on the Windows PC their last digits differ by machine (the first dry run found
+   KNN 3.4e-4 off on `vehicle_60nan` of 2026-09-25), which is why the cache keys on the
+   machine; a bar that moves to one of them takes its fold values from the run's own
+   `raw_fold_metrics.csv` and its gap only if they average to the logged means. On the 476 runs ADR 0016 moved to
    missForest that leaves `baseline/best/*` with three step-0 entries (the original, the
    missForest one, this one); MLflow's latest value is this one. `cv_summary.json`
    artifacts are not rewritten: E38's 63 runs name missForest as best there. The parent's
    mark is written last and the mirror index is shared across trees, as in 0016's second
    pass.
 
-7. **Applied after E38.** Every E38 cell is a fresh process reading the checkout, so this
-   lands only after its last cell (about 00:10 GMT-3 on 2026-10-07): E38 is one baseline set
+8. **Applied after E38.** Every E38 cell is a fresh process reading the checkout, so this
+   landed only after its last cell. The user stopped E38 early; its queues exited at 21:12
+   GMT-3 with 15 of 63 cells, and ADR 0017 landed at 22:06 GMT-3. E38 is one baseline set
    throughout, and the backfill brings its runs to this ADR with the rest.
 
 ## Considered options

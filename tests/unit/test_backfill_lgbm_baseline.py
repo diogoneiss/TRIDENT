@@ -103,13 +103,24 @@ def test_where_lgbm_does_not_beat_hgb_the_bar_moves_back_to_hgb() -> None:
     assert plan.parent[f"cv/test/{INDUCED}/gap_to_missforest/impute_score/mean"] == pytest.approx(0.05)
 
 
-def test_a_run_whose_missforest_is_not_reproduced_is_refused() -> None:
-    """Every baseline the run logged is checked against its recomputation, missForest
-    included: the edited module must still give the numbers ADR 0016 logged."""
-    plan = _plan((0.85, 0.85), forest=(0.7, 0.81))
+def test_a_missforest_logged_from_a_threaded_prediction_is_corrected() -> None:
+    """ADR 0016 logged missForest from forests that predicted on several threads, whose fills
+    could differ between passes. Where the single-threaded recomputation differs, its numbers
+    replace the logged ones (parent statistics and the child's fold value) and the gap to
+    missForest is taken from them: fold 2 at 0.81 instead of 0.8 gives a mean of 0.755 and
+    gaps of 0.2 and -0.11, mean 0.045. Where it agrees, nothing of missForest is written."""
+    corrected = _plan((0.85, 0.85), forest=(0.7, 0.81), children={"child": 2})
 
-    assert plan.refused is not None and "missforest" in plan.refused
-    assert plan.parent == {} and plan.tags == {}
+    assert corrected.refused is None
+    assert corrected.parent[f"cv/test/{INDUCED}/baseline/missforest/impute_score/mean"] == pytest.approx(0.755)
+    assert corrected.parent[f"cv/test/{INDUCED}/gap_to_missforest/impute_score/mean"] == pytest.approx(0.045)
+    assert corrected.children["child"][f"test/{INDUCED}/baseline/missforest/impute_score"] == pytest.approx(0.81)
+    assert corrected.corrected == {f"{INDUCED}/impute_score": pytest.approx(0.005)}
+
+    agreed = _plan((0.85, 0.85), children={"child": 2})
+    assert not any("/baseline/missforest/" in key for key in agreed.parent)
+    assert not any("/baseline/missforest/" in key for key in agreed.children["child"])
+    assert agreed.corrected == {}
 
 
 def test_a_knn_or_hgb_that_differs_in_the_last_digits_is_not_a_refusal() -> None:

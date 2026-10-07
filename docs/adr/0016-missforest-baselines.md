@@ -15,7 +15,10 @@ missForest stays, computed and cached as decided here, but is an external baseli
 the bar, with a gap of its own; the LightGBM learner (`missforest_lgbm`) is withdrawn and a
 single-pass `lgbm` joins the bar. The Outcome table below, the bar of six, is superseded by
 0017's. `scripts/backfill_missforest_baselines.py` was replaced by
-`scripts/backfill_lgbm_baseline.py`.
+`scripts/backfill_lgbm_baseline.py`. Decision 4's claim that the fill is the same at any
+thread count was wrong for the forest's *predictions*, which summed trees in a varying order
+and could flip a near-tied category; 0017 decision 6 fixes it, and its backfill corrects the
+missForest numbers logged here wherever they differ.
 
 ## Context
 

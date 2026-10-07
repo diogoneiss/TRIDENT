@@ -156,6 +156,26 @@ def test_missforest_fills_the_same_way_whatever_the_thread_count(monkeypatch) ->
     pd.testing.assert_frame_equal(fills[1], fills[2])
 
 
+def test_missforest_fills_bitwise_alike_every_time_it_is_asked() -> None:
+    """A forest that predicts on several threads sums its trees in whatever order they
+    finish, so its regression fills move in the last bits from one call to the next and a
+    near-tied vote can flip a category (kr-vs-kp_60nan, seed 7: a CV mean 1.4e-4 off between
+    two passes, ADR 0017). The noisy target makes every leaf a mean of several values, whose
+    sum depends on the order; the fills must still be identical, call after call."""
+    stream = np.random.default_rng(1)
+    train = _step_frame(840)
+    train["level"] = train["level"] + stream.normal(0, 1, len(train))
+    test = _step_frame(420)
+    hidden = np.zeros(test.shape, dtype=bool)
+    hidden[:, test.columns.get_loc("level")] = True
+
+    imputer = _imputer()
+    imputer.fit(train)
+    fills = [imputer.impute(test, hidden)["level"].to_numpy() for _ in range(5)]
+
+    assert all(np.array_equal(fills[0], other) for other in fills[1:])
+
+
 def test_missforest_leaves_every_global_random_stream_untouched() -> None:
     """Every seeded result depends on the global draw sequences, and the regression
     fixtures pin them; a baseline that consumed from one would move numbers that have
