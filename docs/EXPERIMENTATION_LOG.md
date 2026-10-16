@@ -65,6 +65,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
+| E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – | in progress | five reduced studies ranked by the validation gaps; winner (T) vs current file (F) vs no file (D) on seeds 101/202/303 |
 
 ## Entries
 
@@ -1139,7 +1140,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-architecture/01-architecture-screening.md` (Outcome);
   `scripts/experiments/architecture_report.py`.
 
-### E38 · The bigger encoder by table size, on fresh seeds (2026-10-06 – )
+### E38 · The bigger encoder by table size, on fresh seeds (2026-10-06 – 2026-10-07)
 
 - **Status:** done, all 63 cells: 15 from 14:48 to 21:12 GMT-3 on 2026-10-06, paused at the user's
   request so that ADR 0017 could land, the other 48 from 02:32 to 07:15 GMT-3 on 2026-10-07.
@@ -1172,3 +1173,38 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   ([ADR 0018](adr/0018-bigger-encoder-on-the-large-tables.md)).
 - **Sources:** `docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md`;
   `scripts/experiments/architecture_size_report.py`.
+
+### E39 · Re-tuning the promoted files under today's defaults (2026-10-15 – )
+
+- **Status:** in progress. Pre-registered on the night of 2026-10-15 GMT-3; four workers start
+  right after the commit; about 07:00 GMT-3 on 2026-10-16 is the expected end. No job starts after
+  10:00 GMT-3.
+- **Hypothesis:** the five promoted files (credit-g_40nan, kr-vs-kp_20nan, kr-vs-kp_40nan,
+  spambase_20nan, spambase_40nan) carry sampled values chosen on 2026-09-11 under the old
+  configuration and the masked objective. The question is whether a fresh reduced search under
+  today's defaults (ADRs 0013 to 0015), ranked by the validation gaps (ADR 0008), beats them, and
+  whether the files still beat having no file. The prior is a small gain at most: ADR 0005's
+  tuning did not beat the defaults.
+- **Scenarios:**
+  - **Studies:** five, one per file. Each has 40 trials, seed 42, the `reduced` profile and the
+    `induced` objective. No promotion.
+  - **Arms,** on seeds 101/202/303 with five folds each:
+    - **T:** the study's winner, 15 cells;
+    - **D:** today's defaults with no file, 15 cells;
+    - **F:** the current file, read from E34's K readout.
+  - **Tags:** `experiment=retune-2026-10-15`, plus `arm`.
+  - **Out of scope:** pendigits_20nan and letter_20nan (a reduced trial would drop ADR 0018's
+    encoder).
+- **Measures and decision rule:**
+  - **Primary:** T − F, D − F and T − D on the induced `impute_score`, 15 fold pairs each. A
+    verdict needs the interval to exclude zero and all three seeds to agree in sign.
+  - **Recommendation:** an arm qualifies when it beats another arm by verdict and loses to none.
+    Applied in order, first match wins:
+    1. T qualifies: promote the winner.
+    2. D qualifies and beats F: remove the file.
+    3. Otherwise: keep F.
+
+    The user decides, by an ADR.
+  - **Secondary:** masked contrasts, winners beside the files' values, importances, cost.
+- **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md`;
+  `scripts/experiments/retune_report.py`, `retune_run.py`, `run_retune_queue.sh`.

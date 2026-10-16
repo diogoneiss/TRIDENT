@@ -102,6 +102,13 @@ on any of the four variants, so the rule licenses the switch; pendigits leans +0
 three seeds (lower bound at zero), noise-sized. **Decided 2026-10-01: batched is the default** (ADR 0012); the
 check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312231.
 
+### T19 · Re-tune the promoted files under today's defaults — in progress (ticket [imputation-retune/01](tickets/imputation-retune/01-retune-promoted-files.md), E39)
+
+The five promoted files keep sampled values from ADR 0005's studies of 2026-09-11, chosen under the
+old configuration and the masked objective. The user chose to re-tune them on 2026-10-15. The
+study runs five reduced studies ranked by the validation gaps, then compares each winner with the
+current file and with no file at all, on seeds 101/202/303. It runs overnight on 2026-10-16.
+
 ## Backlog
 
 ### Speed
