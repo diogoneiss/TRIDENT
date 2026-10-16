@@ -65,7 +65,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E36 | Showing the gaps as `[MASK]` to pre-training too | 2026-10-05 | done | no gain: PG better on none, worse on electricity_20nan (+0.011); means 0.7450 vs 0.7446; keep `null` |
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
-| E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – | in progress | five reduced studies ranked by the validation gaps; winner (T) vs current file (F) vs no file (D) on seeds 101/202/303 |
+| E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
 
 ## Entries
 
@@ -1174,11 +1174,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md`;
   `scripts/experiments/architecture_size_report.py`.
 
-### E39 · Re-tuning the promoted files under today's defaults (2026-10-15 – )
+### E39 · Re-tuning the promoted files under today's defaults (2026-10-15 – 2026-10-16)
 
-- **Status:** in progress. Pre-registered on the night of 2026-10-15 GMT-3; four workers start
-  right after the commit; about 07:00 GMT-3 on 2026-10-16 is the expected end. No job starts after
-  10:00 GMT-3.
+- **Status:** done. Pre-registered in `00766f4` at 23:34 GMT-3 on 2026-10-15. All 35 jobs ran
+  from 23:34 GMT-3 on 2026-10-15 to 06:56 GMT-3 on 2026-10-16 (7 h 22 min against 6.5 to 7 h
+  planned); none failed.
 - **Hypothesis:** the five promoted files (credit-g_40nan, kr-vs-kp_20nan, kr-vs-kp_40nan,
   spambase_20nan, spambase_40nan) carry sampled values chosen on 2026-09-11 under the old
   configuration and the masked objective. The question is whether a fresh reduced search under
@@ -1206,5 +1206,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
     The user decides, by an ADR.
   - **Secondary:** masked contrasts, winners beside the files' values, importances, cost.
-- **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md`;
+- **Results (induced, 15 fold pairs):**
+
+  | variant | F | D | T | T − F | D − F | T − D |
+  |---|---|---|---|---|---|---|
+  | credit-g_40nan | 0.9662 | 0.9208 | 0.9162 | −0.0501, T better | −0.0454, D better | −0.0046, none |
+  | kr-vs-kp_40nan | 0.7626 | 0.7258 | 0.7234 | −0.0392, T better | −0.0368, D better | −0.0024, none |
+  | spambase_40nan | 0.9068 | 0.9023 | 0.9019 | −0.0048, none | −0.0044, D better | none |
+  | spambase_20nan | 0.8529 | 0.8439 | 0.8535 | none | −0.0091, none | +0.0096, D better |
+  | kr-vs-kp_20nan | 0.5866 | 0.5829 | 0.5830 | none | none | none |
+
+  The integrity check passed on 30 of 30 pairs. In the studies, `LR_DECODE` or `DROPOUT` leads the
+  importances, and credit-g_40nan's winner moved back toward the defaults (decode learning rate
+  1.7e-3 against the file's 8.7e-3).
+- **Conclusion:**
+  - **By the rule fixed in advance:** promote the winner on credit-g_40nan and kr-vs-kp_40nan,
+    remove spambase_40nan's file, and keep the other two.
+  - **The broader reading:** the stale files hurt on three variants, and the re-tuning beats the
+    defaults nowhere. Where T is promoted, D is equivalent (−0.3% and −0.5%, no verdict), so
+    "remove the file" is the decision-equivalent alternative there. ADR 0005's finding (the reduced
+    search does not beat the defaults) replicates under today's regime. The decision is the
+    user's, by an ADR.
+- **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md` (Outcome);
   `scripts/experiments/retune_report.py`, `retune_run.py`, `run_retune_queue.sh`.

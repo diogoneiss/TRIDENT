@@ -1,7 +1,8 @@
 # Re-tuning the promoted imputation files under today's defaults (pre-registered 2026-10-15)
 
-This ticket was written and committed before the first study, on the night of 2026-10-15 GMT-3.
-The workers start right after the commit, so about 07:00 GMT-3 on 2026-10-16 is the expected end.
+This ticket was written and committed before the first study (`00766f4`, 23:34 GMT-3 on
+2026-10-15). The workers started at 23:34:31 GMT-3, so about 07:00 GMT-3 on 2026-10-16 was the
+expected end.
 The user chose this study ("vamos para o 2", 2026-10-15) from the follow-ups left open after ADR
 0018, and asked for it to run overnight.
 
@@ -151,3 +152,97 @@ Three arms, on seeds 101, 202 and 303 (which no study saw), five folds each:
 - **F comes from other runs.** Its cells are E34's (2026-10-03), not tonight's. Check 1 and the
   integrity check guard against drift.
 - **Multiplicity:** 15 primary verdicts (5 variants × 3 contrasts).
+
+## Outcome (2026-10-16, 07:15 GMT-3)
+
+**Run.** All 35 jobs ran from 23:34 GMT-3 on 2026-10-15 to 06:56 GMT-3 on 2026-10-16: 7 h 22 min
+against the 6.5 to 7 h planned. None failed and none is missing.
+
+- **Studies:** each of the five reached 40 trials, none pruned.
+- **Cells:** 15 T and 15 D.
+- **Integrity:** all 30 pairs against F have equal baseline scores.
+
+**Tables.** Numbers come from `scripts/experiments/retune_report.py`; the tables were built from it
+by script. Lower is better; a negative difference favours the first arm. The columns are:
+
+- the induced `impute_score` of each arm, over 15 fold pairs;
+- each contrast as mean [95% interval], then the three seeds' means in parentheses, then the
+  verdict;
+- "rule": the recommendation fixed in advance.
+
+| variant | F | D | T | best baseline | T − F | D − F | T − D | rule |
+|---|---|---|---|---|---|---|---|---|
+| `spambase_40nan` | 0.9068 | 0.9023 | 0.9019 | 0.9345 | −0.0048 [−0.0106, +0.0009] (+0.0008, −0.0069, −0.0084) none | −0.0044 [−0.0081, −0.0007] (−0.0027, −0.0061, −0.0045) D better | −0.0004 [−0.0054, +0.0046] (+0.0035, −0.0007, −0.0040) none | remove the file |
+| `spambase_20nan` | 0.8529 | 0.8439 | 0.8535 | 0.8597 | +0.0006 [−0.0070, +0.0081] (−0.0093, +0.0078, +0.0032) none | −0.0091 [−0.0186, +0.0005] (−0.0225, +0.0028, −0.0074) none | +0.0096 [+0.0015, +0.0177] (+0.0132, +0.0050, +0.0106) D better | keep F |
+| `kr-vs-kp_40nan` | 0.7626 | 0.7258 | 0.7234 | 0.7721 | −0.0392 [−0.0467, −0.0317] (−0.0389, −0.0352, −0.0435) T better | −0.0368 [−0.0449, −0.0286] (−0.0346, −0.0356, −0.0402) D better | −0.0024 [−0.0117, +0.0068] (−0.0043, +0.0004, −0.0033) none | promote T |
+| `kr-vs-kp_20nan` | 0.5866 | 0.5829 | 0.5830 | 0.6118 | −0.0035 [−0.0213, +0.0142] (+0.0055, −0.0091, −0.0070) none | −0.0037 [−0.0142, +0.0069] (−0.0112, +0.0021, −0.0020) none | +0.0001 [−0.0129, +0.0132] (+0.0166, −0.0112, −0.0050) none | keep F |
+| `credit-g_40nan` | 0.9662 | 0.9208 | 0.9162 | 0.9645 | −0.0501 [−0.0603, −0.0398] (−0.0494, −0.0434, −0.0575) T better | −0.0454 [−0.0570, −0.0339] (−0.0393, −0.0447, −0.0522) D better | −0.0046 [−0.0146, +0.0054] (−0.0100, +0.0014, −0.0053) none | promote T |
+
+**Reading, by the rule fixed in advance:**
+
+| recommendation | variants |
+|---|---|
+| promote the study's winner | credit-g_40nan, kr-vs-kp_40nan |
+| remove the file | spambase_40nan |
+| keep the file | spambase_20nan, kr-vs-kp_20nan |
+
+**The current files hurt where they differ from the defaults.** D beats F on three variants:
+
+| variant | D against F |
+|---|---|
+| kr-vs-kp_40nan | −4.8% |
+| credit-g_40nan | −4.7% |
+| spambase_40nan | −0.5% |
+
+D is worse than F on none. With its file, credit-g_40nan scored worse than its best baseline
+(0.9662 against 0.9645); without it, 0.9208. These sampled values have been in effect since the files were
+promoted (`fcaadfb`, 2026-09-11, ADR 0005), so every headline on these five variants since then,
+E30 to E38 included, used them. Tonight's D cells log `config_source = override` (an empty
+override), not `defaults`.
+
+**The re-tuning does not beat the defaults.** T − D has no verdict on four variants and is "D
+better" on spambase_20nan (+1.1%). Where the rule promotes T, D is as good:
+
+| variant | T − D |
+|---|---|
+| kr-vs-kp_40nan | −0.3% |
+| credit-g_40nan | −0.5% |
+
+Neither interval excludes zero. The gain over F on those two variants is the stale values going
+away, not anything the search found. That is ADR 0005's finding, replicated under today's regime.
+So a decision-equivalent alternative to the rule's "promote T" there is "remove the file". The
+pre-stated rule ranks T first and its reading stands; the choice is the user's.
+
+**Secondary measures:**
+
+- **Masked population:**
+
+  | variant | T − F | D − F | T − D | minutes a cell, T / D / F |
+  |---|---|---|---|---|
+  | `spambase_40nan` | −0.0049 [−0.0074, −0.0024] (−0.0045, −0.0060, −0.0042) T better | +0.0032 [−0.0024, +0.0088] (+0.0065, −0.0014, +0.0044) none | −0.0081 [−0.0135, −0.0027] (−0.0110, −0.0046, −0.0085) T better | 34.8 / 35.4 / 35.7 |
+  | `spambase_20nan` | +0.0059 [−0.0011, +0.0130] (+0.0085, +0.0033, +0.0061) none | −0.0035 [−0.0089, +0.0019] (−0.0057, +0.0004, −0.0052) none | +0.0094 [+0.0046, +0.0143] (+0.0142, +0.0029, +0.0113) D better | 36.0 / 35.7 / 34.0 |
+  | `kr-vs-kp_40nan` | −0.0321 [−0.0546, −0.0097] (−0.0434, −0.0496, −0.0035) T better | −0.0372 [−0.0532, −0.0211] (−0.0463, −0.0389, −0.0262) D better | +0.0050 [−0.0145, +0.0245] (+0.0030, −0.0107, +0.0228) none | 18.7 / 19.0 / 18.6 |
+  | `kr-vs-kp_20nan` | −0.0182 [−0.0394, +0.0030] (−0.0274, −0.0018, −0.0253) none | −0.0194 [−0.0304, −0.0084] (−0.0296, −0.0058, −0.0230) D better | +0.0013 [−0.0126, +0.0151] (+0.0022, +0.0040, −0.0023) none | 20.6 / 15.6 / 17.0 |
+  | `credit-g_40nan` | −0.0385 [−0.0682, −0.0089] (−0.0255, −0.0336, −0.0565) T better | −0.0402 [−0.0702, −0.0103] (−0.0282, −0.0171, −0.0754) D better | +0.0017 [−0.0196, +0.0230] (+0.0027, −0.0165, +0.0189) none | 7.9 / 6.9 / 4.5 |
+
+  The masked reading agrees with the induced one, with two exceptions:
+  - spambase_40nan's winner is better than both F and D on the masked cells (−0.008 against D),
+    though not on the induced ones;
+  - D beats F on kr-vs-kp_20nan's masked cells.
+- **Each study's winner beside the file.** Values are winner → file, with the fANOVA importance in
+  parentheses. The objective is a validation score.
+
+  | variant | study h | best trial | objective | `PROB_MASCARA` | `LR_DECODE` | `WEIGHT_DECAY_DECODE` | `DROPOUT` | `LAMBDA_NUM` |
+  |---|---|---|---|---|---|---|---|---|
+  | `spambase_40nan` | 4.94 | 37 | 0.9214 | 0.5 → 0.5 (0.39) | 2.28e-3 → 1.08e-3 (0.52) | 9.98e-3 → 2.97e-4 (0.06) | 0.3 → 0.2 (0.03) | — |
+  | `spambase_20nan` | 4.94 | 32 | 0.8321 | 0.2 → 0.4 (0.04) | 1.36e-3 → 1.33e-3 (0.34) | 3.65e-4 → 4.21e-5 (0.13) | 0.1 → 0.3 (0.49) | — |
+  | `kr-vs-kp_40nan` | 3.10 | 6 | 0.6699 | 0.4 → 0.3 (0.36) | 3.72e-3 → 1.70e-3 (0.25) | 3.97e-5 → 2.15e-4 (0.24) | 0.3 → 0.1 (0.15) | — |
+  | `kr-vs-kp_20nan` | 3.12 | 25 | 0.5298 | 0.5 → 0.2 (0.02) | 5.60e-3 → 1.74e-3 (0.73) | 1.10e-5 → 3.90e-3 (0.00) | 0.3 → 0.2 (0.26) | — |
+  | `credit-g_40nan` | 1.31 | 32 | 0.8561 | 0.6 → 0.2 (0.08) | 1.66e-3 → 8.71e-3 (0.16) | 8.48e-5 → 3.14e-3 (0.04) | 0.5 → 0.2 (0.51) | 0.948 → 0.231 (0.22) |
+
+  `LR_DECODE` leads the importances on three studies of five and `DROPOUT` on two. The defaults
+  are `PROB_MASCARA` 0.5, `LR_DECODE` 1e-3, `WEIGHT_DECAY_DECODE` 1.9e-3, `DROPOUT` 0.2 and
+  `LAMBDA_NUM` 1.0. credit-g_40nan's file had the largest departure from them, a decode learning
+  rate of 8.7e-3 and a loss balance of 0.23, and its winner moved back toward them.
+- **Cost:** T and D cost what F costs on spambase and kr-vs-kp. The credit-g F cells come from
+  E34 under another load, so their 4.5 minutes do not compare.
