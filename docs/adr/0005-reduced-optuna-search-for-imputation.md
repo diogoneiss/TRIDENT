@@ -17,6 +17,10 @@ validation split's induced gaps instead of its masked cells (default unchanged).
 open and out of scope. Records the repair of the shipped Optuna path (commit `161fc92`),
 which also fixed `--retrain_best` for both tasks.
 
+**Amended 2026-10-16** by [ADR 0019](0019-remove-the-stale-promoted-imputation-files.md): the files of credit-g_40nan,
+kr-vs-kp_40nan and spambase_40nan are removed, after E39 found each worse than no file under
+today's defaults; spambase_20nan and kr-vs-kp_20nan keep theirs.
+
 **Amended 2026-10-01** by [ADR 0013](0013-imputation-defaults-from-the-confirmatory-study.md): a held knob takes the task's default, so the reduced
 profile now holds `EPOCHS_DECODE` at 450, the normalised objective and `cosine`; the five promoted
 files were rewritten to those values (their old contents are at `f147c39`); and the

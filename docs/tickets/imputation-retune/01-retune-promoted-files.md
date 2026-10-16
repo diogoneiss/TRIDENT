@@ -246,3 +246,8 @@ pre-stated rule ranks T first and its reading stands; the choice is the user's.
   rate of 8.7e-3 and a loss balance of 0.23, and its winner moved back toward them.
 - **Cost:** T and D cost what F costs on spambase and kr-vs-kp. The credit-g F cells come from
   E34 under another load, so their 4.5 minutes do not compare.
+
+**Decided 2026-10-16:** the user chose to remove the three files that lose to the defaults
+(credit-g_40nan, kr-vs-kp_40nan, spambase_40nan), rather than promote T on two of them, since T
+equals D there. spambase_20nan and kr-vs-kp_20nan keep theirs. See
+[ADR 0019](../../adr/0019-remove-the-stale-promoted-imputation-files.md).

@@ -102,7 +102,7 @@ on any of the four variants, so the rule licenses the switch; pendigits leans +0
 three seeds (lower bound at zero), noise-sized. **Decided 2026-10-01: batched is the default** (ADR 0012); the
 check cell's new reference is induced 0.8863449097353776, masked 0.9256312571312231.
 
-### T19 · Re-tune the promoted files under today's defaults — decision (ticket [imputation-retune/01](tickets/imputation-retune/01-retune-promoted-files.md), E39)
+### T19 · Re-tune the promoted files under today's defaults — done (ADR 0019; ticket [imputation-retune/01](tickets/imputation-retune/01-retune-promoted-files.md), E39)
 
 The five promoted files keep sampled values from ADR 0005's studies of 2026-09-11, chosen under the
 old configuration and the masked objective. The user chose to re-tune them on 2026-10-15. The
@@ -117,7 +117,9 @@ winners beat the defaults on none. The rule fixed in advance says:
 - remove spambase_40nan's file;
 - keep the files of spambase_20nan and kr-vs-kp_20nan.
 
-**This waits on the user's decision,** by an ADR amending ADR 0005.
+**Decided 2026-10-16:** the three files that lose to the defaults are removed
+([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)). The other two stay, and no
+winner is promoted.
 
 ## Backlog
 

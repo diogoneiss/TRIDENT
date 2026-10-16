@@ -1225,7 +1225,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **The broader reading:** the stale files hurt on three variants, and the re-tuning beats the
     defaults nowhere. Where T is promoted, D is equivalent (−0.3% and −0.5%, no verdict), so
     "remove the file" is the decision-equivalent alternative there. ADR 0005's finding (the reduced
-    search does not beat the defaults) replicates under today's regime. The decision is the
-    user's, by an ADR.
+    search does not beat the defaults) replicates under today's regime.
+  - **Decided 2026-10-16:** the user removed the three files that lose to the defaults
+    (credit-g_40nan, kr-vs-kp_40nan, spambase_40nan) and kept the other two
+    ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)).
 - **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md` (Outcome);
   `scripts/experiments/retune_report.py`, `retune_run.py`, `run_retune_queue.sh`.
