@@ -121,6 +121,13 @@ winners beat the defaults on none. The rule fixed in advance says:
 ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)). The other two stay, and no
 winner is promoted.
 
+### T20 · Calibration at 40% missing and above — in progress (ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
+
+E34 and E35 found the calibrated readout never worse than K at 40nan and above, and better in both
+seed sets on 6 variants. It failed at 20nan. The user chose on 2026-10-16 to confirm the rule
+"calibrate at 40% missing or more" on fresh seeds, 404, 505 and 606. Adopting it would need a code
+change and an ADR.
+
 ## Backlog
 
 ### Speed

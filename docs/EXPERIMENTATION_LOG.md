@@ -66,6 +66,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
 | E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
+| E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 – | in progress | KC vs K within-run on the 12 variants at ≥40nan, seeds 404/505/606; supported if KC better on ≥4 of 6 named and K better on none |
 
 ## Entries
 
@@ -1231,3 +1232,30 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)).
 - **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md` (Outcome);
   `scripts/experiments/retune_report.py`, `retune_run.py`, `run_retune_queue.sh`.
+
+### E40 · Calibration at 40% missing and above, on fresh seeds (2026-10-16 – )
+
+- **Status:** in progress. Pre-registered on the morning of 2026-10-16 GMT-3; four queues start
+  right after the commit; about 13:30 GMT-3 is the expected end. No cell starts after 18:00 GMT-3.
+- **Hypothesis:** the calibration fitted on the validation gaps (KC) helps at 40% missing and
+  above, where E34 and E35 never found it worse than K and found it better on 6 variants in both
+  seed sets. At 20nan it failed (spambase_20nan, kr-vs-kp_20nan), so the rule leaves those alone.
+- **Scenarios:**
+  - **Cells:** one run per (variant, seed) of today's default with `--score_calibrated`, so K is
+    the headline and KC the calibrated readout, within-run.
+  - **Variants:** the 12 at ≥40nan.
+  - **Seeds:** 404, 505 and 606, unused by any earlier study; 36 cells.
+  - **Tag:** `experiment=calibration-2026-10-16`.
+- **Measures and decision rule:**
+  - **Primary:** KC − K on the induced `impute_score`, 15 fold pairs per variant. A verdict needs
+    the interval to exclude zero and all three seeds to agree in sign.
+  - **Reading:**
+    - **supported** if KC is better on ≥4 of the 6 named variants (kr-vs-kp_80nan,
+      spambase_60nan, spambase_80nan, credit-g_60nan, credit-g_80nan, vehicle_60nan) and K is
+      better on none of the 12. Adoption would need a code change and an ADR.
+    - **refuted** if K is better on any of the 12;
+    - **mixed** otherwise.
+  - **Secondary:** counts over all 12, the mean per level, α, how many variants each arm puts
+    below the best baseline, and cost.
+- **Sources:** `docs/tickets/imputation-calibration/01-calibration-at-higher-missingness.md`;
+  `scripts/experiments/calibration_report.py`, `calibration_run.py`, `run_calibration_queue.sh`.
