@@ -214,12 +214,16 @@ Rejected on the way:
      only copy, and `store_replica.py sync` restores the store from it.
 
    The copy is as old as the last refresh, at most about ten minutes. Outputs come as in any
-   pull: a file a running training is still writing may arrive incomplete, and the next
-   pull replaces it (decision 6). A write to the copy here changes this checkout's store,
-   and decision 2 then refuses the next pull.
+   pull, except that the trainings keep changing them: a file still being written may arrive
+   incomplete, and the next pull replaces it (decision 6); a file deleted between rsync's
+   listing and its transfer (the artifact retention prunes them) makes rsync exit with 24,
+   "vanished source files", which every transfer now reports and passes over. Any other
+   rsync error still stops the sync. A write to the copy here changes this checkout's
+   store: decision 2 then refuses the next pull, and `status` says to move this checkout's
+   store aside, never the server's.
 
    Every pull, with the flag or without, deletes the server's `sync/outgoing.db` once
-   fetched, through a remote step that removes that one file: it is a whole store on the
+   fetched, or once a fetch fails, through a remote step that removes that one file: it is a whole store on the
    hard disk (6.4 GB on 2026-10-16), and the `delete` step cannot take it, since it refuses
    anything under `sync/` by design (decision 5).
 

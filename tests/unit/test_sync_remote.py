@@ -11,6 +11,7 @@ import sqlite3
 import stat
 import subprocess
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import Callable
 
@@ -18,6 +19,7 @@ import pytest
 from mlflow.tracking import MlflowClient
 
 from scripts.sync_remote import (
+    RsyncTransport,
     StoreError,
     SyncConfig,
     SyncError,
@@ -27,6 +29,7 @@ from scripts.sync_remote import (
     push_code,
     push,
     remote_command,
+    status,
     translate_store,
 )
 
@@ -544,6 +547,71 @@ def test_a_pull_refuses_a_link_whose_store_is_gone(workspace: Workspace, tmp_pat
     for while_busy in (False, True):
         with pytest.raises(StoreError, match="store_replica.py sync"):
             pull(workspace, apply=True, while_busy=while_busy)
+
+
+def test_files_a_training_deletes_during_the_fetch_do_not_fail_it(
+    workspace: Workspace, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # While the server trains, a pull lists outputs that the training's artifact retention
+    # then deletes; rsync says so with exit 24, and the next pull is complete again. Any
+    # other partial transfer (23: permissions, I/O) is still an error.
+    transport = RsyncTransport(workspace.root, workspace.config)
+    for code in (24, 23):
+        monkeypatch.setattr(
+            transport,
+            "_run",
+            lambda command, stdin=None, code=code: subprocess.CompletedProcess(
+                command, code, b">f+++++++++ 1/run/artifacts/fold_1.csv\n",
+                b"file has vanished: \"/scratch/x\"\n",
+            ),
+        )
+        if code == 24:
+            assert transport.fetch_dir("mlruns", dry_run=False) == 1
+        else:
+            with pytest.raises(SyncError, match="23"):
+                transport.fetch_dir("mlruns", dry_run=False)
+
+
+def test_a_pull_that_fails_while_fetching_still_deletes_the_servers_copy(
+    workspace: Workspace,
+) -> None:
+    local, server = workspace.root, server_root(workspace)
+    make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    (server / "results").mkdir()
+
+    class DroppedConnection(DirectoryServer):
+        def fetch_dir(self, relative: str, *, dry_run: bool) -> int:
+            raise SyncError("rsync exited with 255: connection closed")
+
+    dropped = replace(workspace, transport=DroppedConnection(local, server))
+    with pytest.raises(SyncError, match="connection closed"):
+        pull(dropped, apply=True)
+
+    assert not (server / "sync" / "outgoing.db").exists()
+
+
+def test_status_after_writing_to_a_copy_says_to_set_the_copy_aside(workspace: Workspace) -> None:
+    # Both stores differ from the state, which status otherwise calls a divergence to be
+    # settled either way; after a copy only the server's is the store to keep.
+    local, server = workspace.root, server_root(workspace)
+    experiment_id, _ = make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    make_replica(server)
+    trainer = sqlite3.connect(server / "mlflow.db")
+    try:
+        pull(workspace, apply=True, while_busy=True)
+    finally:
+        trainer.close()
+    client_for(local / "mlflow.db").set_tag(
+        client_for(local / "mlflow.db").search_runs([experiment_id])[0].info.run_id, "note", "x"
+    )
+    said: list[str] = []
+
+    status(replace(workspace, say=said.append))
+
+    assert not any("DIVERGED" in line for line in said)
+    assert any("move this checkout's mlflow.db aside" in line for line in said)
 
 
 def test_an_empty_wal_left_by_a_reader_does_not_stop_a_pull(workspace: Workspace) -> None:

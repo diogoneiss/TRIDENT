@@ -59,6 +59,8 @@ OUTGOING_FILE = f"{SYNC_DIR}/outgoing.db"
 REPLICA_FILE = f"{SYNC_DIR}/mlflow.replica.db"
 # Three missed cron turns: past this, the copies have stopped and the replica is refused.
 REPLICA_MAX_AGE_SECONDS = 30 * 60
+# rsync's "partial transfer due to vanished source files": not an error (decision 8).
+RSYNC_VANISHED = 24
 # argparse already exits with 2 on a usage error.
 EXIT_REFUSED = 3
 # Plain files, each written once by one run: copied additively in both directions.
@@ -742,13 +744,15 @@ def pull(workspace: Workspace, *, apply: bool, while_busy: bool = False) -> None
             f"[{mode}] the server's store is open by {', '.join(_names(snapshot['holders']))}: "
             f"copying its replica of {_local_time(replica_taken)} instead"
         )
-    for name in _names(snapshot["dirs"]):
-        changed = transport.fetch_dir(name, dry_run=not apply)
-        workspace.say(f"[{mode}] {name}/: {changed} files fetched")
-    (workspace.root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
-    transport.fetch_file(OUTGOING_FILE, f"{SYNC_DIR}/incoming.db", dry_run=False)
-    # A whole store's size on the server's disk, every pull, once it is here.
-    transport.remote("discard", "--root", config.remote_root)
+    try:
+        for name in _names(snapshot["dirs"]):
+            changed = transport.fetch_dir(name, dry_run=not apply)
+            workspace.say(f"[{mode}] {name}/: {changed} files fetched")
+        (workspace.root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
+        transport.fetch_file(OUTGOING_FILE, f"{SYNC_DIR}/incoming.db", dry_run=False)
+    finally:
+        # A whole store's size on the server's disk, every pull, fetched or not.
+        transport.remote("discard", "--root", config.remote_root)
     incoming = workspace.root / SYNC_DIR / "incoming.db"
     counts = translate_store(incoming, config.remote_prefix, config.local_prefix)
     workspace.say(f"[{mode}] store translated for this checkout: {counts}")
@@ -811,7 +815,12 @@ def status(workspace: Workspace) -> None:
         refuse_if_server_has_commits(workspace.root, _branches(server["branches"]))
     except SyncError as error:
         workspace.say(f"code and push would be refused: {error}")
-    if local_changed and remote_changed:
+    if local_changed and state.pulled_while_busy:
+        workspace.say(
+            "this checkout's copy was written to after the pull that copied it, and the "
+            "server is the writer: to pull again, move this checkout's mlflow.db aside"
+        )
+    elif local_changed and remote_changed:
         workspace.say(
             "DIVERGED: both stores changed, so neither push nor pull will run. Decide which "
             "side's new runs to keep and move the other store aside."
@@ -874,7 +883,10 @@ class RsyncTransport:
         if dry_run:
             command.append("--dry-run")
         result = self._run([*command, *arguments])
-        if result.returncode:
+        if result.returncode == RSYNC_VANISHED:
+            # Outputs a training deleted while a pull ran beside it; the next pull is whole.
+            print(result.stderr.decode(errors="replace").strip(), file=sys.stderr)
+        elif result.returncode:
             error = result.stderr.decode(errors="replace").strip()
             raise SyncError(f"rsync exited with {result.returncode}: {error}")
         lines = result.stdout.decode(errors="replace").splitlines()
