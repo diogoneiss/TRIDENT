@@ -21,6 +21,7 @@ from scripts.sync_remote import (
     StoreError,
     SyncConfig,
     SyncError,
+    SyncState,
     Workspace,
     pull,
     push_code,
@@ -245,6 +246,8 @@ def test_a_push_then_a_pull_carries_runs_and_artifacts_both_ways(workspace: Work
     assert here.data.metrics["impute_score"] == 0.25
     assert (local / "mlruns" / "1" / trained.info.run_id / "artifacts" / "ledger.csv").exists()
     assert artifact.read_text() == "fold,f1\n1,0.9\n"
+    # A whole store on the server's disk otherwise, left by every pull.
+    assert not (server / "sync" / "outgoing.db").exists()
 
 
 def test_after_both_sides_wrote_neither_direction_overwrites_the_other(
@@ -417,6 +420,130 @@ def test_an_interrupted_write_behind_the_servers_link_stops_a_pull(
 
     with pytest.raises(StoreError, match="interrupted"):
         pull(workspace, apply=True)
+
+
+def make_replica(server: Path) -> Path:
+    """The copy ADR 0010's cron keeps of the server's store, taken now."""
+    replica = server / "sync" / "mlflow.replica.db"
+    replica.parent.mkdir(parents=True, exist_ok=True)
+    source, target = sqlite3.connect(server / "mlflow.db"), sqlite3.connect(replica)
+    try:
+        source.backup(target)
+        target.execute("PRAGMA journal_mode=WAL")  # as store_replica.py keeps it
+    finally:
+        target.close()
+        source.close()
+    return replica
+
+
+def test_a_pull_while_the_server_trains_copies_its_replica_and_leaves_it_the_writer(
+    workspace: Workspace,
+) -> None:
+    # A training holds the server's store, so it cannot be handed over; its replica is a
+    # consistent copy at most one cron turn old. The server keeps writing, so this checkout
+    # gets a copy to read, and the state must not record a hand-off.
+    local, server = workspace.root, server_root(workspace)
+    experiment_id, _ = make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    on_server = client_for(server / "mlflow.db")
+    copied = on_server.create_run(experiment_id).info.run_id
+    make_replica(server)
+    after_the_copy = on_server.create_run(experiment_id).info.run_id
+    trainer = sqlite3.connect(server / "mlflow.db")
+    try:
+        pull(workspace, apply=True, while_busy=True)
+    finally:
+        trainer.close()
+
+    runs = {run.info.run_id for run in client_for(local / "mlflow.db").search_runs([experiment_id])}
+    assert copied in runs and after_the_copy not in runs
+    state = SyncState.load(local)
+    assert state.remote_store_sha256 is None
+    assert state.pulled_while_busy is not None
+    assert not (server / "sync" / "outgoing.db").exists()
+    # Reading the replica leaves nothing beside it for cron's next copy to find.
+    assert sorted(path.name for path in (server / "sync").glob("mlflow.replica.db*")) == ["mlflow.replica.db"]
+
+
+def test_after_a_copy_only_a_pull_of_a_quiet_store_lets_a_push_through(
+    workspace: Workspace,
+) -> None:
+    # The server trained on after the copy. A push now would overwrite those runs, and the
+    # refusal must not suggest moving the server's live store aside, as the one for an
+    # unrecorded store does.
+    local, server = workspace.root, server_root(workspace)
+    experiment_id, _ = make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    make_replica(server)
+    trainer = sqlite3.connect(server / "mlflow.db")
+    try:
+        pull(workspace, apply=True, while_busy=True)
+    finally:
+        trainer.close()
+    trained = client_for(server / "mlflow.db").create_run(experiment_id).info.run_id
+
+    with pytest.raises(StoreError, match="still the writer"):
+        push(workspace, apply=True)
+
+    pull(workspace, apply=True)
+    assert SyncState.load(local).pulled_while_busy is None
+    push(workspace, apply=True)
+    assert client_for(server / "mlflow.db").get_run(trained).info.run_id == trained
+
+
+def test_a_pull_without_the_flag_still_refuses_a_busy_server(workspace: Workspace) -> None:
+    local, server = workspace.root, server_root(workspace)
+    make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    make_replica(server)
+    trainer = sqlite3.connect(server / "mlflow.db")
+    try:
+        with pytest.raises(StoreError, match="--while-busy"):
+            pull(workspace, apply=True)
+    finally:
+        trainer.close()
+
+
+@pytest.mark.parametrize(
+    ("spoil", "refusal"),
+    [
+        (lambda replica: replica.unlink(), "does not exist"),
+        # cron refreshes it every ten minutes, and each refresh touches it.
+        (lambda replica: os.utime(replica, (replica.stat().st_atime, replica.stat().st_mtime - 31 * 60)),
+         "last refreshed 31 min ago"),
+    ],
+    ids=["missing", "stale"],
+)
+def test_a_busy_pull_refuses_a_replica_it_cannot_vouch_for(
+    workspace: Workspace, spoil: Callable[[Path], object], refusal: str
+) -> None:
+    local, server = workspace.root, server_root(workspace)
+    make_store(local / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    recorded = SyncState.load(local)
+    spoil(make_replica(server))
+    trainer = sqlite3.connect(server / "mlflow.db")
+    try:
+        with pytest.raises(StoreError, match=refusal):
+            pull(workspace, apply=True, while_busy=True)
+    finally:
+        trainer.close()
+
+    assert SyncState.load(local) == recorded
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="gorgona8's layout: a symlink")
+def test_a_pull_refuses_a_link_whose_store_is_gone(workspace: Workspace, tmp_path: Path) -> None:
+    # The SSD store was lost; store_replica.py restores it from the replica. A pull meanwhile
+    # would take the replica for the store, or fail without saying why.
+    make_store(workspace.root / "mlflow.db", WINDOWS_PREFIX)
+    push(workspace, apply=True)
+    make_replica(server_root(workspace))
+    link_server_store(workspace, tmp_path / "ssd").unlink()
+
+    for while_busy in (False, True):
+        with pytest.raises(StoreError, match="store_replica.py sync"):
+            pull(workspace, apply=True, while_busy=while_busy)
 
 
 def test_an_empty_wal_left_by_a_reader_does_not_stop_a_pull(workspace: Workspace) -> None:

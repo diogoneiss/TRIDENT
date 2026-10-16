@@ -36,16 +36,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.sync_remote import (  # noqa: E402
     EXIT_REFUSED,
+    REPLICA_FILE,
     STORE_NAME,
-    SYNC_DIR,
     StoreError,
     SyncError,
     processes_holding,
     refuse_if_busy,
     store_lock,
 )
-
-REPLICA_FILE = f"{SYNC_DIR}/mlflow.replica.db"
 
 
 def default_master(root: Path) -> Path:

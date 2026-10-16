@@ -14,6 +14,11 @@ Usage (a dry run by default, run from Windows; rsync and ssh are called through 
     uv run --python 3.11 python scripts/sync_remote.py code --apply   # code only
     uv run --python 3.11 python scripts/sync_remote.py push --apply   # code, outputs, store
     uv run --python 3.11 python scripts/sync_remote.py pull --apply   # outputs, store
+    uv run --python 3.11 python scripts/sync_remote.py pull --while-busy --apply
+
+While a training holds the server's store, ``pull --while-busy`` brings a copy of the
+replica ADR 0010's cron keeps there instead of refusing. The server stays the writer, so a
+push is refused until a pull runs while nothing holds its store.
 
 An empty ``--host`` rehearses against a directory in this machine's WSL instead of a
 server. The server needs Python 3.9+, rsync and key-based ssh from WSL; nothing is
@@ -35,6 +40,7 @@ import shutil
 import sqlite3
 import subprocess
 import sys
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -47,6 +53,12 @@ CONFIG_FILE = f"{SYNC_DIR}/config.json"
 # Taken by every server-side step that reads or replaces the store, and by
 # scripts/store_replica.py while it copies or restores it (ADR 0010).
 LOCK_FILE = f"{SYNC_DIR}/store.lock"
+# The server's snapshot for a pull, deleted once fetched.
+OUTGOING_FILE = f"{SYNC_DIR}/outgoing.db"
+# Written only by scripts/store_replica.py, every ten minutes from cron (ADR 0010).
+REPLICA_FILE = f"{SYNC_DIR}/mlflow.replica.db"
+# Three missed cron turns: past this, the copies have stopped and the replica is refused.
+REPLICA_MAX_AGE_SECONDS = 30 * 60
 # argparse already exits with 2 on a usage error.
 EXIT_REFUSED = 3
 # Plain files, each written once by one run: copied additively in both directions.
@@ -238,18 +250,50 @@ def snapshot_store(store: Path, destination: Path) -> str:
     """
     refuse_if_busy(store)
     digest = sha256_file(store)
+    _backup(store, destination)
+    return digest
+
+
+def copy_replica(root: Path, destination: Path) -> str:
+    """Copy the replica of ``root``'s store to ``destination``; return when it was taken.
+
+    For a pull while a training holds the store (ADR 0009 decision 8): the replica is a
+    consistent copy that ``scripts/store_replica.py`` refreshes every ten minutes, and the
+    store lock keeps a refresh from starting during this copy. No digest: nothing is handed
+    over, so nothing is recorded.
+    """
+    replica = root / REPLICA_FILE
+    if not replica.exists():
+        raise StoreError(
+            f"{replica} does not exist: a pull while the store is busy copies the replica "
+            "scripts/store_replica.py keeps (ADR 0010), and this server has none"
+        )
+    taken = replica.stat().st_mtime
+    age = time.time() - taken
+    if age > REPLICA_MAX_AGE_SECONDS:
+        raise StoreError(
+            f"{replica} was last refreshed {age / 60:.0f} min ago, so cron's "
+            f"`store_replica.py sync` has stopped or fails: see {root / SYNC_DIR / 'replica.log'}"
+        )
+    refuse_if_busy(replica)
+    # Read-write, though nothing is written: a WAL file's read-only reader leaves an empty
+    # -wal and a -shm behind it (ADR 0010), and a read-write one closing last removes them.
+    _backup(replica, destination, mode="rw")
+    return datetime.fromtimestamp(taken, timezone.utc).isoformat(timespec="seconds")
+
+
+def _backup(source: Path, destination: Path, mode: str = "ro") -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.unlink(missing_ok=True)
-    source = sqlite3.connect(f"{store.resolve().as_uri()}?mode=ro", uri=True)
+    reader = sqlite3.connect(f"{source.resolve().as_uri()}?mode={mode}", uri=True)
     try:
         target = sqlite3.connect(destination)
         try:
-            source.backup(target)
+            reader.backup(target)
         finally:
             target.close()
     finally:
-        source.close()
-    return digest
+        reader.close()
 
 
 def refuse_if_changed(where: str, recorded: str | None, current: str | None) -> None:
@@ -367,9 +411,11 @@ def branch_tips(root: Path) -> dict[str, str]:
 def remote_command(argv: list[str]) -> dict[str, object]:
     parser = argparse.ArgumentParser(prog="sync_remote.py remote")
     commands = parser.add_subparsers(dest="command", required=True)
-    for name in ("prepare", "snapshot", "install", "delete"):
+    for name in ("prepare", "snapshot", "discard", "install", "delete"):
         command = commands.add_parser(name)
         command.add_argument("--root", required=True)
+        if name == "snapshot":
+            command.add_argument("--while-busy", action="store_true")
         if name == "delete":
             command.add_argument("--list", required=True, help="JSON list, relative to --root")
         if name == "install":
@@ -392,11 +438,28 @@ def _remote_step(args: argparse.Namespace, root: Path) -> dict[str, object]:
             "branches": branch_tips(root),
         }
     if args.command == "snapshot":
-        digest = snapshot_store(store, root / SYNC_DIR / "outgoing.db")
-        return {
-            "store_sha256": digest,
-            "dirs": [name for name in OUTPUT_DIRS if (root / name).is_dir()],
-        }
+        if store.is_symlink() and not store.exists():
+            raise StoreError(
+                f"{store} links to {os.readlink(store)}, which is gone; restore it from the "
+                "replica on the server first: python3 scripts/store_replica.py sync"
+            )
+        dirs = [name for name in OUTPUT_DIRS if (root / name).is_dir()]
+        holders = held_open_by(store)
+        if holders and args.while_busy:
+            taken = copy_replica(root, root / OUTGOING_FILE)
+            return {"store_sha256": None, "replica_taken": taken, "holders": holders, "dirs": dirs}
+        if holders:
+            raise StoreError(
+                f"{store} is open by {', '.join(holders)}; wait for it, or pull a copy of its "
+                "replica with --while-busy"
+            )
+        return {"store_sha256": snapshot_store(store, root / OUTGOING_FILE), "dirs": dirs}
+    if args.command == "discard":
+        outgoing = root / OUTGOING_FILE
+        found = outgoing.exists()
+        for suffix in ("", "-wal", "-shm"):
+            Path(f"{outgoing}{suffix}").unlink(missing_ok=True)
+        return {"discarded": found}
     if args.command == "delete":
         listed = json.loads((root / args.list).read_text(encoding="utf-8"))
         return {"deleted": delete_pushed_files(root, [str(item) for item in listed])}
@@ -445,6 +508,9 @@ class SyncState:
     remote_store_sha256: str | None = None
     pushed_files: list[str] = field(default_factory=list)
     last_sync: str | None = None
+    # When the replica the last pull copied was taken (UTC), if that pull ran while the
+    # server's store was busy: the server is still the writer, and a push must wait.
+    pulled_while_busy: str | None = None
 
     @classmethod
     def load(cls, root: Path) -> SyncState:
@@ -491,6 +557,11 @@ def _text(value: object) -> str | None:
 
 def _names(value: object) -> list[str]:
     return [item for item in value if isinstance(item, str)] if isinstance(value, list) else []
+
+
+def _local_time(utc: str) -> str:
+    """A UTC time from the state or the server, in this machine's zone, offset shown."""
+    return datetime.fromisoformat(utc).astimezone().strftime("%Y-%m-%d %H:%M %z")
 
 
 def _branches(value: object) -> dict[str, str]:
@@ -607,6 +678,12 @@ def push(workspace: Workspace, *, apply: bool) -> None:
     """Send code, outputs and the store; the server's store becomes this checkout's."""
     config, transport, mode = workspace.config, workspace.transport, _mode(apply)
     state = SyncState.load(workspace.root)
+    if state.pulled_while_busy:
+        raise StoreError(
+            "the last pull copied the server's replica of "
+            f"{_local_time(state.pulled_while_busy)} while a training held its store, so the server "
+            "is still the writer: pull again once nothing holds its store, then push"
+        )
     refuse_if_busy(workspace.root / STORE_NAME)
     server = transport.remote("prepare", "--root", config.remote_root)
     if _names(server["holders"]):
@@ -617,7 +694,7 @@ def push(workspace: Workspace, *, apply: bool) -> None:
     for name in OUTPUT_DIRS:
         changed = transport.send_dir(name, dry_run=not apply)
         workspace.say(f"[{mode}] {name}/: {changed} files sent")
-    outgoing = workspace.root / SYNC_DIR / "outgoing.db"
+    outgoing = workspace.root / OUTGOING_FILE
     local_digest = snapshot_store(workspace.root / STORE_NAME, outgoing)
     counts = translate_store(outgoing, config.local_prefix, config.remote_prefix)
     workspace.say(f"[{mode}] store translated for the server: {counts}")
@@ -626,7 +703,7 @@ def push(workspace: Workspace, *, apply: bool) -> None:
         workspace.say(f"[{mode}] the server's store was left as it is")
         return
     outgoing_digest = sha256_file(outgoing)
-    transport.send_file(f"{SYNC_DIR}/outgoing.db", f"{SYNC_DIR}/incoming.db", dry_run=False)
+    transport.send_file(OUTGOING_FILE, f"{SYNC_DIR}/incoming.db", dry_run=False)
     transport.remote(
         "install",
         "--root",
@@ -644,21 +721,34 @@ def push(workspace: Workspace, *, apply: bool) -> None:
     workspace.say(f"[{mode}] the server's store is now this checkout's ({outgoing_digest[:12]})")
 
 
-def pull(workspace: Workspace, *, apply: bool) -> None:
-    """Fetch outputs and the store; this checkout's store becomes the server's."""
+def pull(workspace: Workspace, *, apply: bool, while_busy: bool = False) -> None:
+    """Fetch outputs and the store; this checkout's store becomes the server's.
+
+    With ``while_busy``, a server store held open by a training is not refused: its
+    replica is copied instead, and the server stays the writer (ADR 0009 decision 8).
+    """
     config, transport, mode = workspace.config, workspace.transport, _mode(apply)
     state = SyncState.load(workspace.root)
     store = workspace.root / STORE_NAME
     refuse_if_busy(store)
     current = sha256_file(store) if store.exists() else None
     refuse_if_changed("this checkout", state.local_store_sha256, current)
-    snapshot = transport.remote("snapshot", "--root", config.remote_root)
+    busy = ["--while-busy"] if while_busy else []
+    snapshot = transport.remote("snapshot", "--root", config.remote_root, *busy)
     remote_digest = _text(snapshot["store_sha256"])
+    replica_taken = _text(snapshot.get("replica_taken"))
+    if replica_taken:
+        workspace.say(
+            f"[{mode}] the server's store is open by {', '.join(_names(snapshot['holders']))}: "
+            f"copying its replica of {_local_time(replica_taken)} instead"
+        )
     for name in _names(snapshot["dirs"]):
         changed = transport.fetch_dir(name, dry_run=not apply)
         workspace.say(f"[{mode}] {name}/: {changed} files fetched")
     (workspace.root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
-    transport.fetch_file(f"{SYNC_DIR}/outgoing.db", f"{SYNC_DIR}/incoming.db", dry_run=False)
+    transport.fetch_file(OUTGOING_FILE, f"{SYNC_DIR}/incoming.db", dry_run=False)
+    # A whole store's size on the server's disk, every pull, once it is here.
+    transport.remote("discard", "--root", config.remote_root)
     incoming = workspace.root / SYNC_DIR / "incoming.db"
     counts = translate_store(incoming, config.remote_prefix, config.local_prefix)
     workspace.say(f"[{mode}] store translated for this checkout: {counts}")
@@ -670,10 +760,19 @@ def pull(workspace: Workspace, *, apply: bool) -> None:
         workspace.root, incoming, state.local_store_sha256, sha256_file(incoming)
     )
     state.local_store_sha256 = installed
+    # None after a copy: the server's store is not this one, and keeps changing.
     state.remote_store_sha256 = remote_digest
+    state.pulled_while_busy = replica_taken
     state.last_sync = datetime.now(timezone.utc).isoformat(timespec="seconds")
     state.save(workspace.root)
-    workspace.say(f"[{mode}] this checkout's store is now the server's ({installed[:12]})")
+    if replica_taken:
+        workspace.say(
+            f"[{mode}] this checkout's store is now a copy of the server's as of "
+            f"{_local_time(replica_taken)} ({installed[:12]}); the server is still the writer, so "
+            "pull again once nothing holds its store before any push"
+        )
+    else:
+        workspace.say(f"[{mode}] this checkout's store is now the server's ({installed[:12]})")
 
 
 def status(workspace: Workspace) -> None:
@@ -693,6 +792,11 @@ def status(workspace: Workspace) -> None:
     ):
         if now is None:
             verdict = "accepts one"
+        elif side == "the server" and state.pulled_while_busy:
+            verdict = (
+                "still the writer; the last pull copied its replica of "
+                f"{_local_time(state.pulled_while_busy)}"
+            )
         elif now == recorded:
             verdict = "unchanged since the last sync"
         elif recorded is None:
@@ -852,6 +956,13 @@ def main(argv: list[str] | None = None) -> int:
         command.add_argument("--apply", action="store_true", help="write (default: a dry run)")
         if name == "code":
             command.add_argument("--while-busy", action="store_true")
+        if name == "pull":
+            command.add_argument(
+                "--while-busy",
+                action="store_true",
+                help="while a training holds the server's store, copy its replica instead of "
+                "refusing; the server stays the writer",
+            )
     args = parser.parse_args(arguments)
     root = (args.root or Path(__file__).resolve().parents[1]).resolve()
 
@@ -879,7 +990,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "push":
             push(workspace, apply=args.apply)
         else:
-            pull(workspace, apply=args.apply)
+            pull(workspace, apply=args.apply, while_busy=args.while_busy)
     except StoreError as error:
         print(f"REFUSED: {error}", file=sys.stderr)
         return EXIT_REFUSED

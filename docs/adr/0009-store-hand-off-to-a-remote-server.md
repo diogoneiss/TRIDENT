@@ -18,6 +18,11 @@ on gorgona8 the store is a link to a file on the SSD, which `install_store` now 
 behind the link; `refuse_if_busy` looks next to the link's target and lets an empty `-wal`
 through; and every server-side step takes `sync/store.lock`.
 
+Amended on 2026-10-16 by decision 8: `pull --while-busy` copies the server's store while a
+training holds it, from the replica of ADR 0010, without handing it over; and every pull
+deletes the server's `sync/outgoing.db` once fetched. Rehearsed the same night against
+gorgona8's store while four trainings held it (Outcome).
+
 Touches no training code: every run still logs to `sqlite:///mlflow.db` in the checkout
 it is launched from, as [ADR 0002](0002-curated-cross-validation-mlflow-runs.md) and
 [ADR 0006](0006-mirror-experiments-per-task.md) assume.
@@ -46,6 +51,24 @@ host uses, minus ssh.
 - A plain `cp` of the live store, taken while the batch was writing, failed
   `quick_check` (invalid page numbers in six trees). This is why the store is never
   copied by a file tool (decision 3).
+
+### Outcome (2026-10-16, decision 8)
+
+The server's half, run on gorgona8 through `python3 -` as ssh runs it, while four
+trainings held the store (6.4 GB). Without the flag, `snapshot` refused and named the four
+pids and `--while-busy`. With it, twice:
+
+- 00:13 GMT-3: the replica refreshed at 00:10 copied in 47 s; the copy passed
+  `quick_check`, in WAL mode, with 9606 runs against 9608 in the store (the two started
+  after the refresh). Reading the replica read-only left an empty `-wal` and a `-shm`
+  beside it, so the replica is now read through a read-write connection, which removes
+  them on closing; cron's refresh at 00:20 ran cleanly over the leftovers anyway.
+- 00:20 GMT-3, the final code: the replica refreshed at 00:20 copied in 80 s (the unit
+  suite shared the disk); `quick_check` ok, WAL, 9612 runs against 9616; nothing left
+  beside the replica.
+
+`discard` deleted each copy. The Windows half is covered by
+`tests/unit/test_sync_remote.py`, against a directory standing in for the server.
 
 ## Context
 
@@ -168,6 +191,38 @@ Rejected on the way:
    TTY mangles rsync's stream), and `ClearAllForwardings=yes` (the entry's `LocalForward`
    for the MLflow UI would make every call contend for ports an open login already holds).
 
+8. **A pull may copy the server's store while a training holds it, without a hand-off**
+   (2026-10-16). Decision 3 refuses a pull while anything holds the server's store, which on
+   gorgona8 is most of the time. `pull --while-busy` takes that case: under `sync/store.lock`,
+   so no refresh runs meanwhile, the server copies the replica of
+   [ADR 0010](0010-server-store-on-ssd-with-hdd-replica.md) (`sync/mlflow.replica.db`,
+   refreshed every ten minutes by `sqlite3_rsync`, which never blocks a writer) through the
+   backup API, and this checkout receives it as any pull's store: translated, checked,
+   the previous one kept as `sync/mlflow.db.prev`. With nothing holding the store, the flag
+   changes nothing and the pull is an ordinary one.
+
+   It is a copy, not a hand-off: the server keeps training and stays the writer. So the
+   state records no digest for the server's store and marks `pulled_while_busy` with the
+   time of the replica; `push` refuses until a pull runs while nothing holds the server's
+   store, and `status` says so. Without the mark, the push would meet decision 2's refusal
+   of an unrecorded store, whose advice, moving that store aside, would be wrong for the
+   live store on the server. Refused:
+   - no replica, as on a server without ADR 0010;
+   - a replica not refreshed in 30 minutes, three missed cron turns (`sqlite3_rsync`
+     touches it on every refresh, even with nothing to send);
+   - a link whose SSD store is gone, for an ordinary pull as well: the replica is then the
+     only copy, and `store_replica.py sync` restores the store from it.
+
+   The copy is as old as the last refresh, at most about ten minutes. Outputs come as in any
+   pull: a file a running training is still writing may arrive incomplete, and the next
+   pull replaces it (decision 6). A write to the copy here changes this checkout's store,
+   and decision 2 then refuses the next pull.
+
+   Every pull, with the flag or without, deletes the server's `sync/outgoing.db` once
+   fetched, through a remote step that removes that one file: it is a whole store on the
+   hard disk (6.4 GB on 2026-10-16), and the `delete` step cannot take it, since it refuses
+   anything under `sync/` by design (decision 5).
+
 ## Consequences
 
 - Training on both sides between two syncs is detected, not prevented, and resolving it
@@ -182,6 +237,9 @@ Rejected on the way:
   here, pull what the server pushed; the push refuses otherwise (decision 5).
 - Moving the server checkout means `init` again with the new root, and a store pushed
   under the old one keeps the old prefix until translated from it.
+- A pull while the server trains (decision 8) gives a store to read, up to ten minutes
+  behind the server's, and leaves the server the writer: a push from here waits for a
+  pull of a quiet store.
 - Stopping the MLflow UI must stop its uvicorn workers. Killing only the parent process
   leaves them holding the store open, and the sync refuses until they exit.
 
@@ -194,6 +252,7 @@ uv run --python 3.11 python scripts/sync_remote.py push            # dry run: ch
 uv run --python 3.11 python scripts/sync_remote.py push --apply    # code, outputs, store
 uv run --python 3.11 python scripts/sync_remote.py code --apply    # code only
 uv run --python 3.11 python scripts/sync_remote.py pull --apply    # outputs, store
+uv run --python 3.11 python scripts/sync_remote.py pull --while-busy --apply  # a copy while it trains
 ```
 
 The first push waits for nothing to hold `mlflow.db` open here (stop training batches and

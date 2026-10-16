@@ -20,6 +20,7 @@ On gorgona8, `mlflow.db` in the checkout is a link to `/var/tmp/diogoneiss/TRIDE
 - Keep logging and querying through `sqlite:///mlflow.db`, i.e. the link. The replica can be up to 10 minutes behind; never write it.
 - Never `mv`, `cp`, `rm` or replace the link, and never copy the store with a file tool; SQLite's backup API, `sqlite3_rsync` or `scripts/store_replica.py` only. `-wal` and `-shm` next to the SSD store while something holds it open are normal.
 - To copy right now, or to recreate the SSD store from the replica after it was lost: `python3 scripts/store_replica.py sync`.
+- While trainings hold the store, Windows can still take a copy: `sync_remote.py pull --while-busy --apply` brings the replica, and the server stays the writer, so a push waits for a pull of a quiet store (ADR 0009 decision 8).
 - Windows runs its own copy of `sync_remote.py` on the server: it must `git pull` this change before its first sync, or a push would replace the link with a file on the hard disk.
 - If `sync` refuses with "not a link", the store is back on the hard disk: read ADR 0010 before running `adopt`.
 - The SSD store shares `/` with the system: check `df -h /` before writing anything large there.

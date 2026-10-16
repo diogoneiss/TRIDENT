@@ -117,6 +117,10 @@ Rejected on the way:
 - A store that arrives in rollback mode (a Windows store never converted) makes every
   `sync` warn until it is switched to WAL by hand; the hand-offs keep WAL once it is set.
 - The replica shows the store as of the last copy: query through the link.
+- The replica has one reader besides the hand-off's checks: `sync_remote.py pull
+  --while-busy` copies it, under the lock, while a training holds the store (ADR 0009
+  decision 8, 2026-10-16). A copy of 6.4 GB takes under a minute, and cron's next refresh
+  waits for it.
 - `sync` waits for the lock rather than skipping a turn, so a copy that hangs holds every
   later one back: a `sync/replica.log` that stopped growing means a stuck `sqlite3_rsync`.
 - `sqlite3_rsync` lives in `~/.local/bin`, taken from sqlite.org's `sqlite-tools` zip;
