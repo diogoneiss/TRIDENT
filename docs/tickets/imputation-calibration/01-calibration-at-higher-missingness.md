@@ -1,7 +1,7 @@
 # Does the calibration help at 40% missing and above? (pre-registered 2026-10-16)
 
-This ticket was written and committed before the first cell, on the morning of 2026-10-16 GMT-3.
-The queues start right after the commit; about 13:30 GMT-3 is the expected end. The user chose this
+This ticket was written and committed before the first cell (`5634858`, 10:55 GMT-3 on
+2026-10-16). The queues started at 10:55:52 GMT-3, so about 13:30 GMT-3 was the expected end. The user chose this
 study on 2026-10-16 ("vamos no 1, pode iniciar agora") from the threads left open after ADR 0019.
 
 ## Why
@@ -101,3 +101,63 @@ study used.
 - **The bar is ADR 0007's four baselines.** The lgbm baseline of ADR 0017 is not in the run's
   fold files.
 - **Multiplicity:** 12 primary tests, with the seed-agreement rule.
+
+## Outcome (2026-10-16, 17:50 GMT-3)
+
+**Run.** All 36 cells ran from 10:55 to 13:54 GMT-3: 2 h 58 min against the 2.5 h planned
+(1.19x). None failed and none is missing.
+
+**Table.** Numbers come from `scripts/experiments/calibration_report.py`; the table was built from
+it by script.
+
+- Lower is better; a negative difference favours KC.
+- Each row is the induced `impute_score` over 15 within-run fold pairs.
+- ★ marks the six named variants.
+- "Mean α" is the numerical shrinkage. kr-vs-kp has no numerical column, so its calibration only
+  thresholds categories.
+
+| variant | K | KC | change | best baseline | KC − K [95% interval] (seeds 404, 505, 606) | verdict | mean α | minutes a cell |
+|---|---|---|---|---|---|---|---|---|
+| `kr-vs-kp_40nan` | 0.7238 | 0.7239 | +0.01% | 0.7667 | +0.0001 [−0.0041, +0.0043] (−0.0038, +0.0019, +0.0021) | none | — | 22.5 |
+| `kr-vs-kp_60nan` | 0.8673 | 0.8644 | −0.33% | 0.9105 | −0.0029 [−0.0076, +0.0018] (+0.0009, −0.0068, −0.0029) | none | — | 19.5 |
+| `kr-vs-kp_80nan` ★ | 0.9790 | 0.9706 | −0.85% | 1.0000 | −0.0083 [−0.0120, −0.0046] (−0.0081, −0.0057, −0.0112) | KC better | — | 16.0 |
+| `spambase_40nan` | 0.9038 | 0.9026 | −0.13% | 0.9374 | −0.0012 [−0.0031, +0.0008] (−0.0012, −0.0015, −0.0007) | none | 0.79 | 44.0 |
+| `spambase_60nan` ★ | 0.9391 | 0.9371 | −0.21% | 0.9826 | −0.0020 [−0.0033, −0.0006] (−0.0021, −0.0005, −0.0033) | KC better | 0.72 | 39.6 |
+| `spambase_80nan` ★ | 0.9863 | 0.9809 | −0.55% | 1.0000 | −0.0054 [−0.0073, −0.0034] (−0.0063, −0.0059, −0.0041) | KC better | 0.60 | 43.9 |
+| `credit-g_40nan` | 0.9239 | 0.9223 | −0.17% | 0.9613 | −0.0016 [−0.0055, +0.0023] (−0.0021, +0.0005, −0.0031) | none | 0.85 | 5.6 |
+| `credit-g_60nan` ★ | 0.9899 | 0.9838 | −0.62% | 1.0000 | −0.0061 [−0.0099, −0.0023] (−0.0114, −0.0056, −0.0012) | KC better | 0.72 | 5.8 |
+| `credit-g_80nan` ★ | 1.0112 | 1.0073 | −0.39% | 1.0000 | −0.0040 [−0.0055, −0.0024] (−0.0035, −0.0028, −0.0055) | KC better | 0.60 | 5.7 |
+| `vehicle_60nan` ★ | 0.6378 | 0.6297 | −1.27% | 0.7021 | −0.0081 [−0.0110, −0.0052] (−0.0087, −0.0065, −0.0091) | KC better | 0.93 | 4.5 |
+| `biodeg_60nan` | 0.7738 | 0.7691 | −0.61% | 0.8630 | −0.0047 [−0.0084, −0.0011] (−0.0041, −0.0046, −0.0055) | KC better | 0.88 | 9.9 |
+| `kc2_60nan` | 0.5502 | 0.5520 | +0.34% | 0.7402 | +0.0018 [−0.0065, +0.0102] (+0.0040, +0.0023, −0.0008) | none | 0.94 | 3.6 |
+
+**Reading, by the rule fixed in advance: supported.** KC is better on all 6 named variants and K
+is better on none of the 12. The recommendation is to make the calibration the imputation output at
+40% missing or more, by an ADR and the user's decision. That needs a code change, which needs its
+own authorization.
+
+**Secondary measures:**
+
+- **Counts:** KC is better on 7 of the 12 (the six named and biodeg_60nan), with no detectable
+  difference on 5 and K better on none.
+- **By level, the gain grows with missingness:**
+
+  | level | mean KC − K | fold pairs |
+  |---|---|---|
+  | 40nan | −0.0009 | 45 |
+  | 60nan | −0.0037 | 90 |
+  | 80nan | −0.0059 | 45 |
+
+  **No 40nan variant earns a verdict.** kr-vs-kp_40nan moves +0.01%, spambase_40nan −0.13% and
+  credit-g_40nan −0.17%. Every verdict falls at 60nan or 80nan. The rule's threshold of 40 is
+  therefore safe (never worse) but buys nothing measurable at 40. A threshold of 60 would capture
+  every gain seen here. That observation is made after the data, so it would need its own check
+  before it replaced the pre-registered threshold.
+- **Size:** the changes run from −1.27% (vehicle_60nan) to +0.34% (kc2_60nan, no verdict).
+- **Below the best baseline:** 11 of 12 under both arms. The calibration narrows credit-g_80nan's
+  gap without closing it (1.0112 → 1.0073 against the mean/mode fill's 1.0).
+- **Mean α** falls with missingness, from about 0.80 to 0.85 at 40nan to 0.60 at 80nan on credit-g
+  and spambase. vehicle_60nan, biodeg_60nan and kc2_60nan stay at 0.88 to 0.94.
+- **Agreement with E34 and E35:** all six named variants replicate on a third seed set.
+  biodeg_60nan, which neither earlier set called, is now "KC better". kc2_60nan leans K on two
+  seeds without a verdict.

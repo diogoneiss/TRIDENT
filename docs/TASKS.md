@@ -121,12 +121,20 @@ winners beat the defaults on none. The rule fixed in advance says:
 ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)). The other two stay, and no
 winner is promoted.
 
-### T20 · Calibration at 40% missing and above — in progress (ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
+### T20 · Calibration at 40% missing and above — decision (ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
 
 E34 and E35 found the calibrated readout never worse than K at 40nan and above, and better in both
 seed sets on 6 variants. It failed at 20nan. The user chose on 2026-10-16 to confirm the rule
 "calibrate at 40% missing or more" on fresh seeds, 404, 505 and 606. Adopting it would need a code
 change and an ADR.
+
+**Done 2026-10-16 (36 of 36): supported.** KC is better on all 6 named variants (7 of 12) and K on
+none. The gain grows with missingness, from −0.0009 at 40nan to −0.0059 at 80nan, and no 40nan
+variant earns a verdict.
+
+**This waits on the user's decision:** the ADR, the authorization for the code change (a flag, a
+tag and a backfill), the threshold (40 as pre-registered, or 60 with a check), and how a run knows
+its missing level.
 
 ## Backlog
 

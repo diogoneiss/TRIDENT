@@ -66,7 +66,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E37 | Architecture screening: deeper, wider or normed encoder | 2026-10-05 – 2026-10-06 | done | ALL (4 layers + FF 256 + final LN) better on 3 of 5, worse on none (credit-g_20nan a near miss); F256 better on 1; L4 and LN worse on 1 each; ALL advances, 1.82x the time |
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
 | E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
-| E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 – | in progress | KC vs K within-run on the 12 variants at ≥40nan, seeds 404/505/606; supported if KC better on ≥4 of 6 named and K better on none |
+| E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
 
 ## Entries
 
@@ -1233,10 +1233,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-retune/01-retune-promoted-files.md` (Outcome);
   `scripts/experiments/retune_report.py`, `retune_run.py`, `run_retune_queue.sh`.
 
-### E40 · Calibration at 40% missing and above, on fresh seeds (2026-10-16 – )
+### E40 · Calibration at 40% missing and above, on fresh seeds (2026-10-16)
 
-- **Status:** in progress. Pre-registered on the morning of 2026-10-16 GMT-3; four queues start
-  right after the commit; about 13:30 GMT-3 is the expected end. No cell starts after 18:00 GMT-3.
+- **Status:** done. Pre-registered in `5634858` at 10:55 GMT-3 on 2026-10-16. All 36 cells ran
+  from 10:55 to 13:54 GMT-3 (2 h 58 min against 2.5 h planned); none failed.
 - **Hypothesis:** the calibration fitted on the validation gaps (KC) helps at 40% missing and
   above, where E34 and E35 never found it worse than K and found it better on 6 variants in both
   seed sets. At 20nan it failed (spambase_20nan, kr-vs-kp_20nan), so the rule leaves those alone.
@@ -1257,5 +1257,31 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     - **mixed** otherwise.
   - **Secondary:** counts over all 12, the mean per level, α, how many variants each arm puts
     below the best baseline, and cost.
-- **Sources:** `docs/tickets/imputation-calibration/01-calibration-at-higher-missingness.md`;
-  `scripts/experiments/calibration_report.py`, `calibration_run.py`, `run_calibration_queue.sh`.
+- **Results (KC − K, induced, 15 within-run fold pairs):**
+  - **KC better** on the six named variants:
+
+    | variant | KC − K |
+    |---|---|
+    | kr-vs-kp_80nan | −0.85% |
+    | spambase_60nan | −0.21% |
+    | spambase_80nan | −0.55% |
+    | credit-g_60nan | −0.62% |
+    | credit-g_80nan | −0.39% |
+    | vehicle_60nan | −1.27% |
+
+    and also on biodeg_60nan (−0.61%).
+  - **No detectable difference** on kr-vs-kp_40nan, kr-vs-kp_60nan, spambase_40nan, credit-g_40nan
+    and kc2_60nan.
+  - **K better** on none.
+  - **By level:** mean KC − K is −0.0009 at 40nan, −0.0037 at 60nan and −0.0059 at 80nan.
+  - **Below the best baseline:** 11 of 12 under both arms; credit-g_80nan goes from 1.0112 to
+    1.0073.
+- **Conclusion:** supported by the rule fixed in advance. The recommendation is the calibration as
+  the imputation output at 40% missing or more, by an ADR.
+  - Adopting it needs a code change, authorized separately. Today the calibration is only a
+    diagnostic readout.
+  - **Caveat:** no 40nan variant earns a verdict, so the threshold is safe but idle at 40. A
+    threshold of 60, suggested by these data, would need its own check.
+- **Sources:** `docs/tickets/imputation-calibration/01-calibration-at-higher-missingness.md`
+  (Outcome); `scripts/experiments/calibration_report.py`, `calibration_run.py`,
+  `run_calibration_queue.sh`.
