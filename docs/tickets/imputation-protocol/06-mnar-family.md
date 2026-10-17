@@ -145,7 +145,7 @@ until it is explained.
 - **Launched at 14:38 GMT-3** on 3c534bf: four queues in `/scratch2/diogoneiss/trident-2026-10-17-mnar-family/`
   (16, 16, 16 and 18 cells), progress in its `progress.log`.
 
-## Outcome (2026-10-17, 18:30 GMT-3)
+## Outcome (2026-10-17, 18:15 GMT-3)
 
 **Run.** All 66 cells ran from 14:38 to 18:11 GMT-3 (3 h 33 min against about 3.7 h planned).
 None failed and none is missing.
