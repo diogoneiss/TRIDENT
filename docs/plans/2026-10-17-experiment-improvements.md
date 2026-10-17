@@ -447,6 +447,50 @@ limit is stated in the ticket. Adding 2–3 new OpenML tables is a separate opti
 
 **Status:** backlog, in GPU gaps only, after 2a–2e.
 
+### 2h · Soon: an EMA target encoder and a predictor for pre-training (T13; added 2026-10-17)
+
+**Goal.** Give pre-training the standard guards against collapse. The model would get two things
+it lacks:
+
+- **an EMA target encoder:** a slowly updated copy of the encoder produces the targets;
+- **an embedding decoder (predictor):** a small head between the transformer output and the target.
+
+**Evidence and source.**
+
+- **SMART** (Yu et al., NeurIPS 2024; wiki `references/smart-paper`) pre-trains in latent space
+  against an EMA target encoder, decay 0.996, with an L1 loss on the removed entries. Its ablation
+  credits latent-space pre-training with 1.5–2 points. TRIDENT keeps the latent reconstruction but
+  uses stop-gradient on the same encoder, with no EMA target and no predictor.
+- **This fork's own evidence points at collapse:**
+  - E04: the pre-training loss drop is norm-matching;
+  - E05: 300 epochs equal 2;
+  - E24: pre-training never helps imputation against none;
+  - E25: only the normalised objective helps, on 2 of 4 variants.
+- **ADR 0011** left the EMA teacher for later.
+
+**What it would take.**
+
+- **Code (protected, pre-training behaviour):**
+  - a flag such as `--pretrain_target {stopgrad, ema}` with an EMA decay, plus an optional
+    predictor head;
+  - a tag `pretrain_target`, with earlier runs backfilled as `stopgrad`;
+  - the default unchanged.
+
+  About a day of code with tests. The second encoder copy is small.
+- **A screening study** in the shape of E25:
+  - **arms:** today's normalised objective (N), N + EMA, and N + EMA + predictor;
+  - **variants:** the four screening ones;
+  - **seeds:** fresh;
+  - **primary:** the induced `impute_score`;
+  - **secondary:** collapse diagnostics, the spread and rank of the target embeddings.
+
+  It would run in a free GPU night after E44.
+
+**Expected gain.** Modest on imputation, where pre-training adds little today. The larger upside is
+for classification and RQ3, if pre-training stops collapsing.
+
+**Protected:** yes (training behaviour).
+
 ## 3. Experiment drafts (one ticket each)
 
 **Rules for every experiment:**
@@ -921,7 +965,8 @@ Each question comes with the recommended answer.
 
 ## 8. What this plan does not do
 
-- It does not touch T12 (a lower `LR_PRE`), T08, T09 or T10. T12 fits a free night in week 1.
+- It does not touch T12 (a lower `LR_PRE`), T08, T09 or T10. T12 fits a free night in week 1. T13 (an
+  EMA target encoder) was added on 2026-10-17 as §2h.
 - It does not adopt the calibration (T20 stays parked).
 - It does not fix the review's other code findings beyond the ones listed above. Those stay in the
   review digest and in [BACKLOG.md](../BACKLOG.md).

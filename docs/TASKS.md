@@ -173,8 +173,11 @@ three seed sets and what adopting it takes are in
   its best arm (E28, 0.323) and a validation loss still falling near epoch 450 (E27).
 - **T12 · A lower `LR_PRE` with the normalised objective:** every full-profile winner chose 2–34x
   below the default (E21).
-- **T13 · An EMA teacher for the normalised objective** (data2vec), the anti-collapse ingredient
-  it still lacks (ADR 0011, considered options).
+- **T13 · An EMA target encoder and a predictor for pre-training** (data2vec, BYOL; SMART, wiki
+  `references/smart-paper`). These are the anti-collapse guards pre-training still lacks (ADR 0011,
+  considered options). TRIDENT uses stop-gradient on the same encoder; SMART adds an EMA target
+  encoder (decay 0.996) and an embedding decoder. E04, E05 and E24 suggest the pre-training
+  collapses. **The user asked for it soon (2026-10-17):** plan §2h, a screening after E44.
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
