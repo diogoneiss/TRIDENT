@@ -70,8 +70,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – 2026-10-17 | done | condexp beats the weak bar on 2–4 variants per seed set (spambase_60nan and credit-g_60nan in all); an arm beats K only on credit-g_80nan; the kc2_20nan flip does not hold; K vs the strong tier 13/7/1 on 101/202/303 (16/3/2 vs the weak bar) |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
-| E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 – | in progress | 45 cells, seeds 707/808/909, read once |
-| E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 – | in progress | 36 cells after E44: G (H read) and Mx (column-wise) on biodeg/kc2/vehicle, MNAR and MCAR 60nan, seeds 42/7/13 |
+| E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
+| E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
 
 ## Entries
 
@@ -1396,9 +1396,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/03-deployable-checkpoint.md` (Outcome);
   `scripts/experiments/checkpoint_run.py`, `checkpoint_report.py`, `run_checkpoint_queue.sh`.
 
-### E44 · Confirmation on the 15 unused variants (2026-10-17 – )
+### E44 · Confirmation on the 15 unused variants (2026-10-17)
 
-- **Status:** in progress. Pre-registered before the first cell and before E43's outcome was read.
+- **Status:** done. Pre-registered before the first cell and before E43's outcome was read; read
+  once on 2026-10-17.
 - **Hypothesis:** the frozen configuration's lead over the bar on the development set (today's
   default on 101/202/303: 16 better, 3 no difference, 2 worse, by the review's rebuild)
   generalises to new draws and levels of the same tables.
@@ -1421,13 +1422,27 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     otherwise.
   - **Secondary:** every opponent's tally; 80nan apart; the Wilcoxon over tables (secondary here);
     K/H/M; T20's threshold; the metric panel; context-free rows; twins.
-- **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md`;
+- **Results:** 45 of 45 cells ran from 01:51 to 10:24 GMT-3.
+  - **Reading: mixed.** 9 wins (pendigits and letter at 40/60nan, pendigits_80nan, vehicle_40nan,
+    biodeg_40nan, kc2_40nan, kc2_80nan) and 3 losses: electricity_40nan, electricity_60nan, and
+    letter_80nan against the tuned bar by +0.0018.
+  - **Tallies of K:** against the bar of 5, 11/3/1; against the tuned bar, 9/3/3; against
+    missForest and the strong tier, 12/1/2. Across tables, 5 of 6 are below the bar (p = 0.062).
+  - **At 80nan:** 4/2/0 against the bar, 2/3/1 against the tuned bar.
+  - **Deployability:** H against the bar is 11 better, 2 no difference, 1 equivalent, 1 worse; K
+    beats H on 5, never worse.
+  - **T20:** KC − K is better on 8, worse on none, including pendigits_40nan and letter_40nan, so
+    threshold 40 is supported.
+- **Conclusion:** the lead generalises on the large tables and at 40nan. electricity is the table
+  where the model loses, now at three levels. At 80nan the lead mostly ties the tuned bar. The
+  panel, context-free rows and twins are pending (offline).
+- **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md` (Outcome);
   `scripts/experiments/confirmation_run.py`, `confirmation_report.py`, `run_confirmation_queue.sh`.
 
-### E45 · MNAR smoke family (2026-10-17 – )
+### E45 · MNAR smoke family (2026-10-17)
 
-- **Status:** in progress. Pre-registered before the first cell; it runs after E44 on the same
-  queues, with a cutoff of 12:00 GMT-3.
+- **Status:** done. Pre-registered before the first cell; it ran after E44 on the same queues,
+  from 10:24 to 11:29 GMT-3, before the 12:00 GMT-3 cutoff.
 - **Hypothesis:** this is a smoke test of the MNAR machinery, read descriptively. Does the model's
   lead over the bar survive value-dependent missingness? And does the untied `[NULL]`/`[MASK]` arm
   gain under MNAR (t2's positive control)?
@@ -1445,6 +1460,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     All fold-paired, with the verdict rule. Signed bias offline.
   - **Rule:** descriptive. Go for the full family if all cells finish and the integrity check
     holds.
-- **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md`;
+- **Results:** 36 of 36 cells; G on MCAR equals E35 on all 9 cells (largest difference 0).
+  - **Reading: go for the full family.**
+  - **G's H against the bar under MNAR:** better on all three tables (biodeg −0.017, kc2 −0.116,
+    vehicle −0.040). Against missForest: worse on biodeg (+0.020), no difference on kc2 and
+    vehicle.
+  - **The mechanism effect** ((H − bar), MNAR minus MCAR): worse on biodeg (+0.081), no verdict on
+    kc2 and vehicle.
+  - **The oracle's optimism** (K − H, MNAR minus MCAR): no verdict on any table.
+  - **t2:** Mx column-wise is worse than G's H under both mechanisms on biodeg and vehicle; its
+    deficit shrinks under MNAR on biodeg only (−0.011).
+- **Conclusion:** the machinery works and the lead survives value-dependent missingness on these
+  three tables; biodeg is where MNAR costs the model, so it is the table for the tilt dial. The
+  signed bias per column is pending (offline).
+- **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md` (Outcome);
   `scripts/experiments/mnar_smoke_run.py`, `mnar_smoke_report.py`, `run_mnar_smoke_queue.sh`;
   `datasets/generate_mnar.py`.

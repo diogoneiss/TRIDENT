@@ -102,3 +102,94 @@ So `impute_score` is compared across mechanisms only as a difference of within-v
   only E44's progress log. The launch time is logged in that directory's `progress.log`.
 - **The cutoff:** E44 should end at about 10:30–11:30 GMT-3, so the 12:00 GMT-3 cutoff may leave
   some cells unstarted. Those are reported missing, as fixed above.
+
+## Outcome (2026-10-17, 12:35 GMT-3)
+
+**Run.** The four queues started at 10:24 GMT-3, after E44's last cell, on 4915515, and ended
+between 11:25 and 11:29 GMT-3 (about 65 minutes against about 70 planned). All 36 cells finished
+before the 12:00 GMT-3 cutoff; none failed and none is missing.
+
+**Reading, by the rule fixed in advance: go for the full family.** All three conditions hold:
+
+- the generator's checks passed before launch;
+- all 36 cells finished;
+- the integrity check holds: G on the MCAR variants equals E35 fold by fold on all 9 cells
+  (largest difference 0, `mnar_smoke_report.py --integrity`).
+
+**Tally,** printed by `scripts/experiments/mnar_smoke_report.py --tally`. Each line is a mean
+difference over the 15 fold pairs of the induced `impute_score` (lower is better), its 95%
+t-interval and the verdict.
+
+```text
+=== biodeg
+  MNAR G/H - bar: -0.0165 [-0.0232, -0.0097] -> better
+  MNAR G/H - missforest: +0.0204 [+0.0111, +0.0296] -> worse
+  MNAR G/H - strong: +0.0204 [+0.0111, +0.0296] -> worse
+  MCAR G/H - bar: -0.0973 [-0.1112, -0.0835] -> better
+  MCAR G/H - missforest: +0.0059 [-0.0126, +0.0244] -> none
+  MCAR G/H - strong: +0.0059 [-0.0126, +0.0244] -> none
+  (H - bar), MNAR minus MCAR: +0.0809 [+0.0665, +0.0953] -> worse
+  (K - H), MNAR minus MCAR (the oracle's optimism): +0.0063 [-0.0007, +0.0132] -> none
+  MNAR Mx column-wise - G/H: +0.0097 [+0.0034, +0.0161] -> worse
+  MCAR Mx column-wise - G/H: +0.0205 [+0.0130, +0.0281] -> worse
+  t2, (Mx column-wise - G/H), MNAR minus MCAR: -0.0108 [-0.0213, -0.0003] -> better
+=== kc2
+  MNAR G/H - bar: -0.1159 [-0.1420, -0.0898] -> better
+  MNAR G/H - missforest: -0.0107 [-0.0460, +0.0245] -> none
+  MNAR G/H - strong: -0.0107 [-0.0460, +0.0245] -> none
+  MCAR G/H - bar: -0.0961 [-0.1732, -0.0191] -> better
+  MCAR G/H - missforest: -0.0581 [-0.1087, -0.0075] -> better
+  MCAR G/H - strong: -0.0581 [-0.1087, -0.0075] -> better
+  (H - bar), MNAR minus MCAR: -0.0198 [-0.1066, +0.0670] -> none
+  (K - H), MNAR minus MCAR (the oracle's optimism): +0.0311 [-0.0073, +0.0695] -> none
+  MNAR Mx column-wise - G/H: +0.0118 [-0.0030, +0.0266] -> none
+  MCAR Mx column-wise - G/H: +0.0249 [-0.0100, +0.0598] -> none
+  t2, (Mx column-wise - G/H), MNAR minus MCAR: -0.0131 [-0.0521, +0.0259] -> none
+=== vehicle
+  MNAR G/H - bar: -0.0403 [-0.0510, -0.0295] -> better
+  MNAR G/H - missforest: +0.0040 [-0.0043, +0.0122] -> none
+  MNAR G/H - strong: +0.0040 [-0.0043, +0.0122] -> none
+  MCAR G/H - bar: -0.0542 [-0.0685, -0.0399] -> better
+  MCAR G/H - missforest: -0.0008 [-0.0186, +0.0169] -> none
+  MCAR G/H - strong: -0.0008 [-0.0186, +0.0169] -> none
+  (H - bar), MNAR minus MCAR: +0.0140 [-0.0024, +0.0303] -> none
+  (K - H), MNAR minus MCAR (the oracle's optimism): -0.0020 [-0.0118, +0.0077] -> none
+  MNAR Mx column-wise - G/H: +0.0112 [+0.0051, +0.0173] -> worse
+  MCAR Mx column-wise - G/H: +0.0230 [+0.0042, +0.0417] -> worse
+  t2, (Mx column-wise - G/H), MNAR minus MCAR: -0.0118 [-0.0335, +0.0100] -> none
+```
+
+- **"strong" equals missForest here.** These runs come from the main checkout before ADR 0021's
+  implementation, so the linear arms were not fitted on them; the strong tier's best is missForest
+  alone.
+
+**What the smoke says, descriptively** (no claim rests on it):
+
+- **The lead over the weak bar survives MNAR on all three tables** (biodeg −0.017, kc2 −0.116,
+  vehicle −0.040).
+- **It shrinks on biodeg only.** On biodeg the gap to the bar goes from −0.097 under MCAR to
+  −0.017 under MNAR, a mechanism effect of +0.081 that excludes zero. Against missForest, biodeg
+  goes from no difference to worse (+0.020). On kc2 and vehicle the mechanism effect has no
+  verdict.
+- **The oracle's optimism does not grow under MNAR.** K − H, MNAR minus MCAR, has no verdict on
+  any table. So H stays the right readout here.
+- **t2's positive control is weak.** Mx (column-wise, gaps as `[NULL]`) is worse than G's H under
+  both mechanisms on biodeg and vehicle, and no different on kc2. Its deficit shrinks under MNAR
+  on biodeg (−0.011, excluding zero) and nowhere else. The untied arm does not overtake the tied
+  one on any table.
+  - Mx changes three things at once (the `[NULL]` gaps, the loss checkpoint and column-wise
+    scoring), so this contrast does not isolate the `[NULL]`/`[MASK]` split.
+- **The known limit holds:** under MNAR the mean/mode denominator is biased, so only within-variant
+  gaps are compared across mechanisms, as above.
+
+**Not done:** the signed bias per column (measure 5), offline from the ledgers with
+`scripts/experiments/metric_panel.py`. It does not affect the go.
+
+**For the user to decide:**
+
+- Whether to run the full family (spambase plus the 20nan rung, about 48 cells, and a tilt dial on
+  biodeg), as the rule allows. biodeg is the table worth the dial: the only one where MNAR moves
+  the lead.
+- Whether the full family should carry the strong tier live, after ADR 0021's merge, so that
+  "strong" is more than missForest.
+

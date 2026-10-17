@@ -143,3 +143,100 @@ primary waits for E42's tuned bar on these folds.
   change. E43 had finished at 01:50, and its outcome was read only after this launch.
 - **Warm-up:** finished for all 15 variants by 01:35 GMT-3.
 - **The deployable readout named by E43** (read after launch, 02:00 GMT-3) is H.
+
+## Outcome (2026-10-17, 10:25 GMT-3)
+
+**Run.** All 45 cells ran from 01:51 to 10:24 GMT-3 (8 h 33 min against about 8.2 h planned).
+None failed and none is missing.
+
+**The offline opponents were complete before this reading:**
+
+- E42's tuned bar on all 45 cells, by 03:23 GMT-3;
+- E41's arms on the same folds, by 02:39 GMT-3.
+
+**Table.** Built by script from `scripts/experiments/confirmation_report.py`'s functions.
+
+- Induced `impute_score`, K readout, mean over 15 fold pairs; lower is better.
+- Each contrast is the mean difference and its verdict (95% t-interval and seed agreement;
+  "equivalent" means within ±1% of the opponent's mean).
+- **Reading:**
+  - **win:** better than both the bar of 5 and the tuned bar;
+  - **loss:** worse than either;
+  - **neither:** anything else.
+
+| variant | K | bar of 5 | tuned bar | K − bar | K − tuned bar | K − strong tier | H − bar | KC − K | reading |
+|---|---|---|---|---|---|---|---|---|---|
+| `pendigits_40nan` | 0.4259 | 0.4912 | 0.4786 | -0.0653, better | -0.0528, better | -0.0706, better | -0.0643, better | -0.0012, better | win |
+| `pendigits_60nan` | 0.5856 | 0.6424 | 0.6393 | -0.0568, better | -0.0537, better | -0.1215, better | -0.0531, better | -0.0036, better | win |
+| `pendigits_80nan` | 0.8304 | 0.8549 | 0.8342 | -0.0245, better | -0.0038, better | -0.0178, better | -0.0212, better | -0.0042, better | win |
+| `letter_40nan` | 0.5598 | 0.6154 | 0.6012 | -0.0555, better | -0.0414, better | -0.0554, better | -0.0545, better | -0.0014, better | win |
+| `letter_60nan` | 0.7175 | 0.7518 | 0.7499 | -0.0343, better | -0.0324, better | -0.0841, better | -0.0276, better | -0.0030, better | win |
+| `letter_80nan` | 0.8902 | 0.9041 | 0.8884 | -0.0139, better | +0.0018, worse | -0.0144, better | -0.0120, better | -0.0023, better | loss |
+| `electricity_40nan` | 0.7745 | 0.7309 | 0.7249 | +0.0436, none | +0.0496, worse | -0.0164, none | +0.0417, none | -0.0096, none | loss |
+| `electricity_60nan` | 0.8298 | 0.8186 | 0.8190 | +0.0112, worse | +0.0108, worse | -0.0902, better | +0.0203, worse | -0.0004, equivalent | loss |
+| `electricity_80nan` | 0.9002 | 0.8999 | 0.8953 | +0.0004, none | +0.0050, none | -0.0569, better | +0.0010, equivalent | -0.0016, equivalent | neither |
+| `vehicle_40nan` | 0.4970 | 0.5704 | 0.5708 | -0.0734, better | -0.0738, better | -0.0256, better | -0.0644, better | +0.0005, equivalent | win |
+| `vehicle_80nan` | 0.8088 | 0.8165 | 0.8184 | -0.0078, none | -0.0097, none | +0.0425, worse | +0.0002, none | -0.0216, better | neither |
+| `biodeg_40nan` | 0.6654 | 0.7413 | 0.7379 | -0.0759, better | -0.0725, better | -0.0242, better | -0.0761, better | -0.0047, none | win |
+| `biodeg_80nan` | 0.9712 | 1.0000 | 0.9687 | -0.0288, better | +0.0025, none | +0.0489, worse | -0.0175, better | -0.0246, better | neither |
+| `kc2_40nan` | 0.5075 | 0.5931 | 0.6057 | -0.0856, better | -0.0982, better | -0.0604, better | -0.0742, better | -0.0005, equivalent | win |
+| `kc2_80nan` | 0.6866 | 0.8431 | 0.8524 | -0.1566, better | -0.1659, better | -0.0587, better | -0.1324, better | -0.0073, none | win |
+
+**Reading, by the rule fixed in advance: mixed.** 9 wins of 15 (≥8 needed), and 3 losses
+(≤2 needed for "supported", ≥5 for "refuted").
+
+- **The losses:**
+  - electricity_40nan and electricity_60nan, against the boosters;
+  - letter_80nan, against the tuned bar only, by +0.0018. That is 0.2% of the bar: inside the 1%
+    SESOI in size, but its interval excludes zero, so the rule counts it.
+- **Neither:** electricity_80nan, vehicle_80nan, biodeg_80nan.
+
+**What the confirmation says, read beside the development set.**
+
+- **The lead generalises on the large tables and at 40nan.**
+  - pendigits and letter at 40 and 60nan are wins by 3–7% against every opponent, missForest and
+    the strong tier included.
+  - So are vehicle, biodeg and kc2 at 40nan, and kc2 at 80nan.
+- **electricity is the table where the model loses,** at 40 and 60nan, as at 20nan in the
+  development set (one of its two losses there). The boosters (hgb, lgbm) set the bar there. This
+  is a property of the table, now seen at three levels, rather than a failure to generalise.
+- **At 80nan the lead mostly vanishes against the tuned bar.** pendigits and kc2 win; electricity,
+  vehicle and biodeg are neither, and letter loses by 0.2%. Against missForest (the strong tier)
+  the model loses vehicle_80nan and biodeg_80nan.
+
+**Secondary, pre-registered:**
+
+- **Tallies for K:**
+
+  | opponent | tally | at 80nan |
+  |---|---|---|
+  | the bar of 5 | 11 / none 3 / worse 1 | 4 / 2 / 0 |
+  | the tuned bar | 9 / 3 / 3 | 2 / 3 / 1 |
+  | missForest | 12 / 1 / 2 | |
+  | the strong tier | 12 / 1 / 2 | |
+  | the best of all | 10 / 2 / 3 | |
+  | the per-type bar | 11 / 3 / 1 | |
+
+  The per-type bar changes no verdict.
+- **Across tables** (secondary here, 6 tables): 5 of 6 below the bar, two-sided Wilcoxon p = 0.062
+  (the smallest attainable is 0.031); 3 of 6 below the best of all.
+- **Deployability:**
+  - H against the bar: better 11, no difference 2, equivalent 1, worse 1 (electricity_60nan).
+  - K − H: K better on 5, worse on none. On new data the oracle's advantage over the deployable
+    readout is small.
+  - M − H: equivalent on 12 of 15, H better on 1.
+- **T20 (the calibration):**
+  - KC − K: KC better on 8 of 15, equivalent on 4, worse on none.
+  - At 40nan, KC is better on pendigits_40nan and letter_40nan, so by the secondary rule
+    **threshold 40 is supported**: it answers the open question in the proposal (40 rather than
+    60).
+- **Pending:** the metric panel, the context-free rows and the twin split, offline from these
+  runs' ledgers (`scripts/experiments/metric_panel.py`). They will be added below.
+
+**For the user to decide:**
+
+- The thesis's confirmation statement: on the confirmation set, the model beats both the untuned
+  and the tuned bar on 9 of 15 new variants, ties on 3 and loses on 3, two of them on electricity.
+- Whether electricity becomes a stated limit, or an investigation of why the boosters win there.
+- Reviving T20 with threshold 40, by an ADR.
+
