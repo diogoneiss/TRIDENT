@@ -157,6 +157,7 @@ def main(argv: list[str]) -> int:
             context_free = test.isna().all(axis=1).to_numpy()
             positions = cells["row"].to_numpy(dtype=int)
             cells["twin"] = twin_rows[positions]
+            cells["other"] = ~cells["twin"]
             cells["with_context"] = ~context_free[positions]
             rows.append({"variant": variant, "seed": seed, "fold": ordinal, "method": "model", **panel(cells, naive)})
             if not baselines:
