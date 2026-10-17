@@ -72,6 +72,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
+| E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 – | in progress | 66 cells: G and Mx on 4 new pairs and 3 new slopes, seeds 42/7/13 |
 
 ## Entries
 
@@ -1475,4 +1476,30 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   signed bias per column is pending (offline).
 - **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md` (Outcome);
   `scripts/experiments/mnar_smoke_run.py`, `mnar_smoke_report.py`, `run_mnar_smoke_queue.sh`;
+  `datasets/generate_mnar.py`.
+
+### E46 · The full MNAR family (2026-10-17 – )
+
+- **Status:** in progress. Pre-registered before the first cell, after E45's rule read "go for the
+  full family" and on the user's request.
+- **Hypothesis:** the model's lead over the weak bar survives value-dependent missingness on a
+  larger table (spambase at 60nan) and at a lighter rung (biodeg, kc2 and vehicle at 20nan); on
+  biodeg at 60nan, its cost grows with the tilt's strength.
+- **Scenarios:**
+  - **Data:** `datasets/generate_mnar.py` (seed 1060), now with `--slope`. Seven new files: the four
+    `_probit_` pairs at slope 0.5, and biodeg_60nan at slopes 0.25, 1.0 and 2.0. All checks passed,
+    except that 3 heavy-tailed kc2 columns barely tilt at 20nan, so kc2_20nan is a weak tilt.
+  - **Arms:** E45's G (H read) and Mx (column-wise), tag `experiment=mnar-family-2026-10-17`.
+  - **Cells:** 48 on the new pairs (both mechanisms) and 18 on the dial; seeds 42/7/13; 66 cells in
+    all, about 3.7 h on 4 queues. The dial's slope 0.5 and its MCAR control are E45's cells.
+  - **Integrity:** G on the four MCAR controls must equal E35 fold by fold.
+- **Measures and decision rule:**
+  - **Primary:** G's H against the weak bar under MNAR on the 4 new pairs. Supported if better on
+    ≥3 and worse on none; refuted if worse on ≥2 or better on ≤1; mixed otherwise.
+  - **Dial:** dose-response if the mechanism effect's mean rises strictly over slopes
+    0.25/0.5/1.0/2.0 and is "worse" at 2.0; separately, whether H still beats the bar at 2.0.
+  - **Descriptive:** missForest (the strong tier is missForest alone, before ADR 0021's merge), the
+    oracle's optimism, t2, and the rung (20nan beside 60nan).
+- **Sources:** `docs/tickets/imputation-protocol/06-mnar-family.md`;
+  `scripts/experiments/mnar_family_run.py`, `mnar_family_report.py`, `run_mnar_family_queue.sh`;
   `datasets/generate_mnar.py`.

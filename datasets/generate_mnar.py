@@ -1,9 +1,10 @@
 """Value-dependent (MNAR) variants of the complete tables, at the MCAR siblings' counts (E45).
 
-    uv run --python 3.11 python datasets/generate_mnar.py [--bases biodeg kc2 vehicle] [--pct 0.6]
+    uv run --python 3.11 python datasets/generate_mnar.py [--bases biodeg kc2 vehicle] [--pct 0.6] [--slope 0.5]
 
 For each base table, reads ``processed_datasets/<base>/<base>_00nan.csv`` and writes
-``processed_datasets/<base>/<base>_probit_<pp>nan.csv``. Every feature column loses exactly
+``processed_datasets/<base>/<base>_probit_<pp>nan.csv``; a slope other than the default 0.5 (the
+tilt dial, E46) is written into the name, ``<base>_probit2p0_<pp>nan.csv`` for 2.0. Every feature column loses exactly
 ``round(n * pct)`` cells, the count ``generate_splits.py`` takes from its MCAR sibling, drawn
 without replacement with weights Phi(SLOPE * z - OFFSET), z being the column standardised on the
 complete table: large values are hidden more often. Weighted sampling at a fixed count is not
@@ -52,17 +53,24 @@ def tilted(frame: pd.DataFrame, pct: float, seed: int = SEED, slope: float = SLO
     return out
 
 
+def variant_name(base: str, pct: float, slope: float = SLOPE) -> str:
+    """``<base>_probit_<pp>nan`` at the default slope; any other slope is spelt into the name."""
+    dial = "" if slope == SLOPE else f"{slope:g}".replace(".", "p") + ("p0" if float(slope).is_integer() else "")
+    return f"{base}_probit{dial}_{round(pct * 100):02d}nan"
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bases", nargs="+", default=["biodeg", "kc2", "vehicle"])
     parser.add_argument("--pct", type=float, default=0.6)
+    parser.add_argument("--slope", type=float, default=SLOPE)
     options = parser.parse_args(argv)
     for base in options.bases:
         if (CATEGORICAL / f"{base}.txt").exists() and (CATEGORICAL / f"{base}.txt").read_text().strip():
             sys.exit(f"{base} has categorical columns; the smoke generator handles numerical tables only")
         complete = pd.read_csv(ROOT / base / f"{base}_00nan.csv")
-        variant = tilted(complete, options.pct)
-        path = ROOT / base / f"{base}_probit_{round(options.pct * 100):02d}nan.csv"
+        variant = tilted(complete, options.pct, slope=options.slope)
+        path = ROOT / base / f"{variant_name(base, options.pct, options.slope)}.csv"
         variant.to_csv(path, index=False)
         print(f"wrote {path} ({variant.drop(columns=[TARGET]).isna().to_numpy().mean():.3f} of feature cells missing)")
     return 0
