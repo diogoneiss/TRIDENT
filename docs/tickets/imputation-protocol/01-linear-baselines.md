@@ -170,3 +170,19 @@ Seed sets are never pooled where the configuration differs (the five variants ab
   fixed here before this study scores anything.
 - **Multiplicity:** about 3 arms × 21 variants × 3 seed sets of verdicts. The counts are
   descriptive, and each is reported with its test.
+
+## Amendment 2026-10-16, about 23:10 GMT-3 (before any arm's score was read)
+
+- **The module and driver landed.** They are `src/training/linear_baselines.py` and
+  `scripts/experiments/linear_baselines_run.py`. Unit tests show:
+  - no arm reads a hidden cell's truth;
+  - the clip holds;
+  - SoftImpute can keep rank 3 of 4 columns;
+  - ICE equals scikit-learn's `IterativeImputer(BayesianRidge)` within 1e-6, with the same rounds
+    and the training range as bounds;
+  - the global streams are untouched.
+- **One numerical guard not named above:** the PPCA noise variance is floored at 1e-6, the probe's
+  floor. It binds only when the discarded spectrum is empty (k = p).
+- **The integrity check on the first cell** (vehicle_20nan, seed 42) against E35's fold CSV: all 24
+  shared baseline columns are equal (difference 0.0), and mean/mode is exactly 1. Only these columns
+  were looked at; no arm's score was read.
