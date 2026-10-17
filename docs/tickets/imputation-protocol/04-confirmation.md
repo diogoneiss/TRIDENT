@@ -230,8 +230,8 @@ None failed and none is missing.
   - At 40nan, KC is better on pendigits_40nan and letter_40nan, so by the secondary rule
     **threshold 40 is supported**: it answers the open question in the proposal (40 rather than
     60).
-- **Pending:** the metric panel, the context-free rows and the twin split, offline from these
-  runs' ledgers (`scripts/experiments/metric_panel.py`). They will be added below.
+- **The metric panel, the context-free rows and the twin split** were read offline afterwards;
+  see "Offline readings" below.
 
 **For the user to decide:**
 
@@ -239,4 +239,93 @@ None failed and none is missing.
   and the tuned bar on 9 of 15 new variants, ties on 3 and loses on 3, two of them on electricity.
 - Whether electricity becomes a stated limit, or an investigation of why the boosters win there.
 - Reviving T20 with threshold 40, by an ADR.
+
+### Offline readings (added 2026-10-17, 15:45 GMT-3)
+
+**How they were made:**
+
+- **Source:** `scripts/experiments/metric_panel.py`, run on these runs' fold ledgers, with every
+  baseline refitted on the same folds; nothing was written to the store.
+- **Opponent:** per (variant, seed), the weak tier's best by mean `impute_score` (D16), not the
+  tuned bar of the primary.
+- **A bug was fixed before the twin split was read** (c242341): the first pass left the
+  non-twin subset empty.
+  - kc2 and letter were rerun with the fix.
+  - Every other column of the rerun equals the first pass exactly (largest difference 0).
+
+**The panel** (`scripts/experiments/metric_panel_report.py`):
+
+- `biodeg_40nan` (opponent hgb): impute_score -0.076 better, rmse_ratio -0.076 better, mae_ratio -0.109 better, colnorm_ratio -0.125 better, abs_bias +0.001 none, dispersion -0.062 better, wasserstein -0.046 better, impute_score_with_context -0.076 better
+- `biodeg_80nan` (opponent mean_mode): impute_score -0.029 better, rmse_ratio -0.029 better, mae_ratio -0.087 better, colnorm_ratio -0.013 better, abs_bias +0.024 worse, dispersion -0.556 better, wasserstein -0.286 better, impute_score_with_context -0.029 better
+- `electricity_40nan` (opponent hgb/lgbm): impute_score +0.044 none, rmse_ratio +0.043 none, mae_ratio +0.009 worse, colnorm_ratio +0.022 none, err_ratio +0.044 worse, balacc_error_ratio +0.044 worse, abs_bias +0.008 worse, dispersion +0.039 none, wasserstein -0.009 better, tv +0.083 worse, impute_score_with_context +0.044 none
+- `electricity_60nan` (opponent hgb/lgbm): impute_score +0.011 worse, rmse_ratio +0.010 worse, mae_ratio +0.006 worse, colnorm_ratio +0.004 none, err_ratio +0.020 worse, balacc_error_ratio +0.019 worse, abs_bias +0.009 worse, dispersion -0.005 none, wasserstein -0.005 none, tv +0.064 worse, impute_score_with_context +0.013 worse
+- `electricity_80nan` (opponent hgb/lgbm): impute_score +0.000 none, rmse_ratio +0.000 none, mae_ratio -0.000 none, colnorm_ratio +0.014 none, err_ratio +0.001 none, balacc_error_ratio +0.002 none, abs_bias +0.009 worse, dispersion +0.017 none, wasserstein +0.021 worse, tv +0.082 worse, impute_score_with_context +0.001 none
+- `kc2_40nan` (opponent knn5): impute_score -0.086 better, rmse_ratio -0.086 better, mae_ratio -0.002 none, colnorm_ratio -0.062 better, abs_bias -0.041 better, dispersion -0.191 better, wasserstein -0.013 none, impute_score_with_context -0.086 better
+- `kc2_80nan` (opponent knn5): impute_score -0.157 better, rmse_ratio -0.157 better, mae_ratio -0.077 better, colnorm_ratio -0.138 better, abs_bias -0.094 better, dispersion -0.376 better, wasserstein -0.070 better, impute_score_with_context -0.160 better
+- `letter_40nan` (opponent lgbm): impute_score -0.056 better, rmse_ratio -0.056 better, mae_ratio -0.059 better, colnorm_ratio -0.054 better, abs_bias +0.001 none, dispersion -0.106 better, wasserstein -0.061 better, impute_score_with_context -0.056 better
+- `letter_60nan` (opponent lgbm): impute_score -0.034 better, rmse_ratio -0.034 better, mae_ratio -0.044 better, colnorm_ratio -0.034 better, abs_bias +0.003 worse, dispersion -0.108 better, wasserstein -0.068 better, impute_score_with_context -0.035 better
+- `letter_80nan` (opponent hgb/lgbm): impute_score -0.014 better, rmse_ratio -0.014 better, mae_ratio -0.018 better, colnorm_ratio -0.014 better, abs_bias +0.029 worse, dispersion +0.058 worse, wasserstein +0.052 worse, impute_score_with_context -0.015 better
+- `pendigits_40nan` (opponent hgb/lgbm): impute_score -0.065 better, rmse_ratio -0.065 better, mae_ratio -0.066 better, colnorm_ratio -0.067 better, abs_bias +0.001 none, dispersion -0.085 better, wasserstein -0.059 better, impute_score_with_context -0.065 better
+- `pendigits_60nan` (opponent hgb/lgbm): impute_score -0.057 better, rmse_ratio -0.057 better, mae_ratio -0.081 better, colnorm_ratio -0.059 better, abs_bias -0.000 none, dispersion -0.101 better, wasserstein -0.078 better, impute_score_with_context -0.057 better
+- `pendigits_80nan` (opponent hgb/lgbm): impute_score -0.025 better, rmse_ratio -0.025 better, mae_ratio -0.023 better, colnorm_ratio -0.025 better, abs_bias +0.021 worse, dispersion +0.027 worse, wasserstein +0.031 worse, impute_score_with_context -0.026 better
+- `vehicle_40nan` (opponent hgb/lgbm): impute_score -0.073 better, rmse_ratio -0.073 better, mae_ratio -0.060 better, colnorm_ratio -0.083 better, abs_bias +0.003 none, dispersion -0.025 better, wasserstein -0.003 none, impute_score_with_context -0.073 better
+- `vehicle_80nan` (opponent knn10): impute_score -0.008 none, rmse_ratio -0.008 none, mae_ratio -0.027 better, colnorm_ratio -0.018 better, abs_bias +0.020 worse, dispersion -0.214 better, wasserstein -0.135 better, impute_score_with_context -0.011 none
+
+Disagreements between `impute_score` and a panel metric (opposite verdicts):
+
+- biodeg_80nan: impute_score better, abs_bias worse
+- letter_60nan: impute_score better, abs_bias worse
+- letter_80nan: impute_score better, abs_bias worse
+- letter_80nan: impute_score better, dispersion worse
+- letter_80nan: impute_score better, wasserstein worse
+- pendigits_80nan: impute_score better, abs_bias worse
+- pendigits_80nan: impute_score better, dispersion worse
+- pendigits_80nan: impute_score better, wasserstein worse
+
+- **The ratio metrics never disagree with `impute_score`.** The per-kind ratios, the
+  column-normalised ratio and balanced accuracy agree with it on all 15 variants, as on E40's
+  panel.
+- **The disagreements are all distributional:**
+  - **abs_bias:** biodeg_80nan, letter_60nan, letter_80nan and pendigits_80nan;
+  - **dispersion and Wasserstein:** letter_80nan and pendigits_80nan, against the boosters.
+- **On letter_80nan and pendigits_80nan the model's fills are more shrunk than the boosters'.**
+  - Dispersion: 0.485 against 0.543 on letter, 0.627 against 0.654 on pendigits (1 is the
+    truth's spread).
+  - So the fills are closer to the truth cell by cell, but farther from it as a distribution.
+  - This is the trade-off a squared-error imputer makes at heavy missingness. It is a caveat on
+    these 80nan wins: they hold for point accuracy, not for the distribution.
+
+**The twin split** (`--split`, on the rerun). A twin cell is a cell of a row whose complete
+feature vector also appears in the training fold:
+
+- `kc2_40nan`: twins 32.5% of cells; context-free 0.0%; impute_score -0.0856 [-0.1505, -0.0207] better; impute_score_twin +0.2042 [+0.1562, +0.2523] worse; impute_score_other -0.1067 [-0.1693, -0.0440] better; impute_score_with_context -0.0856 [-0.1505, -0.0207] better
+- `kc2_80nan`: twins 33.4% of cells; context-free 1.7%; impute_score -0.1566 [-0.1998, -0.1134] better; impute_score_twin +0.0828 [+0.0377, +0.1280] worse; impute_score_other -0.1801 [-0.2236, -0.1367] better; impute_score_with_context -0.1598 [-0.2022, -0.1174] better
+- `letter_40nan`: twins 8.8% of cells; context-free 0.0%; impute_score -0.0555 [-0.0573, -0.0538] better; impute_score_twin -0.0800 [-0.0861, -0.0740] better; impute_score_other -0.0538 [-0.0557, -0.0520] better; impute_score_with_context -0.0555 [-0.0573, -0.0538] better
+- `letter_60nan`: twins 8.9% of cells; context-free 0.1%; impute_score -0.0343 [-0.0361, -0.0324] better; impute_score_twin -0.0707 [-0.0761, -0.0653] better; impute_score_other -0.0306 [-0.0327, -0.0285] better; impute_score_with_context -0.0345 [-0.0363, -0.0327] better
+- `letter_80nan`: twins 8.9% of cells; context-free 3.4%; impute_score -0.0139 [-0.0147, -0.0131] better; impute_score_twin -0.0061 [-0.0102, -0.0020] better; impute_score_other -0.0148 [-0.0156, -0.0140] better; impute_score_with_context -0.0147 [-0.0154, -0.0139] better
+
+- **kc2's wins do not come from twins.**
+  - About a third of kc2's cells are twins.
+  - On those the model is worse than knn5, by +0.204 at 40nan and +0.083 at 80nan: knn finds the
+    duplicate row.
+  - On the other cells its lead is larger than overall: −0.107 and −0.180.
+- **letter:** better on both subsets at every level.
+
+**Context-free rows (D17)** (`--split`, first pass; the remaining variants). The share of cells in
+rows with every feature missing, and the score without them:
+
+- `biodeg_40nan`: twins 0.5% of cells; context-free 0.0%; impute_score -0.0759 [-0.0978, -0.0541] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0759 [-0.0978, -0.0541] better
+- `biodeg_80nan`: twins 0.5% of cells; context-free 0.0%; impute_score -0.0288 [-0.0393, -0.0184] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0288 [-0.0393, -0.0184] better
+- `electricity_40nan`: twins 0.0% of cells; context-free 0.1%; impute_score +0.0436 [-0.0013, +0.0885] none; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context +0.0437 [-0.0013, +0.0887] none
+- `electricity_60nan`: twins 0.0% of cells; context-free 2.9%; impute_score +0.0112 [+0.0059, +0.0164] worse; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context +0.0125 [+0.0058, +0.0193] worse
+- `electricity_80nan`: twins 0.0% of cells; context-free 20.9%; impute_score +0.0004 [-0.0093, +0.0100] none; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context +0.0005 [-0.0119, +0.0129] none
+- `pendigits_40nan`: twins 0.0% of cells; context-free 0.0%; impute_score -0.0653 [-0.0680, -0.0627] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0653 [-0.0680, -0.0627] better
+- `pendigits_60nan`: twins 0.0% of cells; context-free 0.0%; impute_score -0.0568 [-0.0587, -0.0549] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0569 [-0.0588, -0.0550] better
+- `pendigits_80nan`: twins 0.0% of cells; context-free 3.7%; impute_score -0.0245 [-0.0264, -0.0227] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0258 [-0.0277, -0.0238] better
+- `vehicle_40nan`: twins 0.0% of cells; context-free 0.0%; impute_score -0.0734 [-0.0853, -0.0615] better; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0734 [-0.0853, -0.0615] better
+- `vehicle_80nan`: twins 0.0% of cells; context-free 1.9%; impute_score -0.0078 [-0.0202, +0.0047] none; impute_score_twin: a fold has no such cell; impute_score_other: a fold has no such cell; impute_score_with_context -0.0106 [-0.0223, +0.0011] none
+
+- **Removing the context-free cells changes no verdict.**
+  - electricity_80nan has the largest share: 20.9% of the cells (16.8% of the rows).
+  - There the contrast stays at no difference.
 

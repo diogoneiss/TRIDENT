@@ -1435,8 +1435,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **T20:** KC − K is better on 8, worse on none, including pendigits_40nan and letter_40nan, so
     threshold 40 is supported.
 - **Conclusion:** the lead generalises on the large tables and at 40nan. electricity is the table
-  where the model loses, now at three levels. At 80nan the lead mostly ties the tuned bar. The
-  panel, context-free rows and twins are pending (offline).
+  where the model loses, now at three levels. At 80nan the lead mostly ties the tuned bar.
+  - **Offline readings (added 15:45 GMT-3):** the ratio metrics never disagree with
+    `impute_score`.
+  - The only disagreements are distributional: abs_bias at 80nan (and letter_60nan), and on
+    letter_80nan and pendigits_80nan fills more shrunk than the boosters' (dispersion,
+    Wasserstein).
+  - kc2's wins come from the non-twin cells; the model loses to knn on the twins.
+  - Dropping the context-free cells changes no verdict.
 - **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md` (Outcome);
   `scripts/experiments/confirmation_run.py`, `confirmation_report.py`, `run_confirmation_queue.sh`.
 
