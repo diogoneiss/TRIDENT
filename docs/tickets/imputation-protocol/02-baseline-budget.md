@@ -92,3 +92,14 @@ project's verdict rule:
 - **A larger grid could lower the bar further.** The grids are a declared budget, not a search for
   the best possible imputer.
 - **These are development cells,** apart from E44's.
+
+## Note 2026-10-16, about 23:15 GMT-3: the output contract E44 reads
+
+- **Directory and files.** The driver writes one CSV per (variant, seed) under
+  `/scratch2/diogoneiss/trident-2026-10-17-baseline-budget/csv/`.
+- **Columns.** Each file holds every tuned family's test metrics as
+  `impute/<population>/baseline/<family>_tuned/<metric>`, plus the tuned bar as
+  `impute/<population>/baseline/tuned_bar/impute_score`. The tuned bar is the tuned weak-tier family
+  with the lowest CV mean on the run, as ADR 0007 decision 8 chooses the bar.
+- **The confirmation reads it.** `scripts/experiments/confirmation_report.py` (E44) reads these
+  columns.

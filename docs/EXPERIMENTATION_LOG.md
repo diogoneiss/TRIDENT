@@ -70,6 +70,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the module |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
+| E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 – | in progress | 45 cells, seeds 707/808/909, read once |
 
 ## Entries
 
@@ -1369,3 +1370,31 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     The default stays K.
 - **Sources:** `docs/tickets/imputation-protocol/03-deployable-checkpoint.md`;
   `scripts/experiments/checkpoint_run.py`, `checkpoint_report.py`, `run_checkpoint_queue.sh`.
+
+### E44 · Confirmation on the 15 unused variants (2026-10-17 – )
+
+- **Status:** in progress. Pre-registered before the first cell and before E43's outcome was read.
+- **Hypothesis:** the frozen configuration's lead over the bar on the development set (today's
+  default on 101/202/303: 16 better, 3 no difference, 2 worse, by the review's rebuild)
+  generalises to new draws and levels of the same tables.
+- **Scenarios:**
+  - **Configuration:** frozen post-E40 (ADRs 0013–0015, 0018 at 20nan only, 0019), with no
+    inheritance at 40–80nan.
+  - **Readouts:** K headline, H and M (`--score_checkpoints`), KC (`--score_calibrated`), on one
+    trajectory per run.
+  - **Variants:** pendigits, letter and electricity at 40/60/80nan; vehicle, biodeg and kc2 at
+    40/80nan.
+  - **Seeds and splits:** 707/808/909; `StratifiedKFold`, 5 folds; 45 cells, tag
+    `experiment=confirmation-2026-10-17`.
+  - **Opponents:** the bar of 5 and missForest live; E42's tuned bar and E41's strong tier
+    offline on the same folds.
+- **Measures and decision rule:**
+  - **Primary:** K − the opponents, 15 fold pairs, with the verdict rule and ±1% equivalence.
+  - **Win and loss (D4):** a win is better than both the bar of 5 and the tuned bar; a loss is
+    worse than either.
+  - **Reading:** supported if wins ≥ 8 and losses ≤ 2; refuted if losses ≥ 5 or wins ≤ 4; mixed
+    otherwise.
+  - **Secondary:** every opponent's tally; 80nan apart; the Wilcoxon over tables (secondary here);
+    K/H/M; T20's threshold; the metric panel; context-free rows; twins.
+- **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md`;
+  `scripts/experiments/confirmation_run.py`, `confirmation_report.py`, `run_confirmation_queue.sh`.
