@@ -53,6 +53,18 @@ def test_the_bar_never_takes_an_external_or_withdrawn_baseline_however_low() -> 
     assert common.opponent(frame, "strong")[0] == "missforest"
     assert common.opponent(frame, "best_of_all")[0] == "missforest"
 
+    # E41's diagnostic arm and E42's tuned families sit beside them in merged frames; neither is
+    # the untuned bar, however low (the first E41 reading let missforest_seq into it).
+    merged = frame.assign(**{
+        f"{P}/baseline/missforest_seq/impute_score": [0.2] * 3,
+        f"{P}/baseline/hgb_tuned/impute_score": [0.1] * 3,
+        f"{P}/baseline/tuned_bar/impute_score": [0.1] * 3,
+    })
+    assert common.opponent(merged, "bar")[0] == "lgbm"
+    assert common.opponent(merged, "best_of_all")[0] == "missforest"
+    with pytest.raises(KeyError, match="no class names"):
+        common.opponent(merged.assign(**{f"{P}/baseline/mystery/impute_score": [0.9] * 3}), "bar")
+
 
 def test_the_per_type_bar_is_the_bar_on_a_table_of_one_kind_and_no_weaker_on_a_mixed_one() -> None:
     one_kind = _frame(**{

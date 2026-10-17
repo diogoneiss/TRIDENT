@@ -67,7 +67,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
 | E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
-| E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the module |
+| E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – 2026-10-17 | done | condexp beats the weak bar on 2–4 variants per seed set (spambase_60nan and credit-g_60nan in all); an arm beats K only on credit-g_80nan; the kc2_20nan flip does not hold; K vs the strong tier 13/7/1 on 101/202/303 (16/3/2 vs the weak bar) |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 – | in progress | 45 cells, seeds 707/808/909, read once |
@@ -1290,10 +1290,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (Outcome); `scripts/experiments/calibration_report.py`, `calibration_run.py`,
   `run_calibration_queue.sh`.
 
-### E41 · Linear baselines and the missing per-fold baselines, on the decoder's cells (2026-10-16 – )
+### E41 · Linear baselines and the missing per-fold baselines, on the decoder's cells (2026-10-16 – 2026-10-17)
 
-- **Status:** in progress. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any arm
-  was scored on gorgona8. The offline pass waits on `src/training/linear_baselines.py`.
+- **Status:** done. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any arm was
+  scored on gorgona8.
 - **Hypothesis:** the review's laptop probe (indicative, not pre-registered) found condexp and
   inductive SoftImpute setting the bar on about 7 induced variants by seed means, and SoftImpute
   below the model on kc2_20nan. ICE with the sequential transform never beat the model. Paired fold
@@ -1317,8 +1317,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     plus equivalence within ±1%.
   - **Reading:** descriptive. The two-tier design (weak = the bar of 5; strong = missForest and the
     new arms) was decided by the user on 2026-10-16 and is written as ADR 0021 after this study.
-- **Sources:** `docs/tickets/imputation-protocol/01-linear-baselines.md`;
-  `docs/plans/2026-10-17-experiment-improvements.md` §2b.
+- **Results:** all 162 pairs ran from 23:06 to 01:26 GMT-3; integrity held to 1e-9.
+  - condexp is better than the weak bar on 4 / 4 / 2 variants (seed sets 101/202/303, 42/7/13,
+    404/505/606), with spambase_60nan and credit-g_60nan in every set.
+  - SoftImpute is better on 1 / 0 / 2 and ICE on 1 / 0 / 1, both on kc2_60nan.
+  - An arm is better than K only on credit-g_80nan (condexp, every set), where K is above 1.0.
+  - The kc2_20nan flip does not hold paired: SoftImpute − K is +0.0013, no difference.
+  - Without its cap, SoftImpute fails worse on spambase (+0.54 at 20nan).
+  - K against the strong tier's best: 13/7/1, 8/7/1 and 6/4/2, against 16/3/2, 12/3/1 and 10/1/1
+    against the weak bar. The model stays below it on 9 of 9 tables on 101/202/303 (Wilcoxon on
+    per-table means, p = 0.0039).
+  - missForest's sequential fill flips no model win.
+- **Conclusion:** the linear arms matter on a few small numerical or mixed tables at 60nan and
+  above, and beat the model only where it already loses to the mean/mode fill. Next is ADR 0021
+  (two tiers), then the live family and its backfill.
+- **Sources:** `docs/tickets/imputation-protocol/01-linear-baselines.md` (Outcome);
+  `docs/plans/2026-10-17-experiment-improvements.md` §2b; `docs/reports/2026-10-17-thesis-table-development.md`.
 
 ### E42 · An equal, validation-only tuning budget for the baselines (2026-10-16 – )
 

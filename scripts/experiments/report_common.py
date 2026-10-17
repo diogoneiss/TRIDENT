@@ -46,6 +46,12 @@ from src.training.summary import OUTSIDE_THE_BAR, WITHDRAWN_BASELINES  # noqa: E
 # The strong tier of baselines (plan §2b, the user's design of 2026-10-16): missForest and E41's
 # arms. The weak tier is the bar.
 STRONG = ("missforest", "condexp", "softimpute", "ice")
+# Every other baseline a frame can carry, classified so that none slips into the bar unread:
+# the live bar's members (checked only as known names; the bar itself is "not outside"), E41's
+# diagnostic arm, and E42's tuned families with their bar.
+WEAK = ("mean_mode", "knn5", "knn10", "hgb", "lgbm")
+DIAGNOSTIC = ("missforest_seq",)
+_TUNED = re.compile(r"_tuned(_masked)?$|^tuned_bar$")
 RULE = "fold-pair t, seed agreement"
 _SOURCE = """r.status = 'FINISHED' and r.lifecycle_stage = 'active'
             and r.run_uuid not in (select run_uuid from tags where key = 'is_mirror' and value = 'true')"""
@@ -116,8 +122,18 @@ def model(frame: pd.DataFrame, run: Run, readout: str = "K", population: str = "
 
 
 def baselines_in(columns: Iterable[str], population: str) -> list[str]:
+    """The baselines a frame scores on ``population``; refuses one no class of this module names,
+    so a new arm can never join the bar or a tier without being read."""
     pattern = re.compile(rf"^impute/{re.escape(population)}/baseline/([^/]+)/impute_score$")
-    return sorted({m.group(1) for column in columns if (m := pattern.match(column))})
+    names = sorted({m.group(1) for column in columns if (m := pattern.match(column))})
+    unknown = [n for n in names if n not in (*WEAK, *STRONG, *DIAGNOSTIC, *OUTSIDE_THE_BAR) and not _TUNED.search(n)]
+    if unknown:
+        raise KeyError(f"baselines no class names: {unknown}; add them to WEAK, STRONG or DIAGNOSTIC")
+    return names
+
+
+def _excluded(name: str) -> bool:
+    return name in OUTSIDE_THE_BAR or name in STRONG or name in DIAGNOSTIC or bool(_TUNED.search(name))
 
 
 def _best(frame: pd.DataFrame, names: Sequence[str], population: str) -> tuple[str, NDArray[np.float64]]:
@@ -132,11 +148,15 @@ def opponent(frame: pd.DataFrame, which: str, population: str = "induced") -> tu
     ``per_type``, or a baseline's own name."""
     names = baselines_in(frame.columns, population)
     if which == "bar":
-        return _best(frame, [n for n in names if n not in OUTSIDE_THE_BAR and n not in STRONG], population)
+        return _best(frame, [n for n in names if not _excluded(n)], population)
     if which == "strong":
         return _best(frame, [n for n in names if n in STRONG], population)
     if which == "best_of_all":
-        return _best(frame, [n for n in names if n not in WITHDRAWN_BASELINES and n != "best"], population)
+        return _best(
+            frame,
+            [n for n in names if n not in WITHDRAWN_BASELINES and n != "best" and n not in DIAGNOSTIC and not _TUNED.search(n)],
+            population,
+        )
     if which == "per_type":
         return "per_type", per_type_bar(frame, population)
     if which in names:
@@ -160,7 +180,7 @@ def kind_ratios(frame: pd.DataFrame, prefix: str, population: str) -> tuple[NDAr
 def per_type_bar(frame: pd.DataFrame, population: str = "induced") -> NDArray[np.float64]:
     """Item 7b: the bar's best baseline chosen per kind of cell, on that kind's CV-mean ratio, and
     the two recombined with the model's cell weights. Equal to the bar on a table of one kind."""
-    names = [n for n in baselines_in(frame.columns, population) if n not in OUTSIDE_THE_BAR and n not in STRONG]
+    names = [n for n in baselines_in(frame.columns, population) if not _excluded(n)]
     numbers = np.asarray(frame.get(f"impute/{population}/n_num_cells", 0), dtype=float) * np.ones(len(frame))
     categories = np.asarray(frame.get(f"impute/{population}/n_cat_cells", 0), dtype=float) * np.ones(len(frame))
     total = numbers + categories

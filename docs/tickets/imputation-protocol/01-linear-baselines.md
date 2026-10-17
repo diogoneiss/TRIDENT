@@ -186,3 +186,60 @@ Seed sets are never pooled where the configuration differs (the five variants ab
 - **The integrity check on the first cell** (vehicle_20nan, seed 42) against E35's fold CSV: all 24
   shared baseline columns are equal (difference 0.0), and mean/mode is exactly 1. Only these columns
   were looked at; no arm's score was read.
+
+## Outcome (2026-10-17, 01:40 GMT-3)
+
+**Run.** All 162 (variant, seed) pairs ran from 23:06 to 01:26 GMT-3 on the CPU, with no failure
+and no store write.
+
+- **Integrity, all passed.** Every merged fold's recomputed baselines equal the run's own logged
+  ones within 1e-9, and mean/mode is 1 on every fold. The report refuses a cell otherwise.
+- **An error in the shared helper was caught and fixed before this reading.** Its first pass let
+  `missforest_seq`, the diagnostic arm, into the weak bar. `report_common` now names every
+  baseline's class and refuses unknown names; a test pins the case.
+
+**Numbers.** From `scripts/experiments/linear_baselines_report.py` and
+`scripts/experiments/thesis_table.py`; the full tables are in
+`docs/reports/2026-10-17-thesis-table-development.md`. Induced `impute_score`, 15 fold pairs, the
+project's rule (95% t-interval and seed agreement), equivalence within ±1%. 42/7/13 leaves out its
+five labelled variants.
+
+| | 101/202/303 (21 variants) | 42/7/13 (16) | 404/505/606 (12) |
+|---|---|---|---|
+| condexp better than the weak bar | 4: spambase_60nan, credit-g_60nan, credit-g_80nan, vehicle_60nan | 4: spambase_60nan, credit-g_60nan, vehicle_20nan, vehicle_60nan | 2: spambase_60nan, credit-g_60nan |
+| SoftImpute better than the weak bar | 1: kc2_60nan | 0 | 2: credit-g_60nan, kc2_60nan |
+| ICE better than the weak bar | 1: kc2_60nan | 0 | 1: kc2_60nan |
+| an arm better than K | credit-g_80nan (condexp) | credit-g_80nan (condexp) | credit-g_80nan (condexp) |
+| K against the weak bar | better 16 / none 3 / worse 2 | better 12 / none 3 / worse 1 | better 10 / none 1 / worse 1 |
+| K against the strong tier's best | better 13 / none 7 / worse 1 | better 8 / none 7 / worse 1 | better 6 / none 4 / worse 2 |
+
+**Reading (descriptive, as fixed).**
+
+- **The arms set the bar on a few small numerical or mixed tables at 60nan and above,** as the
+  probe found. condexp replicates on spambase_60nan and credit-g_60nan in every seed set.
+- **They beat the model on one variant only, credit-g_80nan,** in all three seed sets. There K is
+  above 1.0 (the model already loses to the mean/mode fill), and condexp sits at that fill plus a
+  small numerical gain.
+- **The probe's candidate flip on kc2_20nan does not hold paired.** SoftImpute − K is +0.0013 (no
+  difference) on 101/202/303 and +0.0357 (no difference) on 42/7/13.
+- **SoftImpute without the p//2 cap fails worse on spambase** (ranks 33 to 42, +0.54 at 20nan
+  against the bar), so dropping the cap did not fix it, as the review had warned it might not.
+  SoftImpute never beats K.
+- **ICE is a completeness row:** never better than K, and better than the bar only on kc2_60nan.
+- **The strong tier costs the model 3 wins of 16 on the primary set** (16 → 13). The new
+  "worse" verdicts are credit-g_80nan on every set, plus biodeg_60nan (missForest) on 404/505/606.
+  Across tables the model stays below the strong tier on 9 of 9 tables on 101/202/303 (two-sided
+  Wilcoxon on per-table mean gaps, p = 0.0039).
+
+**Secondary: missForest with the sequential fill** (`missforest_seq`, small tables).
+
+- It beats the stock fill by at most 0.009 at 20nan, and loses to it at 60nan and 80nan by up to
+  0.049 (credit-g_80nan).
+- It turns no model win into a loss. The only change is credit-g_40nan on 404/505/606, where the
+  sequential fill is weaker and K's "no difference" against missForest becomes "better".
+- Review finding 4's worry (near-ties flipping under per-round application) is not borne out
+  on these tables.
+
+**Next.** As planned (§2b): ADR 0021 (the two tiers), then the live `linear` family and its
+backfill, in a morning gap between studies. This study's CSVs are the check the backfill must
+reproduce.
