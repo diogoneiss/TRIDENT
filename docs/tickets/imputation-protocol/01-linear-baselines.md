@@ -187,7 +187,7 @@ Seed sets are never pooled where the configuration differs (the five variants ab
   shared baseline columns are equal (difference 0.0), and mean/mode is exactly 1. Only these columns
   were looked at; no arm's score was read.
 
-## Outcome (2026-10-17, 01:40 GMT-3)
+## Outcome (2026-10-17, 01:30 GMT-3)
 
 **Run.** All 162 (variant, seed) pairs ran from 23:06 to 01:26 GMT-3 on the CPU, with no failure
 and no store write.
