@@ -7,8 +7,10 @@ The design was accepted on 2026-10-16, as the user's own proposal, in reply to o
 baselines fracos (existente) e outra com os novos fortes". It extends ADRs 0007, 0016 and 0017.
 
 **Implemented on 2026-10-17, at the user's request** ("faça a implementação"), on the branch
-`feat/adr-0021-strong-tier`. It is merged only once no study is live, because every queued cell
-imports the checkout.
+`feat/adr-0021-strong-tier`. **Landed on 2026-10-17 at about 18:20 GMT-3** (merge f21ee33), after
+E42's lanes and E46 had ended, with nothing importing the checkout; the merged tree passes 394 unit
+tests and both integration fixtures. Every imputation run from f21ee33 on logs the strong tier
+live.
 
 **Tests and checks:**
 
@@ -16,8 +18,9 @@ imports the checkout.
 - a live kc2_60nan cell at seed 404 equals E40's on all 47 shared columns;
 - its linear arms equal E41's offline CSV within 4.4e-16.
 
-**Pending:** the backfill (`scripts/backfill_strong_tier.py`, dry run by default). It writes the
-store, so it waits for the user's go.
+**Pending:** the backfill (`scripts/backfill_strong_tier.py`, dry run by default) onto the runs
+made before f21ee33, E45 and E46 included. Its full dry run (a cache fill, hours of CPU) and then
+`--apply` (it writes the store) wait for the user's go.
 
 ## Context
 

@@ -316,7 +316,7 @@ Dose-response (the effect's mean rises with the slope, and at 2.0 it is 'worse')
   - On the new pairs, Mx is worse than G or no different. Its MNAR-minus-MCAR difference has no
     verdict, except kc2_20nan, where Mx loses more under MNAR.
   - On the dial, its deficit shrinks at every slope against MCAR (−0.014 to −0.026). At slope
-    2.0, Mx is better than G (−0.006), the first time the untied arm wins.
+    2.0, Mx is better than G (−0.006), the only cell of E45 and E46 where the untied arm wins.
   - So the `[NULL]` arm gains as missingness becomes more informative, on biodeg only. Mx still
     changes three things at once.
 - **"strong" is missForest alone,** as fixed in advance. ADR 0021's backfill would add the linear
