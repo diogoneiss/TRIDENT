@@ -69,7 +69,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the module |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
-| E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-17 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
+| E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
 
 ## Entries
 
@@ -1291,8 +1291,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E41 · Linear baselines and the missing per-fold baselines, on the decoder's cells (2026-10-16 – )
 
-- **Status:** in progress. Pre-registered at about 23:00 GMT-3 on 2026-10-16, before any arm was
-  scored on gorgona8. The offline pass waits on `src/training/linear_baselines.py`.
+- **Status:** in progress. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any arm
+  was scored on gorgona8. The offline pass waits on `src/training/linear_baselines.py`.
 - **Hypothesis:** the review's laptop probe (indicative, not pre-registered) found condexp and
   inductive SoftImpute setting the bar on about 7 induced variants by seed means, and SoftImpute
   below the model on kc2_20nan. ICE with the sequential transform never beat the model. Paired fold
@@ -1321,8 +1321,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E42 · An equal, validation-only tuning budget for the baselines (2026-10-16 – )
 
-- **Status:** in progress. Pre-registered at about 23:00 GMT-3 on 2026-10-16, before any tuned
-  baseline was scored. The offline driver comes after E41's module.
+- **Status:** in progress. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any
+  tuned baseline was scored. The offline driver comes after E41's module.
 - **Hypothesis:** a declared validation-only budget lowers the bar by about 0.01–0.035 on a few
   variants (review threat 1). The probe's recipe was chosen on test, so the size is unmeasured.
 - **Scenarios:**
@@ -1340,10 +1340,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     changes are listed.
 - **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md`; plan §2c.
 
-### E43 · A deployable decode checkpoint (2026-10-17 – )
+### E43 · A deployable decode checkpoint (2026-10-16 – )
 
-- **Status:** in progress. Pre-registered with its code on 2026-10-16 at about 23:20 GMT-3, before
-  the first cell.
+- **Status:** in progress. Pre-registered with its code on 2026-10-16 at 22:58 GMT-3 (`9a7e249`);
+  the queues started at 22:58:11 GMT-3.
 - **Hypothesis:** K (ADR 0015) uses the validation gaps' truth, which a deployed model never has.
   Its 80nan wins over the mean/mode fill exist only under it (E34/E35: 0 of 3 under H, 2 of 3
   under K). A criterion that needs no gap truth, M (the fixed validation mask's `impute_score`),

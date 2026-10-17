@@ -1,6 +1,7 @@
 # A deployable decode checkpoint (E43; pre-registered 2026-10-16)
 
-This ticket was written and committed before the first cell, on 2026-10-16 at about 23:20 GMT-3.
+This ticket was written and committed before the first cell, on 2026-10-16 at 22:58 GMT-3 (`9a7e249`). The queues started at 22:58:11
+GMT-3.
 
 - **Plan:** [2026-10-17-experiment-improvements](../../plans/2026-10-17-experiment-improvements.md)
   (§2c, §3; D9, D10, D19), accepted by the user on 2026-10-16. Path B runs this study before the

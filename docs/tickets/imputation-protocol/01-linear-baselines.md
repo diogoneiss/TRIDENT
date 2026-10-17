@@ -1,7 +1,7 @@
 # Linear baselines and the missing per-fold baselines, on the decoder's cells (E41; pre-registered 2026-10-16)
 
 This ticket was written and committed before any fold of these arms was scored on gorgona8, on
-2026-10-16 at about 23:00 GMT-3. It freezes the rules, the cell map and the reading. The pass
+2026-10-16 at 22:47 GMT-3 (`5278337`). It freezes the rules, the cell map and the reading. The pass
 itself waits for `src/training/linear_baselines.py`, planned for 2026-10-17. The plan is
 [2026-10-17-experiment-improvements](../../plans/2026-10-17-experiment-improvements.md) (§2b, §3),
 which the user accepted on 2026-10-16.

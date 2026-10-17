@@ -1,7 +1,7 @@
 # An equal, validation-only tuning budget for the baselines (E42; pre-registered 2026-10-16)
 
-This ticket was written and committed before any tuned baseline was scored, on 2026-10-16 at about
-23:00 GMT-3. It freezes the grids, the selection signal and the reading. The driver is written
+This ticket was written and committed before any tuned baseline was scored, on 2026-10-16 at 22:47
+GMT-3 (`5278337`). It freezes the grids, the selection signal and the reading. The driver is written
 after E41's module. The plan is
 [2026-10-17-experiment-improvements](../../plans/2026-10-17-experiment-improvements.md) (§2c, §3,
 D4 and D8), accepted on 2026-10-16.
