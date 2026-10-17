@@ -67,6 +67,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E38 | The bigger encoder by table size, on fresh seeds | 2026-10-06 – 2026-10-07 | done | supported: large −3.0% (pendigits −3.8%, letter −5.6%, electricity +0.3% n.s.); medium −0.2% (1 better); small +1.9% (4 worse); paused for ADR 0017, then completed |
 | E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
+| E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the module |
+| E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
 
 ## Entries
 
@@ -1285,3 +1287,54 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-calibration/01-calibration-at-higher-missingness.md`
   (Outcome); `scripts/experiments/calibration_report.py`, `calibration_run.py`,
   `run_calibration_queue.sh`.
+
+### E41 · Linear baselines and the missing per-fold baselines, on the decoder's cells (2026-10-16 – )
+
+- **Status:** in progress. Pre-registered at about 23:00 GMT-3 on 2026-10-16, before any arm was
+  scored on gorgona8. The offline pass waits on `src/training/linear_baselines.py`.
+- **Hypothesis:** the review's laptop probe (indicative, not pre-registered) found condexp and
+  inductive SoftImpute setting the bar on about 7 induced variants by seed means, and SoftImpute
+  below the model on kc2_20nan. ICE with the sequential transform never beat the model. Paired fold
+  by fold, the kc2_20nan flip may not survive.
+- **Scenarios:**
+  - **Arms:** condexp, SoftImpute and ICE, with the rules frozen in the ticket (clip to the training
+    range; 90% energy share with no p//2 cap; one-hot ICE with the sequential transform); an
+    optional `missforest_seq`.
+  - **Missing baselines:** lgbm and missForest, recomputed where the fold CSVs lack them.
+  - **Cells:** the cell map of the ticket, offline through `recompute_folds`:
+    - 101/202/303: E34 K, with E38 ALL on pendigits and letter_20nan and E39 D on the three 40nan
+      variants;
+    - 42/7/13: E35 K, five variants labelled;
+    - 404/505/606: E40.
+
+    162 (variant, seed) pairs.
+  - **No store writes.**
+- **Measures and decision rule:**
+  - **Primary:** each arm − the bar of 5, each arm − K, and K − the strong tier's best (missForest
+    and the new arms), on the induced `impute_score`. 15 fold pairs each, with the verdict rule,
+    plus equivalence within ±1%.
+  - **Reading:** descriptive. The two-tier design (weak = the bar of 5; strong = missForest and the
+    new arms) was decided by the user on 2026-10-16 and is written as ADR 0021 after this study.
+- **Sources:** `docs/tickets/imputation-protocol/01-linear-baselines.md`;
+  `docs/plans/2026-10-17-experiment-improvements.md` §2b.
+
+### E42 · An equal, validation-only tuning budget for the baselines (2026-10-16 – )
+
+- **Status:** in progress. Pre-registered at about 23:00 GMT-3 on 2026-10-16, before any tuned
+  baseline was scored. The offline driver comes after E41's module.
+- **Hypothesis:** a declared validation-only budget lowers the bar by about 0.01–0.035 on a few
+  variants (review threat 1). The probe's recipe was chosen on test, so the size is unmeasured.
+- **Scenarios:**
+  - **Grids:** knn k ∈ {5, 10, 20, 50}; 12 configurations each for hgb and lgbm; 4 for missForest;
+    a mean-shrinkage α ∈ {0, 0.25, 0.5} at 60nan and 80nan.
+  - **Selection:** per fold on the validation rows' own gaps (the signal K uses), with no refit;
+    only the chosen configuration is scored on test. Masked-cell selection is the sensitivity
+    reading.
+  - **Cells:** E41's cell map on 101/202/303 and 404/505/606, plus E44's variants and seeds.
+  - **No store writes.**
+- **Measures and decision rule:**
+  - **Primary:** the tuned bar − the untuned bar, and K − the tuned bar, on the induced
+    `impute_score`, 15 fold pairs, with the verdict rule.
+  - **Reading:** descriptive. A thesis win needs K to beat both bars (D4); variants whose verdict
+    changes are listed.
+- **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md`; plan §2c.
