@@ -1,0 +1,1743 @@
+{
+ "rows": [
+  {
+   "variant": "biodeg_60nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.7611053330453859,
+   "sequential": 0.7774875639557136,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.7611053330453859,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.761,
+   "missforest_adr_3seed": 0.762,
+   "decoder_k_seed42": 0.7609627037281333,
+   "seq_minus_replay": 0.016382230910327755,
+   "seq_minus_replay_per_fold": [
+    0.0399,
+    0.0032,
+    0.0162,
+    0.0212,
+    0.0015
+   ],
+   "replay_vs_K42": "tie",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.00014262931725250727,
+   "seq_minus_K42": 0.016524860227580263,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seq_then_stock": 0.779974445479265,
+   "seq_then_stock_minus_replay": 0.01886911243387912,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     10,
+     9
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     6,
+     5
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "biodeg_60nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.7466526510411686,
+   "sequential": 0.7323450103263902,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.7466526510411686,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.809,
+   "missforest_adr_3seed": 0.786,
+   "decoder_k_seed42": 0.72936372090606,
+   "seq_minus_replay": -0.014307640714778413,
+   "seq_minus_replay_per_fold": [
+    -0.0439,
+    0.0163,
+    -0.0191,
+    -0.0327,
+    0.008
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "tie",
+   "replay_minus_K42": 0.01728893013510857,
+   "seq_minus_K42": 0.0029812894203301576,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seq_then_stock": 0.736073592478951,
+   "seq_then_stock_minus_replay": -0.010579058562217636,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     5,
+     4
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "credit-g_40nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.9280362392316566,
+   "sequential": 0.9353644031356563,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.9280362392316566,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.956,
+   "missforest_adr_3seed": 0.931,
+   "decoder_k_seed42": 0.966555212762757,
+   "seq_minus_replay": 0.007328163903999707,
+   "seq_minus_replay_per_fold": [
+    -0.0052,
+    0.029,
+    -0.0061,
+    0.0189,
+    0.0
+   ],
+   "replay_vs_K42": "MF wins",
+   "seq_vs_K42": "MF wins",
+   "replay_minus_K42": -0.03851897353110045,
+   "seq_minus_K42": -0.031190809627100746,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seq_then_stock": 0.9325112459071144,
+   "seq_then_stock_minus_replay": 0.00447500667545786,
+   "seq_then_stock_vs_K42": "MF wins",
+   "stock_test_passes_computed_kept": [
+    [
+     8,
+     7
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     9
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     4,
+     3
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     7,
+     6
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "credit-g_40nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.9433630485214834,
+   "sequential": 0.9536517464337824,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.9433630485214834,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.982,
+   "missforest_adr_3seed": 0.95,
+   "decoder_k_seed42": 0.9918385380995602,
+   "seq_minus_replay": 0.010288697912298916,
+   "seq_minus_replay_per_fold": [
+    0.0139,
+    0.044,
+    -0.0212,
+    -0.0081,
+    0.0227
+   ],
+   "replay_vs_K42": "MF wins",
+   "seq_vs_K42": "MF wins",
+   "replay_minus_K42": -0.04847548957807679,
+   "seq_minus_K42": -0.038186791665777875,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seq_then_stock": 0.9546301022657836,
+   "seq_then_stock_minus_replay": 0.011267053744300148,
+   "seq_then_stock_vs_K42": "MF wins",
+   "stock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     7,
+     6
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     4,
+     3
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "electricity_20nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.624647833807195,
+   "sequential": 0.6065838792859894,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.625914767802939,
+   "replay_minus_logged": -0.0012669339957439574,
+   "decoder_k_adr_3seed": 0.618,
+   "missforest_adr_3seed": 0.619,
+   "decoder_k_seed42": 0.6283041966155218,
+   "seq_minus_replay": -0.018063954521205572,
+   "seq_minus_replay_per_fold": [
+    -0.013,
+    -0.005,
+    -0.0186,
+    -0.0316,
+    -0.0221
+   ],
+   "replay_vs_K42": "MF wins",
+   "seq_vs_K42": "MF wins",
+   "replay_minus_K42": -0.0036563628083268185,
+   "seq_minus_K42": -0.02172031732953239,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "seq_then_stock": 0.6134070227947014,
+   "seq_then_stock_minus_replay": -0.011240811012493634,
+   "seq_then_stock_vs_K42": "MF wins",
+   "stock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     8,
+     7
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     7,
+     6
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "electricity_20nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.7145419219123381,
+   "sequential": 0.6945551452159262,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.71461105906266,
+   "replay_minus_logged": -6.913715032186296e-05,
+   "decoder_k_adr_3seed": 0.686,
+   "missforest_adr_3seed": 0.71,
+   "decoder_k_seed42": 0.6721746637861574,
+   "seq_minus_replay": -0.019986776696411912,
+   "seq_minus_replay_per_fold": [
+    -0.0304,
+    -0.0059,
+    -0.0139,
+    -0.0225,
+    -0.0272
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.042367258126180696,
+   "seq_minus_K42": 0.022380481429768784,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     9,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "seq_then_stock": 0.6970038178862954,
+   "seq_then_stock_minus_replay": -0.017538104026042722,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "kc2_20nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.6292165561703007,
+   "sequential": 0.6298524239929624,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.6322692093959452,
+   "replay_minus_logged": -0.0030526532256445194,
+   "decoder_k_adr_3seed": 0.541,
+   "missforest_adr_3seed": 0.605,
+   "decoder_k_seed42": 0.5744052955255564,
+   "seq_minus_replay": 0.0006358678226616732,
+   "seq_minus_replay_per_fold": [
+    -0.0003,
+    -0.0001,
+    0.0043,
+    -0.0007,
+    -0.0001
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.054811260644744286,
+   "seq_minus_K42": 0.05544712846740596,
+   "fit_kept_fitted_rounds": [
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "seq_then_stock": 0.6294002159680474,
+   "seq_then_stock_minus_replay": 0.0001836597977467047,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     8,
+     7
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     5,
+     4
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     5,
+     4
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "kc2_20nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.5480441741188514,
+   "sequential": 0.547316926529167,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.5486390320285401,
+   "replay_minus_logged": -0.0005948579096887174,
+   "decoder_k_adr_3seed": 0.53,
+   "missforest_adr_3seed": 0.592,
+   "decoder_k_seed42": 0.5271286164331931,
+   "seq_minus_replay": -0.0007272475896844544,
+   "seq_minus_replay_per_fold": [
+    -0.0008,
+    -0.0001,
+    -0.0052,
+    0.0023,
+    0.0002
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.020915557685658337,
+   "seq_minus_K42": 0.020188310095973883,
+   "fit_kept_fitted_rounds": [
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     4,
+     5
+    ],
+    [
+     4,
+     5
+    ]
+   ],
+   "seq_then_stock": 0.5487692697236028,
+   "seq_then_stock_minus_replay": 0.0007250956047514245,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     8,
+     7
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "kr-vs-kp_40nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.805943181712952,
+   "sequential": 0.786939661321939,
+   "mean_mode": 1.0000000000000002,
+   "logged_missforest_seed42": 0.805943181712952,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.758,
+   "missforest_adr_3seed": 0.801,
+   "decoder_k_seed42": 0.7672153972754092,
+   "seq_minus_replay": -0.01900352039101294,
+   "seq_minus_replay_per_fold": [
+    -0.0053,
+    -0.0213,
+    -0.0268,
+    -0.0251,
+    -0.0165
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.03872778443754277,
+   "seq_minus_K42": 0.019724264046529827,
+   "fit_kept_fitted_rounds": [
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.7861211200187503,
+   "seq_then_stock_minus_replay": -0.019822061694201643,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     7,
+     6
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     3,
+     2
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     3,
+     2
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "kr-vs-kp_40nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.8231486206551887,
+   "sequential": 0.8286624302323247,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.8231486206551887,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.781,
+   "missforest_adr_3seed": 0.824,
+   "decoder_k_seed42": 0.7751155300998759,
+   "seq_minus_replay": 0.005513809577135986,
+   "seq_minus_replay_per_fold": [
+    0.0091,
+    0.0123,
+    -0.0376,
+    0.0313,
+    0.0124
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.048033090555312796,
+   "seq_minus_K42": 0.05354690013244878,
+   "fit_kept_fitted_rounds": [
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.8261776376270434,
+   "seq_then_stock_minus_replay": 0.003029016971854759,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     5,
+     4
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "pendigits_20nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.33347043919486213,
+   "sequential": 0.32099745818659,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.33176782741704375,
+   "replay_minus_logged": 0.0017026117778183858,
+   "decoder_k_adr_3seed": 0.332,
+   "missforest_adr_3seed": 0.334,
+   "decoder_k_seed42": 0.33396934358088387,
+   "seq_minus_replay": -0.012472981008272155,
+   "seq_minus_replay_per_fold": [
+    -0.0155,
+    -0.0092,
+    -0.0147,
+    -0.0106,
+    -0.0124
+   ],
+   "replay_vs_K42": "tie",
+   "seq_vs_K42": "MF wins",
+   "replay_minus_K42": -0.0004989043860217368,
+   "seq_minus_K42": -0.012971885394293892,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.3216749501842148,
+   "seq_then_stock_minus_replay": -0.011795489010647309,
+   "seq_then_stock_vs_K42": "MF wins",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     9
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     8,
+     7
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     3,
+     2
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "pendigits_20nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.4110236144469634,
+   "sequential": 0.38233285210478296,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.4098417373413172,
+   "replay_minus_logged": 0.0011818771056462118,
+   "decoder_k_adr_3seed": 0.369,
+   "missforest_adr_3seed": 0.409,
+   "decoder_k_seed42": 0.3703560392544011,
+   "seq_minus_replay": -0.02869076234218043,
+   "seq_minus_replay_per_fold": [
+    -0.0416,
+    -0.0239,
+    -0.0294,
+    -0.023,
+    -0.0256
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.04066757519256231,
+   "seq_minus_K42": 0.01197681285038188,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     7,
+     8
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.38194469297099853,
+   "seq_then_stock_minus_replay": -0.02907892147596486,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     8,
+     7
+    ],
+    [
+     8,
+     7
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "spambase_40nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.9453760316540862,
+   "sequential": 0.9395114811942514,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.9439281298460607,
+   "replay_minus_logged": 0.0014479018080255646,
+   "decoder_k_adr_3seed": 0.903,
+   "missforest_adr_3seed": 0.942,
+   "decoder_k_seed42": 0.900748685014061,
+   "seq_minus_replay": -0.005864550459834805,
+   "seq_minus_replay_per_fold": [
+    -0.0164,
+    -0.0013,
+    -0.002,
+    -0.0177,
+    0.0081
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.04462734664002521,
+   "seq_minus_K42": 0.038762796180190406,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     8,
+     9
+    ]
+   ],
+   "seq_then_stock": 0.9449959049425708,
+   "seq_then_stock_minus_replay": -0.0003801267115154383,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     9
+    ],
+    [
+     8,
+     7
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     3,
+     2
+    ],
+    [
+     6,
+     5
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     4,
+     3
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "spambase_40nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.9940244498521358,
+   "sequential": 0.9746285790798719,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.9920399341680423,
+   "replay_minus_logged": 0.001984515684093524,
+   "decoder_k_adr_3seed": 0.897,
+   "missforest_adr_3seed": 0.972,
+   "decoder_k_seed42": 0.9029685284791329,
+   "seq_minus_replay": -0.0193958707722639,
+   "seq_minus_replay_per_fold": [
+    -0.0401,
+    -0.0172,
+    -0.0027,
+    -0.0067,
+    -0.0302
+   ],
+   "replay_vs_K42": "MF loses",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": 0.09105592137300289,
+   "seq_minus_K42": 0.07166005060073899,
+   "fit_kept_fitted_rounds": [
+    [
+     7,
+     8
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     5,
+     6
+    ],
+    [
+     8,
+     9
+    ]
+   ],
+   "seq_then_stock": 0.9972485442527509,
+   "seq_then_stock_minus_replay": 0.0032240944006151073,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     6,
+     5
+    ],
+    [
+     8,
+     7
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     5,
+     4
+    ],
+    [
+     10,
+     9
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "vehicle_60nan",
+   "population": "induced",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.6400644482872935,
+   "sequential": 0.6318038664501516,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.6400644482872935,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.645,
+   "missforest_adr_3seed": 0.647,
+   "decoder_k_seed42": 0.6528213145241903,
+   "seq_minus_replay": -0.008260581837141845,
+   "seq_minus_replay_per_fold": [
+    -0.0107,
+    -0.013,
+    -0.0086,
+    -0.0095,
+    0.0005
+   ],
+   "replay_vs_K42": "MF wins",
+   "seq_vs_K42": "MF wins",
+   "replay_minus_K42": -0.012756866236896869,
+   "seq_minus_K42": -0.021017448074038714,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.6353877012196433,
+   "seq_then_stock_minus_replay": -0.0046767470676502,
+   "seq_then_stock_vs_K42": "MF wins",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     7,
+     6
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     8,
+     7
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  },
+  {
+   "variant": "vehicle_60nan",
+   "population": "masked",
+   "seed": 42,
+   "folds": 5,
+   "stock_replay": 0.6386422211140765,
+   "sequential": 0.6494321813507825,
+   "mean_mode": 1.0,
+   "logged_missforest_seed42": 0.6386422211140765,
+   "replay_minus_logged": 0.0,
+   "decoder_k_adr_3seed": 0.616,
+   "missforest_adr_3seed": 0.616,
+   "decoder_k_seed42": 0.64046824145427,
+   "seq_minus_replay": 0.010789960236705975,
+   "seq_minus_replay_per_fold": [
+    0.0063,
+    0.0329,
+    -0.0145,
+    0.0227,
+    0.0066
+   ],
+   "replay_vs_K42": "tie",
+   "seq_vs_K42": "MF loses",
+   "replay_minus_K42": -0.0018260203401934127,
+   "seq_minus_K42": 0.008963939896512563,
+   "fit_kept_fitted_rounds": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     6,
+     7
+    ],
+    [
+     8,
+     9
+    ],
+    [
+     6,
+     7
+    ]
+   ],
+   "seq_then_stock": 0.6486171945276943,
+   "seq_then_stock_minus_replay": 0.00997497341361775,
+   "seq_then_stock_vs_K42": "MF loses",
+   "stock_test_passes_computed_kept": [
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     9,
+     8
+    ]
+   ],
+   "seqstock_test_passes_computed_kept": [
+    [
+     9,
+     8
+    ],
+    [
+     7,
+     6
+    ],
+    [
+     10,
+     10
+    ],
+    [
+     4,
+     3
+    ],
+    [
+     10,
+     9
+    ]
+   ],
+   "S4": true,
+   "rerun_bitwise_equal": true
+  }
+ ],
+ "summary": {
+  "replay_vs_K42/induced": {
+   "MF wins": 3,
+   "tie": 2,
+   "MF loses": 3
+  },
+  "replay_vs_K42/masked": {
+   "MF wins": 1,
+   "tie": 1,
+   "MF loses": 6
+  },
+  "seq_vs_K42/induced": {
+   "MF wins": 4,
+   "tie": 0,
+   "MF loses": 4
+  },
+  "seq_vs_K42/masked": {
+   "MF wins": 1,
+   "tie": 1,
+   "MF loses": 6
+  },
+  "seq_better_than_replay_beyond_tie": 9,
+  "seq_worse_than_replay_beyond_tie": 5,
+  "seq_replay_tie": 2,
+  "flips_where_replay_loses_or_ties_and_seq_wins": [
+   [
+    "pendigits_20nan",
+    "induced"
+   ]
+  ],
+  "flips_where_replay_wins_or_ties_and_seq_loses": [
+   [
+    "biodeg_60nan",
+    "induced"
+   ],
+   [
+    "vehicle_60nan",
+    "masked"
+   ]
+  ],
+  "crude_projection_3seed": [
+   {
+    "variant": "biodeg_60nan",
+    "population": "induced",
+    "adr_mf": 0.762,
+    "adr_k": 0.761,
+    "projected_seq": 0.7784,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "biodeg_60nan",
+    "population": "masked",
+    "adr_mf": 0.786,
+    "adr_k": 0.809,
+    "projected_seq": 0.7717,
+    "decoder_lower_now": false,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "credit-g_40nan",
+    "population": "induced",
+    "adr_mf": 0.931,
+    "adr_k": 0.956,
+    "projected_seq": 0.9383,
+    "decoder_lower_now": false,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "credit-g_40nan",
+    "population": "masked",
+    "adr_mf": 0.95,
+    "adr_k": 0.982,
+    "projected_seq": 0.9603,
+    "decoder_lower_now": false,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "electricity_20nan",
+    "population": "induced",
+    "adr_mf": 0.619,
+    "adr_k": 0.618,
+    "projected_seq": 0.6009,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "electricity_20nan",
+    "population": "masked",
+    "adr_mf": 0.71,
+    "adr_k": 0.686,
+    "projected_seq": 0.69,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "kc2_20nan",
+    "population": "induced",
+    "adr_mf": 0.605,
+    "adr_k": 0.541,
+    "projected_seq": 0.6056,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "kc2_20nan",
+    "population": "masked",
+    "adr_mf": 0.592,
+    "adr_k": 0.53,
+    "projected_seq": 0.5913,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "kr-vs-kp_40nan",
+    "population": "induced",
+    "adr_mf": 0.801,
+    "adr_k": 0.758,
+    "projected_seq": 0.782,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "kr-vs-kp_40nan",
+    "population": "masked",
+    "adr_mf": 0.824,
+    "adr_k": 0.781,
+    "projected_seq": 0.8295,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "pendigits_20nan",
+    "population": "induced",
+    "adr_mf": 0.334,
+    "adr_k": 0.332,
+    "projected_seq": 0.3215,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "pendigits_20nan",
+    "population": "masked",
+    "adr_mf": 0.409,
+    "adr_k": 0.369,
+    "projected_seq": 0.3803,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "spambase_40nan",
+    "population": "induced",
+    "adr_mf": 0.942,
+    "adr_k": 0.903,
+    "projected_seq": 0.9361,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "spambase_40nan",
+    "population": "masked",
+    "adr_mf": 0.972,
+    "adr_k": 0.897,
+    "projected_seq": 0.9526,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": true
+   },
+   {
+    "variant": "vehicle_60nan",
+    "population": "induced",
+    "adr_mf": 0.647,
+    "adr_k": 0.645,
+    "projected_seq": 0.6387,
+    "decoder_lower_now": true,
+    "decoder_lower_projected": false
+   },
+   {
+    "variant": "vehicle_60nan",
+    "population": "masked",
+    "adr_mf": 0.616,
+    "adr_k": 0.616,
+    "projected_seq": 0.6268,
+    "decoder_lower_now": false,
+    "decoder_lower_projected": true
+   }
+  ]
+ }
+}

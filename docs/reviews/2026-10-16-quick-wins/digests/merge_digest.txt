@@ -1,0 +1,640 @@
+PROBE setup: The 'ice' field holds ice_seq, not the template's own transform. ice_seq uses the template MiceImputer's fit: MissForestImputer rounds with BayesianRidge for numerical columns and LogisticRegression(max_iter=1000) for categorical ones. That fit matches sklearn IterativeImputer(BayesianRidge) to the last digit. The test rows are then filled the way sklearn's transform does it: the model of round 1, then round 2, and so on up to the kept round, with no stop rule. One difference from sklearn: the number of rounds is the template's still_converging count (3 to 10 per fold), not sklearn's fixed max_iter=10. Matching sklearn on that count gives agreement within 1.4e-9 on biodeg_20nan and kc2_20nan (10 rounds) and within 1e-12 on vehicle_20nan against sklearn(max_iter=6). Running default sklearn on vehicle_20nan differs by up to 1.19, so reproducing these numbers needs the round count set. The template's own fill (MissForestImputer.impute replays the kept round's models on test rows that start at the means) is reported in every row's note as template_replay. It scores 2.0 to 18.8 on the numerical tables (see caveats).
+
+Pre-registered versus post-hoc. The condexp and SoftImpute rules and the 0.003 tie band are frozen in impprobe_arms_v1_preregistered.py (mtime 11:02:27). That predates the first score, impprobe_knncheck.jsonl at 11:02:58.
+- condexp: pairwise-complete covariance around the training observed means, turned into a correlation, shrunk as R <- 0.9R + 0.1I, eigenvalues floored at 1e-3. Each test row gets E[x_m | x_o] from its observed numerical cells only, in the frame's scaled space. Categorical columns get the training mode.
+- SoftImpute: columns centred on the training means. Rank k is the smallest k whose top eigenvalues of the pairwise covariance reach 90% of its energy, capped at p//2 and p-1. Fit is hard-impute (iterative rank-k SVD) on the training fold: start at 0, at most 100 iterations, tolerance 1e-5. Loadings W = V_k diag(s_k)/sqrt(n). A test row is filled by the PPCA posterior z = (W_o'W_o + s2 I)^-1 W_o'(x_o - mu_o), with s2 the mean of the discarded eigenvalues. Categorical columns get the training mode.
+- Added after the seed-42 check on kc2/vehicle and the sklearn cross-check: ice_seq, ice_seq_clip (clipped inside every round to the column's training [min, max], i.e. sklearn's min_value/max_value), condexp_clip and softimpute_clip (clipped at the end). The clip arms appear only in the notes. All flags use only ice_seq, condexp and SoftImpute.
+
+Protocol. Seeds 42, 7 and 13, 5 folds, every arm scored with mean_mode through scripts/backfill_baseline_imputers.py: recompute_folds(variant, seed, 5, 0.2, [], fold_scorer=factory), then score_baselines. No cache dir and no BaselineScorer. EVAL_MASK_RATE is really 0.2: it is the default in src/training/types.py:235, all 126 E35 runs log EVAL_MASK_RATE=0.2 with no extra rates (read-only query of mlflow.db, mode=ro&immutable=1), and the backfill reads it from run params at scripts/backfill_baseline_imputers.py:518.
+
+Cell identity:
+- The repo's knn5, scored the same way, reproduces E35's logged cv/test/impute/{induced,masked}/baseline/knn5/impute_score/mean within 1.1e-16 on vehicle_20nan and kc2_20nan, seed 42.
+- All 630 mean_mode fold values equal 1 ± 4e-16.
+- The transcribed ADR 0017 table (lines 145-165) matches the store's 3-seed means within 0.0005. The bar is the bar-of-5 baseline with the lowest 3-seed mean; the model is the K readout, cv/test/impute/<pop>/induced_checkpoint/impute_score/mean.
+- A first run killed at about 11:13 and the final run agree exactly on 876 overlapping fold values.
+
+Wall time. 10:58 to 11:34 for everything (inventory, smoke tests, diagnostics, the sklearn checks, the killed first run). Final run 11:14:57 to 11:33:39 as 3 parallel processes with 4 BLAS threads each. Summed process time is about 55 min (1107, 1065 and 1103 s per seed), so all three seeds fit the 45-min budget only because they ran in parallel.
+repo check: BEFORE (10:58:01): results/baseline_cache had 6138 files; the newest is d7e2587b8faf6d585d68f2ba9383391b275fb97344ce521611e8b75555a38192.json, mtime 2026-10-16 09:32:58. git status --short: ' M .gitignore', '?? docs/reviews/2026-10-07-code-review-last-two-weeks.md', '?? mlflow.db-shm', '?? mlflow.db-wal', '?? mlflow.db.bak'.
+
+AFTER (11:33:51): 6138 files, the same newest file at 09:32:58, and git status --short identical. diff of the two snapshots, timestamp line excluded: IDENTICAL.
+
+A find for anything under the repo (.venv excluded) newer than the before-snapshot (10:58:03) returns only the .git directory entry itself (11:33:58). That comes from the transient index.lock created by the git status the task requires; .git/index is unchanged (09:19:30). No __pycache__ was written: PYTHONDONTWRITEBYTECODE=1 throughout.
+
+sync/incoming.db and its -wal/-shm were never opened. mlflow.db was opened only read-only with immutable=1.
+
+Snapshots: C:\Users\DIOGON~1\AppData\Local\Temp\claude\C--Users-Diogo-Neiss-Documents-Mestrado-Wiki\f402d390-da5f-4f09-a187-282102e58959\scratchpad\impprobe_state_before.txt and impprobe_state_after.txt.
+summary: Verdict flips against the model (K readout), 3-seed means, tie band 0.003:
+- kc2_20nan induced is the one clear flip. SoftImpute scores 0.522 against the model's 0.541 and knn5's 0.567, and it sits below the model's K on 3 of 3 seeds, seed-matched against the logged E35 values.
+- credit-g_60nan induced is marginal, not a verdict: condexp 0.988 against the model's 0.992 (margin 0.004, 2 of 3 seeds).
+- credit-g_80nan adds nothing new: condexp is at about mean_mode (1.000 / 1.004), the model is 1.008, and the model was already above the mean_mode bar.
+- With the new arms allowed into the bar, the model is below the bar on 17 of 21 induced variants instead of 19 (the new losses are kc2_20nan, plus the marginal credit-g_60nan). Masked is unchanged at 18 of 21. No new arm beats the model on masked beyond the tie band, except credit-g_80nan, where the model is already above the bar.
+
+Where a new arm would set the bar (below the ADR bar of 5 by more than 0.003):
+- Induced, 7 variants:
+  - kc2_60nan: SoftImpute 0.600 against 0.717 (3/3 seeds). ice_seq 0.706 also gets under (2/3).
+  - kc2_20nan: SoftImpute 0.522 against 0.567 (3/3).
+  - vehicle_20nan: condexp 0.451 against 0.473 (3/3).
+  - vehicle_60nan: condexp 0.697 (3/3) and SoftImpute 0.685 (2/3) against 0.701.
+  - spambase_60nan: condexp 0.975 against 0.984 (3/3).
+  - credit-g_60nan: condexp 0.988 against mean_mode's 1.000 (3/3).
+  - biodeg_60nan: SoftImpute 0.860 against 0.866. FRAGILE: below on only 1 of 3 seeds.
+- Masked, 7 variants:
+  - kc2_60nan: SoftImpute 0.582 against 0.717 (3/3).
+  - spambase_60nan: condexp 0.956 against 0.982 (2/3).
+  - vehicle_20nan: condexp 0.478 and ice_seq 0.484 against 0.505 (3/3).
+  - biodeg_60nan: SoftImpute 0.855 against 0.873 (3/3).
+  - vehicle_60nan: SoftImpute 0.658 and condexp 0.660 against 0.668 (2/3).
+  - credit-g_40nan: condexp 0.990 against 0.997 (2/3).
+  - credit-g_60nan: condexp 0.995 against 1.000 (3/3).
+- The biggest change in the comparison is on kc2_60nan. The model's margin over the bar shrinks from -0.145 to -0.028 induced and from -0.165 to -0.030 masked. Across the board the arms that do best are low-rank and Gaussian ones on small numerical tables with linear structure: kc2, vehicle, biodeg_60nan and spambase_60nan.
+
+Where the arms are far behind:
+- letter, pendigits and electricity score 0.55 to 0.98, against bars of 0.35 to 0.69. These tables are nonlinear, and KNN or hgb wins there.
+- credit-g at 20nan and 40nan: ice_seq and condexp are at 0.93 to 1.06, against bars of 0.92 to 1.00.
+- At 80nan everything sits at or above mean_mode.
+- kr-vs-kp: condexp and SoftImpute are mean_mode by construction, since the table is all categorical. ice_seq (0.67 to 1.04) never beats the lgbm/hgb bar beyond the tie band; it ties at 60nan induced (0.904 against 0.903).
+- Against missForest, read apart, the new arms are lower on kc2 (both variants, both populations), on credit-g_60nan and on spambase_60nan masked. They tie it on vehicle_20nan induced.
+
+Overall expectation for a pre-registered study: adding a Gaussian conditional-expectation arm and an inductive low-rank arm would move the bar on roughly a third of the variants. It would cost the model one clear win (kc2_20nan induced) and narrow its margin on kc2_60nan and vehicle. The ADR 0017 picture of the model below the bar on most variants would otherwise stand.
+
+The main methodological result: the template's ICE transform is wrong for linear learners. Its fits are exactly sklearn's, but replaying the kept round's models on test rows that start at the means scores 2 to 19 times mean_mode (spambase_40nan 18.8, kc2_20nan masked 9.9), against 0.65 to 1.1 for sklearn's per-round sequence. Any ICE or MICE arm in the study must specify the sequence transform and a range guard in advance.
+caveats: ["The earlier mice_probe.py numbers inherit the replay defect and are invalid for linear learners. The defect is in the transform at src/training/missforest.py:147-163 (MissForestImputer.impute replays self._models, the kept round's models, under still_converging), not in the fit. On fold 1 of biodeg_20nan and kc2_20nan, replaying sklearn's own last-round models once gives exactly the template's 2.295 / 6.51, while sklearn's sequence transform gives 0.586 / 0.560. The repo's missForest, which uses forests and cannot extrapolate, was not shown to be affected, but its inductive replay is still not what sklearn's transform does. Keep that in mind when reading the ADR 0016/0017 framing of inductive versus transductive.", "The ice field is ice_seq, a post-hoc correction of the transform (fit unchanged, not a tuning), added after the seed-42 check. The template's own number is in each note as template_replay. ice_seq uses the template's still_converging round count (3 to 10 per fold), not sklearn's fixed max_iter=10. On vehicle_20nan the two round counts differ by up to 1.19 in individual fills.", 'Linear arms on heavy-tailed kc2 need a range guard. ice_seq on kc2_20nan masked is 2.96 (seed range 0.64 to 7.40) and condexp is 1.23 to 1.28. Post-hoc clipping to the training range gives 0.541 (ice_seq_clip, inside every round), 0.71 to 0.84 (condexp_clip) and 0.57 (SoftImpute clip). A pre-registered study must fix the clip rule in advance. The clip arms here are diagnostics only and never enter a flag.', 'The SoftImpute rank rule fails on spambase. The p//2 cap binds at k=28 with only 72 to 86% of the energy, and SoftImpute scores worse than mean_mode at 20nan and 40nan (1.16 / 1.15). That is a failure of the rule, not a verdict on the method. The cap also binds on credit-g (k=3, about 60% energy) and letter (k=8, 85%).', 'condexp conditions on numerical cells only and fills categorical columns by the mode. Its credit-g numbers (13 of 20 columns categorical) and electricity numbers (1 of 8) therefore understate what a mixed-type Gaussian or MICE arm would reach. On all-categorical kr-vs-kp, condexp and SoftImpute are exactly mean_mode.', "ICE's categorical predictors enter as ordinal vocabulary codes (MissForest's _matrix). That misspecifies multi-class columns such as credit-g's purpose for a linear model, and is a plausible reason ICE is worse than mean_mode on credit-g from 40nan up.", 'condexp uses pairwise-complete covariance with fixed shrinkage and no EM. At 60 to 80% missingness the pairwise estimates rest on few co-observed rows and are noisy, as on biodeg_60nan (condexp 1.069 against SoftImpute 0.860).', "These are unpaired, indicative comparisons. The probe numbers come from the backfill's recompute_folds path, as means of per-seed 5-fold means. The model, bar and missForest columns come from ADR 0017's table, which was logged by the live decode path. The seeds (42, 7, 13) and cells are the same, though: knn5 reproduces the logged E35 values within 1e-16 on two variants. So a fold-paired analysis against the E35 children is possible in a real study. The 'n of 3 seeds' counts in the notes compare each seed's arm mean with that seed's logged mean for the ADR-named bar baseline and for the model's K.", 'The tie band of 0.003 was fixed before any score. A gap just beyond it, such as credit-g_60nan induced at 0.004, should be read as marginal.', "The impprobe_arms.py header says 'REVISION 11:20', but the actual relaunch was 11:14:57. The file was left unedited after launch. The pre-run rules are preserved verbatim in impprobe_arms_v1_preregistered.py (mtime 11:02:27).", 'Three seeds fit the time budget only through parallelism: 3 processes with 4 BLAS threads each, about 55 min of summed process time. Timings came from a laptop shared with an in-flight pull.']
+
+variant | pop | ice | condexp | softimp | mm | adr_model | adr_bar(name) | adr_mf | note
+biodeg_20nan     induced 0.753 0.739 0.774 1.000 | 0.587 0.633(lgbm) 0.618 | template_replay ICE=2.753; seed ranges ice 0.732-0.766, condexp 0.714-0.784, soft 0.756-0.786; SoftImpute k=16,17 (energy 0.90-0.92); post-hoc clip ic
+biodeg_20nan     masked  0.646 0.660 0.740 1.000 | 0.544 0.627(hgb) 0.570 | template_replay ICE=3.043; seed ranges ice 0.626-0.666, condexp 0.653-0.665, soft 0.709-0.763; SoftImpute k=16,17 (energy 0.90-0.92); post-hoc clip ic
+biodeg_60nan     induced 0.963 1.069 0.860 1.000 | 0.761 0.866(hgb) 0.762 | template_replay ICE=1.984; seed ranges ice 0.938-0.979, condexp 1.057-1.076, soft 0.846-0.866; SoftImpute k=16,17 (energy 0.90-0.92); post-hoc clip ic
+biodeg_60nan     masked  0.904 0.947 0.855 1.000 | 0.809 0.873(hgb) 0.786 | template_replay ICE=1.736; seed ranges ice 0.889-0.916, condexp 0.912-1.001, soft 0.806-0.891; SoftImpute k=16,17 (energy 0.90-0.92); post-hoc clip ic
+credit-g_20nan   induced 0.927 0.979 1.004 1.000 | 0.882 0.918(hgb) 0.885 | template_replay ICE=0.932; seed ranges ice 0.918-0.938, condexp 0.979-0.979, soft 1.003-1.005; SoftImpute k=3 (energy 0.60-0.63); post-hoc clip ice/co
+credit-g_20nan   masked  0.933 0.981 1.002 1.000 | 0.880 0.927(lgbm) 0.896 | template_replay ICE=0.933; seed ranges ice 0.930-0.937, condexp 0.981-0.981, soft 1.000-1.006; SoftImpute k=3 (energy 0.60-0.63); post-hoc clip ice/co
+credit-g_40nan   induced 1.061 0.982 1.013 1.000 | 0.956 0.964(hgb) 0.931 | template_replay ICE=1.237; seed ranges ice 1.044-1.087, condexp 0.982-0.982, soft 1.012-1.014; SoftImpute k=3 (energy 0.58-0.62); post-hoc clip ice/co
+credit-g_40nan   masked  1.043 0.990 1.025 1.000 | 0.982 0.997(hgb) 0.950 | template_replay ICE=1.206; seed ranges ice 1.016-1.061, condexp 0.985-0.995, soft 1.011-1.033; SoftImpute k=3 (energy 0.58-0.62); post-hoc clip ice/co
+credit-g_60nan   induced 1.082 0.988 1.012 1.000 | 0.992 1.000(mean_mode) 1.021 | template_replay ICE=1.359; seed ranges ice 1.077-1.086, condexp 0.987-0.989, soft 1.011-1.014; SoftImpute k=3 (energy 0.59-0.64); post-hoc clip ice/co
+credit-g_60nan   masked  1.079 0.995 1.012 1.000 | 0.980 1.000(mean_mode) 1.024 | template_replay ICE=1.334; seed ranges ice 1.036-1.158, condexp 0.991-0.998, soft 0.998-1.020; SoftImpute k=3 (energy 0.59-0.64); post-hoc clip ice/co
+credit-g_80nan   induced 1.134 1.000 1.006 1.000 | 1.008 1.000(mean_mode) 1.093 | template_replay ICE=1.449; seed ranges ice 1.119-1.143, condexp 1.000-1.001, soft 1.003-1.007; SoftImpute k=3 (energy 0.64-0.75); post-hoc clip ice/co
+credit-g_80nan   masked  1.118 1.004 1.006 1.000 | 1.008 1.000(mean_mode) 1.081 | template_replay ICE=1.252; seed ranges ice 1.072-1.166, condexp 1.001-1.009, soft 1.003-1.008; SoftImpute k=3 (energy 0.64-0.75); post-hoc clip ice/co
+electricity_20nan induced 0.919 0.848 0.981 1.000 | 0.618 0.606(hgb) 0.619 | template_replay ICE=0.919; seed ranges ice 0.887-0.984, condexp 0.847-0.848, soft 0.919-1.103; SoftImpute k=3 (energy 0.69-0.71); post-hoc clip ice/co
+electricity_20nan masked  0.887 0.879 0.926 1.000 | 0.686 0.690(hgb) 0.710 | template_replay ICE=0.888; seed ranges ice 0.882-0.892, condexp 0.870-0.893, soft 0.919-0.933; SoftImpute k=3 (energy 0.69-0.71); post-hoc clip ice/co
+kc2_20nan        induced 1.090 1.234 0.522 1.000 | 0.541 0.567(knn5) 0.605 | template_replay ICE=6.315; seed ranges ice 0.902-1.383, condexp 1.017-1.441, soft 0.494-0.566; SoftImpute k=2,3,4 (energy 0.90-0.95); post-hoc clip ic
+kc2_20nan        masked  2.964 1.275 0.676 1.000 | 0.530 0.559(knn5) 0.592 | template_replay ICE=9.878; seed ranges ice 0.642-7.402, condexp 0.850-2.109, soft 0.519-0.891; SoftImpute k=2,3,4 (energy 0.90-0.95); post-hoc clip ic
+kc2_60nan        induced 0.706 1.013 0.600 1.000 | 0.572 0.717(knn5) 0.675 | template_replay ICE=1.540; seed ranges ice 0.631-0.787, condexp 0.904-1.145, soft 0.586-0.624; SoftImpute k=3,4,5 (energy 0.90-0.94); post-hoc clip ic
+kc2_60nan        masked  0.855 1.067 0.582 1.000 | 0.552 0.717(knn10) 0.626 | template_replay ICE=1.808; seed ranges ice 0.640-1.239, condexp 0.811-1.458, soft 0.544-0.631; SoftImpute k=3,4,5 (energy 0.90-0.94); post-hoc clip ic
+kr-vs-kp_20nan   induced 0.666 1.000 1.000 1.000 | 0.586 0.608(lgbm) 0.658 | template_replay ICE=0.680; seed ranges ice 0.661-0.676, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.666/1.000/1.000; all-cate
+kr-vs-kp_20nan   masked  0.723 1.000 1.000 1.000 | 0.649 0.674(lgbm) 0.716 | template_replay ICE=0.734; seed ranges ice 0.716-0.727, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.723/1.000/1.000; all-cate
+kr-vs-kp_40nan   induced 0.791 1.000 1.000 1.000 | 0.758 0.764(lgbm) 0.801 | template_replay ICE=0.824; seed ranges ice 0.784-0.802, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.791/1.000/1.000; all-cate
+kr-vs-kp_40nan   masked  0.805 1.000 1.000 1.000 | 0.781 0.777(lgbm) 0.824 | template_replay ICE=0.840; seed ranges ice 0.792-0.823, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.805/1.000/1.000; all-cate
+kr-vs-kp_60nan   induced 0.904 1.000 1.000 1.000 | 0.865 0.903(hgb) 0.935 | template_replay ICE=0.940; seed ranges ice 0.899-0.910, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.904/1.000/1.000; flags (3
+kr-vs-kp_60nan   masked  0.929 1.000 1.000 1.000 | 0.887 0.911(lgbm) 0.941 | template_replay ICE=0.957; seed ranges ice 0.898-0.985, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 0.929/1.000/1.000; all-cate
+kr-vs-kp_80nan   induced 1.010 1.000 1.000 1.000 | 0.976 1.000(mean_mode) 1.021 | template_replay ICE=1.001; seed ranges ice 1.008-1.011, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 1.010/1.000/1.000; flags (3
+kr-vs-kp_80nan   masked  1.041 1.000 1.000 1.000 | 1.000 1.000(mean_mode) 1.017 | template_replay ICE=1.036; seed ranges ice 0.995-1.067, condexp 1.000-1.000, soft 1.000-1.000; post-hoc clip ice/cond/soft 1.041/1.000/1.000; flags (3
+letter_20nan     induced 0.750 0.732 0.801 1.000 | 0.459 0.473(knn10) 0.462 | template_replay ICE=0.750; seed ranges ice 0.750-0.751, condexp 0.731-0.732, soft 0.800-0.802; SoftImpute k=8 (cap binds, energy 0.85); post-hoc clip
+letter_20nan     masked  0.765 0.756 0.811 1.000 | 0.496 0.542(knn10) 0.535 | template_replay ICE=0.765; seed ranges ice 0.765-0.765, condexp 0.756-0.756, soft 0.809-0.813; SoftImpute k=8 (cap binds, energy 0.85); post-hoc clip
+pendigits_20nan  induced 0.592 0.553 0.607 1.000 | 0.332 0.350(knn10) 0.334 | template_replay ICE=0.704; seed ranges ice 0.590-0.593, condexp 0.553-0.553, soft 0.607-0.608; SoftImpute k=8 (energy 0.92); post-hoc clip ice/cond/so
+pendigits_20nan  masked  0.604 0.599 0.640 1.000 | 0.369 0.401(knn10) 0.409 | template_replay ICE=0.777; seed ranges ice 0.601-0.605, condexp 0.595-0.601, soft 0.639-0.641; SoftImpute k=8 (energy 0.92); post-hoc clip ice/cond/so
+spambase_20nan   induced 0.948 0.918 1.165 1.000 | 0.848 0.865(lgbm) 0.859 | template_replay ICE=0.950; seed ranges ice 0.924-0.976, condexp 0.916-0.923, soft 1.152-1.178; SoftImpute k=28 (p//2 cap binds, energy 0.72-0.74: the
+spambase_20nan   masked  0.966 0.944 1.177 1.000 | 0.865 0.886(lgbm) 0.923 | template_replay ICE=0.967; seed ranges ice 0.928-0.997, condexp 0.920-0.963, soft 1.139-1.223; SoftImpute k=28 (cap binds, energy 0.72-0.74); post-hoc
+spambase_40nan   induced 1.094 1.012 1.151 1.000 | 0.903 0.937(lgbm) 0.942 | template_replay ICE=18.760; seed ranges ice 1.076-1.112, condexp 1.004-1.022, soft 1.140-1.162; SoftImpute k=28 (cap binds, energy 0.74-0.77); post-ho
+spambase_40nan   masked  1.017 0.967 1.146 1.000 | 0.897 0.936(lgbm) 0.972 | template_replay ICE=12.969; seed ranges ice 1.000-1.041, condexp 0.948-0.999, soft 1.106-1.202; SoftImpute k=28 (cap binds, energy 0.74-0.77); post-ho
+spambase_60nan   induced 1.052 0.975 1.023 1.000 | 0.942 0.984(hgb) 0.981 | template_replay ICE=13.335; seed ranges ice 1.020-1.078, condexp 0.971-0.983, soft 1.022-1.024; SoftImpute k=28 (cap binds, energy 0.75-0.77); post-ho
+spambase_60nan   masked  1.047 0.957 1.032 1.000 | 0.904 0.982(lgbm) 0.974 | template_replay ICE=11.391; seed ranges ice 1.004-1.074, condexp 0.942-0.975, soft 1.015-1.065; SoftImpute k=28 (cap binds, energy 0.75-0.77); post-ho
+spambase_80nan   induced 1.052 1.024 1.002 1.000 | 0.987 1.000(mean_mode) 1.033 | template_replay ICE=2.064; seed ranges ice 1.039-1.071, condexp 1.010-1.033, soft 1.001-1.004; SoftImpute k=28 (cap binds, energy 0.82-0.86); post-hoc
+spambase_80nan   masked  1.354 1.024 1.009 1.000 | 0.993 1.000(mean_mode) 1.058 | template_replay ICE=1.722; seed ranges ice 1.032-1.923, condexp 1.006-1.038, soft 1.007-1.011; SoftImpute k=28 (cap binds, energy 0.82-0.86); post-hoc
+vehicle_20nan    induced 0.474 0.451 0.594 1.000 | 0.418 0.473(lgbm) 0.452 | template_replay ICE=0.613; seed ranges ice 0.472-0.477, condexp 0.447-0.455, soft 0.588-0.600; SoftImpute k=5 (energy 0.91-0.92); post-hoc clip ice/co
+vehicle_20nan    masked  0.484 0.478 0.581 1.000 | 0.420 0.505(knn5) 0.472 | template_replay ICE=0.740; seed ranges ice 0.484-0.485, condexp 0.475-0.480, soft 0.571-0.587; SoftImpute k=5 (energy 0.91-0.92); post-hoc clip ice/co
+vehicle_60nan    induced 0.736 0.697 0.685 1.000 | 0.645 0.701(hgb) 0.647 | template_replay ICE=1.729; seed ranges ice 0.707-0.754, condexp 0.691-0.704, soft 0.673-0.702; SoftImpute k=5,6 (energy 0.90-0.94); post-hoc clip ice/
+vehicle_60nan    masked  0.688 0.660 0.658 1.000 | 0.616 0.668(lgbm) 0.616 | template_replay ICE=1.734; seed ranges ice 0.666-0.709, condexp 0.652-0.677, soft 0.629-0.693; SoftImpute k=5,6 (energy 0.90-0.94); post-hoc clip ice/
+
+HEADLINE: Your literal question (run other algorithms on the same cells and see the gap to TRIDENT) already has an answer for all six baselines the fork has. The ADR 0017 table and probe C's fold-paired rebuild from local artifacts cover all 21 variants. At today's default on seeds 101/202/303 the model is better than the bar of 5 on 14 induced variants, ties on 5 and loses on 2 (credit-g_80nan, electricity_20nan). Against missForest it is 14 better, 6 ties, 1 loss. The loss is credit-g_40nan, and ADR 0019, committed on gorgona8 but 2 commits ahead of your Windows checkout, should remove it. The new information worth having costs little and concerns imputation: probe D shows the linear and low-rank arms (condexp, inductive SoftImpute) set the bar on about a third of the variants. They cost the model its one clear win on kc2_20nan induced, shrink its kc2_60nan margin from -0.145 to -0.028, and drop it from 19/21 to 17/21 induced variants below the bar. ICE/MICE never approaches the model and sits at or above 1.0 at 80nan, so it is a cheap completeness row. Its inherited MissForestImputer.impute replay scores 2 to 19 times mean_mode for linear learners, so it needs a sequential transform. After that comes the first MNAR smoke family: 36 cells on the laptop GPU, MCAR controls included and ledgers kept, which unlocks signed bias, delta-hgb and the t2 split test. Classification is secondary. The fork does have results: a 45-variant default sweep, 0.858/0.799/0.742/0.661/0.531 from 0% to 80% missing, close to Table 4's no-pretraining arm. That makes two wiki pages wrong. Ground rules for every item:
+- Pre-register each study with a ticket and an EXPERIMENTATION_LOG entry in the same commit (CLAUDE.md:30-33).
+- gorgona8 is the only MLflow writer. Take a SQLite backup before any --apply. Windows runs use --disable_mlflow and a private --metrics_dir.
+- The scripts behind probes A to D (barcheck_*, impprobe_*, cls_*, recompute_*) live only in this session's scratchpad. Copy them into a TRIDENT ticket folder before they disappear.
+
+#1 [0-already-there] ADR 0017 table plus the fold-paired verdict rebuild (probe C): model vs the bar of 5 and missForest on all 21 variants, refreshed for ADR 0019
+  what: Already computed. ADR 0017's Outcome table gives E35 3-seed means (seeds 42/7/13, K readout). Probe C rebuilt fold-paired verdicts from local artifacts with the fork's rule: 15 fold pairs, a 95% t-interval (t14 = 2.145) excluding zero, and all three per-seed mean differences agreeing in sign. It did this for two cell sets: (A) E35, where all 63 parents reproduce ADR 0017's 42 cells to 3 dp; (B) today's default on seeds 101/202/303, built from E34 K for 19 variants and E38 ALL for pendigits_20nan and letter_20nan. Remaining work is to turn barcheck_out.txt into the thesis table: one row per variant with model, bar (and which baseline sets it) and missForest, the B/N/W verdict, tallies by level and table, and the hollow cells flagged. After `git pull`, swap in E39 arm D for credit-g_40nan, kr-vs-kp_40nan and spambase_40nan (ADR 0019 removed their promoted files) and rerun barcheck_verdicts.py. Do not assume the new totals.
+  piggy: TRIDENT/docs/adr/0017-missforest-outside-the-bar.md:27-32 (bar = best of mean_mode/knn5/knn10/hgb/lgbm), :139-177 (E35 table and counts); TRIDENT/docs/tickets/imputation-token-shape/05-checkpoint-replication.md:35-36 (verdict rule); TRIDENT/docs/adr/0018-bigger-encoder-on-the-large-tables.md:50-53 (E38 ALL = default to the last digit); TRIDENT/mlruns/<exp>/<run>/artifacts/metrics/raw_fold_metrics.csv (E34/E35: impute/<pop>/induced_checkpoint/impute_score plus the four ADR 0007 baselines; E38/E39: impute/<pop>/impute_score plus baseline/lgbm and baseline/missforest); scratchpad barcheck_inventory.py, barcheck_verdicts.py, barcheck_tally.py, barcheck_e39mf.py, barcheck_out.txt
+  where: Windows laptop CPU, offline. Reads plain files under mlruns/ only (stdlib Python, python -I -B). No store, no cache, no MLflow writes.
+  code: 0 h (done). About 1-2 h to swap in the ADR 0019 cells and format the table (CSV or LaTeX). | compute: Seconds.
+  gap: Answers the owner's literal ask for every baseline the fork has: per-variant, fold-paired gaps to the bar of 5 and to missForest, by level and by table. It separates real wins from ties and from hollow cells (every method at about 1.0).
+  rq: RQ1; t1 (imputation half); the thesis's main imputation table
+  expected: Seeds 101/202/303, before ADR 0019:
+- vs the bar: induced 14B/5N/2W (W: credit-g_80nan +0.0105 [+0.0043, +0.0167]; electricity_20nan +0.0161 [+0.0056, +0.0267]); masked 15B/6N/0W.
+- vs missForest: induced 14B/6N/1W (credit-g_40nan +0.0350); masked 17B/3N/1W (biodeg_60nan +0.0288).
+
+E35 means: below the bar on 19/21 induced and 18/21 masked; below missForest on 20/21 and 18/21. Six of the induced wins fall within ADR 0017's 0.016 band.
+
+E35 paired, with hgb standing in for lgbm: induced 16B/4N/1W, masked 12B/9N/0W.
+
+Under ADR 0019 (arm D):
+- credit-g_40nan should flip from a missForest loss to a win (D 0.921 vs 0.931, B).
+- kr-vs-kp_40nan should go from N to B against lgbm (about 0.72 vs 0.771).
+
+Hollow cells: credit-g_60nan and credit-g_80nan, kr-vs-kp_80nan masked, spambase_80nan masked on E35.
+  traps: (1) On seeds 101/202/303, lgbm is missing on 5 variants (electricity_20nan, letter_20nan, pendigits_20nan, spambase_60nan, spambase_80nan): E38's first 15 cells ran under ADR 0016 code, so those variants have a bar of 4.
+(2) E35 artifacts carry no lgbm, so hgb stands in for it. A B against hgb is an upper bound, and kr-vs-kp_40nan induced is at risk.
+(3) Never use the store's gap_to_* on E34/E35. They are the headline (H, loss checkpoint) minus the baseline, because summary.py:174 hardcodes '{population}/impute_score'.
+(4) The E34/E35 CSVs lack per-fold lgbm and missForest: the backfills wrote only the store (backfill_lgbm_baseline.py:28).
+(5) The ADR 0017 table uses the old encoder on pendigits and letter.
+(6) Seeds 42/7/13 have no arm D cells, so E35 remains the pre-ADR-0019 default there. Label it.
+(7) Copy the barcheck scripts out of the scratchpad (owner action).
+(8) Masked pairing assumes EVAL_MASK_RATE 0.2, 5 folds and no extra rates, verified on 63/63/63 parents.
+(9) Means-only counts ('19/21') are not verdicts. Cite the paired tallies in the thesis.
+  REFUTE refuted=False corr: (a) You don't need a git pull to do the ADR 0019 swap: the E39 D artifacts are already in the local mlruns (15 D cells). A pull only adds the ADR text. (b) Post-swap totals, computed from D's own artifact baselines and not assumed: induced vs bar 16B/3N/2W (credit-g_40nan and kr-vs-kp_40nan go from N to B); masked vs bar 17B/4N/0W (the same two masked cells also go from N to B; the item leaves this out); induced vs missForest 15B/6N/0W (credit-g_40nan goes from W to B: -0.0105 [-0.0193,-0.0016]); masked vs missForest stays 17B/3N/1W (credit-g_40nan masked stays N vs mF). (c) kr-vs-kp_40nan D is 0.7258, not 'about 0.72'. Its gap to lgbm is -0.0454 [-0.0539,-0.0368], so B. (d) 'Six of the induced wins within 0.016' are wins over missForest, not over the bar (ADR 0017:172-175). In counts A, the True flag marks lgbm-proxy cells, not the band. (e) The reproduction check covers the model (42 cells) and the non-lgbm bars only. lgbm and missForest can't be reproduced from E35 CSVs. (f) Trap 4 cites backfill_lgbm_baseline.py:28, which is about cv_summary.json. The real evidence is the E35 CSV column list (no lgbm or missforest columns) and that file having no log_artifact call. (g) barcheck selects cells by raw_fold_metrics.csv mtime windows (barcheck_verdicts.py:46-53, :149-152, :245-246). A pull that adds or rewrites artifacts inside those windows can break the selection or shift it, so rerun after the pull and check the duplicate assert. (h) The hollow-cell list is a judgment call. Every variant whose bar is mean_mode = 1.000 (all 80nan plus credit-g_60nan) is similar.
+
+#2 [A-imputation-same-cells] condexp (Gaussian conditional expectation) on the decoder's cells: pre-registered rerun of probe D
+  what: A numpy BaselineImputer following D's frozen rules:
+- covariance from pairwise-complete moments on the training fold, turned into a correlation and shrunk as R <- 0.9R + 0.1I, with eigenvalues floored at 1e-3;
+- each test row's hidden|isna numeric cells filled with E[x_m | x_o] in the frame's z-space;
+- categorical columns filled with the training mode.
+Add a pre-registered clip to each column's training [min, max] as the range guard. Score it with recompute_folds(variant, seed, 5, 0.2, [], fold_scorer=factory) and score_baselines, then pair fold by fold against the model's K readout.
+  piggy: TRIDENT/scripts/backfill_baseline_imputers.py:381-450 (recompute_folds; fold_scorer :390; induced cells independent of the rate :436-446); TRIDENT/src/training/imputation_baselines.py:54-69 (Protocol), :79-102 (MeanModeImputer for the categorical fallback), :336-384 (score_baselines; hidden mask built :357-358); scratchpad impprobe_arms.py, impprobe_arms_v1_preregistered.py (rules frozen at 11:02:27, before the first score)
+  where: Either machine.
+- Development numbers: Windows laptop CPU, offline (no cache dir, no store, PYTHONDONTWRITEBYTECODE=1). D's run left the repo and results/baseline_cache byte-identical.
+- Thesis numbers: gorgona8 inside item 5's pass.
+No store write in either case.
+  code: About 1 h to lift D's arm into a ticket script and add the clip rule. | compute: Seconds per fold. D ran all its arms on 21 variants x 3 seeds in about 55 CPU-min summed, as 3 parallel processes with 4 BLAS threads each.
+  gap: How much of the model's lead on small numeric tables is linear-Gaussian structure rather than learned nonlinearity. It also supplies the 'condexp + indicator' arm RQ2 needs later.
+  rq: RQ1 baseline breadth; RQ2 arm (Wiki projects/trident/thesis-goals.md:139, condexp + mask); t1
+  expected: From probe D (3-seed means, tie band 0.003). condexp sets the bar on these induced variants:
+- vehicle_20nan: 0.451 vs lgbm 0.473 (3/3 seeds);
+- vehicle_60nan: 0.697 vs hgb 0.701 (3/3);
+- spambase_60nan: 0.975 vs hgb 0.984 (3/3);
+- credit-g_60nan: 0.988 vs mean_mode 1.000 (3/3). This is also marginally below the model's 0.992 (by 0.004, 2/3 seeds), so read it as marginal, not a verdict.
+
+On masked cells it is below the bar on vehicle_20nan (0.478 vs 0.505), vehicle_60nan, spambase_60nan (0.956 vs 0.982), credit-g_40nan (0.990 vs 0.997) and credit-g_60nan.
+
+It never beats the model beyond the tie band except the marginal credit-g_60nan, and on credit-g_80nan, where the model already loses to mean_mode.
+
+Where it is weak:
+- it blows up on heavy-tailed kc2 (1.23-1.28 unclipped);
+- it is far behind on letter, pendigits and electricity (0.55-0.88 against bars of 0.35-0.69);
+- on kr-vs-kp it equals mean_mode exactly, since that table is all categorical.
+  traps: (1) Hidden cells are a boolean mask, not NaN. The frame passed to impute still holds every masked cell's truth, so write NaN at hidden|isna before computing.
+(2) Fit the moments on the training fold only.
+(3) Shrinkage is mandatory: pairwise covariance at 60-80nan is noisy and not PSD.
+(4) Conditioning on numerical cells only understates what a mixed-type model could reach on credit-g (13 of 20 columns categorical) and electricity.
+(5) Any gaussianization (Le Morvan & Varoquaux used QuantileTransformer) must be inverse-mapped to z-space and pre-registered.
+(6) Never edit imputation_baselines.py or imputation_metrics.py: their bytes key every cache family.
+(7) Run from the TRIDENT root with -B. data.py:20 and :32 use relative paths, and importing the backfill module otherwise writes __pycache__.
+(8) Pair E34/E35 on the induced_checkpoint columns and E38/E39 on impute/<pop>/impute_score.
+  REFUTE refuted=False corr: (a) The thesis-goals citation is line 140 (condexp + mask), not :139. (b) condexp is also worse than mean_mode (above 1.0) beyond kc2: biodeg_60nan induced 1.069, kc2_60nan 1.013/1.067, spambase_40nan induced 1.012, spambase_80nan 1.024/1.023. (c) vehicle_60nan induced is as marginal as credit-g_60nan. The mean gap is 0.004, just past the 0.003 band, and per-seed margins vs hgb are 0.005, 0.003 and 0.001. (d) Masked below-bar holds on only 2 of 3 seeds for spambase_60nan, vehicle_60nan and credit-g_40nan (seed-matched); it is 3/3 only on vehicle_20nan and credit-g_60nan. (e) D's condexp_clip arm was post hoc (impprobe_arms.py:35-40, added at 11:05). Pre-registering the clip will change the numbers, e.g. spambase_60nan 0.960/0.939 and kc2_20nan 0.842/0.707. (f) '55 CPU-min' is wall time summed over the 3 processes (3,275 s), about 19 min of wall clock. The 4 BLAS threads per process are not recorded anywhere, so that part is unverified. (g) 'Byte-identical' overstates the check. impprobe_state_before/after.txt compare only the cache file count, the newest cache entry and git status. Those are identical.
+
+#3 [A-imputation-same-cells] Inductive SoftImpute (low-rank PPCA projection) on the decoder's cells, with a fixed rank rule
+  what: D's arm:
+- centre each column on its training mean;
+- hard-impute a rank-k SVD on the training fold (start at 0, at most 100 iterations, tolerance 1e-5);
+- with loadings W = V_k diag(s_k)/sqrt(n), fill each test row's gaps by the PPCA posterior z = (W_o'W_o + s2 I)^-1 W_o'(x_o - mu_o), where s2 is the mean of the discarded eigenvalues;
+- fill categorical columns with the training mode.
+Replace D's rank rule, which fails on spambase, with a rule fixed before scoring, e.g. a 90% energy share with no p//2 cap, or a ridge-regularised projection. Pre-register it.
+  piggy: TRIDENT/scripts/backfill_baseline_imputers.py:381-450; TRIDENT/src/training/imputation_baselines.py:148-160 (KnnImputer._matrix: numerics with NaN at hidden|isna), :336-384; scratchpad impprobe_arms.py (softimpute arm)
+  where: Either machine, as for condexp. Laptop CPU offline for development; gorgona8 in item 5 for thesis numbers. No store write.
+  code: About 1-2 h: lift D's arm and fix the rank rule. | compute: Seconds per fold. Included in D's 55 CPU-min total.
+  gap: Whether low-rank linear structure already explains the model's lead on small, correlated numeric tables (kc2, vehicle, biodeg). Of all the new arms, this is the one that can flip a verdict.
+  rq: RQ1 baseline breadth (thesis-goals Baselines); t1
+  expected: From probe D:
+- kc2_20nan induced: 0.522 against the model's 0.541 and knn5's 0.567, below both on 3/3 seeds. This is the one clear verdict flip against the model.
+- kc2_60nan: 0.600 induced and 0.582 masked against a bar of 0.717. The model's margin shrinks from -0.145 to -0.028 (induced) and from -0.165 to -0.030 (masked).
+- biodeg_60nan masked: 0.855 vs hgb 0.873 (3/3). Induced: 0.860 vs 0.866, fragile (below on 1/3 seeds).
+- vehicle_60nan: 0.685 induced and 0.658 masked, below the bar on 2/3 seeds.
+
+With condexp and SoftImpute admitted to the bar, the model is below it on 17/21 induced variants (from 19); masked stays at 18/21.
+
+Under D's rank rule it scores worse than mean_mode on spambase_20nan and _40nan (1.16 and 1.15). That is a failure of the rule, not a verdict on the method. On kr-vs-kp it equals mean_mode.
+  traps: (1) Canonical SoftImpute is transductive. The inductive projection is a departure to state; fitting on test rows would break the protocol (ADR 0016 Bias).
+(2) Rank and shrinkage must come from a rule fixed in advance (ADR 0007 decision 5), not from scored folds.
+(3) At 80nan a spambase test row has about 11 of 57 entries observed, so use the posterior or ridge solve, never plain least squares.
+(4) The p//2 cap binds on spambase (k=28 at 72-86% energy), credit-g (k=3) and letter (k=8).
+(5) The kc2 clip results (0.574) are post-hoc diagnostics unless the clip is pre-registered.
+(6) The same boolean-mask and never-edit traps as item 2 apply.
+  REFUTE refuted=False corr: (a) 'The one clear verdict flip' overclaims. kc2_20nan holds on 3/3 seeds on means only, with no fold-paired interval, and kc2_20nan has the widest intervals in the table: model vs knn5 is [-0.1011,+0.0508] on E35. Call it a candidate flip pending the item-5 paired test. (b) D's rule already was a 90% energy share, capped at p//2. The cap is what binds, not the 90% rule. It also binds on electricity (k=3 at 69-71% energy, 7 numeric columns), which trap 4 leaves out. (c) That removing the cap or adding ridge fixes spambase is an untested hypothesis. softimpute_clip still scores 1.039/1.055 (20nan) and 1.051/1.050 (40nan), so the failure isn't only a range problem.
+
+#4 [A-imputation-same-cells] ICE ('MICE (to add)'): MissForestImputer subclass with linear learners and a sequential per-round transform
+  what: Three facts settle the design.
+(a) Drop the one-hot IterativeImputer. It collapses exactly to mean/mode: n_iter_=1 and 1.000 on every kr-vs-kp fold.
+(b) Subclass MissForestImputer and override _fit_one (missforest.py:196-225) with BayesianRidge for numerical targets and multinomial lbfgs LogisticRegression for categorical ones, about 20 lines. Also override impute(): keep every round's models and apply rounds 1..k in order to the test rows, with a per-round clip to the training [min, max]. That is sklearn's transform, D's ice_seq. The inherited impute (missforest.py:147-163) re-applies only the kept round's models, starting from the training means, until still_converging stops. That diverges for linear learners.
+(c) With categorical features as ordinal codes this is 'iterativeBR (chained linear conditionals, missForest stopping rule, no posterior draws)'. The categorical-correct version, from wf2's MICE card, uses one-hot features with the target's own block excluded plus multinomial LR. Pre-register which one is the thesis row; the categorical-correct one belongs in the promotion item.
+Use sklearn IterativeImputer(BayesianRidge) with a matched round count as the test oracle on the numeric-only tables.
+  piggy: TRIDENT/src/training/missforest.py:106-145 (fit round loop, still_converging), :147-163 (impute replay to override), :196-225 (_fit_one seam); TRIDENT/src/training/lightgbm_baseline.py:30-61 (subclass-the-learner precedent); TRIDENT/src/training/imputation_baselines.py:148-160 (one-hot feature design for variant c); scratchpad impprobe_arms.py (ice_seq), impprobe_skcheck.py, impprobe_skcheck2.py, impprobe_seqtest.py (oracle checks)
+  where: Either machine. Laptop CPU offline for development (D did it there); gorgona8 in item 5 for the thesis table. No store write.
+  code: About half a day for (b) with the oracle test. Another 2-3 h for the one-hot categorical variant (c). | compute: Seconds to tens of seconds per fold; under 1 CPU-hour for 21 variants x 6 seeds.
+  gap: Fills the classical row a reviewer expects next to missForest (thesis-goals.md:141). It also tests on these tables CACTI's finding that MICE is worse than Mean (about 1.12x).
+  rq: thesis-goals.md:141 ('MICE (to add)'); RQ1; t1
+  expected: A cheap completeness row, not a threat to the model's lead. Its 3-seed mean is never below the model's K on any variant; on the variants D flagged it is below on 0 of 3 seeds.
+
+At 80nan it is at or above 1.0 on every table: credit-g 1.134/1.118, kr-vs-kp 1.010/1.041, spambase 1.052/1.354 (induced/masked).
+
+It reaches the bar in only two places: vehicle_20nan masked (0.484 vs knn5 0.505, 3/3 seeds) and kc2_60nan induced (0.706 vs 0.717, 2/3). It ties hgb on kr-vs-kp_60nan induced (0.904 vs 0.903).
+
+On credit-g it scores at or above 0.93, and above 1.0 from 40nan, because ordinal codes feed a linear model.
+
+kc2_20nan masked scores 2.96 unclipped and 0.541 with the per-round clip. The template replay scores 2.0-18.8 on the numerical tables (spambase_40nan 18.8). This agrees with CACTI's MICE at about 1.12x Mean.
+  traps: (1) The replay defect: using the inherited impute() gives invalid numbers. The earlier mice_probe.py and the critic's 20-line probe (credit-g_60nan 1.466) both inherit it.
+(2) Round count: D used still_converging (3-10 rounds per fold). Default sklearn max_iter=10 differs by up to 1.19 in single fills on vehicle_20nan, so pre-register the count.
+(3) BayesianRidge and lbfgs are deterministic, so the global streams stay untouched (ADR 0007 decision 6). Check it anyway with the test_missforest.py pattern.
+(4) A committed version needs hand-written sklearn.linear_model stubs under strict mypy; stubs/sklearn has no linear_model.
+(5) Name it 'ice' or 'iterativeBR', not MICE: impute_score rewards conditional means, and posterior draws add noise.
+(6) Side question: missForest uses the same replay. Forests can't extrapolate, so D showed no harm, and ADR 0016 bounds the inductive-vs-transductive difference at 0.016. An optional 'missforest_seq' arm on the small tables in item 5 checks this. It is memory-heavy on spambase because every round's forests are kept.
+  REFUTE refuted=False corr: (a) The design includes a per-round clip, but every quoted number except 0.541 is the unclipped ice_seq. Under D's ice_seq_clip, ICE is below the bar beyond the tie band on 6 cells, not 2: biodeg_20nan masked 0.607 vs 0.627; kc2_20nan masked 0.541 vs 0.559; kc2_60nan 0.678/0.677 vs 0.717; vehicle_20nan 0.459 vs 0.473 and 0.473 vs 0.505. It is still never below the model, and still at or above 1.0 at 80nan (credit-g 1.111/1.090, kr-vs-kp 1.010/1.041, spambase 1.041/1.067). (b) Neither ice_seq (revision at 11:20) nor the clip (11:05) was pre-registered; both came after scores were seen (impprobe_arms.py:35-50). Pre-register both. (c) It also ties lgbm on vehicle_20nan induced (0.474 vs 0.473). credit-g_20nan induced is 0.927, so 'at or above 0.93' is slightly off. (d) The replay ranges 0.61-18.8 on numeric tables, not 2.0-18.8: vehicle_20nan 0.613/0.740, spambase_20nan 0.950/0.967, kc2_60nan 1.540, biodeg_60nan masked 1.736. (e) The n_iter_=1 collapse to 1.000 was verified only on kr-vs-kp_20nan and _80nan at seed 42, not on every kr-vs-kp fold. (f) CACTI's MICE/Mean RMSE ratio is about 1.12 only under MCAR (1.06/0.95, 1.04/0.93); it is 1.03-1.04 under MAR and about 1.10-1.13 under MNAR. CACTI also lists ICE separately (R2 at most 0.34, vs MICE 0.19), so a deterministic 'ice' row should be read against CACTI's ICE, not MICE. 'This agrees with CACTI' doesn't follow from replay errors of 2-18x. (g) Trap 2's 'up to 1.19 on vehicle_20nan' has no saved output, so it is unverified.
+
+#5 [A-imputation-same-cells] One pre-registered recompute_folds pass on gorgona8: per-fold lgbm and missForest plus the three new arms, paired against K
+  what: A driver per (variant, seed) for E35 (42/7/13) and E34/E38/E39-D (101/202/303) calls recompute_folds(variant, seed, 5, 0.2, [], fold_scorer=...). Its scorer combines BaselineScorer(train, num, cat, cache_dir, families=("lgbm","missforest")), which gets cache hits, with the condexp, SoftImpute and ICE scorers. Steps:
+1. Check that mean_mode reproduces the logged values to 1e-9.
+2. Dump every fold's dict to a CSV under results/<study>/, so the next pull brings it back.
+3. Report B/N/W per variant against: the bar of 5; the bar of 5 plus the new arms; missForest; and each arm alone. Use 15 pairs per seed triple and 30 pooled.
+Alternative, cleaner but costing a GPU night: land the linear module first (item 6, external, no backfill), then run one fresh 63-cell default sweep under ADR 0019 (OPS-1, about 7-8 h). That yields K-headline CSVs with lgbm, missForest and the linear arms per fold on all 21 variants, with no backfill driver and no store hold for the reference set. Integrity check: reproduce E34 K, E38 ALL and E39 D to the last digit.
+  piggy: TRIDENT/scripts/backfill_baseline_imputers.py:381-450; TRIDENT/src/training/baseline_cache.py:77-83 (hostname in key), :96 (families= selector), :142-156; TRIDENT/scripts/backfill_lgbm_baseline.py:250-261 (do NOT reuse _scorer: it hardcodes families=FAMILIES at :254, so a miss refits KNN, about 1 h on electricity); TRIDENT/scripts/experiments/selection_replication_report.py:111-133 (interval/verdict; copy them, don't import, because :63/:92 open mlflow.db at import), :207 (six-seed pooling precedent); TRIDENT/src/training/summary.py:166-185
+  where: gorgona8 CPU beside the GPU queue (threads capped at 4, about 16 cores free per OPS-2), from the server checkout root with python -B. It reads artifacts and the cache, and writes only cache JSONs (touched on a hit) and a CSV. No store write. On Windows the cache always misses (socket.gethostname() is in the key), which costs 5-10 CPU-h for missForest and lgbm.
+  code: 3-4 h (driver plus report). | compute: Minutes on cache hits. A miss costs about 10-60 s per missForest fold. The linear arms take about 1 CPU-hour in total. The fresh-sweep alternative takes one server night.
+  gap: It closes item 1's holes:
+- real lgbm in place of the hgb proxy on E35;
+- lgbm on the 5 variants that lack it on 101/202/303;
+- paired missForest verdicts on E35's seeds.
+It also turns probe D's means into paired verdicts with the fork's rule.
+  rq: RQ1; t1; the thesis imputation table
+  expected: E35 kr-vs-kp_40nan induced will probably move from B to N once real lgbm replaces hgb. On 101/202/303 against real lgbm it is already N: -0.0086 [-0.0187, +0.0016].
+
+The 5 variants missing lgbm are unlikely to change. On E35, lgbm set none of those bars except spambase_60nan masked, by 0.001, where the model's margin is -0.067.
+
+The new arms should give verdicts in line with items 2-4: probably losing kc2_20nan induced, and narrower wins on kc2_60nan, vehicle_20nan, vehicle_60nan, spambase_60nan and biodeg_60nan.
+  traps: (1) Pre-register before computing: ticket plus EXPERIMENTATION_LOG entry (cell map, arms, tie band, verdict rule).
+(2) No store read is needed, since EVAL_MASK_RATE 0.2 with 5 folds and no extra rates was verified on 63/63/63 parents.
+(3) Pair E34/E35 on impute/<pop>/induced_checkpoint/impute_score and E38/E39 on impute/<pop>/impute_score.
+(4) Use the ADR 0019 cell map, after the git pull.
+(5) Never edit imputation_baselines.py or imputation_metrics.py.
+(6) Never touch sync/incoming.db or its -wal/-shm. Any other SQLite only via file:...?mode=ro&immutable=1.
+(7) sync_remote.py code refuses while the store is held (sync_remote.py:665-674), so land the code between studies.
+(8) With the fresh-sweep alternative, the linear family joins every live run and Optuna trial. That is cheap, but it must land when no study is live.
+  REFUTE refuted=False corr: (a) The expected outcome is inconsistent with trap 4. 'kr-vs-kp_40nan ... already N: -0.0086' is the stale-file F cell. Under the ADR 0019 cell map, D vs lgbm is B: -0.0454 [-0.0539,-0.0368]. (b) The spambase_60nan masked margin on E35 is -0.078 (0.904 vs lgbm 0.982; vs the hgb proxy -0.0789), not -0.067. The -0.067 figure is from seeds 101/202/303. (c) Pooled 30-pair verdicts mix configurations on 5 variants: credit-g_40nan, kr-vs-kp_40nan and spambase_40nan (stale file on E35, D on 101/202/303), plus pendigits_20nan and letter_20nan (old encoder vs ALL). Pool only the other 16 variants, or label those 5. (d) BaselineScorer.score returns ImputationScores, so wrap it as `.metrics`, the way _scorer does at backfill_lgbm_baseline.py:256-257. (e) push_code's refusal can be overridden with --while-busy (sync_remote.py:670-674). (f) The 7-8 h sweep, the free cores and the 5-10 CPU-h Windows miss cost are ops claims I couldn't check. Mark them unverified.
+
+#6 [A-imputation-same-cells] Promote the arms that set the bar (condexp, SoftImpute; ICE as the completeness row) to a logged baseline family
+  what: Only after item 5 shows where they set the bar.
+- A new module, src/training/linear_baselines.py, with fit_linear_imputers returning condexp, softimpute and ice (the categorical-correct ICE design).
+- A 4th _Family in baseline_cache.py:64-74.
+- The names go into summary.EXTERNAL_BASELINES (summary.py:88), unless an ADR puts them in the bar.
+- Tests cloned from tests/unit/test_missforest.py:68-179: the no-truth-read leak test at :119, untouched global streams, thread invariance.
+- Update the pins in tests/unit/test_baseline_cache.py:79-84.
+- Stubs for sklearn.linear_model (ICE only; condexp and SoftImpute are numpy).
+- A backfill cloned from backfill_lgbm_baseline.py, with: a K-based gap (plan_external_gaps reads the headline mean at :211); a per-fold sidecar such as metrics/backfilled_fold_metrics.csv, so 15-pair verdicts become possible; a new *_BACKFILLED_TAG and its own _LIVE_SINCE_MS.
+- An ADR.
+  piggy: TRIDENT/src/training/baseline_cache.py:64-74 (_FAMILIES), :77-83; TRIDENT/src/training/summary.py:88-92 (EXTERNAL_BASELINES, OUTSIDE_THE_BAR), :151-163; TRIDENT/scripts/backfill_lgbm_baseline.py:69, :105-119, :197-247; TRIDENT/scripts/backfill_baseline_imputers.py:111 (CURRENT_BASELINES; review finding 7); TRIDENT/tests/unit/test_missforest.py:68-179
+  where: Code and unit tests on the laptop, plus --disable_mlflow smokes. Dry runs on gorgona8's free cores. --apply on gorgona8 only, after a SQLite-API backup: it WRITES the store, holds it about 2 h on about 1,000 parents, and pauses training.
+  code: 1.5-2 days including the ADR. Numpy-only arms are cheaper: no stubs. | compute: Fits take minutes. Store hold about 2 h (ADR 0016: 1 h 35 min on 873 parents; ADR 0017: 1 h 52 min on 887). From decision to applied store was about 11 h in both precedents.
+  gap: gap_to_<arm> on every past and future run, MNAR cells included, so the thesis table regenerates without side scripts.
+  rq: thesis-goals.md:141; t1; RQ1
+  expected: The numbers of items 2-5. The choice of bar or external changes the headline count (19/21 vs 17/21 induced variants below the bar).
+  traps: (1) Bar or external is the owner's ADR call. Entering the bar retags best_baseline on every run (ADR 0017 moved 658 of 887).
+(2) Never edit imputation_baselines.py. Adding a _Family does not invalidate existing entries, because the key reads only that family's sources.
+(3) Review finding 7: plan_run refuses runs that carry baseline/best once CURRENT_BASELINES grows, and writes the parent before the children.
+(4) Put all arms in one backfill to pay the store hold once.
+(5) Every live run and Optuna trial gains this family; that is cheap for linear arms. Land it after the current study.
+(6) ICE alone would not justify a family. Promote it only as a completeness row alongside condexp and SoftImpute.
+  REFUTE refuted=False corr: (a) ADR 0017 moved the bar on 660 runs, not 658 (ADR 0017:122). (b) The plan_run/baseline-best and parent-before-children issue is review finding 10, not 7 (docs/reviews/2026-10-07-code-review-last-two-weeks.md:203-219). Finding 7 is about runners not pinning defaults (:140). (c) Use test_missforest.py:68-200: the global-stream test starts at :179 and ends at :200. (d) 'About 11 h from decision to applied store in both precedents' holds only for ADR 0017: accepted 15:00, applied 00:37-02:29, so 9.6-11.5 h. ADR 0016 was accepted on 2026-10-06 and applied 08:53-10:28 the same day, and its decision hour isn't stated, so that half is unverified.
+
+#7 [B-imputation-experiment] First MNAR family, smoke test: probit self-masking at matched counts, G/M arms, MCAR controls at HEAD
+  what: Write datasets/generate_mnar.py beside generate_splits.py. It writes <base>_probit_60nan.csv for biodeg, kc2 and vehicle. These tables are all-numeric, so no categorical rule is needed. Each column hides exactly round(n*p) cells, the MCAR sibling's count, by weighted sampling with weights proportional to Phi(lambda_j x_j - c), large values hidden. Either use raw x_j with lambda_j = 1/(2 sigma_j), or z_j with 0.5, not both. Pre-register c.
+
+Arms on seeds 42/7/13, 5 folds:
+- G: defaults + --decode_checkpoint loss + --score_induced_checkpoint (the E35 recipe);
+- M: --decode_gap_token null --decode_checkpoint loss --score_column_wise --score_induced_checkpoint (the E31 shape).
+Run both on the MNAR variants and, at HEAD, on the MCAR _60nan variants: 36 cells. The stored E35/E31 cells can't be paired fold by fold (no per-fold lgbm/missForest; E31 has no K).
+
+Readouts:
+- model vs bar and missForest per mechanism, on within-variant ratios;
+- G-M and column-wise-minus-G under MNAR vs MCAR;
+- K-H, the cost of using an oracle checkpoint;
+- masked vs induced;
+- signed bias per column, from the per-fold ledgers, with no metric-code change.
+  piggy: TRIDENT/datasets/generate_splits.py:26-49 (inject_nans); TRIDENT/src/training/data.py:90-121, 143-160 (complete sibling, _assert_row_aligned); TRIDENT/src/training/types.py:347-355 (base name is the text before the first '_'); TRIDENT/src/mlflow_utils.py:132-135 (_(\d+)nan regex matches biodeg_probit_60nan); TRIDENT/scripts/experiments/selection_replication_run.py:33-47 and gap_token_replication_run.py:35-48 (runners to clone); TRIDENT/src/training/artifacts.py:198-240 (cell ledger); TRIDENT/src/training/decoding.py:105-118 (K)
+  where: Smoke test: the laptop RTX 3050 with --disable_mlflow and a private --metrics_dir. No store write. MNAR and MCAR arms run on the same machine, and all five fold ledgers stay on local disk. Full family (spambase plus 20nan, about 48 cells) and the biodeg tilt dial (24 cells): gorgona8, which writes the store, in one night.
+  code: 5-7 h: generator plus a row-alignment and rate test 2-3 h, runner 1 h, report cloned from gap_token_replication_report.py 2-3 h. | compute: 36 cells at about 3-6 server-minutes each (vehicle 3.5, kc2 2.9, biodeg 6.2, before live lgbm and missForest), roughly 2x on the laptop: about one unattended night (estimate; time one cell first). On the server: under 1 h on 4 queues.
+  gap: Whether the MCAR lead over the bar and missForest survives informative missingness. It is also the first positive control for the [NULL]/[MASK] split on imputation, and it measures how optimistic ADR 0015's oracle checkpoint becomes.
+  rq: RQ1 MNAR arm (thesis-goals.md:77, signed bias); RQ4; the H2 proxy; t5; t7; t2 (imputation side)
+  expected: No number yet. Under self-masking every method learns p(x|M=0), the model included. Expect all of them to under-predict large values; the question is which degrades least, not which identifies the mechanism. Expect K-H to widen under MNAR.
+  traps: (1) impute_score's mean/mode denominator comes from the training fold's observed values, which self-masking biases. Compare across mechanisms only on within-variant ratios or rmse_num_z, and remember z units differ per variant.
+(2) K uses complete-sibling truth on validation gaps, which is an oracle under MNAR. The honest headline is H.
+(3) The masked population stays MCAR.
+(4) The bias_num_z one-liner in _error_metrics would invalidate every cache family. Use the ledgers.
+(5) processed_datasets is gitignored. Commit the generator; sync_remote's code push ships untracked inputs.
+(6) Don't call the family 'self-masked' (CONTEXT.md:103-108).
+(7) Pin decode_gap_token and decode_checkpoint in the runner (review finding 7).
+(8) Report scripts need the new names in VARIANTS.
+(9) spambase_20nan keeps a promoted file, which confounds the follow-up; spambase_40nan no longer has one after ADR 0019.
+(10) The default metrics/<variant>_metrics.csv gets overwritten; 6 sweep copies already were.
+(11) Never mix laptop MNAR runs with server MCAR runs. Training draws differ across machines (E24 amendment: 0.9165 vs 0.9186).
+(12) Weighted sampling at a matched count is not exactly Le Morvan & Varoquaux's probit (the inclusion marginals are not Phi). State it.
+  REFUTE refuted=False corr: (1) The local checkout has not pulled ADR 0019 yet. ADR 0019 exists only on GitHub (39ab4bb removes credit-g_40nan, kr-vs-kp_40nan and spambase_40nan). The local HEAD b2b50fd still has datasets/hiperparams/spambase/spambase_40nan.imputation.json and no docs/adr/0019-*. Pull before the spambase follow-up. This doesn't matter for the smoke tables: biodeg, kc2 and vehicle have no promoted file.
+(2) The ledger holds only the model's fills at the headline checkpoint, which is H in both arms since the checkpoint is pinned to loss, plus induced_column_wise under M. The K fills (at_gap/masked_at_gap, decoding.py:310-327) are never appended to cells, and baseline fills never leave score_baselines. So per-column signed bias from the ledgers covers model-H only. Bias for the bar and missForest needs an offline recompute_folds fold_scorer (still no change to metric code).
+(3) Trap 1 also applies to rmse_num_z. The scaler is fit per variant on its observed values (data.py:66-72), so z units depend on the mechanism. For cross-mechanism readouts, use within-variant ratios or original units: ledger columns actual_original_units/imputed_original_units (artifacts.py:225-230).
+(4) The E35/E31 non-pairing is confirmed (see evidence). Per-fold baselines are model-independent and could be recomputed offline, though. The binding reason to re-run MCAR is trap 11.
+(5) gap_token_replication_report.py:54 reads mlflow.db through sqlite. Under --disable_mlflow the clone must walk <output_dir>/<variant>/<timestamp>/metrics/raw_fold_metrics.csv (artifacts.py:32, 80). That is a different data source, not a rename.
+(6) Trap 10 is already defused by the private --metrics_dir (artifacts.py:60).
+(7) The E35 recipe also set score_calibrated=True (selection_replication_run.py:47); it is fine to drop it.
+(8) The cache key excludes the model's guesses (baseline_cache.py:142-157), so live lgbm and missForest are paid once per (variant, seed, fold) across G and M on one host. missForest costs up to a minute per fold (ADR 0017:102).
+
+#8 [B-imputation-experiment] t2 on imputation: zero-compute tied/untied [NULL]/[MASK] readout under MCAR, plus the MNAR positive control
+  what: (a) The MCAR side already exists.
+- Under today's imputation defaults the decode stage never shows [NULL], so E36's PG arm (--pretrain_gap_token mask, 21 variants) already was a tied-token ablation under MCAR. It found no difference on 20 of 21 variants.
+- E31: the M model scored column-wise beat the mask readout on 5 of 9 variants at 60nan or more.
+- E32/E33: showing gaps as [MASK] won.
+Tabulate this from the stored CSVs.
+(b) The MNAR side is item 7's G vs M arms.
+(c) Optional cosine probe: run with --save_model on biodeg_60nan and spambase_60nan in item 7's cells, and compare embedder.special_embeddings <key>_mask vs <key>_null by cosine and norm.
+  piggy: TRIDENT/docs/EXPERIMENTATION_LOG.md (E31-E36 entries); TRIDENT/scripts/experiments/gap_token_replication_report.py, pretrain_gap_token_report.py; TRIDENT/src/embedder.py:148-192 (token parameters), :207-237 (gaps_as_mask); TRIDENT/src/training/runner.py:219-222 (--save_model); item 7's cells
+  where: (a) Laptop, read-only on mlruns/ artifacts. (b) and (c) ride on item 7's laptop cells. No store write.
+  code: 1-2 h for the readout table; about 1 h for the cosine script. | compute: None beyond item 7 (--save_model adds only disk).
+  gap: Whether the split is idle on imputation under MCAR and becomes active under MNAR, i.e. whether its sign flips (RQ4). This is the imputation half of the experiment the owner says the thesis rests on.
+  rq: t2; RQ2 control (tied vs untied); RQ4
+  expected: MCAR: the split is idle (E36: no difference on 20/21). MNAR: if the split matters, M scored column-wise should close the gap or win. A null result says the split is idle on imputation.
+  traps: (1) The E36 and E31 reports use the stale 4-name bar (review finding 6).
+(2) E31 has no K readout.
+(3) Under G, [NULL] gets no gradient in decode and only drifts through weight decay, so the cosine probe is descriptive, not causal.
+(4) The classification-side t2 arms need about 60 lines of plumbing (commit d0744ad precedent). That is not quick; see not_quick.
+  REFUTE refuted=False corr: (1) Part (c) names spambase_60nan, but it is not in item 7's 36 smoke cells, which are biodeg, kc2 and vehicle only. The probe on spambase waits for the gorgona8 family; use kc2_60nan or vehicle_60nan locally.
+(2) Trap 3 is confirmed with a nuance. Under G the numeric _null parameters stay in the graph via torch.stack/torch.where (embedder.py:343-356) while null_flags are all false (embedder.py:234-235). They get zero gradient, so AdamW weight decay is all that moves them (decoding.py:69-73). Under the default pretrain_gap_token=null, though, they were trained in pre-training. So the probe compares a pretrained-then-decayed [NULL] with a decode-trained [MASK].
+(3) In (a), E36 PG versus E35's K readout (d0744ad message) contrasts '[NULL] never shown' with '[NULL] shown in pre-training only'. Both arms already show [MASK] in decode. It is functionally a tied-token arm, not a parameter-tying ablation.
+(4) Trap 1: review finding 6 lists pretrain_gap_token_report.py:215 but not column_wise_report.py:35, which has the same 4-name tuple. The E31/E36 CSVs have no lgbm/missForest columns, so widening the tuple can't work; finding 6 says this.
+(5) Trap 4 is confirmed: d0744ad touched about 59 lines of src (mlflow_utils 5, config 20, pretraining 16, runner 2, types 16).
+
+#9 [B-imputation-experiment] Zero-compute component and per-column gap table (rmse_num_z, mae_num_z, acc_cat, macro_f1_cat)
+  what: From the reference parents' raw_fold_metrics.csv, compute paired per-fold gaps on rmse_num_z, mae_num_z, acc_cat and macro_f1_cat: model K minus each baseline. From per_column_imputation.csv, add per-column ratios of model to mean_mode and model to best baseline, on the variants where the per-column model side is today's default.
+  piggy: TRIDENT/src/training/artifacts.py:92-103 and :242-262 (writers of raw_fold_metrics.csv and per_column_imputation.csv); TRIDENT/src/training/imputation_metrics.py:31-104 (metric definitions; impute_score mixing at :44-57); TRIDENT/src/training/summary.py:166-185; 1,025 per_column_imputation.csv files under TRIDENT/mlruns/
+  where: Windows laptop CPU, read-only on mlruns/ files. No store.
+  code: 2-3 h of pandas. | compute: Minutes.
+  gap: Where the model loses on numeric error or on categorical macro-F1 even when impute_score wins, and which columns hgb, lgbm or missForest beat it on. This is the per-column blind spot the critique raised.
+  rq: RQ1; t1; imputation critique section 3.5
+  expected: Only 5 mixed variants (credit-g x4, electricity_20nan) can hide a numeric-vs-categorical split inside impute_score. On single-kind tables the rmse and acc gaps are a fold-constant rescaling of the impute_score gap with the same sign, so only mae_num_z and macro_f1_cat add information there. kr-vs-kp has 0 numeric cells.
+
+Per-column K exists for 7 variants: E38 ALL on pendigits and letter, and E39 D on 5. After ADR 0019, 3 of those 5 are today's default.
+  traps: (1) per_column_imputation.csv holds the headline (H) fills on E34/E35, so per-column K is missing there.
+(2) Per-column lgbm exists only on E39's 30 runs.
+(3) E38's missForest values on pendigits and letter predate the single-thread fix (2ae35b6), so expect a small wobble there.
+(4) rmse_num_z is z-scaled, not raw units.
+(5) Filter is_mirror=false.
+(6) Read the mlruns files directly: incoming.db holds untranslated /scratch2/... artifact URIs, and _fold_rows silently returns {} on them.
+  REFUTE refuted=False corr: (1) Trap 2 is factually wrong. Per-column baseline/lgbm rows exist in 78 files: E39's 30, plus 48 of E38 ALL's 63, the cells resumed after ADR 0017 (16 variants, including credit-g_40nan, kr-vs-kp_40nan and spambase_40nan, seeds 101/202/303). Per-column missForest rows exist in 93. Baseline per-column rows don't depend on the model, so they pair with any parent on the same seeds and folds (E33/E34/E38/E39), but not with E35's seeds 42/7/13.
+(2) Trap 3 holds. E38's pre-fix runs cover 5 variants: pendigits, letter, electricity, spambase_60nan and spambase_80nan. This item uses only pendigits and letter.
+(3) On the E35, E31 and E36 parents, raw_fold_metrics.csv carries only ADR 0007's four baselines (0/63 lgbm, 0/63 missForest). 'Each baseline' per fold therefore needs recompute_folds for lgbm and missForest. E35's K row does carry every component metric (decoding.py:316-320).
+(4) Per-column K exists on all 21 variants under non-default configs (E36 PG 63 runs, E38 ALL 63 runs, E37 on 5 variants). Under today's default config it exists on 5 only: pendigits_20nan and letter_20nan (E38 ALL), and the 3 E39 D variants. That count of 3 holds only after pulling ADR 0019 (39ab4bb on GitHub; the local b2b50fd still has all 5 promoted files).
+(5) per_column_imputation.csv has no per-column impute_score. Ratios must be built from rmse/mae/acc/macro_f1.
+
+#10 [B-imputation-experiment] Delta-adjusted hgb (pattern-mixture sensitivity) on the MNAR variants
+  what: Subclass GradientBoostingImputer the way LightGbmImputer does. Override impute: call super().impute(frame, hidden), then add delta_j * sd_j to numerical fills only where frame.isna() (real gaps), never on hidden & ~isna (eval-mask cells, which are MCAR). Two variants:
+- an oracle delta computed on the training fold from the _00nan sibling, labelled as oracle;
+- a fixed grid of 0, 0.25, 0.5 and 1 sd.
+Score offline through recompute_folds on item 7's variants. recompute_folds resolves the _00nan sibling for the new names.
+  piggy: TRIDENT/src/training/imputation_baselines.py:193-314 (GradientBoostingImputer; models kept at :216; impute :295-314); TRIDENT/src/training/lightgbm_baseline.py:30-61 (subclass pattern); TRIDENT/scripts/backfill_baseline_imputers.py:381-450
+  where: Laptop CPU, offline, once item 7's variant CSVs exist on disk. No store write.
+  code: About 2 h numeric-only for the smoke tables; 3-5 h with the categorical tilt. | compute: One hgb refit per fold: minutes per variant.
+  gap: How much of the bar's (and the model's) MNAR bias a known-direction shift removes. It sets the scale for judging any 'known-sign' MNAR-aware model later.
+  rq: RQ1 MNAR arm (sensitivity analysis); RQ4 (cost of assuming the wrong mechanism)
+  expected: No published number exists. With the oracle delta it is an upper reference, not a competitor. With the wrong sign it does worse than hgb.
+  traps: (1) delta is not identifiable from the data. Report this as a sensitivity analysis, not an MNAR-aware imputer.
+(2) A categorical tilt is undefined unless the generator names a masked category.
+(3) Put it in its own module (never edit imputation_baselines.py).
+(4) It depends on item 7's variants and its pre-registration.
+  REFUTE refuted=False corr: (1) recompute_folds' fold_scorer factory receives only (train, numerical, categorical), with no fold index or sibling (backfill_baseline_imputers.py:124-127, 415-416). The oracle delta must therefore rebuild the folds with build_folds and slice the _00nan sibling in its own closure. Add about 1 h.
+(2) State which sd is used. The frame is in variant-z space, so the sd of the observed values is about 1 by construction and is biased under MNAR; the sibling's sd differs.
+(3) LightGbmImputer overrides only _fit_one (lightgbm_baseline.py:35-61), not impute. Overriding impute is a different pattern, but it's fine.
+(4) The rest is verified: delta can apply to frame.isna() cells only. In recompute_folds the induced cells are test.isna() & truth.notna() and the masked cells are observed positions (:425-448), and GradientBoostingImputer.impute takes missing = hidden | isna (imputation_baselines.py:295-297).
+
+#11 [C-imputation-medium] MaCoDE (owner-decided deep baseline), vendored with an inductive wrapper
+  what: Vendor macode/model.py and the parts of dataset.py and macode.py you need, about 400 lines, MIT notice kept, under src/training/.
+- Guard the empty-group torch.stack.
+- Switch to AdamW with weight decay 1e-3.
+- Drop the global reseeding (use fork_rng with the cudnn flags saved and restored).
+- Copy the frame instead of mutating it.
+Then write MacodeImputer.fit/impute:
+- fit builds an hgb-style training vocabulary and fits the bins on the training fold;
+- impute encodes the test frame through the stored scalers and bins, sets hidden|isna to index 0, runs batched no_grad passes, and decodes by posterior mean (sum of p_l * bin mean) for numerics and argmax for categoricals; a sampled-draw arm can be logged separately.
+Use the paper's settings: bins 50, d 128, 4 heads, 2 layers, 500 epochs, batch 1024. Score through recompute_folds(fold_scorer=...).
+  piggy: TRIDENT/src/training/imputation_baselines.py:54-69 (Protocol; frame never rewritten :67), :218-293 (hgb vocabulary and encoding); TRIDENT/scripts/backfill_baseline_imputers.py:381-450; TRIDENT/datasets/categorical_columns/*.txt; Wiki references/macode-paper.md:88-100
+  where: Develop and unit-test on the laptop; the CPU is fine for credit-g, vehicle, kc2 and biodeg. The full grid runs on gorgona8's RTX 3090 Ti off-store through recompute_folds, with no store write. A family plus backfill would write the store.
+  code: 10-14 h (1.5-2 days). | compute: 315 inductive fits: about 3-5 GPU-h on the 3090 Ti, or about 15-25 h on the RTX 3050. The package defaults would cost about 5x more.
+  gap: The nearest prior art: a masked Transformer with one merged per-column [MASK]/missing vector (no [NULL]/[MASK] split) and a quantile-bin value target. It is the only deep baseline that natively handles credit-g, kr-vs-kp and electricity.
+  rq: RQ1; RQ3 quantile-bin target arm (owner decision 2026-10-15, thesis-goals.md:144, :151)
+  expected: No anchor exists. MaCoDE never reports RMSE (Remark 3), and its imputation tables cover none of the 9 tables. Expect the posterior-mean decode to beat a single draw clearly on impute_score.
+  traps: Real blockers in the stock code:
+- Embedding.forward's torch.stack crashes on any table without both column types, which is 7 of 9;
+- impute() is transductive only (no new-frame argument), so a fit per population would double the fits to about 630;
+- set_random_seed reseeds the global torch/numpy/random streams and the cudnn flags;
+- CustomDataset mutates the caller's frame, which would corrupt the cache key (baseline_cache.py:154);
+- the wheel pins torch 2.2.2, numpy 1.26.4 and sklearn 1.6.0, so installing it into the fork's venv would downgrade it and change every cache key (baseline_cache.py:82);
+- the stock optimizer is Adam without weight decay.
+Also: GPU training is not bit-reproducible, so its cache entries are machine-specific. Categorical codes must start at 1. Report that MaCoDE is untuned while TRIDENT is tuned.
+  REFUTE refuted=False corr: (1) New blocker: MaCoDE.__init__ builds CustomDataset without forwarding bins (macode.py:68-73). CustomDataset keeps its default bins=10 (dataset.py:24, 70) while Model gets bins=50 (Embedding(51), Linear(d, 50)). With the paper's settings the data are silently cut into 10 bins. The vendored code must pass bins through.
+(2) CustomDataset mutates only categorical columns (dataset.py:60-62), so the cache-key corruption affects credit-g, kr-vs-kp and electricity only.
+(3) Provenance: the code read here is a download from an earlier session (scratchpad night/macode/code), not hash-checked against 8867879. The wheel pins (torch 2.2.2, numpy 1.26.4, sklearn 1.6.0) and the '5x' default cost come from an earlier note that cites pypi.org/pypi/macode/json; they were not re-verified here.
+(4) 'Only deep baseline that natively handles credit-g/kr-vs-kp/electricity' was not checked against DiffPuter or MFAN.
+
+#12 [C-imputation-medium] Column-wise TabPFN v2 imputer (GradientBoostingImputer subclass, ungated v2 weights)
+  what: The LightGbmImputer pattern: subclass GradientBoostingImputer and override _fit_one to return TabPFNRegressor or TabPFNClassifier via create_default_for_version(ModelVersion.V2), with categorical_features_indices. fit, _matrix and impute are inherited: one model per column, a single pass, deterministic mean or argmax fills, on the same cells as the bar.
+Three decisions to settle and pre-register:
+- drop or keep the hgb recipe's 20% hidden training copy (it pushes pendigits past 10k rows);
+- subsample letter (about 11.2k observed rows per column) and electricity (about 25k), or use ignore_pretraining_limits;
+- wrap the calls in fork_rng.
+  piggy: TRIDENT/src/training/lightgbm_baseline.py:30-72 (subclass precedent); TRIDENT/src/training/imputation_baselines.py:47-51 (20% training copy), :193-314; TRIDENT/src/training/baseline_cache.py:64-83; TRIDENT/docs/adr/0016-missforest-baselines.md:206-208 (the rejected entry, whose token blocker was about 2.5+)
+  where: gorgona8 RTX 3090 Ti, off-store through recompute_folds. The RTX 3050 (4 GB) is marginal: the README asks for about 8 GB. Install into a separate venv, or add it to uv.lock with the owner's approval. No store write unless backfilled.
+  code: 5-8 h, plus an ADR amending ADR 0016's TabPFN entry. | compute: About 652 column models per fold set, about 9.8k fits plus about 19.6k predicts: roughly 6-10 GPU-h on the 3090 Ti, uncertain by about 2x. It competes with the 4-slot GPU queue.
+  gap: The bar contains no foundation-model imputer, which is the comparator class RQ1 names (TabImpute is TabPFN-like).
+  rq: RQ1 (thesis-goals.md:75); reopens ADR 0016's rejected entry
+  expected: No published number on these 9 tables. In TabImpute's MissBench (tables of 235 rows or fewer, RMSE), column-wise TabPFN was the best method on Pol-MNAR.
+  traps: (1) Pin the tabpfn version and ModelVersion.V2. The package default, 3.5, is gated and non-commercial and silently starts a browser login on headless gorgona8.
+(2) Columns with more than 10 classes would fall outside the classifier; all of the fork's have 10 or fewer.
+(3) Each predict re-runs the whole training context, so batch the test rows.
+(4) The extension's TabPFNUnsupervisedModel.impute is a different and infeasible route (about 1,000 GPU-h, sampled output). Don't use it.
+  REFUTE refuted=False corr: (1) Pol-MNAR: column-wise TabPFN (2.295) beat TabImpute's default (2.680) and the 14 baselines, but TabImpute's Pol-MNAR specialist scored 1.316. It was the best method only among non-specialists.
+(2) The README confirms:
+- TabPFN-3.5 is the default, with a browser login on first use and non-commercial weights for 2.5 and later;
+- create_default_for_version(ModelVersion.V2);
+- v2 is under the Prior Labs License (Apache 2.0 plus attribution);
+- about 8 GB for older GPUs, 16 GB for large datasets.
+(3) The README does not say the v2 weights are ungated, and it states no class limit. Mark both 'verify in the installed package'.
+(4) Trap 4's figure of about 1,000 GPU-h is unchecked.
+(5) Memory: GradientBoostingImputer.fit keeps every column model alive (imputation_baselines.py:216, 253), so 57 TabPFN estimators are resident at once on spambase. Check whether each holds its own copy of the weights on the GPU.
+(6) ADR 0019 caveat as in item 7 (local checkout not pulled).
+
+#13 [D-classification] Classification default sweep vs Table 3 (already computed; readouts A and B agree)
+  what: Read-only readout, already done. The 45-variant default sweep (3-fold StratifiedKFold, seed 42, EPOCHS_PRE 300 / EPOCH_FINE 150, cosine_legacy; 55 runs dedup'd to 45 by the latest run per variant) gives mean test-fold macro-F1 per missing level, compared with the paper's Table 3 TRIDENT row, its best baseline at each level, and Table 4's no-pretraining arm.
+  piggy: TRIDENT/mlruns/{1..9}/*/artifacts/metrics/raw_fold_metrics.csv, data/provenance.json, parameters/hyperparameters.json; TRIDENT/sync/mlflow.db.windows-2026-09-29.bak (tags; opened with mode=ro&immutable=1); scratchpad cls_inv.py, cls_db.py, cls_db3.py, cls_final.py, cls_std.py, recompute_a_schema.py ... recompute_g_lifecycle.py; Wiki references/trident-paper.md:149-157
+  where: Windows laptop, read-only. Done; no store write.
+  code: 0 h (done). | compute: 0.
+  gap: The first estimate of what test-set tuning, the split and training size bought the paper. It also corrects the stale claim that the fork has no classification result.
+  rq: Step zero (thesis-goals.md:152); t3
+  expected: Fork means at 0/20/40/60/80% missing: 0.8577 / 0.7987 / 0.7424 / 0.6606 / 0.5306.
+- Minus paper TRIDENT (0.8426 / 0.8128 / 0.7564 / 0.7107 / 0.5806): +.015, -.014, -.014, -.050, -.050.
+- Minus the paper's best baseline at each level: +.008, -.034, -.004, -.040, -.025.
+- Minus Table 4's no-pretraining arm: +.004, -.007, .000, -.008, -.017.
+So the default model tracks the no-pretraining ablation within 0.017 at every level.
+
+Collapsed folds at 80%: credit-g_80nan (0.543 / 0.523 / 0.285) and kc2_80nan (0.383 / 0.572 / 0.639). Mean fold SD grows from 0.0095 to 0.042. The duplicate 00nan runs give a noise floor of 0.0002-0.009.
+  traps: (1) Protocols differ: 3-fold CV trains on 56.7% of rows and tests on 33.3% (data.py:226-227), while the paper uses one 80/10/10 split.
+(2) The fork ran untuned defaults; the paper's TRIDENT was tuned on test macro-F1.
+(3) The C1 whole-frame scaler leak inflates the fork, most at 0%, so the 0% 'win' is not credible.
+(4) LABELS=4 is logged on every run but unused (BACKLOG C3).
+(5) The snapshot is from 2026-09-29; there are no newer classification runs on the Windows side.
+(6) Descriptive only: 3 folds x 1 seed.
+  REFUTE refuted=False corr: Every number checks out against an independent recompute. (a) Time: 539 min is the sum of run durations; from first start to last end it took 1,057 min. (b) Trap 3 overstates C1: BACKLOG C1 claims inflation but gives no size. The scaler is a label-free affine fit (data.py:70-73), so 'inflates most at 0%' is unsupported. Say 'unquantified'. The 0% +0.015 is better put down to the protocol difference (trap 1). (c) Trap 5 holds, and more strongly: the newest classification run starts on 2026-09-10 in both the snapshot and the current mlflow.db (immutable view, which skips the WAL). (d) The 80% gap to the no-pretraining arm is -0.0172. (e) User focus: this readout is classification-only and says nothing about imputation (RQ1). Treat it as context, not a priority.
+
+#14 [D-classification] GBDT-MIA bar (LightGBM and HGB with native NaN; XGBoost if the lock pin is approved) on the sweep's exact folds
+  what: A scratch script over the 45 variants:
+1. prepare_dataset(DatasetSpec.from_name(v, None)), then build_folds(frame, 'class', 3, 42). These rebuild the sweep's folds exactly; verified on 16 fold children across 8 variants.
+2. Per fold, fit LGBMClassifier and HistGradientBoostingClassifier, both with class_weight='balanced' and early stopping on fold.validation_indices. LightGBM 4.7 uses eval_set plus callbacks=[early_stopping]; sklearn 1.9's HGB.fit accepts X_val/y_val.
+3. Build the input matrix from the training-fold vocabulary inside the script, with NaN for missing or unseen values.
+4. Score test with build_fold_result and pair per fold with the sweep's f1_macro.
+5. Optionally add a 30-minute single-split run (cv_folds=None) against Table 3's LightGBM and XGBoost columns.
+  piggy: TRIDENT/src/training/data.py:47-87 (prepare_dataset), :182-260 (build_folds); TRIDENT/src/training/finetuning.py:19-60 (build_fold_result), :91-100 (balanced weights); TRIDENT/src/training/lightgbm_baseline.py:50-58 (deterministic LightGBM settings); TRIDENT/scripts/experiments/confirmatory_report.py:82 (interval and verdict pattern); the sweep's local raw_fold_metrics.csv
+  where: Windows laptop CPU, offline, from the TRIDENT root. Writes a CSV outside metrics/. No store, no imputation cache (OPS-8).
+  code: 2-3 h for the harness plus 1-2 h for the reader that selects sweep runs by provenance and the snapshot's commit tag. XGBoost adds about 1 h plus an owner-approved pin, xgboost>=3.2,<3.3, because 3.3+ needs Python 3.12. | compute: Under 1 CPU-hour (the sweep itself took 539 min on the RTX 3050).
+  gap: The first in-fork, untuned-vs-untuned macro-F1 gap between TRIDENT and GBDT-MIA on shared folds, by level. XGBoost is the baseline the paper's 40-80% margins are measured against.
+  rq: t3; step zero; the RQ2 bar (thesis-goals.md:139)
+  expected: Not run. The paper's tuned GBDTs already beat the fork's default TRIDENT at 60-80% (XGBoost 0.7005 / 0.5556 vs the fork's 0.6606 / 0.5306), so expect default GBDT to match or beat the fork at 60-80%.
+  traps: (1) Select the latest run per variant at 00nan (c0a909b); the 8 LR_SCHEDULER and 12 seed-420 runs must be excluded.
+(2) GradientBoostingImputer._matrix is private and needs fit(), so build the vocabulary yourself.
+(3) Never feed as_category_strings output to a native arm: it renders NaN as the 'nan' category.
+(4) electricity_80nan has 7,593 rows with every feature missing.
+(5) Only 3 pairs per variant: descriptive. The 15-pair rule needs the 5-fold, 3-seed TRIDENT cells.
+(6) The sweep likely ran on sklearn 1.7.2 and the venv now has 1.9.0. The splitter algorithm is unchanged, so the risk is low; state it as an assumption.
+(7) C1 doesn't bias the trees, but it favours TRIDENT slightly through the vocabulary.
+  REFUTE refuted=False corr: (a) The RQ2 bar is at thesis-goals.md:140, not :139. (b) The expected outcome understates the gap. The paper's best GBDT beats the fork default at 20% (LightGBM 0.8324 vs 0.7987, -0.034, a bigger gap than at 80%) and at 40% (XGBoost 0.7460 vs 0.7424), not only at 60-80%. (c) Fold match: no fold indices are stored anywhere. provenance.json holds only cv_folds and seed, the children and results/<variant>/<ts>/ hold only metrics, and there are no confusion counts. So 'verified on 16 fold children' can't be an index check. Restate it as an inference from deterministic StratifiedKFold(seed 42) on labels that are identical across levels. (d) Trap 6 goes from 'likely' to near-certain. At c0a909b, .python-version was 3.10, which resolves to sklearn 1.7.2 and numpy 2.2.6 in the lock. The venv was rebuilt on 2026-09-16 23:08 with Python 3.11.15, sklearn 1.9.0 and numpy 2.4.6 (torch is unchanged). (e) HGB: set early_stopping=True explicitly, because sklearn's 'auto' only stops early above 10,000 rows (lightgbm_baseline.py:8-9). (f) The reader effort is mostly spent already: skep13_recompute.py selects the runs by provenance plus snapshot tags. (g) Trap 7: the TRIDENT-only leak is the whole-frame categorical vocabulary (pretraining.py:54-56), and its direction is unproven. (h) Run it from the TRIDENT root (PROCESSED_DATASETS is relative, data.py:20).
+
+#15 [D-classification] Impute-then-learn arms with and without an indicator on the same folds (MCAR sanity control)
+  what: Extend item 14's script. Per fold, fit imputers on the training features only. Fill each split through impute(split, hidden=all-False), since existing gaps count as hidden. Then train HGB/LightGBM and RandomForestClassifier(class_weight='balanced'), with and without isna() indicator columns. Arms:
+- the paper's own protocol: mode for categoricals, then LightGbmImputer for numericals;
+- mean/mode;
+- missForest, with fills cached per fold.
+Only the 36 gapped variants need imputing.
+  piggy: TRIDENT/src/training/imputation_baselines.py:61-69 (existing gaps are filled), :79-102 (MeanModeImputer); TRIDENT/src/training/lightgbm_baseline.py:30-72 (LightGbmImputer); TRIDENT/src/training/missforest.py:75-178, 262-270; TRIDENT/stubs/sklearn/ensemble/__init__.pyi:78-97 (RF stub); Wiki entities/tabzilla.md:40, skills/missingness-robustness-benchmark.md:71
+  where: Windows laptop CPU offline, or gorgona8's free cores with threads capped at 4. No store write.
+  code: 2-3 h on top of item 14 (drop 'class' before fit; re-encode the returned strings to codes; handle unknown categories). | compute: 2-4 h serial (missForest dominates; spambase_80nan about 4-7 min a fold). Under 1 h with 4 variants in parallel on the server; slower on the laptop.
+  gap: TRIDENT's per-column [NULL] against impute-then-learn, the arm Table 3 used for RF and the deep baselines.
+  rq: RQ2/H2 (sanity control only); t1 ('vs missForest/MICE + indicator'); t3; t4 (does the best impute_score imputer also win downstream? a by-product)
+  expected: Under MCAR with exactly round(pN) gaps per column, indicators carry no label signal. Expect the with- and without-indicator arms to tie, and impute-then-learn to sit near native GBDT.
+  traps: (1) The indicator contrast is a sanity control. Read neither a win nor a loss as evidence of informative missingness.
+(2) The 'missForest fails at 80nan' caveat is unfounded: every credit-g_80nan categorical keeps at least 200 of 1,000 observed values.
+(3) The training-fold fill is in-sample and the test fill out-of-sample; state it.
+(4) Imputers fit per fold while TRIDENT's scaler is whole-frame (C1), which slightly favours TRIDENT.
+  REFUTE refuted=False corr: (a) The 'paper's own protocol' arm is only an approximation. The fork's LightGbmImputer fits a model for every column, categoricals included, and trains with a 20% hide augmentation. Mode-fill the categoricals first so only numerical gaps remain. The paper's LightGBM imputer settings are unknown. (b) Thread cap: THREADS=8 is hard-coded and passed as n_jobs, which overrides OMP_NUM_THREADS. To cap at 4, set missforest.THREADS and lightgbm_baseline.THREADS in the script. (c) Timing is pessimistic. ADR 0016 measured spambase_80nan at 57 s fit plus 12 s per fill (gorgona8, 8 threads, 3,220 rows). A 3-fold train split has about 2,609 rows, so expect about 1.5-2 min per fold with three fills, not 4-7. The 2-4 h serial total is conservative. (d) Trap 4 is overstated. Both arms use prepare_dataset's frame, so the scaler is shared, and trees and RF are scale-invariant. The only asymmetry is TRIDENT's whole-frame vocabulary. (e) Trap 2 holds: every credit-g_80nan column has exactly 200 observed values, and ADR 0016 already ran missForest at credit-g 80nan. (f) Imputation focus (user request): this is the only item here that serves imputation. The existing-gap fills can be scored against the _00nan sibling (load_complete_sibling) at no extra compute. That puts reconstruction quality next to downstream F1 per imputer on the same folds, which answers t4 directly. Make it a primary output, not a by-product.
+
+#16 [D-classification] Table 4 no-pre-training arm (EPOCHS_PRE=0) on all 45 variants, laptop GPU
+  what: Classification cells with hyperparams_override EPOCHS_PRE=0 (arm B), 3-fold, seed 42, on all 45 variants. Pair them with the existing sweep as arm A, B-A on macro-F1, pooled by level. Optional arm C: EPOCHS_PRE=0 with EPOCH_FINE=450 (equal epochs, as in E24). First reproduce one old sweep run's fold F1 at HEAD as a determinism spot check.
+  piggy: TRIDENT/scripts/experiments/pretrain_decode_budget_run.py:39-66 (override pattern); TRIDENT/src/training/config.py:90-97 (override merge); TRIDENT/src/training/pretraining.py:105 (a 0-epoch loop is a no-op); TRIDENT/docs/tickets/imputation-pretraining/01-pretraining-ablation.md:28-32 (E24 arm design)
+  where: Laptop RTX 3050 with --disable_mlflow and a private --metrics_dir. No store write. This is the same machine as arm A, which matters because draws differ across machines.
+  code: About 1 h of scripting plus a smoke run. | compute: Arm B costs about 0.3x of arm A (pre-training is about 62-70% of stage time). Arm A took 539 min on 45 variants, so arm B is about 3-4.5 h. Arm C costs about 0.9x of arm A.
+  gap: Whether Table 4's +1.7 macro-F1 pre-training gain exists under the fork's defaults. Readout A already shows the default model within 0.017 of the paper's no-pretraining arm at every level.
+  rq: Step zero (replicate Table 4); RQ3; the fork-experiments open question on transfer to classification
+  expected: Not run. E24 found no pre-training benefit on imputation, and readout A puts the default close to Table 4's no-pretraining numbers. A small or null B-A gap would not be surprising.
+  traps: (1) The determinism check is load-bearing: 10ff5fb and 2e0e85a landed after 6d49ed5. Use the 0.0002-0.009 duplicate spread as the yardstick.
+(2) Always pass a private --metrics_dir. The default metrics/<variant>_metrics.csv gets overwritten, and 6 of the 45 copies already were by imputation runs on 09-12/13.
+(3) One seed x 3 folds can't reach the verdict rule; read it pooled by level.
+(4) Use all 45 variants. The 21-variant subset has 80nan for only 3 bases.
+(5) It measures the pre-training gain under defaults, not a replication of the paper's tuned Table 4.
+  REFUTE refuted=False corr: (a) Compute: the 62-70% figure rests only on 8 letter_20nan fold children at 200/150 epochs, seed 420, which show 0.62-0.63. Scaled to 300/150 that is about 0.71. Arm B is then about 0.29-0.38x of 539 min, or 2.6-3.4 h, not 3-4.5 h. Arm C is about 0.86-1.1x. (b) Trap 1 should also cover environment drift, not just the two commits. The sweep ran on Python 3.10, sklearn 1.7.2 and numpy 2.2.6; HEAD's venv is 3.11.15, 1.9.0 and 2.4.6, with torch 2.5.1+cu121 unchanged. (c) Don't copy the template's lr_scheduler='cosine' (pretrain_decode_budget_run.py:62). args.lr_scheduler beats the override (config.py:48-51). Pass None or 'cosine_legacy', plus task='classification', cv_folds=3, seed=42 and disable_mlflow=True. output_dir is timestamped, so it doesn't overwrite. (d) The 0-epoch path has only run with 'cosine' on imputation (E24). With cosine_legacy, StageScheduler(epochs=0) constructs without error (tested). HEAD's defaults equal the sweep's hyperparameters.json on all 45 runs. (e) The E24 wording is accurate: B-A showed no detectable difference on 3 of 4 variants, pre-training hurt on pendigits_20nan (-0.0216), and A never beat B. (f) Imputation focus: this item is classification-only, and E24 already answered it for imputation. Rank it below the imputation items.
+
+CONFLICTS:
+ - How long the classification harness takes => These are three different deliverables, not one disagreement.
+- 2-3 h: a scratch GBDT loop over build_folds that writes a CSV, plus 1-2 h for a reader pairing it with the existing 3-fold sweep (item 14). This exists today because the TRIDENT side was already trained.
+- 6-10 h: a committed, strict-mypy harness with per-fold encoding for neural baselines (FT-Transformer, TabNet). Not needed for GBDT.
+- 8-16 h: server-side logging plus a paired 15-fold report. Only needed once 5-fold, 3-seed TRIDENT classification cells exist.
+The report card's premise that 'there is no classification result in the fork' is false.
+ - TabPFN: QUICK or NOT_QUICK => Both hold for different versions. The token and non-commercial blocker applies only to 2.5 and later; v2 is ungated if ModelVersion.V2 and the package version are pinned, so ADR 0016's token half is stale for v2. Its 10k-row and 10-class half stands: letter and electricity are outside v2's envelope.
+- Classifier: quick in code (6-10 h), but only half a comparison, and classification is secondary now. Not in the list.
+- Extension imputer (TabPFNUnsupervisedModel): about 1,000 GPU-h and sampled output. Not quick.
+- Column-wise subclass: 5-8 h plus 6-10 GPU-h. Tier C, item 12.
+It still needs a separate venv or an owner-approved lock change.
+ - HyperImpute: MEDIUM or NOT_QUICK => Not a quick win; skip the package. Probe D already reproduced its linear plugins (ICE, SoftImpute) and condexp in numpy, with none of the package's defects:
+- three silent plugin bugs (GAIN and SoftImpute ignore their hyperparameters; MIWAE defaults to a 1-unit network);
+- the AutoML imputer crashes on sklearn 1.9 (LogisticRegression multi_class);
+- transductive fits;
+- reseeding of the global streams;
+- an upstream dormant since 2023.
+What remains unique is the AutoML imputer (10-60 CPU-h, needs stack-and-slice) and GAIN, MIWAE and Sinkhorn, which are known-weak and of low evidence value. It goes to not_quick.
+ - MICE: IterativeImputer (QUICK) vs a hand-rolled round loop (MEDIUM) vs a ~20-line MissForestImputer subclass => Probe D settles it.
+- One-hot IterativeImputer is refuted (n_iter_=1, exactly 1.000 on kr-vs-kp).
+- The 20-line subclass is right about _fit_one, but the inherited MissForestImputer.impute (missforest.py:147-163, checked) re-applies only the kept round's models from the mean start. For linear learners that scores 2-19x mean_mode, so the critic's credit-g number is the defect.
+- Correct probe: the subclass plus an overridden sequential per-round impute plus a range clip, about half a day (item 4), checked against IterativeImputer to 1.4e-9.
+- The categorical-correct design (wf2's one-hot features with own-block exclusion and multinomial LR) belongs with promotion (item 6, 1.5-2 days). IterativeImputer stays only as the numeric test oracle.
+ - Can imputation baselines be computed on Windows? => Both, for different purposes.
+- Windows is fine for indicative and design numbers: offline recompute_folds(fold_scorer=...) with no cache dir and no store, and for wrapper development and --disable_mlflow smokes.
+- Any number that will be logged into MLflow or frozen in the thesis comes from gorgona8: through item 5's pass (cache hits for lgbm and missForest), through a backfill --apply, or through a fresh default sweep.
+- On Windows the lgbm/missForest cache always misses, which costs 5-10 CPU-h.
+- The deterministic numpy arms will likely agree across machines up to BLAS last digits. Check before relying on it.
+ - Does the fork have classification results, and what follows => Yes. 55 runs cover all 45 variants (3-fold, seed 42, 300/150, cosine_legacy, 2026-09-08/09, commits c0a909b/6d49ed5, identical src). They dedup to 45, with per-fold f1_macro in local raw_fold_metrics.csv. Wall time is measured: 539 min on the RTX 3050 for 45 variants, 177.8 min for the 21-variant subset. So OPS-9's 'never timed' is wrong too.
+- The wiki pages need the owner's correction (see wiki_corrections).
+- The gap claims in wf2's cards ('the fork has no classification number at all') should be read as 'no paired classification baseline'.
+- Under the owner's imputation focus this stays tier D context (item 13).
+ - Does ADR 0019 exist, and what is today's default on the five retuned variants => Both are true. The Windows checkout is at b2b50fd, 2 commits behind origin/feat/imputation-task. The upstream decision (arm D, the defaults) is consistent with the rule because T-D was N on both. So today's default on seeds 101/202/303 is:
+- E34 K on 16 variants;
+- E38 ALL on pendigits_20nan and letter_20nan;
+- E39 D on the three 40nan variants.
+Seeds 42/7/13 have no D cells. OPS-5's details are WebFetch paraphrase: git pull and read ADR 0019 before freezing item 1's table.
+ - Is E39 still running => Finished; the local docs are stale. Nothing from E39 holds the server's store or GPU. Whether anything else holds the store can't be checked read-only from Windows while the pull is in flight.
+ - The zero-compute t1 readout (wf1 rank 5) => Mostly done already. Probe C rebuilt the paired verdicts from local artifacts, taking per-fold lgbm and missForest from E38's CSVs, which share E34's folds on seeds 101/202/303 (item 1). The remaining holes are lgbm on 5 variants for 101/202/303 and paired missForest on E35's seeds. Item 5's server pass fills them, using BaselineScorer(families=('lgbm','missforest')) rather than backfill_lgbm_baseline._scorer.
+ - Expected MICE result at 80nan => Answered no by the verdict probe, the critic and probe D. Sequential ICE scores 1.01-1.35 at 80nan on every table, and the variants where it could set the bar are elsewhere. ICE is a completeness row; condexp and SoftImpute are the arms that move the bar.
+ - SoftImpute's priority => Run it in the same pass as condexp (items 3 and 5), with a pre-registered rank rule that fixes the spambase failure (the p//2 cap binds at 72-86% energy).
+ - Cost of TRIDENT classification on 5 folds x seeds => The estimates are consistent once scaled.
+- 21 variants x 3 seeds (63 cells): about 3.5-6 h on 4 server queues.
+- 45 variants x 3 seeds: about 10 h, because the large tables appear at all 5 levels.
+Anchors: 177.8 min (21 variants) and 539 min (45 variants) for 3 folds x 1 seed on the laptop. Time one electricity cell first. It is listed only as an optional use of idle server GPU nights, not as a ranked item.
+ - MaCoDE's path and effort => Vendor it with an inductive wrapper and posterior-mean decode: 10-14 h, 315 fits, 3-5 GPU-h on the 3090 Ti (item 11). The pip path is ruled out by the pins: they would change every cache key in the fork's venv, and a separate venv would still carry the stack crash and the global reseeding.
+ - ReMasker's effort and licence => Clean-room only, because nothing can be copied without a licence. The 0/0 guard is mandatory: restricting to 20/40nan would drop the heavy variants the thesis argument rests on. Report it as 'ReMasker (fixed)'. It moves to not_quick behind MaCoDE and TabPFN-v2, which are cheaper per piece of evidence.
+ - How much work the MNAR generator is => Both are right at different scopes.
+- Smoke version: all-numeric tables (biodeg, kc2, vehicle, then spambase), so no categorical rule; signed bias computed from the per-fold ledgers, so no edit to imputation_metrics.py. About 5-7 h with runner and report, plus 36 cells including MCAR controls at HEAD (the verdict showed differences in differences against stored cells can't be fold-paired).
+- Full family: the categorical rule plus an in-code bias metric, 8-14 h. The metric must land between studies, because it invalidates every cache family.
+ - The EPOCHS_PRE=0 arm: cost, scope and where it runs => Follow the verdict: 45 variants, laptop GPU, no store write, about 3-4.5 h, after a determinism spot check (item 16).
+ - Which protocol the paper used for RF and the deep baselines, and whether missForest fails at 80nan => Mirror the paper with mode plus LightGbmImputer, and keep mean/mode and missForest as extra arms (item 15). The failure caveat is dropped.
+ - Ordering: classification first or imputation first => The owner's clarification wins. Imputation items 1-12 come first; classification is items 13-16 in a short section. The laptop-CPU GBDT work (items 14-15) fits in idle CPU gaps without delaying any imputation item.
+
+NOT QUICK:
+ - ReMasker (clean-room fork-native) : No LICENSE file, so it can only be reimplemented clean-room (17-24 h). The stock code parses sys.argv, calls sys.exit(1) on a non-finite loss, and never seeds. Training hits a 0/0 loss, near-certain on credit-g_80nan, kr-vs-kp_60/80nan, spambase_60/80nan, vehicle_60nan and biodeg_60nan. It is numeric-only. 15-25 GPU-h at 300 epochs for 63 (variant, seed) pairs off-store, or about 40 GPU-h per BACKLOG I3. Do it after MaCoDE; the BACKLOG I3 design is ready.
+ - HyperImpute package (AutoML imputer, GAIN, MIWAE, Sinkhorn) : 0.1.17, dormant since 2023:
+- the AutoML imputer crashes on sklearn 1.9 (LogisticRegression multi_class);
+- the GAIN and SoftImpute plugins silently ignore their hyperparameters (issue #42; plugin_softimpute.py:298);
+- MIWAE defaults to a 1-unit network and crashes on a zero scale (#44);
+- HyperImpute, Sinkhorn and EM are transductive;
+- every plugin reseeds the global numpy, torch and random streams.
+The AutoML imputer would cost 10-60 CPU-h. Its linear plugins are already reproduced in numpy by probe D.
+ - TabImpute zero-shot : Pins tabpfn==6.0.0, which needs sklearn<1.8 against the fork's 1.9: a separate venv plus a subprocess bridge. No code licence. Transductive in context, and the paper's setting reads the global RNG. Only 6 of 21 variants (kc2, vehicle, biodeg) are in its validated regime. Categorical support is unvalidated and its categorical scripts are broken. 12-20 h. No published MNAR specialist weights.
+ - TabPFN extension imputer (tabpfn-extensions TabPFNUnsupervisedModel.impute) : Cost is quadratic in the number of columns: about 7.6M TabPFN calls, roughly 1,000 GPU-h, or about 100 in fast mode. The output is a stochastic sample. It pulls in telemetry and has no device handling. Use the column-wise subclass (item 12) instead.
+ - not-MIWAE, GINA, NIMIWAE, Heckman imputer : All are blocked on item 7's MNAR family: on today's MCAR holes a selection model is only a misspecification control.
+- not-MIWAE: the MIT PyTorch port lacks multi-class categorical heads and needs a real-vs-artificial mask split. 18-28 h, 20-50 device-h.
+- GINA: archived 2020-era code. It needs fully observed auxiliary columns, which the fork's all-column injector never leaves.
+- NIMIWAE: GPL-3, R/reticulate, hard-coded CUDA.
+- Heckman: 12-20 h, fragile identification under self-masking.
+Delta-adjusted hgb (item 10) gives most of the cheap insight.
+ - CACTI/CMAE and DiffPuter : CACTI: GPL-3, CLI-only, a separate conda environment and a language-model download. Under MCAR its copy masking reduces to ReMasker's random masking. Its idea (CMAE) costs 3-5 h inside a ReMasker reimplementation once MNAR exists.
+DiffPuter: a dataset-specific script, about 1,000-2,500 s per fit (100-200 GPU-h for the grid), with NaN and non-convergence failures on small tables. At most a later 15-30 GPU-h slice on the three large 20nan tables.
+ - Distributional metrics (sliced Wasserstein, energy distance) on today's MCAR default : They need all 5 fold ledgers. MLflow keeps only the best and worst folds (a biased subset). The rest sit in the server queues' $STATE/results directories, which no sync pulls and which may have been cleaned. Current-default ledgers cover 7 of 21 variants, and baseline fills are never persisted. Feasible path: compute them on item 7's laptop cells, whose ledgers are all local, or after the deterministic rerun below.
+ - Deterministic rerun of the 63 default cells with --save_model and train/validation ledgers : A TRIDENT retrain (about 7-8 h on gorgona8) plus a hook in decoding.py. It unlocks true impute-then-learn (Le Morvan & Varoquaux), full-coverage ledgers and the cosine probe. Worth doing; it pairs naturally with item 5's fresh-sweep alternative. Medium, not quick.
+ - TRIDENT classification at 5 folds x 3 seeds, and the validation-ranked retune (step zero proper) : The 5-fold, 3-seed run is cheap in code (1-2 h; clone gap_token_run.py without decode_gap_token, as config.py:276-281 rejects it for classification) but costs a server night. The validation retune needs a change to opt.py: classification ranks trials on test macro-F1 (types.py:138, opt.py:175-179), and finetuning.py never returns validation F1. It also needs an ADR and tens of GPU-hours. Secondary to imputation; run it on otherwise idle server nights only.
+ - t2 tied-token arms and the Table 4 imputation-variant arm for classification : Both touch the protected classification path. Fine-tuning always shows [NULL] (finetuning.py:81-88, 122-124). A default-off flag plus plumbing is about 60 lines (commit d0744ad precedent), half a day to a day, and it needs a classification reference first.
+ - Equal-budget HPO (TabZilla-style, 20 trials) and deep classification baselines (FT-Transformer, TabNet, native SAINT, NAIM) : The GBDT half of the HPO is quick (2-3 h), but the TRIDENT half needs the opt.py change. The deep baselines need the 6-10 h harness plus 3-16 h each. All are classification and secondary under the imputation focus.
+ - miceforest : With mean matching off it is essentially ADR 0016's withdrawn missforest_lgbm; with it on, it is stochastic. It is a new dependency. Keep it in reserve as a multiple-imputation generator for the classification side.
+
+ORDER:
+ - Day 0 (Fri 10-16), laptop: let the in-flight incoming.db pull finish; don't open it or its -wal/-shm. Then `git pull` the Windows checkout (b2b50fd -> 39ab4bb) and read ADR 0019 and the E39 Outcome. Copy the scratchpad scripts and outputs (barcheck_*, impprobe_*, cls_*, recompute_*) into a TRIDENT ticket folder.
+ - Day 0, laptop CPU: rerun barcheck_verdicts.py with E39 D swapped in for credit-g_40nan, kr-vs-kp_40nan and spambase_40nan, and freeze item 1's table as the thesis draft. It is labelled pre-ADR-0019 for seeds 42/7/13.
+ - Day 0-1, laptop: write one ticket plus an EXPERIMENTATION_LOG entry (E40) pre-registering items 2-5:
+- condexp shrinkage and clip;
+- the SoftImpute rank rule fix;
+- the ICE design (sequential transform, clip, round count, ordinal vs one-hot features);
+- the 0.003 tie band and the 15/30-pair rule;
+- the ADR 0019 cell map.
+Commit it in the same change as the pre-registration.
+ - Day 1, laptop CPU: implement item 4's sequential ICE subclass (about half a day) and check it against IterativeImputer on the numeric tables. Rerun condexp, SoftImpute and ICE offline on 21 variants x 6 seeds as 3 parallel processes (about 1 h wall). These are development numbers.
+ - Day 1, in parallel on the laptop: write item 7's generator and its row-alignment and rate test, plus a runner with decode_gap_token and decode_checkpoint pinned. Pre-register the MNAR smoke test (E41).
+ - Night 1, laptop GPU: item 7's 36-cell MNAR smoke test (G and M arms on MNAR and MCAR _60nan for biodeg, kc2 and vehicle) with --disable_mlflow and a private --metrics_dir. Use --save_model on biodeg/spambase cells only if item 8's cosine probe is wanted.
+ - Day 1-2, gorgona8 CPU (threads capped at 4, beside the idle or running GPU queue): item 5's recompute_folds pass, with lgbm and missForest from cache hits plus the three arms. Write the per-fold CSV under results/<study>/ so the next pull brings it back.
+ - Day 2-3, laptop CPU: item 5's paired report. Then the owner decides whether the arms go in the bar or stay external (ADR). From the smoke ledgers, compute signed bias, K-H and masked-vs-induced. Run delta-hgb (item 10) on the smoke variants offline. Build the per-column table (item 9) and the t2 MCAR readout (item 8a).
+ - Night 2 or 3, gorgona8 GPU: if the smoke generator holds up, run the full MNAR family: biodeg, kc2, vehicle and spambase at 20nan and 60nan with MCAR controls, about 48 cells, plus the biodeg tilt dial (24 cells). Use store writes and a new study tag, pre-registered. If it is not ready, an idle night can take the optional TRIDENT classification cells (5 folds x 3 seeds on 21 variants, 3.5-6 h).
+ - Days 3-6, laptop: implement item 6 (linear_baselines.py, family, tests, stubs for ICE, a backfill with a K-gap and a per-fold sidecar). Land it in a morning slot between overnight studies. Fill the cache with dry runs on gorgona8's free cores, then run one --apply (SQLite backup first, about 2 h store hold). Alternative: land the family and run one fresh 63-cell default sweep overnight under ADR 0019, which gives K-headline CSVs with every baseline per fold.
+ - Week 2, laptop: vendor MaCoDE (item 11, 10-14 h) and smoke it on CPU with credit-g and vehicle. Then run the 315-fit grid off-store on gorgona8 (3-5 GPU-h) in a slot the GPU queue leaves free.
+ - Week 2, owner decision: approve or decline a separate venv for tabpfn pinned to ModelVersion.V2. If approved, build item 12 (5-8 h) and run it on gorgona8 (6-10 GPU-h).
+ - Classification in gaps only: on the laptop CPU whenever it is idle, items 14 and 15 (the GBDT-MIA bar plus impute+indicator on the sweep's folds, about 4-6 h code, a few CPU-hours). On a free laptop GPU night after item 7's smoke run, item 16 (EPOCHS_PRE=0 on 45 variants, about 3-4.5 h), after a one-run determinism spot check.
+
+WIKI CORR:
+ - projects/trident/fork-experiments.md:20 says 'experiments E01–E38, ADRs 0001–0016 ... no classification result'. Stale on both counts: E39 finished 2026-10-16 06:56; ADR 0017 and 0018 exist locally and ADR 0019 upstream (39ab4bb); a 45-variant default classification sweep exists (55 runs, 3-fold, seed 42, 300/150, 2026-09-08/09).
+ - projects/trident/fork-experiments.md:35 says 'There is no classification result. The only classification number is a confounded check on vehicle_00nan'. Wrong. Mean macro-F1 of the sweep at 0/20/40/60/80% is 0.858/0.799/0.742/0.661/0.531 (mlruns/1..9 raw_fold_metrics.csv; snapshot sync/mlflow.db.windows-2026-09-29.bak).
+ - projects/trident/fork-experiments.md:84 and :104 list E38 as 'in progress at HEAD 41e7881; results pending'. E38 concluded: ADR 0018 adopted the bigger encoder (4 layers, feed-forward 256, LayerNorm) on pendigits_20nan and letter_20nan only.
+ - projects/trident/fork-experiments.md:125-129 describe ADR 0016's outcome with missForest in the bar (best baseline on 476 of 873 runs). Superseded by ADR 0017: missForest is external (outside the bar), missforest_lgbm was withdrawn, and a column-wise lgbm imputer joined the bar (mean_mode/knn5/knn10/hgb/lgbm).
+ - projects/trident/fork-experiments.md:154 asks for E38's verdict and whether its bar is re-scored with all six imputers. Answered by ADR 0017 and ADR 0018.
+ - projects/trident/thesis-goals.md:141 says 'missForest (Random Forest and LightGBM, already in the fork, ADR 0016)'. The LightGBM missForest was withdrawn by ADR 0017. 'MICE (to add)' still holds, but probe D shows a linear MICE/ICE needs a sequential per-round transform: the fork's MissForestImputer.impute replay scores 2-19x mean_mode for linear learners.
+ - fork-experiments.md, thesis-goals.md and hot.md never mention E39 (the retune of the five promoted files) or ADR 0019 (removes the promoted files on credit-g_40nan, kr-vs-kp_40nan and spambase_40nan). The 'today's default' cell set therefore changed after the wiki was written.
