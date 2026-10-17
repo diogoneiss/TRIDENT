@@ -137,4 +137,10 @@ until it is explained.
 
 ## Launch
 
-To be filled in at launch: the pre-launch check and the launch time.
+- **Checked before launch, with `--no-mlflow`, passed (2026-10-17, about 14:36 GMT-3):**
+  - **G on kc2_20nan at seed 42** equals E35's cell: K equals E35's `induced_checkpoint` and H its
+    headline, on both populations, to the store's precision (induced K 0.5744053, H 0.5775417).
+  - **Mx on kc2_probit_20nan at seed 99** (not a study seed) ran and logged its column-wise family.
+    Its scores were not read.
+- **Launched at 14:38 GMT-3** on 3c534bf: four queues in `/scratch2/diogoneiss/trident-2026-10-17-mnar-family/`
+  (16, 16, 16 and 18 cells), progress in its `progress.log`.
