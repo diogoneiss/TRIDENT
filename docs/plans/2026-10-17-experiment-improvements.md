@@ -447,7 +447,10 @@ limit is stated in the ticket. Adding 2–3 new OpenML tables is a separate opti
 
 **Status:** backlog, in GPU gaps only, after 2a–2e.
 
-### 2h · Soon: an EMA target encoder and a predictor for pre-training (T13; added 2026-10-17)
+### 2h · Later: an EMA target encoder and a predictor for pre-training (T13; added 2026-10-17)
+
+**Status: a future task, by the user's decision (2026-10-17).** It goes together with T28, the
+investigation of why pre-training adds little to imputation.
 
 **Goal.** Give pre-training the standard guards against collapse. The model would get two things
 it lacks:
@@ -484,7 +487,7 @@ it lacks:
   - **primary:** the induced `impute_score`;
   - **secondary:** collapse diagnostics, the spread and rank of the target embeddings.
 
-  It would run in a free GPU night after E44.
+  It would run in a free GPU night, after T28.
 
 **Expected gain.** Modest on imputation, where pre-training adds little today. The larger upside is
 for classification and RQ3, if pre-training stops collapsing.

@@ -177,7 +177,24 @@ three seed sets and what adopting it takes are in
   `references/smart-paper`). These are the anti-collapse guards pre-training still lacks (ADR 0011,
   considered options). TRIDENT uses stop-gradient on the same encoder; SMART adds an EMA target
   encoder (decay 0.996) and an embedding decoder. E04, E05 and E24 suggest the pre-training
-  collapses. **The user asked for it soon (2026-10-17):** plan §2h, a screening after E44.
+  collapses. **A future task, by the user's decision (2026-10-17):** plan §2h; after T28.
+- **T28 · Why pre-training adds little to direct imputation, and what the ingested literature
+  offers** (the user's request, 2026-10-17). This is an investigation, not a run.
+  - **The fork's evidence:**
+    - E04: the pre-training loss drop is norm-matching, and the encoder is worse than a
+      per-column constant;
+    - E05: 300 pre-training epochs equal 2;
+    - E24: pre-training never helps against none, and hurts pendigits;
+    - E25/E26: only the normalised objective helps, on 2 of 4 variants;
+    - E36: showing gaps as `[MASK]` in pre-training gains nothing.
+  - **Questions:**
+    - Is it collapse, a target mismatch (embedding targets against value-space scoring), or a
+      decode stage strong enough to wash the encoder out?
+    - What do the wiki's references say? Among them: SMART, the JEPA and masked-embedding concept
+      pages, MaCoDE's bin targets, ReMasker, and the distillation review of 2026-10-09.
+  - **Output:** a short report with diagnosable hypotheses and the cheapest test for each. T13
+    (EMA) is one candidate.
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
