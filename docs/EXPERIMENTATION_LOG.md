@@ -72,7 +72,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
-| E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 – | in progress | 66 cells: G and Mx on 4 new pairs and 3 new slopes, seeds 42/7/13 |
+| E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 | done | supported: H beats the weak bar under MNAR on 4 of 4 new pairs; dial dose-response no (flat 0.25–0.5, then rising; H loses to the bar at slope 2.0); Mx beats G only at slope 2.0 |
 
 ## Entries
 
@@ -1484,10 +1484,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/mnar_smoke_run.py`, `mnar_smoke_report.py`, `run_mnar_smoke_queue.sh`;
   `datasets/generate_mnar.py`.
 
-### E46 · The full MNAR family (2026-10-17 – )
+### E46 · The full MNAR family (2026-10-17)
 
-- **Status:** in progress. Pre-registered before the first cell, after E45's rule read "go for the
-  full family" and on the user's request.
+- **Status:** done. Pre-registered before the first cell, after E45's rule read "go for the full
+  family" and on the user's request; it ran from 14:38 to 18:11 GMT-3.
 - **Hypothesis:** the model's lead over the weak bar survives value-dependent missingness on a
   larger table (spambase at 60nan) and at a lighter rung (biodeg, kc2 and vehicle at 20nan); on
   biodeg at 60nan, its cost grows with the tilt's strength.
@@ -1506,6 +1506,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     0.25/0.5/1.0/2.0 and is "worse" at 2.0; separately, whether H still beats the bar at 2.0.
   - **Descriptive:** missForest (the strong tier is missForest alone, before ADR 0021's merge), the
     oracle's optimism, t2, and the rung (20nan beside 60nan).
-- **Sources:** `docs/tickets/imputation-protocol/06-mnar-family.md`;
+- **Results:** 66 of 66 cells. G on the MCAR controls equals E35 on all 12 (largest difference 0).
+  - **Primary: supported.** Under MNAR, H is better than the weak bar on all 4 new pairs
+    (spambase_60 −0.014, biodeg_20 −0.035, kc2_20 −0.094, vehicle_20 −0.077).
+  - **Mechanism effect:** worse on spambase (+0.026), none on biodeg_20 and vehicle_20, better on
+    kc2_20 (the weak-tilt pair). On biodeg it grows from 20nan to 60nan (+0.078).
+  - **Dial: dose-response "no".** The effect is +0.083, +0.081, +0.096 and +0.103 at slopes 0.25,
+    0.5, 1.0 and 2.0: flat, then rising. H against the bar: better, better, none, worse.
+    Against missForest the model improves with the slope (worse to better).
+  - **The oracle's optimism:** no verdict anywhere.
+  - **t2:** Mx's deficit shrinks with the tilt on biodeg, and Mx beats G at slope 2.0 (−0.006).
+    No verdict on the new pairs, except kc2_20 (worse).
+- **Conclusion:** the lead survives MNAR on 7 of 7 pairs (E45 and E46). It shrinks on spambase and
+  on biodeg at 60nan, and is lost only at biodeg's steepest tilt. Signed bias is not done.
+- **Sources:** `docs/tickets/imputation-protocol/06-mnar-family.md` (Outcome);
   `scripts/experiments/mnar_family_run.py`, `mnar_family_report.py`, `run_mnar_family_queue.sh`;
   `datasets/generate_mnar.py`.

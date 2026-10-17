@@ -177,7 +177,9 @@ def dial() -> None:
         if effect is not None:
             means[slope] = common.verdict(effect).mean
         line("(K - H), minus MCAR's", minus(gaps(g, "K", "H"), gaps(control, "K", "H")))
+        line("Mx column-wise - G/H", t2(mx, g))
         line("t2, (Mx column-wise - G/H), minus MCAR's", minus(t2(mx, g), t2(control_mx, control)))
+    line(f"MCAR control ({DIAL_MCAR}): Mx column-wise - G/H", t2(control_mx, control))
     if len(means) == 4:
         ordered = [means[s] for s in sorted(means)]
         monotone = all(a < b for a, b in zip(ordered, ordered[1:]))
