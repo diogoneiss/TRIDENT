@@ -292,6 +292,60 @@ def test_missforest_stays_outside_the_bar_and_gets_a_gap_of_its_own() -> None:
     assert not any("gap_to_missforest_lgbm" in key for key in summary.metrics)
 
 
+def test_the_strong_tier_stays_outside_the_bar_and_gets_a_best_and_a_gap_of_its_own() -> None:
+    """ADR 0021: missForest and the linear arms form the strong tier. The bar (the weak tier) is
+    chosen without them, however low they score, and the strong tier logs its own best, chosen
+    the same way, with the model's paired gap to it.
+
+    Worked by hand: condexp 0.5 and 0.7 (mean 0.6) beats missforest (0.7) and the bar's lgbm
+    (0.85); the model's 0.9 and 0.7 give a gap to condexp of 0.4 and 0.0 (mean 0.2, 100 * 0.2 / 0.6
+    = 33.3% of its mean)."""
+    folds = {
+        1: {
+            "impute/masked/impute_score": 0.9,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/lgbm/impute_score": 0.85,
+            "impute/masked/baseline/missforest/impute_score": 0.6,
+            "impute/masked/baseline/condexp/impute_score": 0.5,
+            "impute/masked/baseline/softimpute/impute_score": 0.95,
+            "impute/masked/baseline/ice/impute_score": 0.9,
+        },
+        2: {
+            "impute/masked/impute_score": 0.7,
+            "impute/masked/baseline/mean_mode/impute_score": 1.0,
+            "impute/masked/baseline/lgbm/impute_score": 0.85,
+            "impute/masked/baseline/missforest/impute_score": 0.8,
+            "impute/masked/baseline/condexp/impute_score": 0.7,
+            "impute/masked/baseline/softimpute/impute_score": 0.95,
+            "impute/masked/baseline/ice/impute_score": 0.9,
+        },
+    }
+
+    summary = summarize_cross_validation([_record(fold, metrics) for fold, metrics in folds.items()], IMPUTATION)
+
+    assert summary.best_baselines == {"impute/masked": "lgbm"}
+    assert summary.best_strong_baselines == {"impute/masked": "condexp"}
+    assert summary.metrics["impute/masked/baseline/best/impute_score"].mean == pytest.approx(0.85)
+    assert summary.metrics["impute/masked/baseline/best_strong/impute_score"].mean == pytest.approx(0.6)
+    gap = summary.metrics["impute/masked/gap_to_best_strong_baseline/impute_score"]
+    assert (gap.mean, gap.minimum, gap.maximum) == (pytest.approx(0.2), pytest.approx(0.0), pytest.approx(0.4))
+    assert summary.metrics["impute/masked/gap_to_best_strong_baseline_pct/impute_score"].mean == pytest.approx(100 * 0.2 / 0.6)
+    assert summary.metrics["impute/masked/gap_to_best_baseline/impute_score"].mean == pytest.approx(-0.05)
+    assert "impute/masked/gap_to_missforest/impute_score" in summary.metrics
+
+
+def test_a_run_with_no_strong_baseline_logs_no_strong_tier() -> None:
+    """Runs before ADR 0021 that never logged missForest or the arms carry no strong tier."""
+    folds = {
+        fold: {"impute/masked/impute_score": score, "impute/masked/baseline/mean_mode/impute_score": 1.0,
+               "impute/masked/baseline/hgb/impute_score": 0.8}
+        for fold, score in ((1, 0.9), (2, 0.7))
+    }
+    summary = summarize_cross_validation([_record(fold, metrics) for fold, metrics in folds.items()], IMPUTATION)
+    assert summary.best_strong_baselines == {}
+    assert not any("best_strong" in key for key in summary.metrics)
+
+
 def test_a_classification_summary_names_no_best_baseline() -> None:
     """Nothing about baselines appears in a task that has none."""
     records = [

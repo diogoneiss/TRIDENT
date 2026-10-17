@@ -421,6 +421,11 @@ def _log_summary_metrics(summary: CrossValidationSummary) -> None:
         mlflow.set_tags(
             {f"best_baseline/{population}": name for population, name in summary.best_baselines.items()}
         )
+    # And which baseline the strong tier's ``baseline/best_strong`` belongs to (ADR 0021).
+    if summary.best_strong_baselines:
+        mlflow.set_tags(
+            {f"best_strong_baseline/{population}": name for population, name in summary.best_strong_baselines.items()}
+        )
 
     events.extend(
         LoggedMetric(key, value, None)

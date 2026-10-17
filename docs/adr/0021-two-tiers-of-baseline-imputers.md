@@ -4,8 +4,20 @@
 
 The design was accepted on 2026-10-16, as the user's own proposal, in reply to option C of the
 [plan](../plans/2026-10-17-experiment-improvements.md) (§2b): "fazer isso duas vezes, uma com
-baselines fracos (existente) e outra com os novos fortes". The implementation is pending: the
-live `linear` family, the summary keys and the backfill. It extends ADRs 0007, 0016 and 0017.
+baselines fracos (existente) e outra com os novos fortes". It extends ADRs 0007, 0016 and 0017.
+
+**Implemented on 2026-10-17, at the user's request** ("faça a implementação"), on the branch
+`feat/adr-0021-strong-tier`. It is merged only once no study is live, because every queued cell
+imports the checkout.
+
+**Tests and checks:**
+
+- the unit suite (392 tests, mypy included) and both integration fixtures pass;
+- a live kc2_60nan cell at seed 404 equals E40's on all 47 shared columns;
+- its linear arms equal E41's offline CSV within 4.4e-16.
+
+**Pending:** the backfill (`scripts/backfill_strong_tier.py`, dry run by default). It writes the
+store, so it waits for the user's go.
 
 ## Context
 

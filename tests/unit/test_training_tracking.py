@@ -340,6 +340,7 @@ def test_finalize_cross_validation_tags_the_parent_with_each_populations_best_ba
         summary = replace(
             summarize_cross_validation(records),
             best_baselines={"impute/induced": "hgb", "impute/masked": "knn10"},
+            best_strong_baselines={"impute/induced": "missforest", "impute/masked": "condexp"},
         )
         active_tracker.finalize_cross_validation(
             records, summary, _dataset(tmp_path), _artifact_paths(tmp_path)
@@ -349,6 +350,8 @@ def test_finalize_cross_validation_tags_the_parent_with_each_populations_best_ba
     parent = next(run for run in _experiment_runs(client) if "mlflow.parentRunId" not in run.data.tags)
     assert parent.data.tags["best_baseline/impute/induced"] == "hgb"
     assert parent.data.tags["best_baseline/impute/masked"] == "knn10"
+    assert parent.data.tags["best_strong_baseline/impute/induced"] == "missforest"
+    assert parent.data.tags["best_strong_baseline/impute/masked"] == "condexp"
 
 
 def test_finalize_cross_validation_replays_one_diagnostic_child_for_a_tie(
