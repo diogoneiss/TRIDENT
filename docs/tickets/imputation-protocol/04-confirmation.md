@@ -136,3 +136,10 @@ primary waits for E42's tuned bar on these folds.
 - **The reading's thresholds (8, 2, 5, 4) were set before any confirmation cell ran.** At 80nan on
   the development set the model sits near the mean/mode fill, so the 6 80nan variants make
   "supported" harder.
+
+## Launch (2026-10-17, 01:51 GMT-3)
+
+- **Queues:** the four queues started at 01:51:39 GMT-3 on `4273cf6`, with no uncommitted source
+  change. E43 had finished at 01:50, and its outcome was read only after this launch.
+- **Warm-up:** finished for all 15 variants by 01:35 GMT-3.
+- **The deployable readout named by E43** (read after launch, 02:00 GMT-3) is H.

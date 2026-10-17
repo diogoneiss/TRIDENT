@@ -69,7 +69,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – 2026-10-17 | done | condexp beats the weak bar on 2–4 variants per seed set (spambase_60nan and credit-g_60nan in all); an arm beats K only on credit-g_80nan; the kc2_20nan flip does not hold; K vs the strong tier 13/7/1 on 101/202/303 (16/3/2 vs the weak bar) |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
-| E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
+| E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 – | in progress | 45 cells, seeds 707/808/909, read once |
 
 ## Entries
@@ -1355,10 +1355,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     changes are listed.
 - **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md`; plan §2c.
 
-### E43 · A deployable decode checkpoint (2026-10-16 – )
+### E43 · A deployable decode checkpoint (2026-10-16 – 2026-10-17)
 
-- **Status:** in progress. Pre-registered with its code on 2026-10-16 at 22:58 GMT-3 (`9a7e249`);
-  the queues started at 22:58:11 GMT-3.
+- **Status:** done. Pre-registered with its code on 2026-10-16 at 22:58 GMT-3 (`9a7e249`). All 27
+  cells ran from 22:58 GMT-3 on 2026-10-16 to 01:50 GMT-3 on 2026-10-17; none failed.
 - **Hypothesis:** K (ADR 0015) uses the validation gaps' truth, which a deployed model never has.
   Its 80nan wins over the mean/mode fill exist only under it (E34/E35: 0 of 3 under H, 2 of 3
   under K). A criterion that needs no gap truth, M (the fixed validation mask's `impute_score`),
@@ -1382,7 +1382,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     3. otherwise H, and the 80nan wins are labelled oracle-only.
 
     The default stays K.
-- **Sources:** `docs/tickets/imputation-protocol/03-deployable-checkpoint.md`;
+- **Results:**
+  - M − H: H better on kr-vs-kp_60nan, none on 8.
+  - M − K: K better on 4 (kr-vs-kp_60nan, kr-vs-kp_80nan, credit-g_60nan, biodeg_60nan).
+  - On the five numerical tables M equals H exactly. The mean squared error on the validation
+    mask and M's RMSE ratio rank epochs the same way.
+  - At 80nan, K beats the bar on kr-vs-kp and spambase; H and M on none.
+  - K − H: K better on 3, worse on none (ADR 0015, a third seed set).
+  - KC − K: KC better on 6 of 9, E40's named six (T20, a fourth seed set).
+- **Conclusion:** reading 3. H is the deployable headline for claims that must transfer, and the
+  80nan wins over the mean/mode fill are oracle-only. The default stays K.
+- **Sources:** `docs/tickets/imputation-protocol/03-deployable-checkpoint.md` (Outcome);
   `scripts/experiments/checkpoint_run.py`, `checkpoint_report.py`, `run_checkpoint_queue.sh`.
 
 ### E44 · Confirmation on the 15 unused variants (2026-10-17 – )

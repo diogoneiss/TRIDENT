@@ -143,3 +143,66 @@ The imputation default stays K in every case. Changing it would need its own dec
   never the hidden ones.
 - **Within-run pairs give narrow intervals,** so a small effect can earn a verdict.
 - **Multiplicity:** 2 primary contrasts on 9 variants, with the seed-agreement rule.
+
+## Outcome (2026-10-17, 02:00 GMT-3)
+
+**Run.** All 27 cells ran from 22:58 GMT-3 on 2026-10-16 to 01:50 GMT-3 on 2026-10-17 (2 h 52 min
+against about 1.9 h planned). The CPU was shared with E41, E42 and the warm-up. None failed and
+none is missing.
+
+**Table.** From `scripts/experiments/checkpoint_report.py`. Induced `impute_score`, 15
+within-run fold pairs, lower is better; the bar is the best of the bar's baselines in the run's
+fold CSV.
+
+| variant | K | H | M | KC | bar | M − H | M − K | K − H | KC − K |
+|---|---|---|---|---|---|---|---|---|---|
+| kr-vs-kp_60nan | 0.8646 | 0.8701 | 0.8868 | 0.8630 | 0.9049 | +0.0168, H better | +0.0222, K better | none | none |
+| kr-vs-kp_80nan | 0.9806 | 0.9992 | 1.0139 | 0.9696 | 1.0000 | none | +0.0332, K better | −0.0185, K better | −0.0110, KC better |
+| spambase_60nan | 0.9405 | 0.9447 | 0.9447 | 0.9379 | 0.9829 | 0 (identical) | none | none | −0.0026, KC better |
+| spambase_80nan | 0.9852 | 0.9941 | 0.9941 | 0.9791 | 1.0000 | 0 (identical) | none | none | −0.0061, KC better |
+| credit-g_60nan | 0.9905 | 1.0109 | 1.0081 | 0.9828 | 1.0000 | none | +0.0175, K better | −0.0204, K better | −0.0077, KC better |
+| credit-g_80nan | 1.0121 | 1.0161 | 1.0200 | 1.0072 | 1.0000 | none | none | none | −0.0049, KC better |
+| vehicle_60nan | 0.6434 | 0.6489 | 0.6489 | 0.6352 | 0.7020 | 0 (identical) | none | none | −0.0082, KC better |
+| biodeg_60nan | 0.7619 | 0.7722 | 0.7722 | 0.7600 | 0.8612 | 0 (identical) | +0.0104, K better | −0.0104, K better | none |
+| kc2_60nan | 0.5754 | 0.5835 | 0.5835 | 0.5725 | 0.7181 | 0 (identical) | none | none | none |
+
+**Reading, by the rule fixed in advance: 3, otherwise.**
+
+- K is better than M on 4 of the 9 variants (kr-vs-kp_60nan, kr-vs-kp_80nan, credit-g_60nan,
+  biodeg_60nan).
+- M is better than H on none of the 80nan variants, and worse on kr-vs-kp_60nan.
+
+So **H is the deployable headline,** and "beats the mean/mode fill at 80nan" is labelled
+oracle-only: at 80nan, K is better than the bar on kr-vs-kp and spambase, while H and M are better
+on none. The imputation default stays K.
+
+**Why M adds nothing over H on numerical tables.**
+
+- **The mechanism:** on a table with only numerical columns, the decode loss is the mean squared
+  error on the fixed validation mask, and M's score is that error's RMSE over a constant. Both
+  rank the epochs the same way, and both keep the first best epoch, so M keeps H's epoch exactly
+  (spambase, vehicle, biodeg, kc2: identical scores and epochs).
+- **Where M can differ:** only where categorical columns enter, since there the loss is
+  cross-entropy and M counts errors.
+- **Where it differed, it chose later epochs and did worse:** kr-vs-kp_60nan, epoch 133 against
+  88.
+
+This explains the result rather than refuting the criterion's design.
+
+**Secondary:**
+
+- **ADR 0015 on a third seed set:** K − H is "K better" on 3 of 9 (kr-vs-kp_80nan,
+  credit-g_60nan, biodeg_60nan) and worse on none.
+- **The calibration (T20) on a fourth seed set:** KC − K is "KC better" on 6 of 9, exactly E40's
+  six named variants, and worse on none.
+- **Context for KC:** KC is oracle-fitted too, so it does not help the deployability question
+  (D10).
+
+**Consequences:**
+
+- **ADR 0015's Consequences gain a line,** without changing the default: transfer claims use H; K
+  is the oracle bound.
+- **E44** reports H as its deployable readout, as its ticket says, with M kept as descriptive.
+- **A deployable criterion that improves on H** would need a signal other than the observed
+  validation cells: a held-out share of the gaps cannot exist without truth, so for instance an
+  ensemble or a smoothed stopping rule. It is not planned.
