@@ -144,7 +144,7 @@ primary waits for E42's tuned bar on these folds.
 - **Warm-up:** finished for all 15 variants by 01:35 GMT-3.
 - **The deployable readout named by E43** (read after launch, 02:00 GMT-3) is H.
 
-## Outcome (2026-10-17, 10:40 GMT-3)
+## Outcome (2026-10-17, 10:25 GMT-3)
 
 **Run.** All 45 cells ran from 01:51 to 10:24 GMT-3 (8 h 33 min against about 8.2 h planned).
 None failed and none is missing.

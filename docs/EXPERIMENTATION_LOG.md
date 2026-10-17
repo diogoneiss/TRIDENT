@@ -71,7 +71,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
-| E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 – | in progress | 36 cells after E44: G (H read) and Mx (column-wise) on biodeg/kc2/vehicle, MNAR and MCAR 60nan, seeds 42/7/13 |
+| E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
 
 ## Entries
 
@@ -1439,10 +1439,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md` (Outcome);
   `scripts/experiments/confirmation_run.py`, `confirmation_report.py`, `run_confirmation_queue.sh`.
 
-### E45 · MNAR smoke family (2026-10-17 – )
+### E45 · MNAR smoke family (2026-10-17)
 
-- **Status:** in progress. Pre-registered before the first cell; it runs after E44 on the same
-  queues, with a cutoff of 12:00 GMT-3.
+- **Status:** done. Pre-registered before the first cell; it ran after E44 on the same queues,
+  from 10:24 to 11:29 GMT-3, before the 12:00 GMT-3 cutoff.
 - **Hypothesis:** this is a smoke test of the MNAR machinery, read descriptively. Does the model's
   lead over the bar survive value-dependent missingness? And does the untied `[NULL]`/`[MASK]` arm
   gain under MNAR (t2's positive control)?
@@ -1460,6 +1460,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     All fold-paired, with the verdict rule. Signed bias offline.
   - **Rule:** descriptive. Go for the full family if all cells finish and the integrity check
     holds.
-- **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md`;
+- **Results:** 36 of 36 cells; G on MCAR equals E35 on all 9 cells (largest difference 0).
+  - **Reading: go for the full family.**
+  - **G's H against the bar under MNAR:** better on all three tables (biodeg −0.017, kc2 −0.116,
+    vehicle −0.040). Against missForest: worse on biodeg (+0.020), no difference on kc2 and
+    vehicle.
+  - **The mechanism effect** ((H − bar), MNAR minus MCAR): worse on biodeg (+0.081), no verdict on
+    kc2 and vehicle.
+  - **The oracle's optimism** (K − H, MNAR minus MCAR): no verdict on any table.
+  - **t2:** Mx column-wise is worse than G's H under both mechanisms on biodeg and vehicle; its
+    deficit shrinks under MNAR on biodeg only (−0.011).
+- **Conclusion:** the machinery works and the lead survives value-dependent missingness on these
+  three tables; biodeg is where MNAR costs the model, so it is the table for the tilt dial. The
+  signed bias per column is pending (offline).
+- **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md` (Outcome);
   `scripts/experiments/mnar_smoke_run.py`, `mnar_smoke_report.py`, `run_mnar_smoke_queue.sh`;
   `datasets/generate_mnar.py`.
