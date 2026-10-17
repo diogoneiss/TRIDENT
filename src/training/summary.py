@@ -67,8 +67,11 @@ def summarize_cross_validation(
         for key in metric_keys
     }
     best_baselines = _best_baselines(metrics)
+    best_strong = _best_strong_baselines(metrics)
     metrics.update(_best_baseline_copies(metrics, best_baselines))
+    metrics.update(_best_baseline_copies(metrics, best_strong, BEST_STRONG_BASELINE))
     metrics.update(best_baseline_gaps(final_metrics, best_baselines))
+    metrics.update(best_strong_baseline_gaps(final_metrics, best_strong))
     metrics.update(external_baseline_gaps(final_metrics))
     loss_bands = _summarize_loss_bands(records, task)
     return CrossValidationSummary(
@@ -77,19 +80,27 @@ def summarize_cross_validation(
         diagnostic_roles=_diagnostic_roles(records, task),
         timings=_summarize_timings(records),
         best_baselines=best_baselines,
+        best_strong_baselines=best_strong,
     )
 
 
-# The name the best baseline's copied statistics are logged under (ADR 0007).
+# The name the best baseline's copied statistics are logged under (ADR 0007), and the strong
+# tier's (ADR 0021).
 BEST_BASELINE = "best"
+BEST_STRONG_BASELINE = "best_strong"
 _BASELINE_SCORE = re.compile(r"(.+)/baseline/([^/]+)/impute_score")
 # Baselines logged and compared on their own, never part of the bar (ADR 0017): missForest
 # would set it on most variants. Each gets a gap of its own, ``gap_to_<name>``.
 EXTERNAL_BASELINES = ("missforest",)
+# The strong tier (ADR 0021): missForest and the linear and low-rank arms, logged with a best
+# and a gap of their own. The bar is the weak tier, every other logged baseline.
+STRONG_BASELINES = ("missforest", "condexp", "softimpute", "ice")
 # Withdrawn by ADR 0017; runs backfilled before it still carry its numbers, which no bar
 # and no gap reads.
 WITHDRAWN_BASELINES = ("missforest_lgbm",)
-OUTSIDE_THE_BAR = frozenset((BEST_BASELINE, *EXTERNAL_BASELINES, *WITHDRAWN_BASELINES))
+OUTSIDE_THE_BAR = frozenset(
+    (BEST_BASELINE, BEST_STRONG_BASELINE, *EXTERNAL_BASELINES, *STRONG_BASELINES, *WITHDRAWN_BASELINES)
+)
 
 
 def _best_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
@@ -108,8 +119,20 @@ def _best_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
     return {population: min(entries)[1] for population, entries in sorted(scores.items())}
 
 
+def _best_strong_baselines(metrics: Mapping[str, MetricSummary]) -> dict[str, str]:
+    """Per population, the strong tier's baseline with the lowest mean ``impute_score``, chosen
+    as the bar's is (ADR 0021); none where the run logged no strong baseline."""
+    scores: dict[str, list[tuple[float, str]]] = {}
+    for key, statistics in metrics.items():
+        match = _BASELINE_SCORE.fullmatch(key)
+        if match is None or match.group(2) not in STRONG_BASELINES:
+            continue
+        scores.setdefault(match.group(1), []).append((float(statistics.mean), match.group(2)))
+    return {population: min(entries)[1] for population, entries in sorted(scores.items())}
+
+
 def _best_baseline_copies(
-    metrics: Mapping[str, MetricSummary], best_baselines: Mapping[str, str]
+    metrics: Mapping[str, MetricSummary], best_baselines: Mapping[str, str], under: str = BEST_BASELINE
 ) -> dict[str, MetricSummary]:
     """Every metric of each population's best baseline again, under ``baseline/best``.
 
@@ -122,7 +145,7 @@ def _best_baseline_copies(
         for key, statistics in metrics.items():
             metric = key[len(prefix):]
             if key.startswith(prefix) and "/" not in metric:
-                copies[f"{population}/baseline/{BEST_BASELINE}/{metric}"] = statistics
+                copies[f"{population}/baseline/{under}/{metric}"] = statistics
     return copies
 
 
@@ -130,6 +153,8 @@ def _best_baseline_copies(
 # metrics rather than under ``baseline/``, where it would read as a baseline's name.
 GAP_TO_BEST_BASELINE = "gap_to_best_baseline"
 GAP_TO_BEST_BASELINE_PCT = "gap_to_best_baseline_pct"
+GAP_TO_BEST_STRONG_BASELINE = "gap_to_best_strong_baseline"
+GAP_TO_BEST_STRONG_BASELINE_PCT = "gap_to_best_strong_baseline_pct"
 
 
 def best_baseline_gaps(
@@ -146,6 +171,13 @@ def best_baseline_gaps(
     2.1% apart in the model's favour. A bar whose mean is 0 leaves no percentage to take.
     """
     return _paired_gaps(fold_metrics, best_baselines, GAP_TO_BEST_BASELINE, GAP_TO_BEST_BASELINE_PCT)
+
+
+def best_strong_baseline_gaps(
+    fold_metrics: Sequence[Mapping[str, float | int | str]], best_strong: Mapping[str, str]
+) -> dict[str, MetricSummary]:
+    """Per population, the model's gap to the strong tier's best (ADR 0021), as the gap to the bar."""
+    return _paired_gaps(fold_metrics, best_strong, GAP_TO_BEST_STRONG_BASELINE, GAP_TO_BEST_STRONG_BASELINE_PCT)
 
 
 def external_baseline_gaps(fold_metrics: Sequence[Mapping[str, float | int | str]]) -> dict[str, MetricSummary]:

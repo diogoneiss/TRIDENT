@@ -9,6 +9,9 @@ iterated LightGBM learner (`missforest_lgbm`) is withdrawn; a single-pass LightG
 the `hgb` recipe with LightGBM, joins the bar. ADR 0007's protocol, best baseline and gap
 are otherwise unchanged.
 
+**Amended 2026-10-17 by [ADR 0021](0021-two-tiers-of-baseline-imputers.md).** missForest also
+belongs to the strong tier, with the linear arms. The bar and `gap_to_missforest` are unchanged.
+
 ## Context
 
 ADR 0016's backfill made missForest the bar on 11 of 21 variants of today's default (E35)

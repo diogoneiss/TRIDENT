@@ -41,11 +41,10 @@ ROOT = Path.cwd()
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.training.summary import OUTSIDE_THE_BAR, WITHDRAWN_BASELINES  # noqa: E402
+from src.training.summary import OUTSIDE_THE_BAR, STRONG_BASELINES, WITHDRAWN_BASELINES  # noqa: E402
 
-# The strong tier of baselines (plan §2b, the user's design of 2026-10-16): missForest and E41's
-# arms. The weak tier is the bar.
-STRONG = ("missforest", "condexp", "softimpute", "ice")
+# The strong tier of baselines (ADR 0021): missForest and E41's arms. The weak tier is the bar.
+STRONG = STRONG_BASELINES
 # Every other baseline a frame can carry, classified so that none slips into the bar unread:
 # the live bar's members (checked only as known names; the bar itself is "not outside"), E41's
 # diagnostic arm, and E42's tuned families with their bar.
@@ -154,7 +153,7 @@ def opponent(frame: pd.DataFrame, which: str, population: str = "induced") -> tu
     if which == "best_of_all":
         return _best(
             frame,
-            [n for n in names if n not in WITHDRAWN_BASELINES and n != "best" and n not in DIAGNOSTIC and not _TUNED.search(n)],
+            [n for n in names if n not in WITHDRAWN_BASELINES and n not in ("best", "best_strong") and n not in DIAGNOSTIC and not _TUNED.search(n)],
             population,
         )
     if which == "per_type":

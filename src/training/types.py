@@ -492,6 +492,8 @@ class CrossValidationSummary:
     # Per scored population (``impute/induced``), the baseline imputer whose mean
     # ``impute_score`` over the folds was lowest (ADR 0007). Empty for classification.
     best_baselines: Mapping[str, str] = field(default_factory=dict)
+    # The same for the strong tier (ADR 0021): missForest and the linear arms.
+    best_strong_baselines: Mapping[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)

@@ -55,7 +55,7 @@ from mlflow.tracking import MlflowClient  # noqa: E402
 
 import scripts.backfill_baseline_imputers as adr0007  # noqa: E402
 from src.mlflow_utils import LGBM_BACKFILLED_TAG, setup_mlflow  # noqa: E402
-from src.training.baseline_cache import FAMILIES, BaselineScorer  # noqa: E402
+from src.training.baseline_cache import BaselineScorer  # noqa: E402
 from src.training.mirroring import MirrorIndex, mirror_run_tree  # noqa: E402
 from src.training.summary import (  # noqa: E402
     EXTERNAL_BASELINES,
@@ -76,6 +76,9 @@ _CHECKED = frozenset({"mean_mode"})
 # ADR 0016 logged missForest from forests that predicted on several threads, whose sums
 # depend on the order the trees finish (a CV mean 1.4e-4 off on kr-vs-kp_60nan, seed 7).
 # The single-threaded recomputation replaces the logged numbers wherever they differ.
+# The families this ADR 0017 backfill recomputed; ADR 0021's linear family came later and has its
+# own backfill.
+_ITS_FAMILIES = ("adr0007", "lgbm", "missforest")
 _CORRECTED = EXTERNAL_BASELINES
 _BEST_TAG = "best_baseline/"
 _NAMES = "|".join(EXTERNAL_BASELINES)
@@ -251,7 +254,7 @@ def _scorer(cache_dir: Path | None) -> adr0007.FoldScorerFactory:
     """Every family of baselines a live run scores, from the cache a live run reads."""
 
     def make(train: pd.DataFrame, numerical: Sequence[str], categorical: Sequence[str]) -> adr0007.FoldScorer:
-        scorer = BaselineScorer(train, numerical, categorical, cache_dir, families=FAMILIES)
+        scorer = BaselineScorer(train, numerical, categorical, cache_dir, families=_ITS_FAMILIES)
 
         def score(test: pd.DataFrame, cells: pd.DataFrame, fills: Mapping[str, float | str]) -> Mapping[str, float]:
             return scorer.score(test, cells, fills).metrics

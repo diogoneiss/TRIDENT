@@ -145,6 +145,13 @@ to it as `gap_to_missforest`. The withdrawn `missforest_lgbm`, still on runs bac
 2026-10-06, is neither in the bar nor compared.
 _Avoid_: strong baseline, state-of-the-art bar
 
+**Strong tier**:
+missForest together with the linear and low-rank baselines (condexp, SoftImpute, ICE), logged on
+every run beside the bar, which is the weak tier, with a best of its own (`baseline/best_strong`,
+tag `best_strong_baseline/<population>`) and the model's paired gap to it
+(`gap_to_best_strong_baseline`). Never part of the bar (ADR 0021).
+_Avoid_: strong bar, second bar
+
 **Gap to the bar**:
 The model's score minus the baseline bar, fold by fold on the same folds; negative
 where the model beats the bar. Also read in percent of the bar's mean, which puts

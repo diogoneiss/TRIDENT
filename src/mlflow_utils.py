@@ -127,6 +127,9 @@ MISSFOREST_BACKFILLED_TAG = "missforest_backfilled"
 # ``lgbm`` and the gap to missForest written, the best baseline chosen again without
 # missForest. Sparse, like the tags above.
 LGBM_BACKFILLED_TAG = "lgbm_backfilled"
+# ADR 0021: the strong tier (the linear arms, ``baseline/best_strong`` and its gap), written onto
+# runs recorded before it by ``scripts/backfill_strong_tier.py``.
+STRONG_TIER_BACKFILLED_TAG = "strong_tier_backfilled"
 
 
 def parse_missingness_percent(dataset_name: str) -> str:

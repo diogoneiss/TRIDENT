@@ -13,11 +13,12 @@ import pandas as pd
 import pandas.testing as pdt
 import pytest
 
-from src.training import baseline_cache, imputation_baselines, lightgbm_baseline, missforest
+from src.training import baseline_cache, imputation_baselines, lightgbm_baseline, linear_baselines, missforest
 from src.training.baseline_cache import BaselineScorer
 from src.training.imputation_baselines import fit_baseline_imputers, score_baselines
 from src.training.imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_baselines
 from src.training.lightgbm_baseline import fit_lightgbm_imputers
+from src.training.linear_baselines import fit_linear_imputers
 from src.training.missforest import fit_missforest_imputers
 
 NUMERICAL_COLUMNS = ["size", "weight"]
@@ -50,6 +51,7 @@ def _direct(train: pd.DataFrame, test: pd.DataFrame, cells: pd.DataFrame):
         *fit_baseline_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
         *fit_lightgbm_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
         *fit_missforest_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
+        *fit_linear_imputers(train, NUMERICAL_COLUMNS, CATEGORICAL_COLUMNS),
     ]
     return score_baselines(imputers, test, cells, baselines)
 
@@ -76,10 +78,11 @@ def test_a_cached_score_is_exactly_the_computed_one(tmp_path) -> None:
     second = _scorer(train, tmp_path)
     cached = second.score(test, cells, baselines)
 
-    # One lookup per family of baselines: ADR 0007's four, lgbm, and missForest.
-    assert (first.hits, second.hits) == (0, 3)
+    # One lookup per family of baselines: ADR 0007's four, lgbm, missForest, and ADR 0021's
+    # linear arms.
+    assert (first.hits, second.hits) == (0, 4)
     assert [key.split("/")[1] for key in expected.metrics if key.endswith("/impute_score")] == [
-        "mean_mode", "knn5", "knn10", "hgb", "lgbm", "missforest",
+        "mean_mode", "knn5", "knn10", "hgb", "lgbm", "missforest", "condexp", "softimpute", "ice",
     ]
     for scores in (computed, cached):
         assert scores.metrics.keys() == expected.metrics.keys()
@@ -111,7 +114,7 @@ def test_anything_that_changes_the_computation_misses(tmp_path) -> None:
         baseline_cache.socket.gethostname = original
 
     assert hits == [0, 0, 0]
-    assert _hits(train, tmp_path, test, cells, baselines) == 3
+    assert _hits(train, tmp_path, test, cells, baselines) == 4
 
 
 def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
@@ -123,7 +126,7 @@ def test_the_model_s_own_guesses_are_not_part_of_the_key(tmp_path) -> None:
 
     other_guesses = cells.assign(imputed=cells["imputed"].map(lambda v: 1.0 if isinstance(v, float) else "blue"))
 
-    assert _hits(train, tmp_path, test, other_guesses, baselines) == 3
+    assert _hits(train, tmp_path, test, other_guesses, baselines) == 4
 
 
 def _edited(module, tmp_path: Path, monkeypatch, name: str) -> None:
@@ -133,11 +136,19 @@ def _edited(module, tmp_path: Path, monkeypatch, name: str) -> None:
     monkeypatch.setattr(module, "__file__", str(edited))
 
 
-@pytest.mark.parametrize(("module", "name"), [(missforest, "missforest.py"), (lightgbm_baseline, "lightgbm_baseline.py")])
-def test_editing_one_family_leaves_the_other_families_cached(tmp_path, monkeypatch, module, name) -> None:
+@pytest.mark.parametrize(
+    ("module", "name", "kept"),
+    [
+        # ICE subclasses missForest, so editing missForest misses the linear family too.
+        (missforest, "missforest.py", 2),
+        (lightgbm_baseline, "lightgbm_baseline.py", 3),
+        (linear_baselines, "linear_baselines.py", 3),
+    ],
+)
+def test_editing_one_family_leaves_the_other_families_cached(tmp_path, monkeypatch, module, name, kept) -> None:
     """Each family is keyed on the source of the modules its numbers come from. Changing
-    missForest (ADR 0017 did) or lgbm must not throw away the other families' entries,
-    the ADR 0007 KNN transforms among them: up to a minute per population on electricity."""
+    missForest (ADR 0017 did), lgbm or the linear arms must not throw away the other families'
+    entries, the ADR 0007 KNN transforms among them: up to a minute per population on electricity."""
     cache = tmp_path / "cache"
     train, test = _frame(60), _frame(30, offset=60)
     cells = _cells(test)
@@ -146,7 +157,7 @@ def test_editing_one_family_leaves_the_other_families_cached(tmp_path, monkeypat
 
     _edited(module, tmp_path, monkeypatch, name)
 
-    assert _hits(train, cache, test, cells, baselines) == 2
+    assert _hits(train, cache, test, cells, baselines) == kept
 
 
 def test_editing_the_earlier_baselines_misses_every_family(tmp_path, monkeypatch) -> None:

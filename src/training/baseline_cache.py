@@ -33,10 +33,11 @@ from typing import Callable, Collection, Mapping, Sequence
 import numpy as np
 import pandas as pd
 
-from . import imputation_baselines, imputation_metrics, lightgbm_baseline, missforest
+from . import imputation_baselines, imputation_metrics, lightgbm_baseline, linear_baselines, missforest
 from .imputation_baselines import BaselineImputer, fit_baseline_imputers, score_baselines
 from .imputation_metrics import ImputationScores
 from .lightgbm_baseline import fit_lightgbm_imputers
+from .linear_baselines import fit_linear_imputers
 from .missforest import fit_missforest_imputers
 
 _PER_COLUMN = ["column", "metric", "value"]
@@ -70,6 +71,9 @@ _FAMILIES = (
         fit_lightgbm_imputers,
     ),
     _Family("missforest", (imputation_baselines, imputation_metrics, missforest), (), fit_missforest_imputers),
+    # ADR 0021's strong tier, beside missForest: condexp, SoftImpute and ICE (ICE subclasses
+    # missForest, so its source is part of the key).
+    _Family("linear", (imputation_baselines, imputation_metrics, missforest, linear_baselines), (), fit_linear_imputers),
 )
 FAMILIES = tuple(family.name for family in _FAMILIES)
 
