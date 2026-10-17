@@ -60,7 +60,7 @@ gives two side readings:
   4, about 70 minutes of wall time.
   - It is launched after E44's last cell.
   - No cell starts after 12:00 GMT-3 on 2026-10-17; unstarted cells are reported missing.
-- **Checked before launch, with `--no-mlflow`, passed (2026-10-17, about 02:20 GMT-3):**
+- **Checked before launch, with `--no-mlflow`, passed (2026-10-17, about 02:00 GMT-3):**
   - **G on vehicle_60nan at seed 42** equals E35's cell fold by fold: K equals E35's
     `induced_checkpoint` and H equals E35's headline, on both populations (largest difference
     0.0).
@@ -94,3 +94,11 @@ through `scripts/experiments/mnar_smoke_report.py --tally`:
 **A known limit, which is why only within-variant comparisons are read:** under MNAR the
 mean/mode denominator comes from the training fold's observed values, which the mechanism biases.
 So `impute_score` is compared across mechanisms only as a difference of within-variant gaps.
+
+## Launch
+
+- **The watcher:** `launch_after_e44.sh` in `/scratch2/diogoneiss/trident-2026-10-17-mnar-smoke/`,
+  started at 02:05 GMT-3. It starts the four queues once E44's four queues have ended, and checks
+  only E44's progress log. The launch time is logged in that directory's `progress.log`.
+- **The cutoff:** E44 should end at about 10:30–11:30 GMT-3, so the 12:00 GMT-3 cutoff may leave
+  some cells unstarted. Those are reported missing, as fixed above.
