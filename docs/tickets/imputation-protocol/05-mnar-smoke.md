@@ -103,7 +103,7 @@ So `impute_score` is compared across mechanisms only as a difference of within-v
 - **The cutoff:** E44 should end at about 10:30–11:30 GMT-3, so the 12:00 GMT-3 cutoff may leave
   some cells unstarted. Those are reported missing, as fixed above.
 
-## Outcome (2026-10-17, 12:35 GMT-3)
+## Outcome (2026-10-17, 12:24 GMT-3)
 
 **Run.** The four queues started at 10:24 GMT-3, after E44's last cell, on 4915515, and ended
 between 11:25 and 11:29 GMT-3 (about 65 minutes against about 70 planned). All 36 cells finished
