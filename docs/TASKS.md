@@ -11,11 +11,22 @@ Created 2026-09-30 from the proposals after studies 04 and 05 (E27, E28).
 
 ## Waiting on a decision
 
-Nothing waits on a decision. T00 was decided on 2026-10-01: the imputation default is now M, as recorded in [ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md).
+T21 to T27 come from [plans/2026-10-17-experiment-improvements.md](plans/2026-10-17-experiment-improvements.md),
+which turns the 2026-10-16 review into workstreams. **Decided 2026-10-16, about 22:45 GMT-3:** the
+user agreed with every recommendation in its section 7 (D1–D21) and chose path B (E43 first, then
+the full E44). T00 was decided on 2026-10-01: the
+imputation default is now M, as recorded in
+[ADR 0013](adr/0013-imputation-defaults-from-the-confirmatory-study.md).
 
 | ID | Task | Evidence | Status |
 |---|---|---|---|
 | T00 | Make `embedding_normalized` the imputation default, and choose its decode setting (150, 450, 450 with patience 50, or per variant) | E25: never worse than the current objective, better than no pre-training on 3 of 4 variants. E26: with decode 450, never worse than either half. E27: patience 50 keeps the scores on 3 of 4 tables at a fraction of the time, −0.006 on pendigits. E28: batch 1024 pays only on pendigits. **E30 (all 21 variants): M better than A on 9, worse on none; P worse than A on 2, so by the pre-stated rule the recommendation is M** (normalised pre-training + decode 450), at 1.65x A's time | done |
+| T21 | **Reporting** (plan §2a). One shared report helper: the bar from `summary.OUTSIDE_THE_BAR`, K or H chosen by the `decode_checkpoint` tag, verdict tallies against the bar of 5, missForest, the best of six and the per-type bar, a cross-table Wilcoxon with Holm, and the test named beside every count. Then the thesis table on 101/202/303 (primary), 42/7/13 (labelled pre-ADR-0019) and 404/505/606 (E40). Proposed ADR 0020. Subsumes part of T16. | Review finding 1 and threat 5: counts change with the rule and the opponent (19 of 21 by means, 16/3/2 by verdict at today's default); three bar definitions coexist | next (decided: D2, D3, D4 as recommended) |
+| T22 | **New baselines** (plan §2b, E41). condexp, inductive SoftImpute and ICE with the sequential transform, in a new module `src/training/linear_baselines.py`, scored offline on the decoder's cells. The same pass recomputes per-fold lgbm and missForest where the fold CSVs lack them. Then two baseline tiers, all logged (the user's design, 2026-10-16): the bar of 5 stays the weak tier; missForest and the new arms form the strong tier with `baseline/best_strong` and `gap_to_best_strong_baseline`, through a live family and a backfill (proposed ADR 0021). | Review findings 2–3: the probe found them setting the bar on about 7 induced variants by means; a candidate flip on kc2_20nan; the inherited missForest replay is invalid for linear learners | next (decided: D5, D6, D7 as recommended) |
+| T23 | **Fairness** (plan §2c, E42 and E43). An equal, validation-only tuning budget for the baselines, offline (proposed ADR 0022, amending ADR 0007 d5). `DECODE_CHECKPOINT=masked` with H and M readouts under the K default: protected, needs code authorization (proposed ADR 0024, amending ADR 0015). | Threat 1: baselines have no budget, and one hgb recipe moves the bar. Threat 3: K uses the validation gaps' truth; at 80nan the model beats the mean/mode fill on 0 of 3 variants under H and on 2 of 3 under K | in progress (decided: D8, D9, D10 as recommended; E43 first) |
+| T24 | **Metrics** (plan §2d). The per-kind panel and the per-type bar (items 7 and 7b): balanced accuracy, signed bias and per-column ratios, computed offline from the fold CSVs, the server's fold ledgers (all five folds are kept) and a recompute for the baselines' fills. No `score_cells` change for now (proposed ADRs 0023 and 0025). | Threat 4: against missForest the verdicts go from 14/6/1 to 9/6/6 when MAE replaces RMSE; heavy tails decide kc2 and biodeg | next (decided: D1, D16 as recommended) |
+| T25 | **Confirmation** (plan §2e, E44). The frozen post-E40 configuration on the 15 variants no decision used, on seeds 707/808/909, with the H, M and KC readouts. 45 cells, about 8–9 h on 4 queues. Proposed ADR 0026 (the confirmation protocol and its splits). | Threat 2: every default was chosen on the same 21 variants and one MCAR draw each; 14 variants on disk have no imputation run, and electricity_40nan has 2 failed ones | next (decided: D11–D15, D17 as recommended) |
+| T26 | **MNAR** (plan §2f, E45). A smoke family with probit value-dependent missingness on biodeg, kc2 and vehicle at 60nan, arms G and Mx with MCAR controls (36 cells), and the t2 readout (the MCAR half from E31–E36, the MNAR half from E45). | Review items 8–9; todos t2, t5 and t7 | backlog (decided: D18 as recommended) |
 
 ## Next up, in the recommended order
 
@@ -169,9 +180,22 @@ three seed sets and what adopting it takes are in
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
   T02–T03 fall short.
 
+### Later baselines and classification (plan 2026-10-17)
+
+- **T27 · MaCoDE, TabPFN v2 and classification step zero** (plan §2g; review items 10–12).
+  - MaCoDE vendored behind an inductive wrapper, with its bins bug fixed first: 10–14 h of code,
+    3–5 GPU-h off-store.
+  - A column-wise TabPFN v2 in a separate venv pinned to `ModelVersion.V2`: 5–8 h of code and
+    6–10 GPU-h.
+  - Classification step zero: a native-NaN GBDT bar, impute-plus-indicator arms and an
+    `EPOCHS_PRE=0` arm, with `--cv_folds 10`.
+
+  In GPU gaps only, after T21–T25; D21 is decided after E44.
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
+  T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
   study 04's finalisation crash before 37 minutes of GPU time.
 
