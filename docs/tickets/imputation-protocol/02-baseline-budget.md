@@ -103,3 +103,19 @@ project's verdict rule:
   with the lowest CV mean on the run, as ADR 0007 decision 8 chooses the bar.
 - **The confirmation reads it.** `scripts/experiments/confirmation_report.py` (E44) reads these
   columns.
+
+## Note 2026-10-16, about 23:45 GMT-3: the driver, and two passes instead of one
+
+- **The driver landed:** `scripts/experiments/baseline_budget_run.py`, with the imputers in
+  `src/training/tuned_baselines.py`.
+  - A unit test shows each grid's first point (the family's current setting) fills exactly as the
+    live baseline does.
+  - On the large tables, the tuned hgb's early-stopping split is drawn by original row, as fixed
+    above, so its first point differs there from the live `hgb`, whose split is random.
+- **The smoke, on kc2_60nan at seed 707:** 21 min for 5 folds on a loaded machine. Only the run
+  time and the chosen settings were looked at, no score.
+- **The pass runs as two passes,** without changing any definition:
+  1. **The weak tier** (knn, hgb, lgbm), which the tuned bar and E44's primary need. It runs first,
+     on E44's folds.
+  2. **missForest** (`--families missforest`, written to `csv_missforest/`), the strong tier's
+     tuned member. It runs later.
