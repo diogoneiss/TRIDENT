@@ -154,9 +154,9 @@ None failed and none is missing.
 - E42's tuned bar on all 45 cells, by 03:23 GMT-3;
 - E41's arms on the same folds, by 02:39 GMT-3.
 
-**Table.** Built by script from 's functions.
+**Table.** Built by script from `scripts/experiments/confirmation_report.py`'s functions.
 
-- Induced , K readout, mean over 15 fold pairs; lower is better.
+- Induced `impute_score`, K readout, mean over 15 fold pairs; lower is better.
 - Each contrast is the mean difference and its verdict (95% t-interval and seed agreement;
   "equivalent" means within ±1% of the opponent's mean).
 - **Reading:**
@@ -231,11 +231,12 @@ None failed and none is missing.
     **threshold 40 is supported**: it answers the open question in the proposal (40 rather than
     60).
 - **Pending:** the metric panel, the context-free rows and the twin split, offline from these
-  runs' ledgers (). They will be added below.
+  runs' ledgers (`scripts/experiments/metric_panel.py`). They will be added below.
 
-**Decision for the user:**
+**For the user to decide:**
 
 - The thesis's confirmation statement: on the confirmation set, the model beats both the untuned
   and the tuned bar on 9 of 15 new variants, ties on 3 and loses on 3, two of them on electricity.
 - Whether electricity becomes a stated limit, or an investigation of why the boosters win there.
-- T20 can be revived with threshold 40, by an ADR.
+- Reviving T20 with threshold 40, by an ADR.
+
