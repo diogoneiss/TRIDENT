@@ -570,7 +570,11 @@ def test_the_selection_diagnostics_are_imputation_flags_and_off_unless_asked() -
     decoder exists."""
     parser = build_training_parser()
     imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
-    for flag, field in (("--score_induced_checkpoint", "score_induced_checkpoint"), ("--score_calibrated", "score_calibrated")):
+    for flag, field in (
+        ("--score_induced_checkpoint", "score_induced_checkpoint"),
+        ("--score_calibrated", "score_calibrated"),
+        ("--score_checkpoints", "score_checkpoints"),
+    ):
         assert getattr(resolve_training_request(parser.parse_args(imputation)), field) is False
         assert getattr(resolve_training_request(parser.parse_args([*imputation, flag])), field) is True
         with pytest.raises(SystemExit, match=flag.lstrip("-")):
@@ -594,10 +598,13 @@ def test_the_decode_checkpoint_is_chosen_on_the_validation_gaps_unless_a_run_ask
     assert resolve_training_request(parser.parse_args(["--dataset_name", "credit-g_20nan"])).hyperparameters == Hyperparameters()
     with pytest.raises(SystemExit, match="decode_checkpoint"):
         validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_checkpoint", "loss"]))
+    # E43's deployable criterion, the fixed validation mask's score, is a choice a run can ask for.
+    deployable = resolve_training_request(parser.parse_args([*imputation, "--decode_checkpoint", "masked"])).hyperparameters
+    assert deployable.decode_checkpoint == "masked"
     with pytest.raises(SystemExit):
-        parser.parse_args([*imputation, "--decode_checkpoint", "masked"])
+        parser.parse_args([*imputation, "--decode_checkpoint", "median"])
     with pytest.raises(ValueError, match="decode checkpoint"):
-        Hyperparameters.from_mapping({"DECODE_CHECKPOINT": "masked"})
+        Hyperparameters.from_mapping({"DECODE_CHECKPOINT": "median"})
 
 
 def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:

@@ -69,6 +69,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the module |
 | E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
+| E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-17 – | in progress | 27 cells on the 9 variants at ≥60nan, seeds 111/222/333 |
 
 ## Entries
 
@@ -1338,3 +1339,33 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Reading:** descriptive. A thesis win needs K to beat both bars (D4); variants whose verdict
     changes are listed.
 - **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md`; plan §2c.
+
+### E43 · A deployable decode checkpoint (2026-10-17 – )
+
+- **Status:** in progress. Pre-registered with its code on 2026-10-16 at about 23:20 GMT-3, before
+  the first cell.
+- **Hypothesis:** K (ADR 0015) uses the validation gaps' truth, which a deployed model never has.
+  Its 80nan wins over the mean/mode fill exist only under it (E34/E35: 0 of 3 under H, 2 of 3
+  under K). A criterion that needs no gap truth, M (the fixed validation mask's `impute_score`),
+  may recover part of the gain, since K also improves masked cells it never chose on.
+- **Scenarios:**
+  - **Runs:** one run per cell of today's default with `--score_checkpoints --score_calibrated`.
+    K (the headline), H (`loss_checkpoint`), M (`masked_checkpoint`) and KC (`calibrated`) all come
+    from one trajectory.
+  - **Variants:** the 9 at ≥60nan.
+  - **Seeds:** 111/222/333, unused.
+  - **Size:** 27 cells, tag `experiment=deployable-checkpoint-2026-10-17`.
+  - **Checks before launch:** the runner equals an E40 cell, and a `masked` run equals the M
+    readout.
+- **Measures and decision rule:**
+  - **Primary:** M − H and M − K on the induced `impute_score`, 15 within-run fold pairs, with the
+    verdict rule.
+  - **Reading, first match wins:**
+    1. K better than M on none of the 9: M suffices;
+    2. M better than H on ≥2 of the 3 80nan variants and worse on none: M is the deployable
+       headline (ADR amending 0015);
+    3. otherwise H, and the 80nan wins are labelled oracle-only.
+
+    The default stays K.
+- **Sources:** `docs/tickets/imputation-protocol/03-deployable-checkpoint.md`;
+  `scripts/experiments/checkpoint_run.py`, `checkpoint_report.py`, `run_checkpoint_queue.sh`.

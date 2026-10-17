@@ -162,6 +162,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         score_column_wise=request.score_column_wise,
                         score_induced_checkpoint=request.score_induced_checkpoint,
                         score_calibrated=request.score_calibrated,
+                        score_checkpoints=request.score_checkpoints,
                         score_search_objective=request.score_search_objective,
                         baseline_cache_dir=request.runtime.baseline_cache_dir,
                     )

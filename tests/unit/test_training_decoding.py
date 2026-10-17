@@ -455,6 +455,91 @@ def test_the_induced_criterion_keeps_the_epoch_the_diagnostic_scored_as_k() -> N
     assert without_truth.result.metrics == loss_without_truth.result.metrics
 
 
+def test_every_checkpoint_is_scored_on_the_same_trajectory_without_touching_the_headline() -> None:
+    """``score_checkpoints`` (E43): the test split is also scored at the epoch each other criterion
+    would keep (the loss's H, the validation gaps' K, the validation mask's M), on the trajectory
+    the run trains anyway. The per-epoch mask score must be the one the end-of-run path computes,
+    and the run's own model, metrics and losses those it would have had without the flag."""
+    dataset = _dataset()
+    gaps = _hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT="induced")
+    np.random.seed(0)
+    reference, _ = _run(dataset=dataset, sibling=_complete_frame(), score_search_objective=True, hyperparameters=gaps)
+    np.random.seed(0)
+    asked, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True, hyperparameters=gaps,
+        score_checkpoints=True,
+    )
+
+    metrics = asked.result.metrics
+    for key, value in reference.result.metrics.items():
+        assert metrics[key] == value, key
+    assert asked.train_losses == reference.train_losses
+    for name, tensor in reference.model.state_dict().items():
+        assert bool((asked.model.state_dict()[name] == tensor).all()), name
+    series = {event.step: event.value for event in tracker.metric_events if event.key == "decode/val_masked_score"}
+    assert sorted(series) == list(range(6))
+    # The run keeps K's epoch, and the search objective scores the validation mask there.
+    kept = int(metrics["decode/induced_checkpoint_epoch"])
+    assert series[kept] == pytest.approx(metrics["validation/impute/masked/impute_score"], abs=1e-9)
+    assert series[int(metrics["decode/masked_checkpoint_epoch"])] == min(series.values())
+    losses = [event.value for event in sorted((e for e in tracker.metric_events if e.key == "decode/val_loss"), key=lambda e: e.step)]
+    assert metrics["decode/loss_checkpoint_epoch"] == int(np.argmin(losses))
+    for population in ("induced", "masked"):
+        for family in ("loss_checkpoint", "masked_checkpoint"):
+            assert f"impute/{population}/{family}/impute_score" in metrics, (population, family)
+        # K is the run's own checkpoint, so a family for it would repeat the headline.
+        assert not any(key.startswith(f"impute/{population}/induced_checkpoint/") for key in metrics)
+    assert not any("_checkpoint/baseline" in key for key in metrics)
+    assert not any("_checkpoint/" in key for key in reference.result.metrics)
+
+
+def test_the_masked_criterion_keeps_the_epoch_the_diagnostic_scored_as_m_and_needs_no_truth() -> None:
+    """E43's deployable criterion: ``DECODE_CHECKPOINT masked`` keeps the epoch whose fixed
+    validation mask scores best, so its headline equals the M family a K run scores on the same
+    trajectory, and the K run's H family equals a loss run's headline. It reads only observed
+    cells, so it runs, and keeps the same epoch, on a table with no complete sibling."""
+    dataset = _dataset()
+    epochs = {"EPOCHS_DECODE": 6}
+    np.random.seed(0)
+    by_gaps, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_checkpoints=True,
+        hyperparameters=_hyperparameters(**epochs, DECODE_CHECKPOINT="induced"),
+    )
+    np.random.seed(0)
+    by_mask, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_checkpoints=True,
+        hyperparameters=_hyperparameters(**epochs, DECODE_CHECKPOINT="masked"),
+    )
+    np.random.seed(0)
+    by_loss, _ = _run(dataset=dataset, sibling=_complete_frame(), hyperparameters=_hyperparameters(**epochs))
+
+    diagnostic, headline = by_gaps.result.metrics, by_mask.result.metrics
+    for population in ("induced", "masked"):
+        for name in ("impute_score", "rmse_num_z", "acc_cat"):
+            assert headline[f"impute/{population}/{name}"] == diagnostic[f"impute/{population}/masked_checkpoint/{name}"]
+            assert by_loss.result.metrics[f"impute/{population}/{name}"] == diagnostic[f"impute/{population}/loss_checkpoint/{name}"]
+            assert headline[f"impute/{population}/induced_checkpoint/{name}"] == diagnostic[f"impute/{population}/{name}"]
+    assert headline["decode/masked_checkpoint_epoch"] == diagnostic["decode/masked_checkpoint_epoch"]
+    assert any(event.key == "decode/val_masked_score" for event in tracker.metric_events)
+    assert not any(key.startswith("impute/induced/masked_checkpoint/") for key in headline)
+
+    np.random.seed(0)
+    without_truth, _ = _run(dataset=dataset, sibling=None, hyperparameters=_hyperparameters(**epochs, DECODE_CHECKPOINT="masked"))
+    assert without_truth.result.metrics["decode/masked_checkpoint_epoch"] == headline["decode/masked_checkpoint_epoch"]
+    for name in ("impute_score", "rmse_num_z", "acc_cat"):
+        assert without_truth.result.metrics[f"impute/masked/{name}"] == headline[f"impute/masked/{name}"]
+    assert not any(key.startswith("impute/induced/") for key in without_truth.result.metrics)
+
+
+def test_the_patience_counts_from_the_masked_criterions_epoch() -> None:
+    outcome, _ = _run(
+        sibling=_complete_frame(),
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=8, DECODE_CHECKPOINT="masked", DECODE_PATIENCE=1),
+    )
+    metrics = outcome.result.metrics
+    assert metrics["decode/epochs_trained"] == min(8, int(metrics["decode/masked_checkpoint_epoch"]) + 2)
+
+
 def test_the_truth_beside_each_guess_is_the_number_the_dataset_actually_holds() -> None:
     """Ticket 0004: a known truth should not be reported at the model's precision.
 

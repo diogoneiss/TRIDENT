@@ -205,6 +205,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         score_column_wise=getattr(args, "score_column_wise", False),
         score_induced_checkpoint=getattr(args, "score_induced_checkpoint", False),
         score_calibrated=getattr(args, "score_calibrated", False),
+        score_checkpoints=getattr(args, "score_checkpoints", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
         config_source=config_source,
@@ -233,7 +234,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         raise SystemExit("error: --score_null_path requires --task imputation")
     if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_column_wise requires --task imputation")
-    for flag in ("score_induced_checkpoint", "score_calibrated"):
+    for flag in ("score_induced_checkpoint", "score_calibrated", "score_checkpoints"):
         if getattr(args, flag, False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -410,8 +411,10 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: which decode epoch the run keeps. 'induced' (the default since "
             "ADR 0015) keeps the epoch whose validation rows' own gaps score best against the "
             "complete table; 'loss' keeps the epoch of the lowest loss on the fixed validation "
-            "mask, as every run before it. A variant without a complete table falls back to "
-            "'loss'. Overrides DECODE_CHECKPOINT from the hyperparameter file."
+            "mask, as every run before it; 'masked' keeps the epoch whose fixed validation mask "
+            "scores best by impute_score, which needs no complete table (E43). A variant without "
+            "a complete table falls back from 'induced' to 'loss'. Overrides DECODE_CHECKPOINT "
+            "from the hyperparameter file."
         ),
     )
     parser.add_argument(
@@ -497,6 +500,15 @@ def build_training_parser() -> argparse.ArgumentParser:
             "rows' own gaps: numbers shrunk toward the training mean, low-confidence categories "
             "answered with the mode. As impute/induced/calibrated/*. A diagnostic (ticket "
             "imputation-token-shape/04). Requires --task imputation."
+        ),
+    )
+    parser.add_argument(
+        "--score_checkpoints",
+        action="store_true",
+        help=(
+            "Also score the test split at the epoch every other decode checkpoint criterion "
+            "would keep (loss, induced, masked), on the same trajectory, as "
+            "impute/*/<criterion>_checkpoint/*. A diagnostic (E43). Requires --task imputation."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")

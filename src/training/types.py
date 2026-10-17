@@ -65,8 +65,10 @@ DEFAULT_ENCODER_FINAL_NORM = "none"
 # mask, every run before the choice and the dataclass default; ``induced`` is the epoch whose
 # validation rows' own gaps score best against the complete sibling, the population the headline
 # scores, which the imputation task defaults to (``task_defaults``, ADR 0015). A run with no
-# complete sibling has no gaps to score and keeps the loss's epoch.
-DECODE_CHECKPOINTS: tuple[str, ...] = ("loss", "induced")
+# complete sibling has no gaps to score and keeps the loss's epoch. ``masked`` is the epoch whose
+# fixed validation mask scores best by ``impute_score`` (E43): it reads observed cells only, so
+# it needs no complete table and is the criterion a deployed model can use.
+DECODE_CHECKPOINTS: tuple[str, ...] = ("loss", "induced", "masked")
 DEFAULT_DECODE_CHECKPOINT = "loss"
 
 # Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
@@ -553,6 +555,10 @@ class TrainingRequest:
     # calibration fitted on the validation rows' own gaps. Neither ranks a fold.
     score_induced_checkpoint: bool = False
     score_calibrated: bool = False
+    # E43's diagnostic: the test split also scored at the epoch every other decode checkpoint
+    # criterion would keep (``loss``, ``induced``, ``masked``), on the same trajectory. Never
+    # ranks a fold.
+    score_checkpoints: bool = False
     # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.

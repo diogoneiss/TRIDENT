@@ -50,6 +50,7 @@ def train_and_evaluate_decoder(
     score_column_wise: bool = False,
     score_induced_checkpoint: bool = False,
     score_calibrated: bool = False,
+    score_checkpoints: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -109,8 +110,14 @@ def train_and_evaluate_decoder(
     # ADR 0015: with ``DECODE_CHECKPOINT induced`` that second checkpoint is the one the run
     # keeps; without a complete sibling there are no gaps to score and the loss's epoch is kept.
     by_gaps = hyperparameters.decode_checkpoint == "induced" and complete_sibling is not None
+    # E43: ``DECODE_CHECKPOINT masked`` keeps the epoch whose fixed validation mask scores best by
+    # ``impute_score``. It reads observed cells only, so it needs no complete table: the criterion a
+    # deployed model can use. ``score_checkpoints`` watches every criterion and scores the test
+    # split at each one's epoch too, all on the trajectory the run trains anyway.
+    by_mask = hyperparameters.decode_checkpoint == "masked"
+    kept_criterion = "induced" if by_gaps else "masked" if by_mask else "loss"
     gap_score = None
-    if (score_induced_checkpoint or by_gaps) and complete_sibling is not None:
+    if (score_induced_checkpoint or score_checkpoints or by_gaps) and complete_sibling is not None:
         model.eval()
         gap_score = _ValidationGapScore(
             model, dataset, validation_frame, complete_sibling, fold.validation_indices,
@@ -120,6 +127,16 @@ def train_and_evaluate_decoder(
     best_gap_score = float("inf")
     gap_state = None
     gap_epoch = 0
+    mask_score = None
+    if by_mask or score_checkpoints:
+        model.eval()
+        mask_score = _ValidationMaskScore(
+            model, hidden_validation, clean_validation,
+            mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
+        )
+    best_mask_score = float("inf")
+    mask_state = None
+    mask_epoch = 0
 
     print("\n=== Starting Decoding (reconstructing hidden cells) ===")
     # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
@@ -165,13 +182,20 @@ def train_and_evaluate_decoder(
                 best_gap_score = epoch_gap_score
                 gap_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
                 gap_epoch = epoch
+        if mask_score is not None:
+            epoch_mask_score = mask_score.score(model)
+            tracker.log_metrics({"decode/val_masked_score": epoch_mask_score}, step=epoch)
+            if epoch_mask_score < best_mask_score:
+                best_mask_score = epoch_mask_score
+                mask_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
+                mask_epoch = epoch
         # Early stopping only ends the loop: the checkpoint is the best epoch either way, counted
         # from the epoch the run's own criterion would keep.
-        kept_epoch = gap_epoch if by_gaps else best_epoch
+        kept_epoch = gap_epoch if by_gaps else mask_epoch if by_mask else best_epoch
         if hyperparameters.decode_patience and epoch - kept_epoch >= hyperparameters.decode_patience:
             break
 
-    kept_state = gap_state if by_gaps else best_state
+    kept_state = gap_state if by_gaps else mask_state if by_mask else best_state
     if kept_state is not None:
         model.load_state_dict(kept_state)
     model.eval()
@@ -336,6 +360,42 @@ def train_and_evaluate_decoder(
                     )
             model.load_state_dict(headline_state)
             model.eval()
+
+    if mask_score is not None:
+        metrics["decode/masked_checkpoint_epoch"] = mask_epoch
+        metrics["decode/loss_checkpoint_epoch"] = best_epoch
+    if score_checkpoints:
+        # E43: the test split at the epoch each other criterion would keep, both populations,
+        # without baselines (they never depend on the epoch). K's family is left to the older
+        # diagnostic when it already scored it. The run's own checkpoint is put back after.
+        diagnostic_states = {"loss": best_state, "induced": gap_state, "masked": mask_state}
+        headline_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
+        for criterion, state in diagnostic_states.items():
+            if criterion == kept_criterion or state is None:
+                continue
+            if criterion == "induced" and score_induced_checkpoint:
+                continue
+            model.load_state_dict(state)
+            model.eval()
+            if complete_sibling is not None:
+                at_criterion = _score_induced_missing(
+                    model, dataset, test_frame, complete_sibling, fold.test_indices, device
+                )
+                metrics.update(
+                    {
+                        f"impute/induced/{criterion}_checkpoint/{name}": value
+                        for name, value in score_cells(at_criterion, baselines).metrics.items()
+                    }
+                )
+            masked_at_criterion = _score_population(model, hidden_test, clean_test, "masked", raw_variant)
+            metrics.update(
+                {
+                    f"impute/masked/{criterion}_checkpoint/{name}": value
+                    for name, value in score_cells(masked_at_criterion, baselines).metrics.items()
+                }
+            )
+        model.load_state_dict(headline_state)
+        model.eval()
 
     # The search objective: the same masked-population score on the fixed validation
     # mask the checkpoint watched, so a search never ranks trials on the test split. Its
@@ -556,6 +616,45 @@ class _ValidationGapScore:
             )
             score += (self._n_categorical / total) * _ratio(wrong / self._n_categorical, self._naive_error)
         return score
+
+
+class _ValidationMaskScore(_ValidationGapScore):
+    """The fixed validation mask's ``impute_score`` of the model's current weights, every epoch (E43).
+
+    The cells the decode stage's validation loss is computed on, scored as ``score_cells`` scores
+    ``_score_population``'s cells for the same weights, which a test holds it to. Their truths are
+    observed values, so no complete table is needed. The cells, truths and naive errors are fixed
+    for the fold and read once from one pass of the pandas path; an epoch costs one forward pass
+    and a few reductions, scored as the gap score is.
+    """
+
+    def __init__(self, model, hidden, clean, baselines) -> None:
+        cells = _score_population(model, hidden, clean, "masked")
+        self._hidden = hidden
+        embedder = model.embedder
+        mask = hidden.masked_positions
+        numerical = cells[cells["kind"] == NUMERICAL]
+        categorical = cells[cells["kind"] == CATEGORICAL]
+        self._n_numerical, self._n_categorical = len(numerical), len(categorical)
+        self._categorical = []
+        for index, _ in enumerate(embedder.categorical_columns):
+            rows = torch.nonzero(mask[:, index], as_tuple=False).squeeze(1)
+            if rows.numel():
+                self._categorical.append((index, rows, clean.cat_indices[index][rows]))
+        offset = len(embedder.categorical_columns)
+        self._numerical = []
+        for index, _ in enumerate(embedder.numerical_columns):
+            rows = torch.nonzero(mask[:, offset + index], as_tuple=False).squeeze(1)
+            if rows.numel():
+                self._numerical.append((index, rows, clean.num_values[index][rows].double()))
+        self._naive_rmse = 0.0
+        if self._n_numerical:
+            naive = numerical["column"].map(baselines).to_numpy(dtype=float)
+            self._naive_rmse = float(np.sqrt(np.mean((naive - numerical["actual"].to_numpy(dtype=float)) ** 2)))
+        self._naive_error = 0.0
+        if self._n_categorical:
+            naive_labels = categorical["column"].map(baselines).to_numpy()
+            self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
 
 
 def _calibrated_scores(
