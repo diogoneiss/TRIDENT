@@ -152,9 +152,9 @@ variants and worse on none, and that includes pendigits_40nan and letter_40nan. 
 amending ADR 0015) makes the calibration the imputation default at 40% missing and above. A flag
 and a tag keep today's output reachable.
 
-**Implemented 2026-10-17** (`--decode_calibration`, default `auto` for imputation). A default run
-equals E40's KC to the last digit on credit-g_60nan, and a 20nan run is unchanged. The tag backfill
-waits for the user's go.
+**Implemented and landed 2026-10-17** (`--decode_calibration`, default `auto` for imputation;
+`17121a5`). A default run equals E40's KC to the last digit on credit-g_60nan, and a 20nan run is
+unchanged. The tag backfill runs with ADR 0021's, on the user's go.
 
 - **Follow-up, not built:** the deployable analogue. That is a calibration fitted on the masked
   validation cells and read with H, which needs no complete table (E43).

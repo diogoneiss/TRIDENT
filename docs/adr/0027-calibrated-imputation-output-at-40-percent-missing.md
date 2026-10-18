@@ -10,8 +10,11 @@ amends ADR [0015](0015-decode-checkpoint-chosen-on-the-validation-gaps.md) (what
 checkpoint outputs) and ADR [0013](0013-imputation-defaults-from-the-confirmatory-study.md)
 (imputation's task defaults), for the imputation task only.
 
-**Implemented on 2026-10-17** on the branch `feat/adr-0027-calibration`. It lands only once no
-study and no CPU lane imports the checkout.
+**Implemented on 2026-10-17** on the branch `feat/adr-0027-calibration`. **Landed on 2026-10-17 at
+about 23:55 GMT-3** (fast-forward to `17121a5`), at the user's choice, while E42's missForest
+lanes ran. Those lanes import only `types.py` and `mlflow_utils.py` from the touched files, and
+both changes are additive. The merged tree passes 403 unit tests and both integration fixtures in
+the main checkout. Every imputation run from `17121a5` on applies this ADR.
 
 The numbers 0022 to 0026 are reserved by the
 [plan of 2026-10-17](../plans/2026-10-17-experiment-improvements.md) for its proposed ADRs.
