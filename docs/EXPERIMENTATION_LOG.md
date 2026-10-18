@@ -68,7 +68,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E39 | Re-tuning the promoted files under today's defaults | 2026-10-15 – 2026-10-16 | done | stale files hurt: no file beats them on 3 of 5 (kr-vs-kp_40nan −4.8%, credit-g_40nan −4.7%, spambase_40nan −0.5%); the re-tuned winners beat the defaults nowhere; rule: promote T on 2, remove the file on 1, keep 2 |
 | E40 | Calibration at 40% missing and above, on fresh seeds | 2026-10-16 | done | supported: KC better on 6 of 6 named (7 of 12), K better on none; gain grows with missingness (40nan −0.0009, 60nan −0.0037, 80nan −0.0059), none at 40nan earns a verdict |
 | E41 | Linear baselines (condexp, SoftImpute, ICE) and the missing per-fold baselines, on the decoder's cells | 2026-10-16 – 2026-10-17 | done | condexp beats the weak bar on 2–4 variants per seed set (spambase_60nan and credit-g_60nan in all); an arm beats K only on credit-g_80nan; the kc2_20nan flip does not hold; K vs the strong tier 13/7/1 on 101/202/303 (16/3/2 vs the weak bar) |
-| E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress | pre-registered; the offline pass waits on the driver |
+| E42 | An equal, validation-only tuning budget for the baselines | 2026-10-16 – | in progress (weak tier read) | the tuned bar beats the untuned one on 17 of 21 and 9 of 12 (1–3%, at most 5.7%); K vs tuned bar 13/5/3 and 7/2/1/2; verdict changes on kr-vs-kp 20/60/80 and spambase_80; missForest pass running |
 | E43 | A deployable decode checkpoint (M, the validation mask's score) against K and H | 2026-10-16 – 2026-10-17 | done | reading 3: H is the deployable headline; M equals H on numerical tables by construction and is worse on kr-vs-kp_60nan; K better than M on 4 of 9; the 80nan wins over the mean/mode fill are oracle-only; KC better on E40's six again |
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
@@ -1338,8 +1338,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E42 · An equal, validation-only tuning budget for the baselines (2026-10-16 – )
 
-- **Status:** in progress. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any
-  tuned baseline was scored. The offline driver comes after E41's module.
+- **Status:** the weak tier's pass is read; the missForest pass (secondary) runs from 2026-10-17
+  22:52 GMT-3. Pre-registered at 22:47 GMT-3 on 2026-10-16 (`5278337`), before any tuned baseline
+  was scored.
 - **Hypothesis:** a declared validation-only budget lowers the bar by about 0.01–0.035 on a few
   variants (review threat 1). The probe's recipe was chosen on test, so the size is unmeasured.
 - **Scenarios:**
@@ -1355,7 +1356,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     `impute_score`, 15 fold pairs, with the verdict rule.
   - **Reading:** descriptive. A thesis win needs K to beat both bars (D4); variants whose verdict
     changes are listed.
-- **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md`; plan §2c.
+- **Results (weak tier):** 207 files, from 2026-10-16 23:39 to 2026-10-17 15:43 GMT-3.
+  - **The budget:** the tuned bar is better than the untuned bar of 5 on 17 of 21 (101/202/303) and
+    9 of 12 (404/505/606), typically by 1–3%, at most 5.7% (kr-vs-kp_60nan). It is worse once
+    (kc2_60nan, +2.9%).
+  - **K against the tuned bar:** better 13 / none 5 / worse 3, and 7 / 2 / equivalent 1 / 2,
+    against 16/3/2 and 10/1/1 for the untuned bar.
+  - **Verdict changes:** kr-vs-kp_60nan (better → worse) and kr-vs-kp_80nan (better → none) on
+    both sets; kr-vs-kp_20nan and spambase_80nan on one.
+  - **Masked selection:** K is better on 14 of 21 and 9 of 12. hgb and lgbm almost never keep
+    their current settings.
+- **Conclusion:** the budget matters on most variants but moves few verdicts. The all-categorical
+  kr-vs-kp is where it catches up with the model. Development wins under D4: 13 of 21 and 7 of 12.
+- **Sources:** `docs/tickets/imputation-protocol/02-baseline-budget.md` (Outcome);
+  `scripts/experiments/baseline_budget_run.py`, `baseline_budget_report.py`; plan §2c.
 
 ### E43 · A deployable decode checkpoint (2026-10-16 – 2026-10-17)
 
