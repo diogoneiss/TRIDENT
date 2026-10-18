@@ -1443,6 +1443,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     Wasserstein).
   - kc2's wins come from the non-twin cells; the model loses to knn on the twins.
   - Dropping the context-free cells changes no verdict.
+- **Decided by the user (2026-10-17, about 22:45 GMT-3):**
+  - the thesis's confirmation statement, as in the ticket;
+  - electricity is a stated limit, with a bounded investigation later (T29);
+  - T20 is revived: the calibration becomes the default at 40% missing and above (ADR 0027).
 - **Sources:** `docs/tickets/imputation-protocol/04-confirmation.md` (Outcome);
   `scripts/experiments/confirmation_run.py`, `confirmation_report.py`, `run_confirmation_queue.sh`.
 

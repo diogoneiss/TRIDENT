@@ -132,7 +132,7 @@ winners beat the defaults on none. The rule fixed in advance says:
 ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)). The other two stay, and no
 winner is promoted.
 
-### T20 · Calibration at 40% missing and above — parked ([proposal](proposals/calibration-as-imputation-output.md); ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
+### T20 · Calibration at 40% missing and above — revived 2026-10-17, ADR 0027 ([proposal](proposals/calibration-as-imputation-output.md); ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
 
 E34 and E35 found the calibrated readout never worse than K at 40nan and above, and better in both
 seed sets on 6 variants. It failed at 20nan. The user chose on 2026-10-16 to confirm the rule
@@ -146,6 +146,11 @@ variant earns a verdict.
 **Parked 2026-10-16** at the user's request, to try other ideas first. The idea, the evidence from
 three seed sets and what adopting it takes are in
 [proposals/calibration-as-imputation-output.md](proposals/calibration-as-imputation-output.md).
+
+**Revived 2026-10-17 by the user,** after E44's confirmation. There KC was better than K on 8 of 15
+variants and worse on none, and that includes pendigits_40nan and letter_40nan. An ADR (0027,
+amending ADR 0015) makes the calibration the imputation default at 40% missing and above. A flag
+and a tag keep today's output reachable.
 
 ## Backlog
 
@@ -194,6 +199,13 @@ three seed sets and what adopting it takes are in
       pages, MaCoDE's bin targets, ReMasker, and the distillation review of 2026-10-09.
   - **Output:** a short report with diagnosable hypotheses and the cheapest test for each. T13
     (EMA) is one candidate.
+
+- **T29 · Why the boosters win on electricity** (the user's decision on E44, 2026-10-17). electricity
+  is a stated limit of the thesis. hgb/lgbm set the bar there, and the model loses at 20, 40 and
+  60nan and ties at 80nan (E44, E35). This is a bounded investigation, later.
+  - **Leads:** electricity's 8 columns with 45,312 rows; the bar's per-column wins; context-free
+    rows (20.9% of cells at 80nan, no verdict changes without them).
+  - **Output:** a short report, then at most one pre-registered test.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

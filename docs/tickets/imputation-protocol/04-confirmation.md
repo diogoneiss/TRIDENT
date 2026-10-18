@@ -233,12 +233,17 @@ None failed and none is missing.
 - **The metric panel, the context-free rows and the twin split** were read offline afterwards;
   see "Offline readings" below.
 
-**For the user to decide:**
+**Decided by the user (2026-10-17, about 22:45 GMT-3),** after E46 and these offline readings,
+each as recommended:
 
-- The thesis's confirmation statement: on the confirmation set, the model beats both the untuned
-  and the tuned bar on 9 of 15 new variants, ties on 3 and loses on 3, two of them on electricity.
-- Whether electricity becomes a stated limit, or an investigation of why the boosters win there.
-- Reviving T20 with threshold 40, by an ADR.
+- **The thesis's confirmation statement:**
+
+  > On the 15 confirmation variants, the model beats both the untuned and the tuned bar on 9, ties on 3 and loses on 3 (electricity at 40/60nan; letter_80nan by 0.2%). Its lead holds on the large tables and at 40nan and mostly ties at 80nan, where the wins hold for point accuracy but not for the imputed distribution. Under value-dependent missingness the lead over the weak bar survives on 7 of 7 table-and-level pairs.
+
+- **electricity is a stated limit** of the thesis now. A bounded investigation of why the boosters
+  win there comes later (T29 in `docs/TASKS.md`).
+- **T20 is revived by an ADR** that makes the calibration the imputation default at 40% missing
+  and above (ADR 0027, amending ADR 0015).
 
 ### Offline readings (added 2026-10-17, 15:45 GMT-3)
 
