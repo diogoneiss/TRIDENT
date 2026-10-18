@@ -31,8 +31,17 @@ baseline cache.
     with E41's 5-fold cells of the same seed: other folds, not an error.
 - **The strong tier's best on the induced population:** missForest 663, condexp 277, ICE 159,
   SoftImpute 77.
-- **Pending:** `--apply`, which writes the store. It waits for the user's go, after a backup, in a
-  window with no study.
+- **Applied on the user's go, 2026-10-18, 00:03 to 02:41 GMT-3.**
+  - **The backup first:** a backup through SQLite's API at 23:57 GMT-3 on 2026-10-17
+    (`/scratch2/diogoneiss/trident-2026-10-17-store-backup-before-apply/mlflow.db`,
+    `integrity_check` ok).
+  - **Written:** 1,176 run trees, re-mirrored. Refused: the same 1 electricity_20nan run as the
+    dry run.
+  - **Checked afterwards:**
+    - a second dry run finds 0 runs pending;
+    - 1,176 source parents and 1,176 mirror parents carry `strong_tier_backfilled=true` and
+      `baseline/best_strong`.
+  - **Log:** `/scratch2/diogoneiss/trident-2026-10-18-store-apply/`.
 
 ## Context
 

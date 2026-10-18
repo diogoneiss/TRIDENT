@@ -89,7 +89,11 @@ KC is K after the calibration.
 8. **The `decode_calibration` tag** is on every imputation parent and trial.
    - Earlier runs are stamped `none` by `scripts/backfill_decode_calibration_tag.py`, marked
      `decode_calibration_backfilled=true`, with their mirrors stamped in place.
-   - It writes the store, so it waits for the user's go, together with ADR 0021's backfill.
+   - **Applied on the user's go, 2026-10-18, 02:43 to 02:55 GMT-3,** right after ADR 0021's
+     backfill and behind the same backup.
+     - **Stamped:** 2,680 runs in 1,276 trees. A second dry run finds 0.
+     - **Mirrors:** 2,670 carry the tag. The 10 without are 9 `FAILED` sources (not mirrored,
+       ADR 0006) and one trial under a deleted study, as in ADR 0015.
 9. **`--decode_calibration none` recovers the old behaviour.** The README's command for the
    imputation defaults before ADRs 0013 to 0015 gains it.
 
