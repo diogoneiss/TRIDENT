@@ -20,7 +20,7 @@ from src.utils import preprocess_table
 
 from .data import evaluation_mask, in_variant_dtypes
 from .baseline_cache import BaselineScorer
-from .calibration import apply_calibration, fit_calibration
+from .calibration import Calibration, apply_calibration, fit_calibration
 from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import (
@@ -266,18 +266,38 @@ def train_and_evaluate_decoder(
             }
         )
 
+    # ADR 0027: under ``DECODE_CALIBRATION gaps`` the induced output is the calibrated one, fitted
+    # on the validation rows' own gaps at the kept checkpoint. The runner has resolved ``auto``
+    # already, and never leaves ``gaps`` on a run without a complete table. Checkpoint selection,
+    # the masked population, the other checkpoints' readouts and the search objective stay
+    # uncalibrated.
+    calibrate = hyperparameters.decode_calibration == "gaps" and complete_sibling is not None
     if complete_sibling is not None:
-        induced = _score_induced_missing(
+        raw_induced = _score_induced_missing(
             model, dataset, test_frame, complete_sibling, fold.test_indices, device
         )
+        induced = raw_induced
+        if calibrate:
+            calibration = _validation_calibration(
+                model, dataset, validation_frame, complete_sibling, fold.validation_indices, device, baselines
+            )
+            induced = apply_calibration(raw_induced, calibration, baselines)
+            metrics.update(
+                {
+                    f"impute/induced/uncalibrated/{name}": value
+                    for name, value in score_cells(raw_induced, baselines).metrics.items()
+                }
+            )
+            metrics.update(_calibration_summary("impute/induced/calibration", calibration))
         cells = pd.concat([cells, induced], ignore_index=True)
         scored_induced = score_cells(induced, baselines)
         metrics.update(
             {f"impute/induced/{name}": value for name, value in scored_induced.metrics.items()}
         )
         # The induced cells are the frame's own gaps, so the mask adds nothing here; one
-        # code path for both populations all the same.
-        induced_baselines = baseline_scorer.score(test_frame, induced, baselines)
+        # code path for both populations all the same. The baselines are scored on the raw
+        # cells: the same positions, and nothing of the model's guesses.
+        induced_baselines = baseline_scorer.score(test_frame, raw_induced, baselines)
         metrics.update(
             {f"impute/induced/{name}": value for name, value in induced_baselines.metrics.items()}
         )
@@ -324,7 +344,9 @@ def train_and_evaluate_decoder(
             # those gaps scored best. The run's own checkpoint is put back before anything else
             # reads the model.
             headline_state = {name: value.detach().clone() for name, value in model.state_dict().items()}
-            if score_calibrated:
+            # Under ADR 0027's calibration the headline already is this readout, so it is
+            # scored only for an uncalibrated run.
+            if score_calibrated and not calibrate:
                 metrics.update(
                     _calibrated_scores(
                         "impute/induced/calibrated", model, dataset, validation_frame,
@@ -657,21 +679,36 @@ class _ValidationMaskScore(_ValidationGapScore):
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
 
 
+def _validation_calibration(
+    model, dataset, validation_frame, complete_sibling, validation_rows, device, baselines
+) -> Calibration:
+    """The calibration fitted on the validation rows' own gaps, scored at the model's current weights."""
+    validation_cells = _score_induced_missing(
+        model, dataset, validation_frame, complete_sibling, validation_rows, device
+    )
+    return fit_calibration(validation_cells, baselines)
+
+
+def _calibration_summary(prefix: str, calibration: Calibration) -> dict[str, float | int | str]:
+    summary: dict[str, float | int | str] = {}
+    if calibration.alpha:
+        summary[f"{prefix}/mean_alpha"] = float(np.mean(list(calibration.alpha.values())))
+    summary[f"{prefix}/n_thresholded_columns"] = sum(cut is not None for cut in calibration.threshold.values())
+    return summary
+
+
 def _calibrated_scores(
     prefix, model, dataset, validation_frame, complete_sibling, validation_rows, device, test_cells, baselines
 ) -> dict[str, float | int | str]:
     """The test cells scored after calibrating on the validation rows' own gaps at these weights."""
-    validation_cells = _score_induced_missing(
-        model, dataset, validation_frame, complete_sibling, validation_rows, device
+    calibration = _validation_calibration(
+        model, dataset, validation_frame, complete_sibling, validation_rows, device, baselines
     )
-    calibration = fit_calibration(validation_cells, baselines)
     scores: dict[str, float | int | str] = {
         f"{prefix}/{name}": value
         for name, value in score_cells(apply_calibration(test_cells, calibration, baselines), baselines).metrics.items()
     }
-    if calibration.alpha:
-        scores[f"{prefix}/mean_alpha"] = float(np.mean(list(calibration.alpha.values())))
-    scores[f"{prefix}/n_thresholded_columns"] = sum(cut is not None for cut in calibration.threshold.values())
+    scores.update(_calibration_summary(prefix, calibration))
     return scores
 
 

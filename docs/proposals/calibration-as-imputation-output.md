@@ -1,8 +1,13 @@
 # Proposal: the calibration as the imputation output at 40% missing and above
 
-**Status: parked (2026-10-16).** The evidence is complete and the pre-registered confirmation
-(E40) supports it. The user chose to try other ideas first and come back to this one. Nothing in
-the code or the defaults has changed. Task T20 in [TASKS.md](../TASKS.md).
+**Status: adopted (2026-10-17)** by [ADR 0027](../adr/0027-calibrated-imputation-output-at-40-percent-missing.md),
+after E44's confirmation. It was parked on 2026-10-16. The open decisions below were settled there:
+
+- threshold 40%;
+- the measured missing rate with a cut at 0.3;
+- the masked population left uncalibrated.
+
+Task T20 in [TASKS.md](../TASKS.md).
 
 ## The idea
 

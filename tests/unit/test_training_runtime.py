@@ -597,3 +597,59 @@ def test_an_imputation_run_without_a_complete_table_records_the_loss_checkpoint_
     assert [hyperparameters.decode_checkpoint for hyperparameters in seen] == ["loss"]
     written = json.loads(next((tmp_path / "results").rglob("hyperparameters.json")).read_text())
     assert written["DECODE_CHECKPOINT"] == "loss"
+
+
+def test_auto_calibration_resolves_by_the_measured_missing_rate_and_needs_a_complete_table(tmp_path) -> None:
+    """ADR 0027: ``auto`` calibrates where the table misses at least 30% of its feature cells,
+    which separates the benchmark's 20nan variants from its 40nan and heavier ones; the label
+    column never counts. Without a complete table there is nothing to fit on, whatever was asked."""
+    import dataclasses
+    from types import SimpleNamespace
+
+    import src.training.runner as runner
+
+    def resolved(asked: str, missing: int, sibling: pd.DataFrame | None = pd.DataFrame()) -> tuple[str, float]:
+        feature = [float("nan")] * missing + [1.0] * (10 - missing)
+        dataset = SimpleNamespace(frame=pd.DataFrame({"a": feature, "class": [float("nan")] * 10}), label_column="class")
+        request = dataclasses.replace(
+            _minimal_request(tmp_path, "imputation"), hyperparameters=Hyperparameters(decode_calibration=asked)
+        )
+        out, rate = runner._resolve_calibration(request, dataset, sibling)
+        return out.hyperparameters.decode_calibration, rate
+
+    assert resolved("auto", 4) == ("gaps", 0.4)
+    assert resolved("auto", 3) == ("gaps", 0.3)
+    assert resolved("auto", 2) == ("none", 0.2)
+    assert resolved("gaps", 0)[0] == "gaps"
+    assert resolved("none", 8)[0] == "none"
+    assert resolved("auto", 8, sibling=None)[0] == "none"
+    assert resolved("gaps", 8, sibling=None)[0] == "none"
+
+
+def test_an_imputation_run_without_a_complete_table_records_no_calibration(monkeypatch, tmp_path) -> None:
+    """The decode stage, the logged parameters and the hyperparameter file all read ``none`` when
+    there is no complete table to fit the calibration on, as for the decode checkpoint."""
+    import dataclasses
+    import src.training.runner as runner
+
+    _stub_stages(monkeypatch, tmp_path)
+    seen: list[Hyperparameters] = []
+    stub = runner.train_and_evaluate_decoder
+
+    def recording(**kwargs):
+        seen.append(kwargs["hyperparameters"])
+        return stub(**kwargs)
+
+    monkeypatch.setattr(runner, "train_and_evaluate_decoder", recording)
+    monkeypatch.setattr(runner, "load_complete_sibling", lambda spec: None)
+    request = dataclasses.replace(
+        _minimal_request(tmp_path, "imputation"),
+        hyperparameters=Hyperparameters(decode_calibration="gaps"),
+    )
+
+    run_training(request)
+
+    assert [hyperparameters.decode_calibration for hyperparameters in seen] == ["none"]
+    written = json.loads(next((tmp_path / "results").rglob("hyperparameters.json")).read_text())
+    assert written["DECODE_CALIBRATION"] == "none"
+

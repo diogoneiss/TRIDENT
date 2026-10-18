@@ -8,7 +8,9 @@ so the same words mean the same numbers everywhere:
   ``decode_checkpoint`` tag: a ``loss`` run's headline is H and its K is ``induced_checkpoint``;
   an ``induced`` run's headline is K and its H is ``loss_checkpoint``. ``readout_key`` picks it,
   and refuses rather than guess. The store's ``gap_to_*`` keys on E34/E35 are H-based and are
-  never read as K.
+  never read as K. KC is K after the calibration on the validation gaps: the headline of a run
+  ADR 0027 calibrated (its K then sits in ``uncalibrated``), the ``calibrated`` diagnostic of an
+  older one.
 - **The bar** (the weak tier) is the best of the logged baselines outside
   ``summary.OUTSIDE_THE_BAR`` and outside ``STRONG``, chosen once per run on its CV mean (ADR 0007
   decision 8); never a name tuple. The **strong tier**
@@ -107,11 +109,27 @@ def fold_table(run: Run) -> pd.DataFrame:
 
 
 def readout_key(columns: Iterable[str], decode_checkpoint: str, readout: str, population: str, metric: str) -> str:
-    """The column holding the model's ``readout`` (K, H or M) of ``metric`` on ``population``."""
-    family = {"K": "induced", "H": "loss", "M": "masked"}[readout]
+    """The column holding the model's ``readout`` (K, H, M or KC) of ``metric`` on ``population``.
+
+    K, H and M are always uncalibrated: on a run ADR 0027 calibrated, the headline is KC and the
+    run's own checkpoint, uncalibrated, sits in ``uncalibrated``.
+    """
+    available = set(columns)
     own = {"induced": "induced", "loss": "loss", "masked": "masked"}[decode_checkpoint]
-    key = f"impute/{population}/{metric}" if family == own else f"impute/{population}/{family}_checkpoint/{metric}"
-    if key not in set(columns):
+    headline = f"impute/{population}/{metric}"
+    calibrated_run = f"impute/{population}/uncalibrated/{metric}" in available
+    if readout == "KC":
+        if own == "induced":
+            key = headline if calibrated_run else f"impute/{population}/calibrated/{metric}"
+        else:
+            key = f"impute/{population}/induced_checkpoint_calibrated/{metric}"
+    else:
+        family = {"K": "induced", "H": "loss", "M": "masked"}[readout]
+        if family == own:
+            key = f"impute/{population}/uncalibrated/{metric}" if calibrated_run else headline
+        else:
+            key = f"impute/{population}/{family}_checkpoint/{metric}"
+    if key not in available:
         raise KeyError(f"a {decode_checkpoint!r} run carries no {readout} readout ({key})")
     return key
 

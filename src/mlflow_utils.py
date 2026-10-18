@@ -93,6 +93,15 @@ DECODE_GAP_TOKEN_BACKFILLED_TAG = "decode_gap_token_backfilled"
 # ``scripts/backfill_decode_checkpoint_tag.py`` and marked DECODE_CHECKPOINT_BACKFILLED_TAG.
 DECODE_CHECKPOINT_TAG = "decode_checkpoint"
 DECODE_CHECKPOINT_BACKFILLED_TAG = "decode_checkpoint_backfilled"
+# Whether an imputation run's induced output was calibrated on the validation rows' own gaps,
+# "gaps" or "none" (ADR 0027): the value the run actually used, so ``auto`` is recorded as what it
+# resolved to, and a variant without a complete table records "none". On every imputation parent
+# and trial; runs recorded before it are stamped "none" by
+# ``scripts/backfill_decode_calibration_tag.py`` and marked DECODE_CALIBRATION_BACKFILLED_TAG.
+DECODE_CALIBRATION_TAG = "decode_calibration"
+DECODE_CALIBRATION_BACKFILLED_TAG = "decode_calibration_backfilled"
+# The share of its feature cells the variant misses, measured by the run that resolved ``auto``.
+MEASURED_MISSING_RATE_TAG = "measured_missing_rate"
 # What a run's pre-training stage showed at a real gap, "null" (the default) or "mask". On
 # every parent and trial of either task; runs recorded before it are stamped "null" by
 # ``scripts/backfill_pretrain_gap_token_tag.py`` and marked PRETRAIN_GAP_TOKEN_BACKFILLED_TAG.

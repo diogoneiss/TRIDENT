@@ -71,6 +71,19 @@ DEFAULT_ENCODER_FINAL_NORM = "none"
 DECODE_CHECKPOINTS: tuple[str, ...] = ("loss", "induced", "masked")
 DEFAULT_DECODE_CHECKPOINT = "loss"
 
+# Whether an imputation run's output is calibrated on the validation rows' own gaps
+# (``src/training/calibration.py``), accepted by ``Hyperparameters.decode_calibration`` and
+# ``--decode_calibration``. ``none`` is every run before ADR 0027 and the dataclass default;
+# ``gaps`` calibrates the induced output at the kept checkpoint; ``auto`` calibrates where the
+# table's measured missing rate reaches ``CALIBRATION_MISSING_RATE``, the imputation task's
+# default (ADR 0027). The runner resolves ``auto`` to ``gaps`` or ``none`` once per run, and a run
+# with no complete sibling has no gaps to fit on and keeps ``none``.
+DECODE_CALIBRATIONS: tuple[str, ...] = ("none", "gaps", "auto")
+DEFAULT_DECODE_CALIBRATION = "none"
+# The cut ``auto`` calibrates at: the share of the feature cells a table is missing. It separates
+# the benchmark's 20nan variants (about 0.2) from its 40nan and heavier ones (about 0.4 and up).
+CALIBRATION_MISSING_RATE = 0.3
+
 # Where runs keep the baseline imputers' cached scores unless told otherwise, relative to the
 # checkout root every run starts from (ADR 0009). Never under a run's own output directory:
 # the study runners give every cell its own, and a cache there would never be shared.
@@ -157,7 +170,8 @@ IMPUTATION = _TASK_SPECS["imputation"]
 # worse than the old one on any of the 21 variants (ADR 0013), with its gaps shown as [MASK]
 # in the decode stage, which study E32 found better on 11 of them and worse on none (ADR 0014),
 # and its checkpoint chosen on the validation rows' own gaps, which E34 found better on 3 and
-# worse on none (ADR 0015).
+# worse on none (ADR 0015), and its output calibrated on those gaps at 40% missing and above,
+# which E40 and E44 found never worse (ADR 0027).
 _TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
     "classification": {},
     "imputation": {
@@ -166,6 +180,7 @@ _TASK_DEFAULTS: Mapping[str, Mapping[str, object]] = {
         "LR_SCHEDULER": "cosine",
         "DECODE_GAP_TOKEN": "mask",
         "DECODE_CHECKPOINT": "induced",
+        "DECODE_CALIBRATION": "auto",
     },
 }
 
@@ -229,6 +244,7 @@ class Hyperparameters:
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
+    decode_calibration: str = DEFAULT_DECODE_CALIBRATION
     pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
     encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
@@ -260,6 +276,10 @@ class Hyperparameters:
         if self.decode_checkpoint not in DECODE_CHECKPOINTS:
             raise ValueError(
                 f"Unknown decode checkpoint {self.decode_checkpoint!r}; expected one of {', '.join(DECODE_CHECKPOINTS)}"
+            )
+        if self.decode_calibration not in DECODE_CALIBRATIONS:
+            raise ValueError(
+                f"Unknown decode calibration {self.decode_calibration!r}; expected one of {', '.join(DECODE_CALIBRATIONS)}"
             )
         if self.decode_gap_token not in DECODE_GAP_TOKENS:
             raise ValueError(
@@ -325,6 +345,9 @@ class Hyperparameters:
             ),
             decode_checkpoint=str(
                 values.get("DECODE_CHECKPOINT", values.get("decode_checkpoint", DEFAULT_DECODE_CHECKPOINT))
+            ),
+            decode_calibration=str(
+                values.get("DECODE_CALIBRATION", values.get("decode_calibration", DEFAULT_DECODE_CALIBRATION))
             ),
             pretrain_gap_token=str(
                 values.get("PRETRAIN_GAP_TOKEN", values.get("pretrain_gap_token", DEFAULT_PRETRAIN_GAP_TOKEN))

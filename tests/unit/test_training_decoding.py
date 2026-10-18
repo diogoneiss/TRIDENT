@@ -411,6 +411,50 @@ def test_the_induced_checkpoint_tracks_the_validation_gaps_score_without_touchin
     assert not any("induced_checkpoint" in key or "calibrated" in key for key in plain.result.metrics)
 
 
+def test_under_gaps_the_induced_headline_is_the_calibrated_readout_and_nothing_else_moves() -> None:
+    """ADR 0027. With ``DECODE_CALIBRATION gaps`` the induced headline is what the older
+    ``score_calibrated`` diagnostic scored on the same trajectory, the uncalibrated headline moves
+    to ``uncalibrated``, and the ledger's induced rows hold the calibrated guesses. Training, the
+    masked population, the baselines and the search objective are untouched."""
+    dataset = _dataset()
+    np.random.seed(0)
+    plain, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_calibrated=True, score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6),
+    )
+    np.random.seed(0)
+    calibrated, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_calibrated=True, score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CALIBRATION="gaps"),
+    )
+
+    before, after = plain.result.metrics, calibrated.result.metrics
+    diagnostic = "impute/induced/calibrated/"
+    assert any(key.startswith(diagnostic) for key in before)
+    for key, value in before.items():
+        if key.startswith(diagnostic):
+            name = key[len(diagnostic):]
+            summary = name in ("mean_alpha", "n_thresholded_columns")
+            assert after[f"impute/induced/{'calibration/' if summary else ''}{name}"] == value, key
+        elif key.startswith("impute/induced/") and "/" not in key[len("impute/induced/"):]:
+            assert after[f"impute/induced/uncalibrated/{key[len('impute/induced/'):]}"] == value, key
+        else:
+            assert after[key] == value, key
+    assert not any(key.startswith(diagnostic) for key in after)
+    assert calibrated.train_losses == plain.train_losses
+    for name, tensor in plain.model.state_dict().items():
+        assert bool((calibrated.model.state_dict()[name] == tensor).all()), name
+
+    def induced(outcome):
+        cells = outcome.scored_cells
+        return cells[cells["population"] == "induced"].reset_index(drop=True)
+
+    assert induced(calibrated)[["row", "column", "actual"]].equals(induced(plain)[["row", "column", "actual"]])
+    assert not induced(calibrated)["imputed"].equals(induced(plain)["imputed"])
+    masked = plain.scored_cells["population"] == "masked"
+    assert calibrated.scored_cells[masked].equals(plain.scored_cells[masked])
+
+
 def test_with_nothing_to_learn_the_induced_checkpoint_is_the_first_epoch_and_scores_as_the_headline() -> None:
     outcome, _ = _run(
         sibling=_complete_frame(), score_induced_checkpoint=True,

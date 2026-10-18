@@ -286,7 +286,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
-        "DECODE_CHECKPOINT", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
+        "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
     }
 
 
@@ -605,6 +605,27 @@ def test_the_decode_checkpoint_is_chosen_on_the_validation_gaps_unless_a_run_ask
         parser.parse_args([*imputation, "--decode_checkpoint", "median"])
     with pytest.raises(ValueError, match="decode checkpoint"):
         Hyperparameters.from_mapping({"DECODE_CHECKPOINT": "median"})
+
+
+def test_the_imputation_output_is_calibrated_by_the_missing_rate_unless_a_run_says_otherwise() -> None:
+    """ADR 0027: imputation runs default to ``auto``, which the runner resolves by the table's
+    measured missing rate. ``none`` is every run before it and the dataclass default, so a mapping
+    read without a task keeps it, and classification has no output to calibrate."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.decode_calibration == "auto"
+    for choice in ("none", "gaps"):
+        asked = resolve_training_request(parser.parse_args([*imputation, "--decode_calibration", choice]))
+        assert asked.hyperparameters.decode_calibration == choice
+    assert Hyperparameters.from_mapping({}).decode_calibration == "none"
+    assert resolve_training_request(parser.parse_args(["--dataset_name", "credit-g_20nan"])).hyperparameters == Hyperparameters()
+    with pytest.raises(SystemExit, match="decode_calibration"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_calibration", "gaps"]))
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--decode_calibration", "always"])
+    with pytest.raises(ValueError, match="decode calibration"):
+        Hyperparameters.from_mapping({"DECODE_CALIBRATION": "always"})
 
 
 def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:

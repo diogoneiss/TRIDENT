@@ -9,6 +9,10 @@ the rule that old behaviour stays the default. It amends ADR [0004](0004-imputat
 (how the decode checkpoint is chosen) and ADR [0013](0013-imputation-defaults-from-the-confirmatory-study.md)
 (imputation's task defaults), for the imputation task only.
 
+**Amended by ADR [0027](0027-calibrated-imputation-output-at-40-percent-missing.md) (2026-10-17):**
+at 40% missing and above, the kept checkpoint's induced output is calibrated on the same validation
+gaps by default, and K moves to `impute/induced/uncalibrated/*` on those runs.
+
 ## Context
 
 The decode stage kept the epoch of the lowest loss on a fixed validation mask. That mask hides a

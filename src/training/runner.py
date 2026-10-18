@@ -13,6 +13,8 @@ from src.mlflow_utils import (
     DECODER_HEADS_TAG,
     DECODE_GAP_TOKEN_TAG,
     DECODE_CHECKPOINT_TAG,
+    DECODE_CALIBRATION_TAG,
+    MEASURED_MISSING_RATE_TAG,
     PRETRAIN_OBJECTIVE_TAG,
     PRETRAIN_GAP_TOKEN_TAG,
     ENCODER_FINAL_NORM_TAG,
@@ -30,6 +32,7 @@ from .pretraining import train_pretrainer
 from .summary import compute_cv_summary, stage_timing_metrics, summarize_cross_validation
 from .tracking import create_tracker
 from .types import (
+    CALIBRATION_MISSING_RATE,
     DecodingOutcome,
     FinetuningOutcome,
     FoldKey,
@@ -40,6 +43,33 @@ from .types import (
     TrainingResult,
     task_spec,
 )
+
+
+def _resolve_calibration(
+    request: TrainingRequest, dataset: PreparedDataset, complete_sibling: pd.DataFrame | None
+) -> tuple[TrainingRequest, float]:
+    """The request with ``auto`` resolved to the calibration the run applies, and the measured
+    missing rate it was resolved by (ADR 0027).
+
+    The rate is the share of the variant's feature cells that are missing, measured once per
+    run on the whole table. Without a complete table there are no validation gaps to fit on, so
+    the run keeps ``none`` whatever was asked, and every record of it (parameters, tag,
+    hyperparameter file) says so, as the decode checkpoint's fallback does.
+    """
+    rate = float(dataset.frame.drop(columns=[dataset.label_column]).isna().to_numpy().mean())
+    asked = request.hyperparameters.decode_calibration
+    applied = asked
+    if asked == "auto":
+        applied = "gaps" if rate >= CALIBRATION_MISSING_RATE else "none"
+        print(f"Measured missing rate {rate:.4f}: decode calibration 'auto' resolves to '{applied}'.")
+    if applied == "gaps" and complete_sibling is None:
+        print("No complete table to fit the calibration on: the decode calibration falls back to 'none'.")
+        applied = "none"
+    if applied != asked:
+        request = dataclasses.replace(
+            request, hyperparameters=dataclasses.replace(request.hyperparameters, decode_calibration=applied)
+        )
+    return request, rate
 
 
 def _per_column_scores(
@@ -90,6 +120,9 @@ def run_training(request: TrainingRequest) -> TrainingResult:
             request,
             hyperparameters=dataclasses.replace(request.hyperparameters, decode_checkpoint="loss"),
         )
+    measured_missing_rate = None
+    if task.name == "imputation":
+        request, measured_missing_rate = _resolve_calibration(request, dataset, complete_sibling)
     folds = build_folds(dataset.frame, dataset.label_column, request.cv_folds, request.seed)
     artifacts = ArtifactWriter(request.runtime.output_dir, request.runtime.metrics_dir, request.dataset.dataset_name)
     tracker = create_tracker(
@@ -123,6 +156,12 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     DECODER_HEADS_TAG: request.hyperparameters.decoder_heads,
                     DECODE_GAP_TOKEN_TAG: request.hyperparameters.decode_gap_token,
                     DECODE_CHECKPOINT_TAG: request.hyperparameters.decode_checkpoint,
+                    DECODE_CALIBRATION_TAG: request.hyperparameters.decode_calibration,
+                    **(
+                        {MEASURED_MISSING_RATE_TAG: f"{measured_missing_rate:.4f}"}
+                        if measured_missing_rate is not None
+                        else {}
+                    ),
                 }
                 if task.name == "imputation"
                 else {}

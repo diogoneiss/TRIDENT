@@ -8,6 +8,7 @@ from typing import Any, Mapping
 
 from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
+    DECODE_CALIBRATIONS,
     DECODE_CHECKPOINTS,
     DECODE_GAP_TOKENS,
     ENCODER_FINAL_NORMS,
@@ -33,6 +34,7 @@ from .types import (
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
     "decode_gap_token", "decode_checkpoint", "pretrain_gap_token", "encoder_final_norm",
+    "decode_calibration",
 )
 
 
@@ -80,6 +82,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_checkpoint = getattr(args, "decode_checkpoint", None)
     if decode_checkpoint is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_checkpoint=decode_checkpoint)
+    # ``--decode_calibration`` wins the same way (ADR 0027).
+    decode_calibration = getattr(args, "decode_calibration", None)
+    if decode_calibration is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_calibration=decode_calibration)
     # ``--decode_epochs`` wins the same way (ADR 0013).
     decode_epochs = getattr(args, "decode_epochs", None)
     if decode_epochs is not None:
@@ -165,6 +171,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
+            "DECODE_CALIBRATION": values.decode_calibration,
             "PRETRAIN_GAP_TOKEN": values.pretrain_gap_token,
             "ENCODER_FINAL_NORM": values.encoder_final_norm,
         }
@@ -273,6 +280,13 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_checkpoint requires --task imputation")
+
+    # Only imputation has an output to calibrate.
+    if (
+        getattr(args, "decode_calibration", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != "imputation"
+    ):
+        raise SystemExit("error: --decode_calibration requires --task imputation")
 
     # Only imputation has a decode stage with gaps to show.
     if (
@@ -415,6 +429,21 @@ def build_training_parser() -> argparse.ArgumentParser:
             "scores best by impute_score, which needs no complete table (E43). A variant without "
             "a complete table falls back from 'induced' to 'loss'. Overrides DECODE_CHECKPOINT "
             "from the hyperparameter file."
+        ),
+    )
+    parser.add_argument(
+        "--decode_calibration",
+        type=str,
+        default=None,
+        choices=DECODE_CALIBRATIONS,
+        help=(
+            "Imputation only: whether the induced output is calibrated on the validation rows' "
+            "own gaps at the kept checkpoint (numbers shrunk toward the training mean, unsure "
+            "categories answered with the mode). 'auto' (the default since ADR 0027) calibrates "
+            "where the table misses at least 30%% of its feature cells; 'gaps' always does; "
+            "'none' never does, as every run before it. A variant without a complete table is "
+            "never calibrated. The masked population is never calibrated. Overrides "
+            "DECODE_CALIBRATION from the hyperparameter file."
         ),
     )
     parser.add_argument(

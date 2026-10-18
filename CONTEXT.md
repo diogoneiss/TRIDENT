@@ -174,6 +174,13 @@ classifier fine-tuning in schedule, checkpoint selection and stage timing, and
 never re-initialises the pretrained encoder.
 _Avoid_: decoder fine-tuning, stage two, imputation fine-tuning
 
+**Calibrated output**:
+The decode stage's induced guesses after a calibration fitted on the validation rows' own gaps at
+the kept checkpoint: numbers shrunk toward the training mean, unsure categories answered with the
+mode. The imputation headline at 40% missing and above (ADR 0027); K is the same checkpoint
+uncalibrated, and KC the calibrated one.
+_Avoid_: post-processing, smoothing, shrinkage (alone)
+
 **Decoder**:
 The per-column output heads that map the transformer's output at a hidden cell
 back to a value: a distribution over the column's real categories, or a scalar

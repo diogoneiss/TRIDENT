@@ -39,6 +39,24 @@ def test_k_is_the_induced_checkpoint_family_on_a_loss_run_and_the_headline_on_an
         common.model(_frame(**{f"{P}/impute_score": [0.9] * 3}), _run("loss"), "K")
 
 
+def test_on_a_calibrated_run_k_is_the_uncalibrated_family_and_kc_the_headline() -> None:
+    """ADR 0027 makes the calibrated output the headline at 40% missing and above. Reading that
+    headline as K would credit K with KC's gain; older runs keep KC in their diagnostic."""
+    calibrated = _frame(**{
+        f"{P}/impute_score": [0.7] * 3, f"{P}/uncalibrated/impute_score": [0.8] * 3,
+        f"{P}/loss_checkpoint/impute_score": [0.9] * 3,
+    })
+    older = _frame(**{f"{P}/impute_score": [0.8] * 3, f"{P}/calibrated/impute_score": [0.7] * 3})
+
+    assert common.model(calibrated, _run("induced"), "K").tolist() == [0.8] * 3
+    assert common.model(calibrated, _run("induced"), "KC").tolist() == [0.7] * 3
+    assert common.model(calibrated, _run("induced"), "H").tolist() == [0.9] * 3
+    assert common.model(older, _run("induced"), "K").tolist() == [0.8] * 3
+    assert common.model(older, _run("induced"), "KC").tolist() == [0.7] * 3
+    with pytest.raises(KeyError, match="no KC readout"):
+        common.model(_frame(**{f"{P}/impute_score": [0.8] * 3}), _run("induced"), "KC")
+
+
 def test_the_bar_never_takes_an_external_or_withdrawn_baseline_however_low() -> None:
     frame = _frame(**{
         f"{P}/baseline/mean_mode/impute_score": [1.0] * 3,

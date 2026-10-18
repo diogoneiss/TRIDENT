@@ -132,7 +132,7 @@ winners beat the defaults on none. The rule fixed in advance says:
 ([ADR 0019](adr/0019-remove-the-stale-promoted-imputation-files.md)). The other two stay, and no
 winner is promoted.
 
-### T20 · Calibration at 40% missing and above — revived 2026-10-17, ADR 0027 ([proposal](proposals/calibration-as-imputation-output.md); ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
+### T20 · Calibration at 40% missing and above — adopted 2026-10-17, ADR 0027 ([proposal](proposals/calibration-as-imputation-output.md); ticket [imputation-calibration/01](tickets/imputation-calibration/01-calibration-at-higher-missingness.md), E40)
 
 E34 and E35 found the calibrated readout never worse than K at 40nan and above, and better in both
 seed sets on 6 variants. It failed at 20nan. The user chose on 2026-10-16 to confirm the rule
@@ -151,6 +151,13 @@ three seed sets and what adopting it takes are in
 variants and worse on none, and that includes pendigits_40nan and letter_40nan. An ADR (0027,
 amending ADR 0015) makes the calibration the imputation default at 40% missing and above. A flag
 and a tag keep today's output reachable.
+
+**Implemented 2026-10-17** (`--decode_calibration`, default `auto` for imputation). A default run
+equals E40's KC to the last digit on credit-g_60nan, and a 20nan run is unchanged. The tag backfill
+waits for the user's go.
+
+- **Follow-up, not built:** the deployable analogue. That is a calibration fitted on the masked
+  validation cells and read with H, which needs no complete table (E43).
 
 ## Backlog
 
