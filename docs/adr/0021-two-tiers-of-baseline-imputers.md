@@ -18,9 +18,21 @@ live.
 - a live kc2_60nan cell at seed 404 equals E40's on all 47 shared columns;
 - its linear arms equal E41's offline CSV within 4.4e-16.
 
-**Pending:** the backfill (`scripts/backfill_strong_tier.py`, dry run by default) onto the runs
-made before f21ee33, E45 and E46 included. Its full dry run (a cache fill, hours of CPU) and then
-`--apply` (it writes the store) wait for the user's go.
+**Full dry run, 2026-10-17, 22:52 to 23:17 GMT-3,** on the user's go. It ran on a copy of the store
+taken through SQLite's backup API at 22:50, in four lanes split by variant, and filled the live
+baseline cache.
+
+- **Planned:** 1,177 runs; 1,176 plans.
+- **Refused: 1,** `impute_electricity_20nan_20260925_044917`. Its logged mean/mode `acc_cat` is
+  0.000, against 0.145 recomputed, so its cells are not reproduced and it is left alone.
+- **Against E41's offline CSVs:**
+  - 774 runs have an E41 cell, and their arms agree within 4.4e-16.
+  - 4 differ, by 0.025 to 0.095. They are 2-fold runs (`null-path-recheck-2026-09-30`), compared
+    with E41's 5-fold cells of the same seed: other folds, not an error.
+- **The strong tier's best on the induced population:** missForest 663, condexp 277, ICE 159,
+  SoftImpute 77.
+- **Pending:** `--apply`, which writes the store. It waits for the user's go, after a backup, in a
+  window with no study.
 
 ## Context
 
