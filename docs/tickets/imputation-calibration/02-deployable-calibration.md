@@ -90,4 +90,8 @@ explained.
 
 ## Launch
 
-To be filled in at launch: the pre-launch check and the launch time.
+- **Checked before launch, with `--no-mlflow`, passed (2026-10-18, about 23:06 GMT-3):** kc2_60nan at
+  seed 404. Its K and KC equal E40's headline and calibrated readout fold by fold (largest
+  difference 0). The validation mask holds 60–65 cells a fold there. No score was read.
+- **Launched at 23:07 GMT-3** on 7756f01: four queues of 9 cells in
+  `/scratch2/diogoneiss/trident-2026-10-18-deployable-calibration/`, progress in its `progress.log`.
