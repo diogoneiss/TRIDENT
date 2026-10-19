@@ -573,6 +573,7 @@ def test_the_selection_diagnostics_are_imputation_flags_and_off_unless_asked() -
     for flag, field in (
         ("--score_induced_checkpoint", "score_induced_checkpoint"),
         ("--score_calibrated", "score_calibrated"),
+        ("--score_masked_calibration", "score_masked_calibration"),
         ("--score_checkpoints", "score_checkpoints"),
     ):
         assert getattr(resolve_training_request(parser.parse_args(imputation)), field) is False

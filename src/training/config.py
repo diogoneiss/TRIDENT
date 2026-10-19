@@ -212,6 +212,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         score_column_wise=getattr(args, "score_column_wise", False),
         score_induced_checkpoint=getattr(args, "score_induced_checkpoint", False),
         score_calibrated=getattr(args, "score_calibrated", False),
+        score_masked_calibration=getattr(args, "score_masked_calibration", False),
         score_checkpoints=getattr(args, "score_checkpoints", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
@@ -241,7 +242,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         raise SystemExit("error: --score_null_path requires --task imputation")
     if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_column_wise requires --task imputation")
-    for flag in ("score_induced_checkpoint", "score_calibrated", "score_checkpoints"):
+    for flag in ("score_induced_checkpoint", "score_calibrated", "score_masked_calibration", "score_checkpoints"):
         if getattr(args, flag, False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -529,6 +530,16 @@ def build_training_parser() -> argparse.ArgumentParser:
             "rows' own gaps: numbers shrunk toward the training mean, low-confidence categories "
             "answered with the mode. As impute/induced/calibrated/*. A diagnostic (ticket "
             "imputation-token-shape/04). Requires --task imputation."
+        ),
+    )
+    parser.add_argument(
+        "--score_masked_calibration",
+        action="store_true",
+        help=(
+            "Also score the test split after a calibration fitted on the fixed validation "
+            "mask's cells at the run's own checkpoint: observed cells only, so it needs no "
+            "complete table. As impute/induced/masked_calibrated/* and "
+            "impute/masked/masked_calibrated/*. A diagnostic (E47). Requires --task imputation."
         ),
     )
     parser.add_argument(

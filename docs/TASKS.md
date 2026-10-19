@@ -156,8 +156,9 @@ and a tag keep today's output reachable.
 `17121a5`). A default run equals E40's KC to the last digit on credit-g_60nan, and a 20nan run is
 unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
-- **Follow-up, not built:** the deployable analogue. That is a calibration fitted on the masked
-  validation cells and read with H, which needs no complete table (E43).
+- **Follow-up, in progress (E47, pre-registered 2026-10-18):** the deployable analogue. That is a
+  calibration fitted on the masked validation cells and read with H, which needs no complete
+  table (E43); [imputation-calibration/02](tickets/imputation-calibration/02-deployable-calibration.md).
 
 ## Backlog
 

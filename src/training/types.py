@@ -580,6 +580,10 @@ class TrainingRequest:
     # calibration fitted on the validation rows' own gaps. Neither ranks a fold.
     score_induced_checkpoint: bool = False
     score_calibrated: bool = False
+    # E47's diagnostic: the test split also scored after a calibration fitted on the fixed
+    # validation mask's cells, which are observed, so a deployed model could fit it. Never
+    # ranks a fold.
+    score_masked_calibration: bool = False
     # E43's diagnostic: the test split also scored at the epoch every other decode checkpoint
     # criterion would keep (``loss``, ``induced``, ``masked``), on the same trajectory. Never
     # ranks a fold.

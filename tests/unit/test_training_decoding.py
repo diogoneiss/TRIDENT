@@ -455,6 +455,38 @@ def test_under_gaps_the_induced_headline_is_the_calibrated_readout_and_nothing_e
     assert calibrated.scored_cells[masked].equals(plain.scored_cells[masked])
 
 
+def test_the_masked_calibration_is_fitted_on_the_validation_mask_and_touches_nothing_else() -> None:
+    """E47. ``score_masked_calibration`` fits the calibration on the fixed validation mask's cells
+    at the run's own checkpoint and scores the test split's masked cells and raw induced output
+    after it. Every other key, the model and the losses are those of a run without it."""
+    dataset = _dataset()
+    np.random.seed(0)
+    plain, _ = _run(dataset=dataset, sibling=_complete_frame(), score_search_objective=True, hyperparameters=_hyperparameters(EPOCHS_DECODE=6))
+    np.random.seed(0)
+    asked, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True, score_masked_calibration=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6),
+    )
+
+    metrics = asked.result.metrics
+    for key, value in plain.result.metrics.items():
+        assert metrics[key] == value, key
+    assert asked.train_losses == plain.train_losses
+    for name, tensor in plain.model.state_dict().items():
+        assert bool((asked.model.state_dict()[name] == tensor).all()), name
+    added = {key for key in metrics if key not in plain.result.metrics}
+    assert added and all("/masked_calibrated/" in key for key in added)
+    for population in ("masked", "induced"):
+        assert f"impute/{population}/masked_calibrated/impute_score" in metrics
+        assert metrics[f"impute/{population}/masked_calibrated/n_num_cells"] == metrics[f"impute/{population}/n_num_cells"]
+    assert metrics["impute/induced/masked_calibrated/n_fit_cells"] > 0
+
+    np.random.seed(0)
+    without_truth, _ = _run(dataset=dataset, score_masked_calibration=True, hyperparameters=_hyperparameters(EPOCHS_DECODE=6))
+    assert "impute/masked/masked_calibrated/impute_score" in without_truth.result.metrics
+    assert "impute/induced/masked_calibrated/impute_score" not in without_truth.result.metrics
+
+
 def test_with_nothing_to_learn_the_induced_checkpoint_is_the_first_epoch_and_scores_as_the_headline() -> None:
     outcome, _ = _run(
         sibling=_complete_frame(), score_induced_checkpoint=True,

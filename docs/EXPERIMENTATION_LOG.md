@@ -73,6 +73,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
 | E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 | done | supported: H beats the weak bar under MNAR on 4 of 4 new pairs; dial dose-response no (flat 0.25–0.5, then rising; H loses to the bar at slope 2.0); Mx beats G only at slope 2.0 |
+| E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – | in progress | 36 cells on E40's 12 variants and seeds; HC_m − H primary, integrity on K and KC |
 
 ## Entries
 
@@ -1544,3 +1545,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/06-mnar-family.md` (Outcome);
   `scripts/experiments/mnar_family_run.py`, `mnar_family_report.py`, `run_mnar_family_queue.sh`;
   `datasets/generate_mnar.py`.
+
+### E47 · A deployable calibration (2026-10-18 – )
+
+- **Status:** in progress. Pre-registered before the first cell, with the user's agreement
+  (2026-10-18), as T20's follow-up after ADR 0027.
+- **Hypothesis:** a calibration fitted on the fixed validation mask's cells (observed, so a
+  deployed model can fit it), applied to H, keeps part of KC's gain without needing the validation
+  gaps' truth.
+- **Scenarios:**
+  - **Arm:** one per cell, on one trajectory: H headline (`--decode_checkpoint loss`,
+    `--decode_calibration none`), plus the readouts HC_m (`--score_masked_calibration`, new and
+    off by default), HC_g, K and KC.
+  - **Cells:** E40's 12 variants at 40nan and above, seeds 404/505/606; 36 cells, tag
+    `experiment=deployable-calibration-2026-10-18`.
+  - **Integrity:** K and KC must equal E40's cells.
+- **Measures and decision rule:**
+  - **Primary:** HC_m − H on the induced `impute_score`, with the verdict rule and the 1% SESOI.
+    Supported if better on at least 4 of E40's 6 named variants and worse on none of the 12;
+    refuted if worse on at least 2 or better on at most 1 named; mixed otherwise.
+  - **Secondary (descriptive):** HC_g − H and the share of its gain HC_m keeps; the masked
+    population; HC_m − K; the bars; α and the fit's cell counts.
+  - **Supported** leads to a proposed ADR amending 0027; otherwise 0027 stands.
+- **Sources:** `docs/tickets/imputation-calibration/02-deployable-calibration.md`;
+  `scripts/experiments/deployable_calibration_run.py`, `deployable_calibration_report.py`,
+  `run_deployable_calibration_queue.sh`.

@@ -50,6 +50,7 @@ def train_and_evaluate_decoder(
     score_column_wise: bool = False,
     score_induced_checkpoint: bool = False,
     score_calibrated: bool = False,
+    score_masked_calibration: bool = False,
     score_checkpoints: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
@@ -225,6 +226,7 @@ def train_and_evaluate_decoder(
     cells = _score_population(
         model, hidden_test, embedder.encode(_clean(test_frame), device), "masked", raw_variant
     )
+    masked_test = cells
 
     metrics: dict[str, float | int | str] = {}
     if hyperparameters.decode_patience:
@@ -272,6 +274,7 @@ def train_and_evaluate_decoder(
     # the masked population, the other checkpoints' readouts and the search objective stay
     # uncalibrated.
     calibrate = hyperparameters.decode_calibration == "gaps" and complete_sibling is not None
+    raw_induced = None
     if complete_sibling is not None:
         raw_induced = _score_induced_missing(
             model, dataset, test_frame, complete_sibling, fold.test_indices, device
@@ -382,6 +385,29 @@ def train_and_evaluate_decoder(
                     )
             model.load_state_dict(headline_state)
             model.eval()
+
+    if score_masked_calibration:
+        # E47: the same calibration fitted on the fixed validation mask's cells at the run's own
+        # checkpoint. They are observed cells, so a deployed model can fit it without a complete
+        # table; applied to the test split's masked cells and, where there is a complete table,
+        # to its raw induced output. A diagnostic: nothing else reads it.
+        validation_masked = _score_population(model, hidden_validation, clean_validation, "masked")
+        masked_fit = fit_calibration(validation_masked, baselines)
+        metrics.update(
+            {
+                f"impute/masked/masked_calibrated/{name}": value
+                for name, value in score_cells(apply_calibration(masked_test, masked_fit, baselines), baselines).metrics.items()
+            }
+        )
+        if raw_induced is not None:
+            metrics.update(
+                {
+                    f"impute/induced/masked_calibrated/{name}": value
+                    for name, value in score_cells(apply_calibration(raw_induced, masked_fit, baselines), baselines).metrics.items()
+                }
+            )
+        metrics.update(_calibration_summary("impute/induced/masked_calibrated", masked_fit))
+        metrics["impute/induced/masked_calibrated/n_fit_cells"] = len(validation_masked)
 
     if mask_score is not None:
         metrics["decode/masked_checkpoint_epoch"] = mask_epoch
