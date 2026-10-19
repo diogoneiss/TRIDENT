@@ -75,6 +75,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 | done | supported: H beats the weak bar under MNAR on 4 of 4 new pairs; dial dose-response no (flat 0.25–0.5, then rising; H loses to the bar at slope 2.0); Mx beats G only at slope 2.0 |
 | E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – 2026-10-19 | done | supported by the rule (HC_m better than H on 4 of 6 named, worse on none) but small: at most 0.4% of H, keeping 3–29% of the oracle calibration's gain; kr-vs-kp unchanged |
 | E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
+| E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 – | in progress | a read of E24–E26's parents; no run |
 
 ## Entries
 
@@ -1620,3 +1621,24 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   untuned at the paper's settings.
 - **Sources:** `docs/tickets/imputation-protocol/07-macode.md` (Outcome); `src/training/macode.py`;
   `scripts/experiments/macode_run.py`, `macode_report.py`.
+
+### E49 · D1 of T28: the decode curves, pre-trained against not (2026-10-19 – )
+
+- **Status:** in progress. Pre-registered before any curve was read, on the user's request
+  (2026-10-19).
+- **Hypothesis (H3 of T28's report):** the decode stage erases pre-training's head start
+  (washout).
+- **Scenarios:**
+  - **Data:** each parent's `cv/decode/val_loss/mean` per epoch, from E24, E25 and E26. No GPU and
+    no new run.
+  - **Pairs:** A, N and V against B (150 decode epochs), and M against C (450), by variant and
+    seed.
+- **Measures and decision rule:**
+  - **Measures:** the relative gap at epochs 0, 10 and 50, the catch-up epoch and the gap at the
+    minima.
+  - **Reading per variant and arm:** real transfer if the gap at the minima is at least +1% on
+    every seed; washout if not, and the head start at epoch 0 is at least +1% on every seed;
+    nothing usable if the head start is below +1% on every seed; mixed otherwise.
+  - **Limit:** it is the decode loss, not `impute_score`.
+- **Sources:** `docs/tickets/imputation-pretraining/08-decode-curves.md`;
+  `scripts/experiments/decode_curves_report.py`.
