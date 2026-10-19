@@ -1,6 +1,6 @@
 """The secondary metric panel, offline (T24; plan 2026-10-17 §2d, D16).
 
-    uv run --python 3.11 python -B scripts/experiments/metric_panel.py <state_dir> <out_dir> <variant> <seed> [<seed> ...] [--baselines]
+    uv run --python 3.11 python -B scripts/experiments/metric_panel.py <state_dir> <out_dir> <variant> <seed> [<seed> ...] [--baselines] [--cell_suffix _G]
 
 For each (variant, seed) of a queue study, the model's induced fills are read from the run's five
 fold ledgers (``<state_dir>/results/<variant>_s<seed>/<variant>/<timestamp>/imputation/
@@ -70,17 +70,22 @@ def panel(cells: pd.DataFrame, naive: Mapping[str, float | str]) -> dict[str, fl
         fill = numbers["column"].map(naive).to_numpy(dtype=float)
         out["rmse_ratio"] = _ratio(float(np.sqrt(np.mean((imputed - actual) ** 2))), float(np.sqrt(np.mean((fill - actual) ** 2))))
         out["mae_ratio"] = _ratio(float(np.mean(np.abs(imputed - actual))), float(np.mean(np.abs(fill - actual))))
-        ratios, biases, spreads, distances = [], [], [], []
+        ratios, biases, signed, spreads, distances = [], [], [], [], []
         for column, group in numbers.groupby("column"):
             a, i = group["actual"].to_numpy(dtype=float), group["imputed"].to_numpy(dtype=float)
             f = float(naive[str(column)])
             ratios.append(_ratio(float(np.sqrt(np.mean((i - a) ** 2))), float(np.sqrt(np.mean((f - a) ** 2)))))
             biases.append(abs(float(np.mean(i - a))))
+            signed.append(float(np.mean(i - a)))
             if len(a) > 1 and a.std() > 0:
                 spreads.append(float(i.std() / a.std()))
             distances.append(float(wasserstein_distance(i, a)))
         out["colnorm_ratio"] = float(np.nanmean(ratios))
         out["abs_bias"] = float(np.mean(biases))
+        # E45/E46's measure 5: the signed bias per column, averaged, and the share of columns
+        # whose fills fall below the truth on average (MNAR hides large values).
+        out["signed_bias"] = float(np.mean(signed))
+        out["share_under"] = float(np.mean(np.asarray(signed) < 0))
         out["dispersion"] = float(np.mean(spreads)) if spreads else float("nan")
         out["wasserstein"] = float(np.mean(distances))
     categories = cells[cells["kind"] == CATEGORICAL]
@@ -110,8 +115,8 @@ def panel(cells: pd.DataFrame, naive: Mapping[str, float | str]) -> dict[str, fl
     return out
 
 
-def _ledger(state: Path, variant: str, seed: int, fold: int) -> pd.DataFrame:
-    found = sorted((state / "results" / f"{variant}_s{seed}" / variant).glob(f"*/imputation/imputation_fold_{fold}_cells.csv"))
+def _ledger(state: Path, variant: str, seed: int, fold: int, suffix: str = "") -> pd.DataFrame:
+    found = sorted((state / "results" / f"{variant}_s{seed}{suffix}" / variant).glob(f"*/imputation/imputation_fold_{fold}_cells.csv"))
     if len(found) != 1:
         raise FileNotFoundError(f"{variant} s{seed} fold {fold}: {len(found)} ledgers")
     frame = pd.read_csv(found[0], dtype={"actual": object, "imputed": object})
@@ -121,6 +126,11 @@ def _ledger(state: Path, variant: str, seed: int, fold: int) -> pd.DataFrame:
 def main(argv: list[str]) -> int:
     baselines = "--baselines" in argv
     argv = [a for a in argv if a != "--baselines"]
+    # A study whose cell directories carry the arm (E45/E46: ``<variant>_s<seed>_G``).
+    suffix = ""
+    if "--cell_suffix" in argv:
+        at = argv.index("--cell_suffix")
+        suffix, argv = argv[at + 1], argv[:at] + argv[at + 2:]
     if len(argv) < 4:
         sys.exit(__doc__)
     state, out_dir, variant, seeds = Path(argv[0]), Path(argv[1]), argv[2], [int(s) for s in argv[3:]]
@@ -148,7 +158,7 @@ def main(argv: list[str]) -> int:
             train = features.iloc[train_index].reset_index(drop=True)
             test = features.iloc[test_index].reset_index(drop=True)
             naive = mean_mode_baselines(train, numerical, categorical)
-            cells = _ledger(state, variant, seed, ordinal)
+            cells = _ledger(state, variant, seed, ordinal, suffix)
             numeric = cells["kind"] == NUMERICAL
             cells.loc[numeric, "actual"] = cells.loc[numeric, "actual"].astype(float)
             cells.loc[numeric, "imputed"] = cells.loc[numeric, "imputed"].astype(float)
