@@ -74,7 +74,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
 | E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 | done | supported: H beats the weak bar under MNAR on 4 of 4 new pairs; dial dose-response no (flat 0.25–0.5, then rising; H loses to the bar at slope 2.0); Mx beats G only at slope 2.0 |
 | E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – 2026-10-19 | done | supported by the rule (HC_m better than H on 4 of 6 named, worse on none) but small: at most 0.4% of H, keeping 3–29% of the oracle calibration's gain; kr-vs-kp unchanged |
-| E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 – | in progress | 108 (variant, seed) pairs off-store: development 101/202/303 and E44's confirmation folds |
+| E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
 
 ## Entries
 
@@ -1588,10 +1588,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/deployable_calibration_run.py`, `deployable_calibration_report.py`,
   `run_deployable_calibration_queue.sh`.
 
-### E48 · MaCoDE as an external deep baseline (2026-10-19 – )
+### E48 · MaCoDE as an external deep baseline (2026-10-19)
 
-- **Status:** in progress. Pre-registered before the first scored cell, on the user's go
-  (2026-10-19).
+- **Status:** done. Pre-registered before the first scored cell, on the user's go (2026-10-19); it
+  ran from 07:57 to 18:58 GMT-3, off-store.
 - **Hypothesis:** TRIDENT's lead over the classical baselines holds against the nearest deep prior
   art, MaCoDE: a masked transformer over quantile bins, with no `[NULL]`/`[MASK]` split and no
   pre-training stage.
@@ -1608,5 +1608,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Descriptive on development.** If MaCoDE beats the strong tier's best on at least 5 of 15
     confirmation variants, propose by ADR that it join the strong tier offline; otherwise it is an
     external deep baseline only. No default changes.
-- **Sources:** `docs/tickets/imputation-protocol/07-macode.md`; `src/training/macode.py`;
+- **Results:** 108 of 108 pairs.
+  - **K − MaCoDE:** better 20 / none 1 on the development set and 14 / 1 on the confirmation set;
+    worse on none.
+  - **MaCoDE − strong:** better 5 / worse 16 on the development set and 4 / 1 / 10 on the
+    confirmation set. It is strong on kr-vs-kp, letter, electricity and spambase_40nan, and weak
+    (below the weak bar) on credit-g, vehicle, biodeg, kc2 and pendigits.
+  - **K − best of all,** MaCoDE included: unchanged, 13/6/2 and 10/2/3.
+- **Conclusion:** the nearest deep prior art does not change any of TRIDENT's verdicts. By the rule
+  it stays an external deep baseline (4 of 15 confirmation variants, fewer than 5). MaCoDE ran
+  untuned at the paper's settings.
+- **Sources:** `docs/tickets/imputation-protocol/07-macode.md` (Outcome); `src/training/macode.py`;
   `scripts/experiments/macode_run.py`, `macode_report.py`.

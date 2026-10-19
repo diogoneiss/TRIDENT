@@ -92,7 +92,7 @@ def report(label: str, found: list[tuple[str, Cells | None]]) -> None:
             readings["macode − tuned"] = contrast(cells, "macode", "tuned")
         readings["K − best_of_all"] = contrast(cells, "K", "best_of_all")
         best = sorted({common.opponent(frame, "best_of_all")[0] for _, frame in cells})
-        seconds = float(np.mean([frame["baseline/macode/fit_seconds"].mean() for _, frame in cells]))
+        seconds = float(np.mean([frame["impute/induced/baseline/macode/fit_seconds"].mean() for _, frame in cells]))
         print(f"- `{variant}`: " + "; ".join(f"{k} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}" for k, v in readings.items())
               + f"; best of all {'/'.join(best)}; fit {seconds:.0f} s a fold")
         for k, v in readings.items():
