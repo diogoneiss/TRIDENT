@@ -73,7 +73,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E44 | Confirmation of the frozen configuration on the 15 unused variants | 2026-10-17 | done | mixed: better than both bars on 9 of 15, worse on 3 (electricity_40/60nan, letter_80nan by 0.2%); large tables and 40nan generalise, 80nan mostly ties; H nearly matches K; KC better on 8, threshold 40 supported |
 | E45 | MNAR smoke family: value-dependent missingness at the MCAR counts | 2026-10-17 | done | go for the full family: 36 of 36 cells, integrity exact; the lead over the bar survives MNAR on all 3 tables, shrinks only on biodeg; K − H unchanged; t2's control weak (Mx gains only on biodeg) |
 | E46 | The full MNAR family: spambase, the 20nan rung and biodeg's tilt dial | 2026-10-17 | done | supported: H beats the weak bar under MNAR on 4 of 4 new pairs; dial dose-response no (flat 0.25–0.5, then rising; H loses to the bar at slope 2.0); Mx beats G only at slope 2.0 |
-| E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – | in progress | 36 cells on E40's 12 variants and seeds; HC_m − H primary, integrity on K and KC |
+| E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – 2026-10-19 | done | supported by the rule (HC_m better than H on 4 of 6 named, worse on none) but small: at most 0.4% of H, keeping 3–29% of the oracle calibration's gain; kr-vs-kp unchanged |
 
 ## Entries
 
@@ -1549,10 +1549,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/mnar_family_run.py`, `mnar_family_report.py`, `run_mnar_family_queue.sh`;
   `datasets/generate_mnar.py`.
 
-### E47 · A deployable calibration (2026-10-18 – )
+### E47 · A deployable calibration (2026-10-18 – 2026-10-19)
 
-- **Status:** in progress. Pre-registered before the first cell, with the user's agreement
-  (2026-10-18), as T20's follow-up after ADR 0027.
+- **Status:** done. Pre-registered before the first cell, with the user's agreement (2026-10-18),
+  as T20's follow-up after ADR 0027; it ran from 23:07 to 01:37 GMT-3.
 - **Hypothesis:** a calibration fitted on the fixed validation mask's cells (observed, so a
   deployed model can fit it), applied to H, keeps part of KC's gain without needing the validation
   gaps' truth.
@@ -1570,6 +1570,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Secondary (descriptive):** HC_g − H and the share of its gain HC_m keeps; the masked
     population; HC_m − K; the bars; α and the fit's cell counts.
   - **Supported** leads to a proposed ADR amending 0027; otherwise 0027 stands.
-- **Sources:** `docs/tickets/imputation-calibration/02-deployable-calibration.md`;
+- **Results:** 36 of 36 cells; K and KC equal E40's on all 12 variants.
+  - **Primary: supported.** HC_m is better than H on 4 of the 6 named variants (spambase_80nan,
+    credit-g_60nan, credit-g_80nan, vehicle_60nan) and on biodeg_60nan. It is worse on none and
+    equivalent on 7.
+  - **Small:** −0.0004 to −0.0032 (at most 0.4% of H). It keeps 3–29% of HC_g's gain on the
+    named variants.
+  - **kr-vs-kp at 60/80nan is unchanged:** no categorical column has the 30 fit cells.
+  - **α:** 0.84–0.99 for the masked fit, against 0.53–0.93 for the gaps' fit. HC_m stays below K
+    on four variants.
+- **Conclusion:** a deployable calibration helps, but little. The validation mask has too few
+  cells for the fit. The seeds decided E40, so any ADR would need fresh seeds first. User's choice
+  pending: stop and state it (recommended), replicate, or a new design with more fit cells.
+- **Sources:** `docs/tickets/imputation-calibration/02-deployable-calibration.md` (Outcome);
   `scripts/experiments/deployable_calibration_run.py`, `deployable_calibration_report.py`,
   `run_deployable_calibration_queue.sh`.

@@ -152,11 +152,13 @@ def integrity() -> None:
         worst = 0.0
         for (run_a, a), (run_b, b) in zip(ours, theirs):
             for readout in ("K", "KC"):
-                for metric in ("impute_score", "rmse_num_z"):
-                    if readout == "KC" and f"impute/induced/induced_checkpoint_calibrated/{metric}" not in a.columns:
+                # An all-categorical table (kr-vs-kp) has no numerical metric.
+                for metric in ("impute_score", "rmse_num_z", "err_cat"):
+                    try:
+                        x = common.model(a, run_a, readout, "induced", metric)
+                        y = common.model(b, run_b, readout, "induced", metric)
+                    except KeyError:
                         continue
-                    x = common.model(a, run_a, readout, "induced", metric)
-                    y = common.model(b, run_b, readout, "induced", metric)
                     worst = max(worst, float(np.abs(x - y).max()))
         print(f"  {variant}: largest difference from E40 {worst:g}")
 

@@ -156,9 +156,11 @@ and a tag keep today's output reachable.
 `17121a5`). A default run equals E40's KC to the last digit on credit-g_60nan, and a 20nan run is
 unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
-- **Follow-up, in progress (E47, pre-registered 2026-10-18):** the deployable analogue. That is a
-  calibration fitted on the masked validation cells and read with H, which needs no complete
-  table (E43); [imputation-calibration/02](tickets/imputation-calibration/02-deployable-calibration.md).
+- **Follow-up, E47 done 2026-10-19:** the deployable analogue is a calibration fitted on the masked
+  validation cells and read with H
+  ([imputation-calibration/02](tickets/imputation-calibration/02-deployable-calibration.md)).
+  - It is supported by the rule but small: at most 0.4% of H, keeping 3–29% of the oracle's gain.
+  - The user decides whether to stop, replicate on fresh seeds, or redesign the fit.
 
 ## Backlog
 
