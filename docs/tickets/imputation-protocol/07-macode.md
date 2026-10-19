@@ -74,4 +74,6 @@ All on the induced `impute_score` over 15 fold pairs, with the verdict rule and 
 
 ## Launch
 
-To be filled in at launch.
+- **Launched at 07:57 GMT-3 on 2026-10-19** on `113ad9a`: three GPU lanes of 36 pairs each, about
+  163 estimated minutes per lane. Confirmation folds go first in every lane.
+- Progress is in `/scratch2/diogoneiss/trident-2026-10-19-macode/progress.log`.
