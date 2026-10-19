@@ -131,8 +131,8 @@ All 207 (variant, seed) files exist. They took 55.8 process-hours at 4 threads e
 25–40 CPU-h estimated.
 
 - **CPU time per family** was not recorded; only the time per file is in the lane logs.
-- **The missForest pass** (`--families missforest`, secondary) started at 22:52 GMT-3 on
-  2026-10-17, on the user's go. It is appended when it ends.
+- **The missForest pass** (`--families missforest`, secondary) ran from 22:52 GMT-3 on
+  2026-10-17 to 22:21 on 2026-10-18; its reading is below.
 
 **The printout** (`scripts/experiments/baseline_budget_report.py`): each line is a mean difference
 over the 15 fold pairs of the induced `impute_score` (lower is better), with the verdict rule and
@@ -259,4 +259,155 @@ counted only where K beats both bars. That is 13 of 21 variants on 101/202/303 a
 
 **For the user:** whether the development thesis table
 (`docs/reports/2026-10-17-thesis-table-development.md`) gains the tuned-bar column.
+
+## Outcome (2026-10-18, 22:26 GMT-3): the missForest pass
+
+**Run.** All 207 (variant, seed) files exist (`csv_missforest/`). They ran from 22:52 GMT-3 on
+2026-10-17 to 22:21 on 2026-10-18, in 4 lanes.
+
+- E44's folds came first, done by 02:48.
+- From 19:16 five helper processes took the lanes' last variants, with their seeds reversed. A
+  finished file is skipped, so at most one seed of a variant was computed twice. The fills are
+  deterministic, so a second computation writes the same file.
+- No log holds an error.
+
+**The printout** (`scripts/experiments/baseline_budget_report.py --missforest`).
+
+- "strong" is the strong tier as logged: missForest and E41's linear arms. "tuned strong" is the
+  same tier with missForest tuned: the lowest CV mean among the tuned missForest and the arms.
+- "budget" is the tuned missForest minus the live one, in percent of the live one.
+
+```text
+## Seeds 101/202/303 (read)
+- `kr-vs-kp_20nan`: tuned missForest vs missForest -0.0022 none; K vs missForest -0.0786 better; K vs tuned missForest -0.0764 better; K vs strong -0.0749 better; K vs tuned strong -0.0747 better; K vs masked-selection missForest -0.0768 better; budget -0.3% of missForest; current setting kept 27%
+- `kr-vs-kp_40nan`: tuned missForest vs missForest +0.0009 equivalent; K vs missForest -0.0776 better; K vs tuned missForest -0.0786 better; K vs strong -0.0648 better; K vs tuned strong -0.0648 better; K vs masked-selection missForest -0.0762 better; budget +0.1% of missForest; current setting kept 47%
+- `kr-vs-kp_60nan`: tuned missForest vs missForest +0.0038 none; K vs missForest -0.0685 better; K vs tuned missForest -0.0723 better; K vs strong -0.0353 better; K vs tuned strong -0.0353 better; K vs masked-selection missForest -0.0712 better; budget +0.4% of missForest; current setting kept 47%
+- `kr-vs-kp_80nan`: tuned missForest vs missForest -0.0003 equivalent; K vs missForest -0.0298 better; K vs tuned missForest -0.0294 better; K vs strong -0.0185 better; K vs tuned strong -0.0185 better; K vs masked-selection missForest -0.0383 better; budget -0.0% of missForest; current setting kept 67%
+- `spambase_20nan`: tuned missForest vs missForest +0.0015 equivalent; K vs missForest -0.0053 none; K vs tuned missForest -0.0068 none; K vs strong -0.0053 none; K vs tuned strong -0.0068 none; K vs masked-selection missForest -0.0052 none; budget +0.2% of missForest; current setting kept 60%
+- `spambase_40nan`: tuned missForest vs missForest +0.0007 equivalent; K vs missForest -0.0358 better; K vs tuned missForest -0.0364 better; K vs strong -0.0358 better; K vs tuned strong -0.0364 better; K vs masked-selection missForest -0.0385 better; budget +0.1% of missForest; current setting kept 40%
+- `spambase_60nan`: tuned missForest vs missForest -0.0205 better; K vs missForest -0.0399 better; K vs tuned missForest -0.0194 better; K vs strong -0.0163 better; K vs tuned strong -0.0163 better; K vs masked-selection missForest -0.0245 better; budget -2.1% of missForest; current setting kept 0%
+- `spambase_80nan`: tuned missForest vs missForest -0.0410 better; K vs missForest -0.0443 better; K vs tuned missForest -0.0033 better; K vs strong -0.0144 better; K vs tuned strong -0.0033 better; K vs masked-selection missForest -0.0064 better; budget -4.0% of missForest; current setting kept 0%
+- `credit-g_20nan`: tuned missForest vs missForest +0.0005 equivalent; K vs missForest -0.0156 none; K vs tuned missForest -0.0161 none; K vs strong -0.0156 none; K vs tuned strong -0.0161 none; K vs masked-selection missForest -0.0215 better; budget +0.1% of missForest; current setting kept 33%
+- `credit-g_40nan`: tuned missForest vs missForest +0.0019 equivalent; K vs missForest -0.0105 better; K vs tuned missForest -0.0123 better; K vs strong -0.0105 better; K vs tuned strong -0.0123 better; K vs masked-selection missForest -0.0126 better; budget +0.2% of missForest; current setting kept 47%
+- `credit-g_60nan`: tuned missForest vs missForest -0.0177 better; K vs missForest -0.0167 better; K vs tuned missForest +0.0010 none; K vs strong +0.0049 none; K vs tuned strong +0.0049 none; K vs masked-selection missForest -0.0008 none; budget -1.8% of missForest; current setting kept 0%
+- `credit-g_80nan`: tuned missForest vs missForest -0.0515 better; K vs missForest -0.0874 better; K vs tuned missForest -0.0359 better; K vs strong +0.0124 worse; K vs tuned strong +0.0124 worse; K vs masked-selection missForest -0.0428 better; budget -4.7% of missForest; current setting kept 0%
+- `vehicle_20nan`: tuned missForest vs missForest +0.0018 none; K vs missForest -0.0348 better; K vs tuned missForest -0.0366 better; K vs strong -0.0348 better; K vs tuned strong -0.0366 better; K vs masked-selection missForest -0.0351 better; budget +0.4% of missForest; current setting kept 20%
+- `vehicle_60nan`: tuned missForest vs missForest -0.0011 equivalent; K vs missForest -0.0111 none; K vs tuned missForest -0.0100 none; K vs strong -0.0111 none; K vs tuned strong -0.0100 none; K vs masked-selection missForest -0.0196 better; budget -0.2% of missForest; current setting kept 47%
+- `biodeg_20nan`: tuned missForest vs missForest -0.0029 none; K vs missForest -0.0371 better; K vs tuned missForest -0.0342 better; K vs strong -0.0371 better; K vs tuned strong -0.0342 better; K vs masked-selection missForest -0.0341 better; budget -0.5% of missForest; current setting kept 7%
+- `biodeg_60nan`: tuned missForest vs missForest +0.0032 none; K vs missForest +0.0115 none; K vs tuned missForest +0.0083 none; K vs strong +0.0115 none; K vs tuned strong +0.0083 none; K vs masked-selection missForest +0.0053 none; budget +0.4% of missForest; current setting kept 27%
+- `kc2_20nan`: tuned missForest vs missForest -0.0008 none; K vs missForest -0.0354 none; K vs tuned missForest -0.0347 none; K vs strong -0.0005 none; K vs tuned strong -0.0005 none; K vs masked-selection missForest -0.0330 none; budget -0.1% of missForest; current setting kept 27%
+- `kc2_60nan`: tuned missForest vs missForest +0.0015 none; K vs missForest -0.1134 better; K vs tuned missForest -0.1149 better; K vs strong -0.0378 better; K vs tuned strong -0.0378 better; K vs masked-selection missForest -0.1143 better; budget +0.2% of missForest; current setting kept 13%
+- `pendigits_20nan`: tuned missForest vs missForest -0.0039 better; K vs missForest -0.0138 better; K vs tuned missForest -0.0098 better; K vs strong -0.0138 better; K vs tuned strong -0.0098 better; K vs masked-selection missForest -0.0100 better; budget -1.2% of missForest; current setting kept 20%
+- `letter_20nan`: tuned missForest vs missForest -0.0016 better; K vs missForest -0.0298 better; K vs tuned missForest -0.0282 better; K vs strong -0.0298 better; K vs tuned strong -0.0282 better; K vs masked-selection missForest -0.0280 better; budget -0.3% of missForest; current setting kept 20%
+- `electricity_20nan`: tuned missForest vs missForest -0.0035 better; K vs missForest -0.0010 none; K vs tuned missForest +0.0025 none; K vs strong -0.0010 none; K vs tuned strong +0.0025 none; K vs masked-selection missForest +0.0006 none; budget -0.6% of missForest; current setting kept 40%
+  - tuned missForest vs missForest: better 7 / no difference 7 / equivalent 7 / worse 0 (fold-pair t, seed agreement)
+  - K vs missForest: better 15 / no difference 6 / worse 0 (fold-pair t, seed agreement)
+  - K vs tuned missForest: better 14 / no difference 7 / worse 0 (fold-pair t, seed agreement)
+  - K vs strong: better 13 / no difference 7 / worse 1 (fold-pair t, seed agreement)
+  - K vs tuned strong: better 13 / no difference 7 / worse 1 (fold-pair t, seed agreement)
+  - K vs masked-selection missForest: better 16 / no difference 5 / worse 0 (fold-pair t, seed agreement)
+  - K's verdict changes between the strong tiers: none
+
+## Seeds 404/505/606 (read)
+- `kr-vs-kp_40nan`: tuned missForest vs missForest -0.0011 none; K vs missForest -0.0736 better; K vs tuned missForest -0.0725 better; K vs strong -0.0688 better; K vs tuned strong -0.0691 better; K vs masked-selection missForest -0.0804 better; budget -0.1% of missForest; current setting kept 20%
+- `kr-vs-kp_60nan`: tuned missForest vs missForest -0.0032 equivalent; K vs missForest -0.0721 better; K vs tuned missForest -0.0689 better; K vs strong -0.0442 better; K vs tuned strong -0.0442 better; K vs masked-selection missForest -0.0726 better; budget -0.3% of missForest; current setting kept 47%
+- `kr-vs-kp_80nan`: tuned missForest vs missForest -0.0003 equivalent; K vs missForest -0.0385 better; K vs tuned missForest -0.0382 better; K vs strong -0.0210 better; K vs tuned strong -0.0210 better; K vs masked-selection missForest -0.0389 better; budget -0.0% of missForest; current setting kept 53%
+- `spambase_40nan`: tuned missForest vs missForest -0.0002 equivalent; K vs missForest -0.0369 better; K vs tuned missForest -0.0367 better; K vs strong -0.0369 better; K vs tuned strong -0.0367 better; K vs masked-selection missForest -0.0414 better; budget -0.0% of missForest; current setting kept 47%
+- `spambase_60nan`: tuned missForest vs missForest -0.0157 better; K vs missForest -0.0364 better; K vs tuned missForest -0.0207 better; K vs strong -0.0162 better; K vs tuned strong -0.0162 better; K vs masked-selection missForest -0.0211 better; budget -1.6% of missForest; current setting kept 0%
+- `spambase_80nan`: tuned missForest vs missForest -0.0421 better; K vs missForest -0.0441 better; K vs tuned missForest -0.0020 equivalent; K vs strong -0.0121 better; K vs tuned strong -0.0020 equivalent; K vs masked-selection missForest -0.0046 equivalent; budget -4.1% of missForest; current setting kept 0%
+- `credit-g_40nan`: tuned missForest vs missForest +0.0010 equivalent; K vs missForest -0.0053 none; K vs tuned missForest -0.0063 none; K vs strong -0.0053 none; K vs tuned strong -0.0063 none; K vs masked-selection missForest -0.0147 better; budget +0.1% of missForest; current setting kept 33%
+- `credit-g_60nan`: tuned missForest vs missForest -0.0155 better; K vs missForest -0.0218 better; K vs tuned missForest -0.0063 none; K vs strong +0.0017 none; K vs tuned strong +0.0017 none; K vs masked-selection missForest -0.0091 none; budget -1.5% of missForest; current setting kept 0%
+- `credit-g_80nan`: tuned missForest vs missForest -0.0370 better; K vs missForest -0.0724 better; K vs tuned missForest -0.0355 better; K vs strong +0.0111 worse; K vs tuned strong +0.0111 worse; K vs masked-selection missForest -0.0376 better; budget -3.4% of missForest; current setting kept 0%
+- `vehicle_60nan`: tuned missForest vs missForest -0.0009 equivalent; K vs missForest -0.0135 none; K vs tuned missForest -0.0126 none; K vs strong -0.0135 none; K vs tuned strong -0.0126 none; K vs masked-selection missForest -0.0143 none; budget -0.1% of missForest; current setting kept 40%
+- `biodeg_60nan`: tuned missForest vs missForest +0.0017 none; K vs missForest +0.0117 worse; K vs tuned missForest +0.0100 none; K vs strong +0.0117 worse; K vs tuned strong +0.0100 none; K vs masked-selection missForest +0.0007 none; budget +0.2% of missForest; current setting kept 27%
+- `kc2_60nan`: tuned missForest vs missForest +0.0087 none; K vs missForest -0.1202 better; K vs tuned missForest -0.1288 better; K vs strong -0.0385 none; K vs tuned strong -0.0385 none; K vs masked-selection missForest -0.1146 better; budget +1.3% of missForest; current setting kept 0%
+  - tuned missForest vs missForest: better 4 / no difference 3 / equivalent 5 / worse 0 (fold-pair t, seed agreement)
+  - K vs missForest: better 9 / no difference 2 / worse 1 (fold-pair t, seed agreement)
+  - K vs tuned missForest: better 7 / no difference 4 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+  - K vs strong: better 6 / no difference 4 / worse 2 (fold-pair t, seed agreement)
+  - K vs tuned strong: better 5 / no difference 5 / equivalent 1 / worse 1 (fold-pair t, seed agreement)
+  - K vs masked-selection missForest: better 8 / no difference 3 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+  - K's verdict changes between the strong tiers: ['spambase_80nan (better → equivalent)', 'biodeg_60nan (worse → none)']
+
+## Seeds 42/7/13 (run beside the pre-registered sets, not pooled)
+- `kr-vs-kp_20nan`: tuned missForest vs missForest -0.0004 none; K vs missForest -0.0715 better; K vs tuned missForest -0.0711 better; K vs strong -0.0691 better; K vs tuned strong -0.0696 better; K vs masked-selection missForest -0.0725 better; budget -0.1% of missForest; current setting kept 7%
+- `kr-vs-kp_40nan` †: tuned missForest vs missForest +0.0033 none; K vs missForest -0.0425 better; K vs tuned missForest -0.0457 better; K vs strong -0.0307 better; K vs tuned strong -0.0299 better; K vs masked-selection missForest -0.0555 better; budget +0.4% of missForest; current setting kept 40%
+- `kr-vs-kp_60nan`: tuned missForest vs missForest +0.0025 equivalent; K vs missForest -0.0705 better; K vs tuned missForest -0.0731 better; K vs strong -0.0449 better; K vs tuned strong -0.0449 better; K vs masked-selection missForest -0.0764 better; budget +0.3% of missForest; current setting kept 27%
+- `kr-vs-kp_80nan`: tuned missForest vs missForest -0.0060 none; K vs missForest -0.0452 better; K vs tuned missForest -0.0392 better; K vs strong -0.0241 better; K vs tuned strong -0.0241 better; K vs masked-selection missForest -0.0446 better; budget -0.6% of missForest; current setting kept 33%
+- `spambase_20nan`: tuned missForest vs missForest +0.0014 equivalent; K vs missForest -0.0114 none; K vs tuned missForest -0.0128 better; K vs strong -0.0114 none; K vs tuned strong -0.0128 better; K vs masked-selection missForest -0.0113 none; budget +0.2% of missForest; current setting kept 20%
+- `spambase_40nan` †: tuned missForest vs missForest -0.0018 equivalent; K vs missForest -0.0386 better; K vs tuned missForest -0.0368 better; K vs strong -0.0386 better; K vs tuned strong -0.0368 better; K vs masked-selection missForest -0.0376 better; budget -0.2% of missForest; current setting kept 40%
+- `spambase_60nan`: tuned missForest vs missForest -0.0211 better; K vs missForest -0.0384 better; K vs tuned missForest -0.0172 better; K vs strong -0.0175 better; K vs tuned strong -0.0165 better; K vs masked-selection missForest -0.0177 better; budget -2.2% of missForest; current setting kept 0%
+- `spambase_80nan`: tuned missForest vs missForest -0.0449 better; K vs missForest -0.0461 better; K vs tuned missForest -0.0012 equivalent; K vs strong -0.0129 better; K vs tuned strong -0.0012 equivalent; K vs masked-selection missForest -0.0034 equivalent; budget -4.3% of missForest; current setting kept 0%
+- `credit-g_20nan`: tuned missForest vs missForest +0.0066 none; K vs missForest -0.0028 none; K vs tuned missForest -0.0094 none; K vs strong -0.0028 none; K vs tuned strong -0.0094 none; K vs masked-selection missForest -0.0064 none; budget +0.7% of missForest; current setting kept 7%
+- `credit-g_40nan` †: tuned missForest vs missForest +0.0004 equivalent; K vs missForest +0.0250 worse; K vs tuned missForest +0.0246 worse; K vs strong +0.0250 worse; K vs tuned strong +0.0246 worse; K vs masked-selection missForest +0.0182 none; budget +0.0% of missForest; current setting kept 40%
+- `credit-g_60nan`: tuned missForest vs missForest -0.0284 better; K vs missForest -0.0287 better; K vs tuned missForest -0.0003 none; K vs strong +0.0042 none; K vs tuned strong +0.0056 none; K vs masked-selection missForest -0.0081 none; budget -2.8% of missForest; current setting kept 0%
+- `credit-g_80nan`: tuned missForest vs missForest -0.0428 better; K vs missForest -0.0849 better; K vs tuned missForest -0.0421 better; K vs strong +0.0079 worse; K vs tuned strong +0.0079 worse; K vs masked-selection missForest -0.0448 better; budget -3.9% of missForest; current setting kept 0%
+- `vehicle_20nan`: tuned missForest vs missForest +0.0028 none; K vs missForest -0.0338 better; K vs tuned missForest -0.0366 better; K vs strong -0.0304 better; K vs tuned strong -0.0308 better; K vs masked-selection missForest -0.0397 better; budget +0.6% of missForest; current setting kept 27%
+- `vehicle_60nan`: tuned missForest vs missForest -0.0003 equivalent; K vs missForest -0.0018 none; K vs tuned missForest -0.0014 none; K vs strong -0.0018 none; K vs tuned strong -0.0014 none; K vs masked-selection missForest -0.0034 none; budget -0.1% of missForest; current setting kept 33%
+- `biodeg_20nan`: tuned missForest vs missForest -0.0050 better; K vs missForest -0.0318 better; K vs tuned missForest -0.0268 better; K vs strong -0.0318 better; K vs tuned strong -0.0268 better; K vs masked-selection missForest -0.0275 better; budget -0.8% of missForest; current setting kept 0%
+- `biodeg_60nan`: tuned missForest vs missForest -0.0018 none; K vs missForest -0.0019 none; K vs tuned missForest -0.0002 none; K vs strong -0.0019 none; K vs tuned strong -0.0002 none; K vs masked-selection missForest -0.0065 none; budget -0.2% of missForest; current setting kept 13%
+- `kc2_20nan`: tuned missForest vs missForest -0.0051 none; K vs missForest -0.0640 none; K vs tuned missForest -0.0589 none; K vs strong -0.0357 none; K vs tuned strong -0.0357 none; K vs masked-selection missForest -0.0561 none; budget -0.8% of missForest; current setting kept 13%
+- `kc2_60nan`: tuned missForest vs missForest -0.0006 none; K vs missForest -0.1026 better; K vs tuned missForest -0.1019 better; K vs strong -0.0816 better; K vs tuned strong -0.0776 better; K vs masked-selection missForest -0.0988 better; budget -0.1% of missForest; current setting kept 13%
+- `pendigits_20nan` †: tuned missForest vs missForest -0.0032 better; K vs missForest -0.0020 none; K vs tuned missForest +0.0011 none; K vs strong -0.0020 none; K vs tuned strong +0.0011 none; K vs masked-selection missForest +0.0004 none; budget -0.9% of missForest; current setting kept 27%
+- `letter_20nan` †: tuned missForest vs missForest -0.0014 equivalent; K vs missForest -0.0029 none; K vs tuned missForest -0.0015 none; K vs strong -0.0029 none; K vs tuned strong -0.0015 none; K vs masked-selection missForest -0.0013 equivalent; budget -0.3% of missForest; current setting kept 13%
+- `electricity_20nan`: tuned missForest vs missForest +0.0025 none; K vs missForest -0.0015 none; K vs tuned missForest -0.0040 none; K vs strong -0.0015 none; K vs tuned strong -0.0040 none; K vs masked-selection missForest -0.0025 none; budget +0.4% of missForest; current setting kept 33%
+  - tuned missForest vs missForest: better 5 / no difference 8 / equivalent 3 / worse 0 (fold-pair t, seed agreement)
+  - K vs missForest: better 10 / no difference 6 / worse 0 (fold-pair t, seed agreement)
+  - K vs tuned missForest: better 9 / no difference 6 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+  - K vs strong: better 8 / no difference 7 / worse 1 (fold-pair t, seed agreement)
+  - K vs tuned strong: better 8 / no difference 6 / equivalent 1 / worse 1 (fold-pair t, seed agreement)
+  - K vs masked-selection missForest: better 8 / no difference 7 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+  - K's verdict changes between the strong tiers: ['spambase_20nan (none → better)', 'spambase_80nan (better → equivalent)']
+
+## Seeds 707/808/909 (E44) (read)
+- `pendigits_40nan`: tuned missForest vs missForest -0.0046 better; K vs missForest -0.0706 better; K vs tuned missForest -0.0660 better; K vs strong -0.0706 better; K vs tuned strong -0.0660 better; K vs masked-selection missForest -0.0683 better; budget -0.9% of missForest; current setting kept 20%
+- `pendigits_60nan`: tuned missForest vs missForest -0.0099 better; K vs missForest -0.1215 better; K vs tuned missForest -0.1116 better; K vs strong -0.1215 better; K vs tuned strong -0.1116 better; K vs masked-selection missForest -0.1139 better; budget -1.4% of missForest; current setting kept 0%
+- `pendigits_80nan`: tuned missForest vs missForest -0.0500 better; K vs missForest -0.1109 better; K vs tuned missForest -0.0610 better; K vs strong -0.0178 better; K vs tuned strong -0.0178 better; K vs masked-selection missForest -0.0622 better; budget -5.3% of missForest; current setting kept 0%
+- `letter_40nan`: tuned missForest vs missForest -0.0013 better; K vs missForest -0.0554 better; K vs tuned missForest -0.0541 better; K vs strong -0.0554 better; K vs tuned strong -0.0541 better; K vs masked-selection missForest -0.0545 better; budget -0.2% of missForest; current setting kept 40%
+- `letter_60nan`: tuned missForest vs missForest -0.0100 better; K vs missForest -0.0841 better; K vs tuned missForest -0.0741 better; K vs strong -0.0841 better; K vs tuned strong -0.0741 better; K vs masked-selection missForest -0.0749 better; budget -1.3% of missForest; current setting kept 0%
+- `letter_80nan`: tuned missForest vs missForest -0.0431 better; K vs missForest -0.0849 better; K vs tuned missForest -0.0418 better; K vs strong -0.0144 better; K vs tuned strong -0.0144 better; K vs masked-selection missForest -0.0444 better; budget -4.4% of missForest; current setting kept 0%
+- `electricity_40nan`: tuned missForest vs missForest -0.0006 equivalent; K vs missForest -0.0164 none; K vs tuned missForest -0.0158 none; K vs strong -0.0164 none; K vs tuned strong -0.0158 none; K vs masked-selection missForest -0.0139 none; budget -0.1% of missForest; current setting kept 33%
+- `electricity_60nan`: tuned missForest vs missForest -0.0210 better; K vs missForest -0.0902 better; K vs tuned missForest -0.0692 better; K vs strong -0.0902 better; K vs tuned strong -0.0692 better; K vs masked-selection missForest -0.0733 better; budget -2.3% of missForest; current setting kept 0%
+- `electricity_80nan`: tuned missForest vs missForest -0.0504 better; K vs missForest -0.1058 better; K vs tuned missForest -0.0554 better; K vs strong -0.0569 better; K vs tuned strong -0.0554 better; K vs masked-selection missForest -0.0561 better; budget -5.0% of missForest; current setting kept 0%
+- `vehicle_40nan`: tuned missForest vs missForest -0.0019 none; K vs missForest -0.0256 better; K vs tuned missForest -0.0237 better; K vs strong -0.0256 better; K vs tuned strong -0.0237 better; K vs masked-selection missForest -0.0239 better; budget -0.4% of missForest; current setting kept 20%
+- `vehicle_80nan`: tuned missForest vs missForest -0.0009 none; K vs missForest +0.0425 worse; K vs tuned missForest +0.0433 worse; K vs strong +0.0425 worse; K vs tuned strong +0.0433 worse; K vs masked-selection missForest +0.0337 worse; budget -0.1% of missForest; current setting kept 20%
+- `biodeg_40nan`: tuned missForest vs missForest +0.0046 none; K vs missForest -0.0242 better; K vs tuned missForest -0.0288 better; K vs strong -0.0242 better; K vs tuned strong -0.0288 better; K vs masked-selection missForest -0.0259 better; budget +0.7% of missForest; current setting kept 33%
+- `biodeg_80nan`: tuned missForest vs missForest -0.0107 better; K vs missForest +0.0489 worse; K vs tuned missForest +0.0595 worse; K vs strong +0.0489 worse; K vs tuned strong +0.0595 worse; K vs masked-selection missForest +0.0488 worse; budget -1.2% of missForest; current setting kept 0%
+- `kc2_40nan`: tuned missForest vs missForest -0.0011 equivalent; K vs missForest -0.0820 better; K vs tuned missForest -0.0810 better; K vs strong -0.0604 better; K vs tuned strong -0.0608 better; K vs masked-selection missForest -0.0827 better; budget -0.2% of missForest; current setting kept 20%
+- `kc2_80nan`: tuned missForest vs missForest -0.0093 none; K vs missForest -0.0587 better; K vs tuned missForest -0.0495 better; K vs strong -0.0587 better; K vs tuned strong -0.0495 better; K vs masked-selection missForest -0.0515 better; budget -1.2% of missForest; current setting kept 7%
+  - tuned missForest vs missForest: better 9 / no difference 4 / equivalent 2 / worse 0 (fold-pair t, seed agreement)
+  - K vs missForest: better 12 / no difference 1 / worse 2 (fold-pair t, seed agreement)
+  - K vs tuned missForest: better 12 / no difference 1 / worse 2 (fold-pair t, seed agreement)
+  - K vs strong: better 12 / no difference 1 / worse 2 (fold-pair t, seed agreement)
+  - K vs tuned strong: better 12 / no difference 1 / worse 2 (fold-pair t, seed agreement)
+  - K vs masked-selection missForest: better 12 / no difference 1 / worse 2 (fold-pair t, seed agreement)
+  - K's verdict changes between the strong tiers: none
+```
+
+**Reading (descriptive, secondary):**
+
+- **Tuning missForest helps only at heavy missingness.**
+  - The tuned missForest is better than the live one on 7 of 21 variants (101/202/303), 4 of 12
+    (404/505/606) and 9 of 15 (E44). It is never worse.
+  - The gains are at 60nan and 80nan: up to −5.3% on pendigits_80nan, −5.0% on electricity_80nan
+    and −4.7% on credit-g_80nan. There the current setting is never kept, because the shrinkage
+    toward the training mean wins.
+  - At 20nan and 40nan the tuned missForest is mostly equivalent to the live one.
+- **It barely moves K's verdicts against the strong tier.**
+
+  | seeds | K − strong | K − tuned strong |
+  |---|---|---|
+  | 101/202/303 | 13 / 7 / 1 | 13 / 7 / 1 |
+  | 404/505/606 | 6 / 4 / 2 | 5 / 5 / equivalent 1 / 1 |
+  | E44 (707/808/909) | 12 / 1 / 2 | 12 / 1 / 2 |
+
+  The two changes are both on 404/505/606: spambase_80nan (better → equivalent) and biodeg_60nan
+  (worse → no difference).
+- **Why so little:** where tuning helps missForest most, at 80nan, the strong tier's best was
+  already a linear arm. On credit-g_80nan, for example, K is better than the tuned missForest but
+  stays worse than the tier, whose best is condexp.
+- **The masked-selection sensitivity** reads the same as the tuned missForest.
+
+**What this means for the thesis:** the strong tier's verdicts on the development set and on the
+confirmation set stand with a tuned missForest. No default changes.
 
