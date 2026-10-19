@@ -219,6 +219,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       (collapse and linear probes under the normalised objective), then D3 (frozen encoder against
       random).
     - T13 fits only if D2 shows collapse and a frozen pre-trained encoder beats a random one.
+    - **D1 done 2026-10-19 (E49,** [imputation-pretraining/08](tickets/imputation-pretraining/08-decode-curves.md)**):**
+      - washout on pendigits: the 450-epoch decode erases a +58% head start by about epoch 185;
+      - real transfer on kr-vs-kp (+2.5% at the minima);
+      - credit-g mixed.
+      - Next: a frozen-encoder or lower-encoder-LR decode arm on pendigits, or D3.
 
 - **T29 · Why the boosters win on electricity** (the user's decision on E44, 2026-10-17). electricity
   is a stated limit of the thesis. hgb/lgbm set the bar there, and the model loses at 20, 40 and
