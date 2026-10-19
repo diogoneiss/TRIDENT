@@ -191,7 +191,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   below the default (E21).
 - **T13 · An EMA target encoder and a predictor for pre-training** (data2vec, BYOL; SMART, wiki
   `references/smart-paper`). These are the anti-collapse guards pre-training still lacks (ADR 0011,
-  considered options). TRIDENT uses stop-gradient on the same encoder; SMART adds an EMA target
+  considered options). TRIDENT's target is the clean cell's input embedding from the same embedder,
+  gradient stopped, with no transformer layer (corrected 2026-10-19 by T28's report); SMART adds an EMA target
   encoder (decay 0.996) and an embedding decoder. E04, E05 and E24 suggest the pre-training
   collapses. **A future task, by the user's decision (2026-10-17):** plan §2h; after T28.
 - **T28 · Why pre-training adds little to direct imputation, and what the ingested literature
@@ -210,6 +211,14 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       pages, MaCoDE's bin targets, ReMasker, and the distillation review of 2026-10-09.
   - **Output:** a short report with diagnosable hypotheses and the cheapest test for each. T13
     (EMA) is one candidate.
+  - **Report drafted 2026-10-19:**
+    [reports/2026-10-19-t28-why-pretraining-adds-little.md](reports/2026-10-19-t28-why-pretraining-adds-little.md).
+    - Six hypotheses. The leading one is that the decode stage repeats the pretext and washes the
+      encoder out.
+    - The order is D1 (a free store read of the decode curves, pre-trained against not), then D2
+      (collapse and linear probes under the normalised objective), then D3 (frozen encoder against
+      random).
+    - T13 fits only if D2 shows collapse and a frozen pre-trained encoder beats a random one.
 
 - **T29 · Why the boosters win on electricity** (the user's decision on E44, 2026-10-17). electricity
   is a stated limit of the thesis. hgb/lgbm set the bar there, and the model loses at 20, 40 and
