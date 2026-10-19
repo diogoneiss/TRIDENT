@@ -2,21 +2,25 @@
 
 Read-only. Run from the checkout root:
 
-    uv run --python 3.11 python scripts/experiments/thesis_table.py [--seeds 101/202/303|42/7/13|404/505/606] [--linear DIR]
+    uv run --python 3.11 python scripts/experiments/thesis_table.py [--seeds 101/202/303|42/7/13|404/505/606] [--linear DIR] [--tuned DIR]
 
 Per seed set, the model's K on today's default (``report_common.development_source``: E34 K,
 E38 ALL and E39 D on 101/202/303; E35 K on 42/7/13, five variants labelled; E40 on 404/505/606)
 against every opponent on the same folds:
 
 - the bar (the weak tier);
+- the tuned bar (E42's validation-only budget, the tuned weak tier's best);
 - missForest;
 - the strong tier (missForest and E41's arms);
+- the tuned strong tier (E42's tuned missForest and E41's arms, the best by CV mean);
 - the best of all;
 - the per-type bar (item 7b).
 
 The baselines a run's fold CSV lacks (lgbm and missForest on E34/E35, E41's arms everywhere)
 come from E41's offline per-fold CSVs (``--linear``), which reproduce the logged baselines
-exactly. Every count is printed with its test. Labelled variants are never pooled.
+exactly; the tuned families come from E42's per-fold CSVs (``--tuned``). A development win under
+D4 needs K to beat both the bar and the tuned bar. Every count is printed with its test. Labelled
+variants are never pooled.
 """
 
 from __future__ import annotations
@@ -43,12 +47,15 @@ DEVELOPMENT = [
 SEED_SETS = {"101/202/303": [101, 202, 303], "42/7/13": [42, 7, 13], "404/505/606": [404, 505, 606]}
 E40_VARIANTS = {f"{t}_{level}nan" for t in ("kr-vs-kp", "spambase", "credit-g") for level in (40, 60, 80)} | {
     "vehicle_60nan", "biodeg_60nan", "kc2_60nan"}
-OPPONENTS = ("bar", "missforest", "strong", "best_of_all", "per_type")
+OPPONENTS = ("bar", "tuned", "missforest", "strong", "tuned_strong", "best_of_all", "per_type")
 SESOI = 0.01
 DEFAULT_LINEAR = Path("/scratch2/diogoneiss/trident-2026-10-17-linear-baselines/csv")
+DEFAULT_TUNED = Path("/scratch2/diogoneiss/trident-2026-10-17-baseline-budget")
+TUNED_BAR = "impute/induced/baseline/tuned_bar/impute_score"
+LINEAR_ARMS = ("condexp", "softimpute", "ice")
 
 
-def _cells(variant: str, seeds: str, linear: Path) -> list[tuple[common.Run, pd.DataFrame]] | None:
+def _cells(variant: str, seeds: str, linear: Path, tuned: Path | None = None) -> list[tuple[common.Run, pd.DataFrame]] | None:
     source = common.development_source(variant, seeds)
     if source is None or (seeds == "404/505/606" and variant not in E40_VARIANTS):
         return None
@@ -68,8 +75,35 @@ def _cells(variant: str, seeds: str, linear: Path) -> list[tuple[common.Run, pd.
                 sys.exit(f"{variant} s{seed}: E41's recomputed baselines differ from the run's by {worst:g}")
             new = [c for c in extra.columns if c.startswith("impute/") and c not in frame.columns]
             frame = pd.concat([frame, extra[new]], axis=1)
+        if tuned is not None:
+            # E42's two passes: the weak tier's (with its tuned bar) and missForest's, whose own
+            # ``tuned_bar`` column (mean/mode against the tuned missForest) is left out.
+            for directory, only_missforest in ((tuned / "csv", False), (tuned / "csv_missforest", True)):
+                path = directory / f"{variant}_s{seed}.csv"
+                if path.exists():
+                    extra = pd.read_csv(path).sort_values("fold").reset_index(drop=True)
+                    new = [
+                        c for c in extra.columns
+                        if c.startswith("impute/") and c not in frame.columns and (not only_missforest or "/missforest_tuned" in c)
+                    ]
+                    frame = pd.concat([frame.reset_index(drop=True), extra[new]], axis=1)
         cells.append((runs[0], frame))
     return cells
+
+
+def _opponent(frame: pd.DataFrame, which: str) -> tuple[str, np.ndarray]:
+    if which == "tuned":
+        if TUNED_BAR not in frame.columns:
+            raise KeyError(which)
+        return "tuned_bar", np.asarray(frame[TUNED_BAR], dtype=float)
+    if which == "tuned_strong":
+        names = ["missforest_tuned", *LINEAR_ARMS]
+        keys = [f"impute/induced/baseline/{name}/impute_score" for name in names]
+        if any(key not in frame.columns for key in keys):
+            raise KeyError(which)
+        best = min(range(len(keys)), key=lambda i: float(frame[keys[i]].mean()))
+        return names[best], np.asarray(frame[keys[best]], dtype=float)
+    return common.opponent(frame, which)
 
 
 def _contrast(cells: list[tuple[common.Run, pd.DataFrame]], which: str) -> tuple[str, common.Verdict] | None:
@@ -78,7 +112,7 @@ def _contrast(cells: list[tuple[common.Run, pd.DataFrame]], which: str) -> tuple
         if which in ("strong", "best_of_all") and "condexp" not in common.baselines_in(frame.columns, "induced"):
             return None
         try:
-            name, theirs = common.opponent(frame, which)
+            name, theirs = _opponent(frame, which)
         except KeyError:
             return None
         per_seed.append(common.model(frame, run, "K") - theirs)
@@ -92,6 +126,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--seeds", default="101/202/303", choices=list(SEED_SETS))
     parser.add_argument("--linear", type=Path, default=DEFAULT_LINEAR)
+    parser.add_argument("--tuned", type=Path, default=DEFAULT_TUNED)
     options = parser.parse_args()
     print(f"## Development set, seeds {options.seeds}, induced impute_score, K readout")
     print()
@@ -100,7 +135,7 @@ def main() -> int:
     calls: dict[str, dict[str, str]] = {o: {} for o in OPPONENTS}
     gaps: dict[str, dict[str, float]] = {o: {} for o in OPPONENTS}
     for variant in DEVELOPMENT:
-        cells = _cells(variant, options.seeds, options.linear)
+        cells = _cells(variant, options.seeds, options.linear, options.tuned)
         if cells is None:
             continue
         source = common.development_source(variant, options.seeds)
@@ -137,6 +172,11 @@ def main() -> int:
     if pvalues:
         adjusted = common.holm(pvalues)
         print("- Holm across opponents: " + ", ".join(f"{k} {v:.4f}" for k, v in adjusted.items()))
+    both = [v for v in calls["bar"] if calls["bar"][v] == "better" and calls["tuned"].get(v) == "better"]
+    lost = [v for v in calls["bar"] if "worse" in (calls["bar"][v], calls["tuned"].get(v))]
+    if calls["tuned"]:
+        print(f"- D4, a win needs K better than both the bar and the tuned bar: {len(both)} wins of {len(calls['bar'])}; "
+              f"worse than either on {len(lost)} ({', '.join(lost) or 'none'})")
     return 0
 
 
