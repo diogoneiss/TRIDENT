@@ -188,7 +188,10 @@ All calls: better 5 / no difference 0 / equivalent 7 / worse 0 (fold-pair t, see
 - And the effect is a few tenths of a percent at most: real, but too small to change any verdict
   against the bars.
 
-**For the user to decide:**
+**Decided by the user (2026-10-19): (a).** Stop here. KC is reported as an oracle readout, with
+HC_m's small deployable gain stated beside it. No deployable mode and no replication.
+
+**The options that were offered:**
 
 - **(a)** Stop here and report KC as an oracle readout, with HC_m's small deployable gain stated
   (recommended).

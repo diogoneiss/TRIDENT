@@ -1580,8 +1580,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **α:** 0.84–0.99 for the masked fit, against 0.53–0.93 for the gaps' fit. HC_m stays below K
     on four variants.
 - **Conclusion:** a deployable calibration helps, but little. The validation mask has too few
-  cells for the fit. The seeds decided E40, so any ADR would need fresh seeds first. User's choice
-  pending: stop and state it (recommended), replicate, or a new design with more fit cells.
+  cells for the fit. The seeds decided E40, so any ADR would need fresh seeds first.
+  - **Decided by the user (2026-10-19):** stop. KC is reported as an oracle readout, with HC_m's
+    small deployable gain stated.
 - **Sources:** `docs/tickets/imputation-calibration/02-deployable-calibration.md` (Outcome);
   `scripts/experiments/deployable_calibration_run.py`, `deployable_calibration_report.py`,
   `run_deployable_calibration_queue.sh`.

@@ -160,7 +160,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   validation cells and read with H
   ([imputation-calibration/02](tickets/imputation-calibration/02-deployable-calibration.md)).
   - It is supported by the rule but small: at most 0.4% of H, keeping 3–29% of the oracle's gain.
-  - The user decides whether to stop, replicate on fresh seeds, or redesign the fit.
+  - **Closed by the user (2026-10-19):** stop. KC is an oracle readout, and HC_m's small gain is
+    stated beside it.
 
 ## Backlog
 
