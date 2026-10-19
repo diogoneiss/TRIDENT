@@ -153,8 +153,8 @@ Decision input: MaCoDE better than the strong tier's best on 4 of 15 confirmatio
   - development set: better on 20 of 21, no difference on kc2_20nan;
   - confirmation set: better on 14 of 15, no difference on electricity_40nan.
 - **The margins:**
-  - large on the small and mixed tables: −0.10 to −0.17 on credit-g, vehicle, biodeg, kc2 and
-    pendigits;
+  - large on the small and mixed tables: −0.05 to −0.17 on credit-g, vehicle, biodeg, kc2 and
+    pendigits (−0.10 or more on all but biodeg_80nan);
   - small on letter (−0.004 to −0.08), electricity (−0.01 to −0.05) and kr-vs-kp at 20–60nan
     (−0.01 to −0.02).
 
