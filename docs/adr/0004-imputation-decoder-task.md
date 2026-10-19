@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted (2026-09-10). Charted and decided on the wayfinder map at
+Accepted (2026-09-10). **Amended by ADR [0025](0025-an-offline-secondary-metric-panel.md)
+(2026-10-19):** decision 6's metrics stay the run's own and `impute_score` the only primary; a
+secondary panel is computed offline beside them.
+
+Charted and decided on the wayfinder map at
 [`docs/wayfinder/imputation-decoder/map.md`](../wayfinder/imputation-decoder/map.md);
 every numbered decision below links the ticket that holds its full reasoning and the
 facts verified along the way. Implementation plan:
