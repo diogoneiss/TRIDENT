@@ -9,6 +9,10 @@ resolves finding F-06-2 of the imputation critique
 ratio was computed on every fold and persisted nowhere. Planned and implemented
 test-first on 2026-09-24; the outcome section records what the first runs showed.
 
+**Amended by ADR [0022](0022-a-validation-only-tuning-budget-for-the-baselines.md) (2026-10-18):**
+decision 5's fixed settings stay what every run logs; a validation-only tuned version of each
+family is computed offline beside them, and a thesis win needs both bars.
+
 **Amended 2026-09-27** after the first night's results: the KNN baseline runs at two
 neighbourhood sizes, `knn5` and `knn10`, and a comparison reads the better of the two
 (decisions 2, 3, 5 and 6, and *How to compare*); and the induced truth of an

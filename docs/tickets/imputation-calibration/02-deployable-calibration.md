@@ -88,6 +88,16 @@ credit-g_60nan, credit-g_80nan, vehicle_60nan):
 **If the integrity check fails** (a difference above 1e-6 on K or KC), nothing is read until it is
 explained.
 
+## Known limits (note added 2026-10-18, about 23:20 GMT-3, before any score was read)
+
+- **These seeds decided E40.** ADR 0020 retires a seed set once it has decided something, and
+  404/505/606 decided that KC beats K. They are reused here only so that K and KC can be held equal
+  to E40.
+  - So E47 is a development reading.
+  - A "supported" result would need fresh seeds before any ADR proposes a deployable mode.
+- **This supersedes part of D10** of the plan of 2026-10-17 ("no calibration fitted on masked cells
+  for now"), by the user's agreement on 2026-10-18.
+
 ## Launch
 
 - **Checked before launch, with `--no-mlflow`, passed (2026-10-18, about 23:06 GMT-3):** kc2_60nan at
