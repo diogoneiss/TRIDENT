@@ -28,6 +28,9 @@ sys.path.insert(0, str(ROOT))
 from scripts.experiments import report_common as common  # noqa: E402
 
 DEFAULT_PANEL = Path("/scratch2/diogoneiss/trident-2026-10-17-metric-panel")
+# The verdict rule names the sign of a difference; here a negative Δ means the fills fall further
+# below the truth under MNAR.
+SHIFT = {"better": "falls under MNAR", "worse": "rises under MNAR", "none": "no verdict", "equivalent": "equivalent"}
 METHODS = ("model", "mean_mode", "knn5", "knn10", "hgb", "lgbm", "missforest", "condexp", "softimpute", "ice")
 PAIRS = [
     *((f"{t}_probit_60nan", "e45", f"{t}_60nan", "e45") for t in ("biodeg", "kc2", "vehicle")),
@@ -69,10 +72,10 @@ def main(argv: list[str]) -> int:
             shifts[method] = v.mean
             under = float(np.concatenate(_per_seed(a, method, "share_under")).mean())
             print(f"| {method} | {np.concatenate(x).mean():+.4f} | {np.concatenate(y).mean():+.4f} | "
-                  f"{v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] | {v.call} | {under:.0%} |")
+                  f"{v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] | {SHIFT[v.call]} | {under:.0%} |")
         order = sorted(shifts, key=lambda m: abs(shifts[m]))
         rank = order.index("model") + 1
-        print(f"\nThe model's bias moves the {rank}th least of {len(order)} methods (least: {order[0]}, most: {order[-1]}).")
+        print(f"\nBy |Δ|, the model ranks {rank} of {len(order)} (1 moves least; least: {order[0]}, most: {order[-1]}).")
     return 0
 
 

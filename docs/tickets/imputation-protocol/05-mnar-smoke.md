@@ -182,8 +182,11 @@ t-interval and the verdict.
 - **The known limit holds:** under MNAR the mean/mode denominator is biased, so only within-variant
   gaps are compared across mechanisms, as above.
 
-**Not done:** the signed bias per column (measure 5), offline from the ledgers with
-`scripts/experiments/metric_panel.py`. It does not affect the go.
+**The signed bias per column (measure 5)** was read on 2026-10-19 with E46's, in
+[06](06-mnar-family.md) (its last section).
+
+- Every imputer falls further below the hidden values under MNAR.
+- The model's bias moves least of the 10 methods on all three of E45's pairs.
 
 **For the user to decide:**
 

@@ -322,7 +322,8 @@ Dose-response (the effect's mean rises with the slope, and at 2.0 it is 'worse')
 - **"strong" is missForest alone,** as fixed in advance. ADR 0021's backfill would add the linear
   arms to these runs.
 
-**Not done:** the signed bias per column (measure 4), which enters no rule.
+**The signed bias per column (measure 4)** was read afterwards, for E45's pairs too; see the
+section at the end.
 
 **For the user:**
 
@@ -331,4 +332,207 @@ Dose-response (the effect's mean rises with the slope, and at 2.0 it is 'worse')
   at 60nan, and it is lost on biodeg only at the steepest tilt (slope 2.0).
 - **t2:** whether biodeg's dial result for the untied arm is worth a clean ablation (`[NULL]`
   gaps alone, without column-wise scoring and the loss checkpoint).
+
+## Signed bias per column, E45's measure 5 and E46's measure 4 (added 2026-10-19, 00:21 GMT-3)
+
+**How it was made:**
+
+- **Source:** `scripts/experiments/metric_panel.py --baselines --cell_suffix _G`, on arm G's fold
+  ledgers. Every baseline was refitted on the same folds, and nothing was written to the store.
+- **Reading:** `scripts/experiments/mnar_bias_report.py`.
+- **The model's fills are its ledger's,** the run's own checkpoint (K), not H.
+- **The signed bias** is fill minus truth, averaged over the numerical columns, in scaled units;
+  negative means under-predicting.
+- **Δ** is MNAR minus MCAR, fold-paired.
+
+```text
+Signed bias (fill − truth, scaled units, mean over numerical columns), mean over 15 folds;
+Δ = MNAR − MCAR, fold-paired, with the verdict rule (fold-pair t, seed agreement).
+
+### biodeg_probit_60nan against biodeg_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.3323 | -0.0396 | -0.2926 [-0.3040, -0.2813] | falls under MNAR | 98% |
+| mean_mode | -0.4630 | -0.0105 | -0.4526 [-0.4619, -0.4432] | falls under MNAR | 99% |
+| knn5 | -0.3814 | -0.0536 | -0.3278 [-0.3426, -0.3131] | falls under MNAR | 96% |
+| knn10 | -0.3926 | -0.0609 | -0.3317 [-0.3447, -0.3187] | falls under MNAR | 98% |
+| hgb | -0.2836 | +0.0272 | -0.3108 [-0.3213, -0.3003] | falls under MNAR | 95% |
+| lgbm | -0.2826 | +0.0288 | -0.3114 [-0.3215, -0.3012] | falls under MNAR | 95% |
+| missforest | -0.3088 | +0.0052 | -0.3140 [-0.3320, -0.2960] | falls under MNAR | 97% |
+| condexp | -0.2892 | +0.0634 | -0.3526 [-0.3629, -0.3422] | falls under MNAR | 90% |
+| softimpute | -0.1357 | +0.1821 | -0.3178 [-0.3383, -0.2973] | falls under MNAR | 73% |
+| ice | -0.3012 | +0.0353 | -0.3365 [-0.3526, -0.3204] | falls under MNAR | 93% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### kc2_probit_60nan against kc2_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.2658 | -0.0393 | -0.2265 [-0.3231, -0.1299] | falls under MNAR | 81% |
+| mean_mode | -0.5194 | -0.0111 | -0.5082 [-0.6060, -0.4104] | falls under MNAR | 94% |
+| knn5 | -0.4421 | -0.1416 | -0.3005 [-0.3916, -0.2095] | falls under MNAR | 96% |
+| knn10 | -0.4844 | -0.1538 | -0.3305 [-0.4252, -0.2359] | falls under MNAR | 96% |
+| hgb | -0.3402 | -0.0303 | -0.3100 [-0.4148, -0.2051] | falls under MNAR | 82% |
+| lgbm | -0.3336 | -0.0263 | -0.3073 [-0.4143, -0.2002] | falls under MNAR | 81% |
+| missforest | -0.2884 | -0.0194 | -0.2691 [-0.3704, -0.1677] | falls under MNAR | 81% |
+| condexp | -0.3098 | +0.0180 | -0.3278 [-0.4144, -0.2412] | falls under MNAR | 82% |
+| softimpute | -0.2648 | -0.0043 | -0.2605 [-0.3592, -0.1618] | falls under MNAR | 79% |
+| ice | -0.3618 | -0.0344 | -0.3273 [-0.4311, -0.2236] | falls under MNAR | 92% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### vehicle_probit_60nan against vehicle_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.1623 | -0.0297 | -0.1327 [-0.1504, -0.1149] | falls under MNAR | 87% |
+| mean_mode | -0.5916 | -0.0020 | -0.5896 [-0.5977, -0.5816] | falls under MNAR | 100% |
+| knn5 | -0.3569 | -0.0222 | -0.3347 [-0.3506, -0.3188] | falls under MNAR | 100% |
+| knn10 | -0.3641 | -0.0239 | -0.3402 [-0.3552, -0.3253] | falls under MNAR | 100% |
+| hgb | -0.2138 | -0.0118 | -0.2019 [-0.2160, -0.1879] | falls under MNAR | 98% |
+| lgbm | -0.2138 | -0.0119 | -0.2020 [-0.2160, -0.1880] | falls under MNAR | 98% |
+| missforest | -0.1867 | -0.0072 | -0.1795 [-0.1952, -0.1639] | falls under MNAR | 93% |
+| condexp | -0.3864 | -0.0180 | -0.3684 [-0.3948, -0.3420] | falls under MNAR | 97% |
+| softimpute | -0.2941 | -0.0093 | -0.2847 [-0.3042, -0.2653] | falls under MNAR | 96% |
+| ice | -0.2986 | -0.0210 | -0.2776 [-0.2995, -0.2557] | falls under MNAR | 100% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### spambase_probit_60nan against spambase_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.2754 | -0.0308 | -0.2446 [-0.2540, -0.2353] | falls under MNAR | 97% |
+| mean_mode | -0.3052 | -0.0083 | -0.2969 [-0.3001, -0.2937] | falls under MNAR | 99% |
+| knn5 | -0.3006 | -0.0230 | -0.2776 [-0.2842, -0.2710] | falls under MNAR | 96% |
+| knn10 | -0.3054 | -0.0280 | -0.2775 [-0.2829, -0.2721] | falls under MNAR | 97% |
+| hgb | -0.2343 | +0.0302 | -0.2645 [-0.2689, -0.2600] | falls under MNAR | 95% |
+| lgbm | -0.2333 | +0.0311 | -0.2645 [-0.2687, -0.2603] | falls under MNAR | 95% |
+| missforest | -0.2453 | +0.0341 | -0.2794 [-0.2977, -0.2611] | falls under MNAR | 96% |
+| condexp | -0.2709 | +0.0161 | -0.2870 [-0.2924, -0.2816] | falls under MNAR | 96% |
+| softimpute | -0.1628 | +0.1258 | -0.2886 [-0.3032, -0.2740] | falls under MNAR | 82% |
+| ice | -0.2234 | +0.0475 | -0.2708 [-0.2793, -0.2624] | falls under MNAR | 91% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### biodeg_probit_20nan against biodeg_20nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.0762 | -0.0315 | -0.0447 [-0.0553, -0.0341] | falls under MNAR | 68% |
+| mean_mode | -0.3100 | -0.0177 | -0.2923 [-0.3073, -0.2773] | falls under MNAR | 91% |
+| knn5 | -0.2134 | -0.0731 | -0.1403 [-0.1537, -0.1269] | falls under MNAR | 92% |
+| knn10 | -0.2462 | -0.0828 | -0.1635 [-0.1759, -0.1510] | falls under MNAR | 93% |
+| hgb | -0.0888 | -0.0094 | -0.0794 [-0.0913, -0.0675] | falls under MNAR | 75% |
+| lgbm | -0.0903 | -0.0094 | -0.0809 [-0.0927, -0.0690] | falls under MNAR | 73% |
+| missforest | -0.1043 | -0.0103 | -0.0940 [-0.1064, -0.0816] | falls under MNAR | 80% |
+| condexp | -0.1012 | +0.0303 | -0.1316 [-0.1467, -0.1164] | falls under MNAR | 73% |
+| softimpute | -0.0270 | +0.0555 | -0.0825 [-0.0932, -0.0719] | falls under MNAR | 55% |
+| ice | -0.0152 | +0.0364 | -0.0516 [-0.0678, -0.0354] | falls under MNAR | 54% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### kc2_probit_20nan against kc2_20nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.0497 | -0.0001 | -0.0495 [-0.0673, -0.0318] | falls under MNAR | 62% |
+| mean_mode | -0.1768 | -0.0006 | -0.1762 [-0.2004, -0.1520] | falls under MNAR | 65% |
+| knn5 | -0.1344 | -0.0592 | -0.0752 [-0.0940, -0.0565] | falls under MNAR | 90% |
+| knn10 | -0.1525 | -0.0700 | -0.0826 [-0.1014, -0.0637] | falls under MNAR | 91% |
+| hgb | -0.0434 | +0.0213 | -0.0647 [-0.0923, -0.0371] | falls under MNAR | 51% |
+| lgbm | -0.0389 | +0.0242 | -0.0631 [-0.0911, -0.0351] | falls under MNAR | 50% |
+| missforest | -0.0525 | +0.0026 | -0.0551 [-0.0746, -0.0356] | falls under MNAR | 45% |
+| condexp | -0.0314 | +0.0535 | -0.0848 [-0.1179, -0.0518] | falls under MNAR | 48% |
+| softimpute | -0.0597 | +0.0129 | -0.0727 [-0.0915, -0.0539] | falls under MNAR | 57% |
+| ice | -0.0610 | -0.0103 | -0.0507 [-0.0648, -0.0365] | falls under MNAR | 55% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### vehicle_probit_20nan against vehicle_20nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.0764 | -0.0214 | -0.0550 [-0.0712, -0.0388] | falls under MNAR | 69% |
+| mean_mode | -0.3909 | -0.0318 | -0.3591 [-0.3982, -0.3200] | falls under MNAR | 96% |
+| knn5 | -0.1144 | -0.0290 | -0.0855 [-0.1109, -0.0600] | falls under MNAR | 84% |
+| knn10 | -0.1254 | -0.0288 | -0.0966 [-0.1217, -0.0715] | falls under MNAR | 89% |
+| hgb | -0.0902 | -0.0186 | -0.0716 [-0.0926, -0.0505] | falls under MNAR | 76% |
+| lgbm | -0.0893 | -0.0201 | -0.0692 [-0.0901, -0.0483] | falls under MNAR | 77% |
+| missforest | -0.0990 | -0.0174 | -0.0816 [-0.1023, -0.0609] | falls under MNAR | 79% |
+| condexp | -0.1339 | -0.0114 | -0.1225 [-0.1451, -0.0999] | falls under MNAR | 90% |
+| softimpute | -0.0952 | +0.0045 | -0.0998 [-0.1250, -0.0746] | falls under MNAR | 86% |
+| ice | -0.0776 | -0.0068 | -0.0708 [-0.0882, -0.0533] | falls under MNAR | 80% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### biodeg_probit0p25_60nan against biodeg_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.2187 | -0.0396 | -0.1791 [-0.1988, -0.1594] | falls under MNAR | 94% |
+| mean_mode | -0.2824 | -0.0105 | -0.2719 [-0.2839, -0.2599] | falls under MNAR | 98% |
+| knn5 | -0.2308 | -0.0536 | -0.1771 [-0.1909, -0.1634] | falls under MNAR | 94% |
+| knn10 | -0.2469 | -0.0609 | -0.1860 [-0.1990, -0.1730] | falls under MNAR | 96% |
+| hgb | -0.1754 | +0.0272 | -0.2026 [-0.2171, -0.1882] | falls under MNAR | 91% |
+| lgbm | -0.1754 | +0.0288 | -0.2042 [-0.2184, -0.1899] | falls under MNAR | 92% |
+| missforest | -0.2006 | +0.0052 | -0.2059 [-0.2271, -0.1847] | falls under MNAR | 95% |
+| condexp | -0.1486 | +0.0634 | -0.2120 [-0.2274, -0.1965] | falls under MNAR | 83% |
+| softimpute | -0.0261 | +0.1821 | -0.2082 [-0.2270, -0.1895] | falls under MNAR | 53% |
+| ice | -0.1724 | +0.0353 | -0.2077 [-0.2248, -0.1906] | falls under MNAR | 89% |
+
+By |Δ|, the model ranks 2 of 10 (1 moves least; least: knn5, most: mean_mode).
+
+### biodeg_probit1p0_60nan against biodeg_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -0.5820 | -0.0396 | -0.5423 [-0.5660, -0.5187] | falls under MNAR | 100% |
+| mean_mode | -0.8597 | -0.0105 | -0.8492 [-0.8672, -0.8313] | falls under MNAR | 99% |
+| knn5 | -0.6892 | -0.0536 | -0.6355 [-0.6580, -0.6131] | falls under MNAR | 99% |
+| knn10 | -0.7067 | -0.0609 | -0.6458 [-0.6664, -0.6253] | falls under MNAR | 99% |
+| hgb | -0.5606 | +0.0272 | -0.5878 [-0.6044, -0.5712] | falls under MNAR | 99% |
+| lgbm | -0.5598 | +0.0288 | -0.5886 [-0.6058, -0.5714] | falls under MNAR | 99% |
+| missforest | -0.6274 | +0.0052 | -0.6326 [-0.6544, -0.6108] | falls under MNAR | 100% |
+| condexp | -0.6571 | +0.0634 | -0.7205 [-0.7431, -0.6978] | falls under MNAR | 97% |
+| softimpute | -0.5422 | +0.1821 | -0.7244 [-0.7483, -0.7005] | falls under MNAR | 95% |
+| ice | -0.6307 | +0.0353 | -0.6660 [-0.6892, -0.6428] | falls under MNAR | 98% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+
+### biodeg_probit2p0_60nan against biodeg_60nan
+
+| method | MNAR | MCAR | Δ [95% interval] | verdict | columns under, MNAR |
+|---|---|---|---|---|---|
+| model | -1.4051 | -0.0396 | -1.3655 [-1.3939, -1.3371] | falls under MNAR | 99% |
+| mean_mode | -1.8486 | -0.0105 | -1.8382 [-1.8606, -1.8158] | falls under MNAR | 99% |
+| knn5 | -1.6666 | -0.0536 | -1.6130 [-1.6441, -1.5818] | falls under MNAR | 98% |
+| knn10 | -1.6881 | -0.0609 | -1.6272 [-1.6570, -1.5975] | falls under MNAR | 99% |
+| hgb | -1.3897 | +0.0272 | -1.4169 [-1.4420, -1.3918] | falls under MNAR | 99% |
+| lgbm | -1.3864 | +0.0288 | -1.4152 [-1.4408, -1.3896] | falls under MNAR | 99% |
+| missforest | -1.5649 | +0.0052 | -1.5701 [-1.6126, -1.5276] | falls under MNAR | 99% |
+| condexp | -1.6611 | +0.0634 | -1.7244 [-1.7499, -1.6990] | falls under MNAR | 98% |
+| softimpute | -1.5649 | +0.1821 | -1.7471 [-1.7751, -1.7190] | falls under MNAR | 94% |
+| ice | -1.5701 | +0.0353 | -1.6054 [-1.6362, -1.5745] | falls under MNAR | 96% |
+
+By |Δ|, the model ranks 1 of 10 (1 moves least; least: model, most: mean_mode).
+```
+
+**Reading (descriptive):**
+
+- **Under MNAR every imputer falls below the hidden values,** on every pair and every method, as
+  expected: the mechanism hides large values. Δ is negative with a verdict in all 100
+  (pair, method) readings.
+- **The model's bias moves least of the 10 methods on 9 of the 10 pairs.**
+  - It ranks 2nd, behind knn5, at biodeg's slope 0.25.
+  - mean/mode moves most everywhere, as it must: its fill is the observed mean.
+  - Under MNAR the model under-predicts, for example −0.33 against −0.04 under MCAR on
+    biodeg_60nan, but less than any baseline.
+- **The cost grows with the tilt.** On biodeg at 60nan the model's Δ is −0.18, −0.29, −0.54 and
+  −1.37 at slopes 0.25, 0.5, 1.0 and 2.0. That is still the smallest shift at every slope above
+  0.25.
+- **This is consistent with the scores.** The lead over the bar survives MNAR (E45, E46), because
+  the model degrades least. It is lost at slope 2.0, where the shift is large for everyone.
 

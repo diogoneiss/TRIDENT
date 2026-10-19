@@ -1501,8 +1501,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **t2:** Mx column-wise is worse than G's H under both mechanisms on biodeg and vehicle; its
     deficit shrinks under MNAR on biodeg only (−0.011).
 - **Conclusion:** the machinery works and the lead survives value-dependent missingness on these
-  three tables; biodeg is where MNAR costs the model, so it is the table for the tilt dial. The
-  signed bias per column is pending (offline).
+  three tables; biodeg is where MNAR costs the model, so it is the table for the tilt dial.
+  - **The signed bias per column (read 2026-10-19):** every imputer falls further below the
+    hidden values under MNAR. The model's bias moves least of 10 methods on all three pairs.
 - **Sources:** `docs/tickets/imputation-protocol/05-mnar-smoke.md` (Outcome);
   `scripts/experiments/mnar_smoke_run.py`, `mnar_smoke_report.py`, `run_mnar_smoke_queue.sh`;
   `datasets/generate_mnar.py`.
@@ -1541,7 +1542,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **t2:** Mx's deficit shrinks with the tilt on biodeg, and Mx beats G at slope 2.0 (−0.006).
     No verdict on the new pairs, except kc2_20 (worse).
 - **Conclusion:** the lead survives MNAR on 7 of 7 pairs (E45 and E46). It shrinks on spambase and
-  on biodeg at 60nan, and is lost only at biodeg's steepest tilt. Signed bias is not done.
+  on biodeg at 60nan, and is lost only at biodeg's steepest tilt.
+  - **Signed bias (read 2026-10-19):** under MNAR every imputer under-predicts, and the model's
+    bias moves least of 10 methods on 9 of 10 pairs (2nd at slope 0.25). Its fills are K's.
 - **Sources:** `docs/tickets/imputation-protocol/06-mnar-family.md` (Outcome);
   `scripts/experiments/mnar_family_run.py`, `mnar_family_report.py`, `run_mnar_family_queue.sh`;
   `datasets/generate_mnar.py`.
