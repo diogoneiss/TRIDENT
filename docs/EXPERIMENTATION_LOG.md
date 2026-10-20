@@ -78,6 +78,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 | done | washout on pendigits (+58% head start erased by epoch ~185 of 450), real transfer on kr-vs-kp (M − C +2.5% at the minima), no clear effect on credit-g |
 | E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – 10-20 | done | refuted: F100 +3.4% and L10 +11.6% worse on pendigits; L10 also worse on kr-vs-kp; no pre-training is 1.2% worse on pendigits, equivalent on kr-vs-kp |
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
+| E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 – | in progress | 42 cells: FN, FA, FR (+ C0 on credit-g), heads-only decode, on E26's four variants, seeds 101/202/303 |
 
 ## Entries
 
@@ -1726,3 +1727,27 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/08-default-refresh.md` (Outcome);
   `scripts/experiments/default_refresh_run.py`, `default_refresh_report.py`,
   `run_default_refresh_queue.sh`.
+
+### E52 · T28's D3: a frozen encoder, pre-trained against random (2026-10-20 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go for T28's D2
+  and D3 (2026-10-20).
+- **Hypothesis (T28, H1 against H3):** today's normalised pre-training leaves a representation that
+  heads alone can decode better than they decode a never-trained encoder.
+- **Scenarios:**
+  - **Arms:** FN (pre-trained, encoder frozen for the whole decode budget), FA (the same after the
+    shipped objective), FR (`EPOCHS_PRE 0`, frozen) and C0 (a full decode without pre-training, on
+    credit-g; E50's on the other two). G is read from E50 and the development runs.
+  - **Cells:** pendigits_20nan, kr-vs-kp_40nan, credit-g_20nan and credit-g_80nan, seeds
+    101/202/303; 42 cells, tag `experiment=frozen-encoder-2026-10-20`.
+  - **Code:** none in `src/`; E50's freeze flag at the decode budget. A `--check-frozen` smoke shows
+    the encoder bit-identical after decoding.
+- **Measures and decision rule:**
+  - **Primary:** FN − FR on K, induced, per variant.
+  - **Rule:** usable if FN is better on 3 or more variants; nothing usable if on none; mixed
+    otherwise.
+  - **Secondary:** FA − FR, FN − FA, FN − G, FR − C0 and C0 − G, also on H and masked.
+  - **With D2 (E53):** the decision table in the ticket, fixed now. No default changes.
+- **Sources:** `docs/tickets/imputation-pretraining/10-frozen-encoder.md`;
+  `scripts/experiments/frozen_encoder_run.py`, `frozen_encoder_report.py`,
+  `run_frozen_encoder_queue.sh`.
