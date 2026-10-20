@@ -77,7 +77,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
 | E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 | done | washout on pendigits (+58% head start erased by epoch ~185 of 450), real transfer on kr-vs-kp (M − C +2.5% at the minima), no clear effect on credit-g |
 | E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – 10-20 | done | refuted: F100 +3.4% and L10 +11.6% worse on pendigits; L10 also worse on kr-vs-kp; no pre-training is 1.2% worse on pendigits, equivalent on kr-vs-kp |
-| E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 – | in progress | 27 cells: nine `_20nan` variants × seeds 1001/2002/3003; every cell ends by 08:00 GMT-3 |
+| E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
 
 ## Entries
 
@@ -1688,9 +1688,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/encoder_levers_run.py`, `encoder_levers_report.py`,
   `run_encoder_levers_queue.sh`.
 
-### E51 · Today's default on fresh seeds at 20nan (2026-10-20 – )
+### E51 · Today's default on fresh seeds at 20nan (2026-10-20)
 
-- **Status:** in progress. Pre-registered before the first GPU cell, on the user's request to use
+- **Status:** done 2026-10-20. Pre-registered before the first GPU cell, on the user's request to use
   the idle GPU until 08:00 GMT-3 on 2026-10-20 for the variants not run under today's defaults for
   longest (2026-10-19).
 - **Hypothesis:** today's default keeps its earlier calls against the bar on the nine `_20nan`
@@ -1710,6 +1710,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     listed and ticketed. No default changes.
   - **Secondary:** K − strong (live), missForest, best of all, per-type bar; H − bar, M − bar,
     K − H, K − M, KC − K.
-- **Sources:** `docs/tickets/imputation-protocol/08-default-refresh.md`;
+- **Results:** 27 of 27 cells, 01:14 to 06:35 GMT-3.
+  - **K − bar:** better 7, no difference 1 (kc2), worse 1 (electricity, −2.3% of K), with no
+    reversal.
+    - Two changes short of a reversal, each matching the other earlier set: electricity none →
+      worse, spambase none → better.
+  - **K − strong (live):** better 6, no difference 3, worse 0. credit-g moves from no difference to
+    better.
+  - **H − bar:** the same calls as K − bar.
+  - **KC − K:** better on letter (−2.1%) and pendigits (−2.8%), against about −0.4% on E34 and E35's
+    old encoder; worse on spambase (+0.6%).
+- **Conclusion:** holds. Today's default keeps its 20nan calls on an unseen seed set. Whether the
+  threshold for the two bigger-encoder variants should move is the user's call (T20); no default
+  changes.
+- **Sources:** `docs/tickets/imputation-protocol/08-default-refresh.md` (Outcome);
   `scripts/experiments/default_refresh_run.py`, `default_refresh_report.py`,
   `run_default_refresh_queue.sh`.
