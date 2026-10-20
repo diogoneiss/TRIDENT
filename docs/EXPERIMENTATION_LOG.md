@@ -77,6 +77,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
 | E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 | done | washout on pendigits (+58% head start erased by epoch ~185 of 450), real transfer on kr-vs-kp (M − C +2.5% at the minima), no clear effect on credit-g |
 | E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – | in progress | 24 cells: G, F100, L10, C0 on pendigits_20nan and kr-vs-kp_40nan, seeds 101/202/303 |
+| E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 – | in progress | 27 cells: nine `_20nan` variants × seeds 1001/2002/3003; every cell ends by 08:00 GMT-3 |
 
 ## Entries
 
@@ -1677,3 +1678,29 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/09-encoder-levers.md`;
   `scripts/experiments/encoder_levers_run.py`, `encoder_levers_report.py`,
   `run_encoder_levers_queue.sh`.
+
+### E51 · Today's default on fresh seeds at 20nan (2026-10-20 – )
+
+- **Status:** in progress. Pre-registered before the first GPU cell, on the user's request to use
+  the idle GPU until 08:00 GMT-3 on 2026-10-20 for the variants not run under today's defaults for
+  longest (2026-10-19).
+- **Hypothesis:** today's default keeps its earlier calls against the bar on the nine `_20nan`
+  variants on a seed set it has never seen. Their latest default runs are from 10-03 to 10-06.
+- **Scenarios:**
+  - **Cells:** electricity, letter, pendigits, spambase, kr-vs-kp, biodeg, credit-g, vehicle and kc2
+    at 20nan × seeds 1001/2002/3003 (unused). 27 cells, tag `experiment=default-refresh-2026-10-20`.
+  - **The configuration:** today's default as a default run reads it, with `--score_checkpoints`
+    and `--score_calibrated`; the strong tier live.
+  - **Running it:** the baseline cache warmed on the CPU first. Four GPU queues start as E50's end.
+    No cell starts unless it can end by 08:00 GMT-3.
+  - **Integrity:** kc2_20nan s42 with `--no-mlflow` equals E35 fold by fold.
+- **Measures and decision rule:**
+  - **Primary:** K − bar, induced, 15 fold pairs, compared with the calls on 101/202/303 and
+    42/7/13.
+  - **Rule:** holds if no variant reverses (better ↔ worse); drifts otherwise, each reversal
+    listed and ticketed. No default changes.
+  - **Secondary:** K − strong (live), missForest, best of all, per-type bar; H − bar, M − bar,
+    K − H, K − M, KC − K.
+- **Sources:** `docs/tickets/imputation-protocol/08-default-refresh.md`;
+  `scripts/experiments/default_refresh_run.py`, `default_refresh_report.py`,
+  `run_default_refresh_queue.sh`.
