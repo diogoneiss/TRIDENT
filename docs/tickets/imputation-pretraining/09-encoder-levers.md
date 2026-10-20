@@ -87,4 +87,9 @@ explained.
 
 ## Launch
 
-To be filled in at launch.
+- **Checked before launch, with `--no-mlflow`, passed (2026-10-19, about 21:10 GMT-3):**
+  - **G on kr-vs-kp_40nan at seed 101** equals E39's D cell fold by fold on K, both populations
+    (largest difference 0). It now also logs ADR 0027's calibrated headline, read apart.
+  - **F100 on kc2_60nan at seed 7** (not a study cell) ran end to end. Its scores were not read.
+- **Launched at 21:11 GMT-3** on f7541b4: four queues in
+  `/scratch2/diogoneiss/trident-2026-10-19-encoder-levers/`.
