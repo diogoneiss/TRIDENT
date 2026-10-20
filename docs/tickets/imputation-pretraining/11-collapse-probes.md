@@ -85,3 +85,15 @@ All readings use setting N, kind `all`, and the three seeds.
 **What it leads to:** E52's decision table ([10](10-frozen-encoder.md), "Reading, fixed now"),
 which takes D3's reading and this one together. No default changes; each "propose" is a
 pre-registered study and an ADR for the user.
+
+## Launch
+
+- **The probe cells started at 19:34 GMT-3 on 2026-10-20,** on 0bf1ebf. They run in six CPU
+  lanes at 4 threads each, in `/scratch2/diogoneiss/trident-2026-10-20-collapse-probes/`.
+  - The pendigits cells take about 80 minutes each on the CPU (16 s an epoch with the bigger
+    encoder).
+  - E52's trainers slowed by about 10% under the load (1.2 s against 1.1 s a pre-training epoch).
+- **The drift cells** start on the GPU once E52's four queues have ended
+  (`drift_after_e52.sh`, two lanes).
+- **The reading** is `scripts/experiments/collapse_probes_report.py`, written before any study cell
+  finished.
