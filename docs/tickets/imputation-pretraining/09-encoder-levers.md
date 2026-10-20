@@ -155,9 +155,28 @@ pendigits_20nan; both are worse.
 - The washout levers are closed for now. The two flags stay, with their defaults of 0 and 1.0.
 - T28 moves to D2 (collapse and linear probes under the normalised objective) and D3 (a frozen
   pre-trained encoder against a random one).
-- The tag backfill (`scripts/backfill_decode_encoder_tags.py`) has the user's go. Its dry run at
-  23:41 GMT-3 on 10-19 found 2,716 runs in 1,312 trees. The apply waits for the quiet gap after
-  E51, behind a backup.
+- The tag backfill (`scripts/backfill_decode_encoder_tags.py`) had the user's go. Its dry run at
+  23:41 GMT-3 on 10-19 found 2,716 runs in 1,312 trees. It was applied on 10-20 behind a backup
+  (below).
 - **Limit:** the seeds are development seeds (101/202/303), so this is a development reading
   (ADR 0020).
 
+
+## The tag backfill, applied (2026-10-20)
+
+- **Applied on the user's go** (2026-10-19, about 23:40 GMT-3), once E51 had left the store
+  quiet.
+  - **The backup first:** through SQLite's API, 08:11 to 08:12 GMT-3, to
+    `/scratch2/diogoneiss/trident-2026-10-20-encoder-tag-apply/mlflow.db`. Its run and tag counts
+    equal the source's: 11,948 and 383,793.
+  - **The apply:** 08:12 to 08:25 GMT-3. It stamped `decode_freeze_epochs=0`,
+    `decode_encoder_lr_scale=1.0` and `decode_encoder_backfilled=true` on 2,716 source runs in
+    1,312 trees, and the same tags on 2,706 mirrors. Logs are beside the backup.
+- **A second dry run finds nothing.**
+- **Every run now carries both tags,** with three exceptions:
+  - nine runs that ended `FAILED`;
+  - one Optuna trial (pendigits_20nan, 09-28) whose tree is not mirrored.
+  - These had no mirror before the backfill either; ADR 0006 skips such trees.
+- **The values found in the store:**
+  - (0, 1.0) on 5,500 runs, the stamped ones and every run since the flags landed;
+  - (100, 1.0) on 12 and (0, 0.1) on 12: E50's F100 and L10 cells and their mirrors.
