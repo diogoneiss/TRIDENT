@@ -76,7 +76,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – 2026-10-19 | done | supported by the rule (HC_m better than H on 4 of 6 named, worse on none) but small: at most 0.4% of H, keeping 3–29% of the oracle calibration's gain; kr-vs-kp unchanged |
 | E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
 | E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 | done | washout on pendigits (+58% head start erased by epoch ~185 of 450), real transfer on kr-vs-kp (M − C +2.5% at the minima), no clear effect on credit-g |
-| E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – | in progress | 24 cells: G, F100, L10, C0 on pendigits_20nan and kr-vs-kp_40nan, seeds 101/202/303 |
+| E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – 10-20 | done | refuted: F100 +3.4% and L10 +11.6% worse on pendigits; L10 also worse on kr-vs-kp; no pre-training is 1.2% worse on pendigits, equivalent on kr-vs-kp |
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 – | in progress | 27 cells: nine `_20nan` variants × seeds 1001/2002/3003; every cell ends by 08:00 GMT-3 |
 
 ## Entries
@@ -1654,10 +1654,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/08-decode-curves.md` (Outcome);
   `scripts/experiments/decode_curves_report.py`.
 
-### E50 · The decode stage's levers against washing out the encoder (2026-10-19 – )
+### E50 · The decode stage's levers against washing out the encoder (2026-10-19 – 10-20)
 
-- **Status:** in progress. Pre-registered before the first cell, after E49 and with the user's
-  agreement (2026-10-19).
+- **Status:** done 2026-10-20. Pre-registered before the first cell, after E49 and with the
+  user's agreement (2026-10-19).
 - **Hypothesis (T28, H3):** holding the pre-trained encoder fixed for the first decode epochs, or
   giving it a lower learning rate, keeps what pre-training gave pendigits and improves its
   `impute_score`, without costing kr-vs-kp.
@@ -1675,7 +1675,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     neither is better on pendigits; mixed otherwise.
   - **Secondary:** H, masked, C0 − G, and the decode-loss minima.
   - **Supported** leads to a 21-variant screening; no default changes.
-- **Sources:** `docs/tickets/imputation-pretraining/09-encoder-levers.md`;
+- **Results:** 24 of 24 cells; integrity passed (G equals E38 ALL and E39 D, difference 0).
+  - **F100 − G:** pendigits +0.0109 (+3.4%) worse; kr-vs-kp +0.0016, no difference.
+  - **L10 − G:** pendigits +0.0371 (+11.6%) worse; kr-vs-kp +0.0322 (+4.4%) worse.
+  - **C0 − G:** pendigits +0.0038 (+1.2%) worse on K and H; kr-vs-kp equivalent on K.
+  - **Decode-loss minima:** both levers above G on both variants.
+- **Conclusion:** refuted. The decode stage needs the encoder to move at full rate from the
+  start. The washout levers are closed, and their flags stay at 0 and 1.0. T28 moves to D2 and
+  D3. Under today's default, pre-training still leaves pendigits 1.2% better at K and gives
+  kr-vs-kp_40nan nothing. Development seeds.
+- **Sources:** `docs/tickets/imputation-pretraining/09-encoder-levers.md` (Outcome);
   `scripts/experiments/encoder_levers_run.py`, `encoder_levers_report.py`,
   `run_encoder_levers_queue.sh`.
 

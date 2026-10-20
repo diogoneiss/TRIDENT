@@ -224,7 +224,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       - real transfer on kr-vs-kp (+2.5% at the minima);
       - credit-g mixed.
       - Next: a frozen-encoder or lower-encoder-LR decode arm on pendigits, or D3.
-    - **E50 pre-registered 2026-10-19** ([imputation-pretraining/09](tickets/imputation-pretraining/09-encoder-levers.md)): the freeze and encoder-LR levers on pendigits_20nan and kr-vs-kp_40nan.
+    - **E50 done 2026-10-20** ([imputation-pretraining/09](tickets/imputation-pretraining/09-encoder-levers.md)): refuted.
+      - Freezing the encoder for 100 decode epochs is worse on pendigits (+3.4%); a tenth of the
+        encoder learning rate is worse on both variants (+11.6%, +4.4%).
+      - Without pre-training, pendigits is 1.2% worse; kr-vs-kp_40nan is equivalent.
+      - The levers are closed. Next: D2 and D3.
 
 - **T29 · Why the boosters win on electricity** (the user's decision on E44, 2026-10-17). electricity
   is a stated limit of the thesis. hgb/lgbm set the bar there, and the model loses at 20, 40 and

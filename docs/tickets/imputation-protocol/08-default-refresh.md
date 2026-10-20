@@ -80,7 +80,7 @@ verdict rule and the 1% SESOI (`report_common`), read by
 
 ## Launch
 
-- **Checked before launch, with `--no-mlflow`, passed (2026-10-19, about 22:40 GMT-3):**
+- **Checked before launch, with `--no-mlflow`, passed (2026-10-19, about 22:30 GMT-3):**
   - kc2_20nan on seed 42 equals E35's run fold by fold on K, both populations (largest difference
     0).
   - The run scored every baseline live, the strong tier included (condexp, ice, missforest and
