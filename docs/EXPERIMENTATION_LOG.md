@@ -79,6 +79,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – 10-20 | done | refuted: F100 +3.4% and L10 +11.6% worse on pendigits; L10 also worse on kr-vs-kp; no pre-training is 1.2% worse on pendigits, equivalent on kr-vs-kp |
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 – | in progress | 42 cells: FN, FA, FR (+ C0 on credit-g), heads-only decode, on E26's four variants, seeds 101/202/303 |
+| E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 – | in progress | 24 probe cells (N, A on three tables; N_lr4, N_b64 on credit-g; seeds 101/202/303) on the CPU, 8 drift cells on the GPU; offline |
 
 ## Entries
 
@@ -1751,3 +1752,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/10-frozen-encoder.md`;
   `scripts/experiments/frozen_encoder_run.py`, `frozen_encoder_report.py`,
   `run_frozen_encoder_queue.sh`.
+
+### E53 · T28's D2: collapse and linear probes on pre-training, and the encoder's drift (2026-10-20 – )
+
+- **Status:** in progress. Pre-registered before the first study cell, with E52 (2026-10-20).
+- **Hypotheses (T28):**
+  - **H1:** under N the stage collapses onto the column-constant part of its target.
+  - **H2:** the encoder learns nothing linearly decodable about the hidden value.
+  - **H5:** a lower `LR_PRE` or a smaller batch changes either.
+- **Scenarios:**
+  - **Cells:** probe cells on the first fold: N and A on credit-g_20nan, kr-vs-kp_40nan and
+    pendigits_20nan; N_lr4 and N_b64 on credit-g_20nan; seeds 101/202/303 (24, CPU). Drift cells:
+    N and the Xavier start, then today's decode, on E52's four variants at seed 101 (8, GPU).
+  - **Code:** `scripts/experiments/pretrain_probe.py` watches `train_pretrainer` through its
+    tracker with every random stream restored. `fidelity`: identical validation losses. Offline;
+    nothing is written to the store.
+- **Measures and decision rule:**
+  - **Measures:** E04's NMSE, centred cosine and within-column share (also of the raw target);
+    effective ranks; linear probes from the transformer's output to the hidden value (1.0 = no
+    information); CKA and relative weight change across the decode stage.
+  - **Rule:** N collapsing if collapse (share falls, |cos| < 2 SE, NMSE ≥ 1, all seeds) on 2 or
+    more of 3 tables. Value information if the probe gains more than 1% with seed agreement on 2
+    or more of 3. H5 if N_lr4 or N_b64 moves a call or the probe by more than 1%.
+  - **Then:** E52's decision table. No default changes.
+- **Sources:** `docs/tickets/imputation-pretraining/11-collapse-probes.md`;
+  `scripts/experiments/pretrain_probe.py`.

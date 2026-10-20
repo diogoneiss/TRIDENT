@@ -229,7 +229,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
         encoder learning rate is worse on both variants (+11.6%, +4.4%).
       - Without pre-training, pendigits is 1.2% worse; kr-vs-kp_40nan is equivalent.
       - The levers are closed. Next: D2 and D3.
-    - **E52 (D3) pre-registered 2026-10-20** ([imputation-pretraining/10](tickets/imputation-pretraining/10-frozen-encoder.md)): a frozen encoder, pre-trained against random, on E26's four variants. D2 (E53) follows.
+    - **E52 (D3) pre-registered 2026-10-20** ([imputation-pretraining/10](tickets/imputation-pretraining/10-frozen-encoder.md)): a frozen encoder, pre-trained against random, on E26's four variants.
+    - **E53 (D2) pre-registered 2026-10-20** ([imputation-pretraining/11](tickets/imputation-pretraining/11-collapse-probes.md)): collapse and linear probes under N and A, H5's two settings, and the encoder's drift.
 
 - **T29 · Why the boosters win on electricity** (the user's decision on E44, 2026-10-17). electricity
   is a stated limit of the thesis. hgb/lgbm set the bar there, and the model loses at 20, 40 and
