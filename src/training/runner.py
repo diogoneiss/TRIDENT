@@ -10,6 +10,8 @@ import torch
 from src.mlflow_utils import (
     BASELINE_CACHE_TAG,
     DECODE_PATIENCE_TAG,
+    DECODE_FREEZE_EPOCHS_TAG,
+    DECODE_ENCODER_LR_SCALE_TAG,
     DECODER_HEADS_TAG,
     DECODE_GAP_TOKEN_TAG,
     DECODE_CHECKPOINT_TAG,
@@ -153,6 +155,8 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                 {
                     BASELINE_CACHE_TAG: "off" if request.runtime.baseline_cache_dir is None else "on",
                     DECODE_PATIENCE_TAG: str(request.hyperparameters.decode_patience),
+                    DECODE_FREEZE_EPOCHS_TAG: str(request.hyperparameters.decode_freeze_epochs),
+                    DECODE_ENCODER_LR_SCALE_TAG: str(request.hyperparameters.decode_encoder_lr_scale),
                     DECODER_HEADS_TAG: request.hyperparameters.decoder_heads,
                     DECODE_GAP_TOKEN_TAG: request.hyperparameters.decode_gap_token,
                     DECODE_CHECKPOINT_TAG: request.hyperparameters.decode_checkpoint,

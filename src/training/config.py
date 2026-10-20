@@ -34,7 +34,7 @@ from .types import (
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
     "decode_gap_token", "decode_checkpoint", "pretrain_gap_token", "encoder_final_norm",
-    "decode_calibration",
+    "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale",
 )
 
 
@@ -86,6 +86,11 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_calibration = getattr(args, "decode_calibration", None)
     if decode_calibration is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_calibration=decode_calibration)
+    # ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` win the same way (E50).
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale"):
+        value = getattr(args, flag, None)
+        if value is not None:
+            hyperparameters = dataclasses.replace(hyperparameters, **{flag: value})
     # ``--decode_epochs`` wins the same way (ADR 0013).
     decode_epochs = getattr(args, "decode_epochs", None)
     if decode_epochs is not None:
@@ -168,6 +173,8 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "LAMBDA_NUM": values.lambda_num,
             "EVAL_MASK_RATE": values.eval_mask_rate,
             "DECODE_PATIENCE": values.decode_patience,
+            "DECODE_FREEZE_EPOCHS": values.decode_freeze_epochs,
+            "DECODE_ENCODER_LR_SCALE": values.decode_encoder_lr_scale,
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
@@ -274,6 +281,9 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale"):
+        if getattr(args, flag, None) is not None and getattr(args, "task", DEFAULT_TASK) != "imputation":
+            raise SystemExit(f"error: --{flag} requires --task imputation")
 
     # Only imputation has a decode checkpoint to choose.
     if (
@@ -382,6 +392,26 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: stop the decode stage once its validation loss has not improved "
             "for this many epochs, keeping the best epoch. Overrides DECODE_PATIENCE from the "
             "hyperparameter file. Default: 0, every epoch trains."
+        ),
+    )
+    parser.add_argument(
+        "--decode_freeze_epochs",
+        type=int,
+        default=None,
+        help=(
+            "Imputation only: train only the decoder heads for this many decode epochs, the "
+            "pre-trained embedder and transformer held fixed, then train everything (E50). "
+            "Overrides DECODE_FREEZE_EPOCHS. Default: 0, every parameter trains from the start."
+        ),
+    )
+    parser.add_argument(
+        "--decode_encoder_lr_scale",
+        type=float,
+        default=None,
+        help=(
+            "Imputation only: the embedder's and transformer's learning rate in the decode stage "
+            "as a fraction of the heads' (E50). Overrides DECODE_ENCODER_LR_SCALE. Default: 1.0, "
+            "one learning rate for every parameter."
         ),
     )
     parser.add_argument(

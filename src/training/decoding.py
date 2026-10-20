@@ -69,10 +69,12 @@ def train_and_evaluate_decoder(
         lambda_num=hyperparameters.lambda_num,
     ).to(device)
     optimizer = optim.AdamW(
-        model.parameters(),
+        _decode_parameters(model, hyperparameters),
         lr=hyperparameters.decode_learning_rate,
         weight_decay=hyperparameters.decode_weight_decay,
     )
+    # E50: the pre-trained embedder and transformer, held fixed for the first epochs if asked.
+    encoder = [*model.embedder.parameters(), *model.transformer.parameters()]
     scheduler = StageScheduler(
         optimizer,
         hyperparameters.lr_scheduler,
@@ -143,6 +145,10 @@ def train_and_evaluate_decoder(
     # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
     train_masker = EpochMasker(embedder, train_frame, device)
     for epoch in tqdm(range(hyperparameters.decode_epochs), desc="Decode epochs"):
+        if hyperparameters.decode_freeze_epochs:
+            # A frozen parameter gets no gradient, so AdamW leaves it alone, weight decay included.
+            for parameter in encoder:
+                parameter.requires_grad_(epoch >= hyperparameters.decode_freeze_epochs)
         hidden_train = shown(train_masker.draw(hyperparameters.mask_probability))
         model.train()
         order = torch.randperm(len(train_frame)).to(device)
@@ -703,6 +709,19 @@ class _ValidationMaskScore(_ValidationGapScore):
         if self._n_categorical:
             naive_labels = categorical["column"].map(baselines).to_numpy()
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
+
+
+def _decode_parameters(model: TridentDecoder, hyperparameters: Hyperparameters):
+    """What the decode stage's optimizer trains: every parameter at one rate, as every run before
+    E50, or the embedder and transformer at ``decode_encoder_lr_scale`` times the heads' rate."""
+    if hyperparameters.decode_encoder_lr_scale == 1.0:
+        return model.parameters()
+    encoder = [*model.embedder.parameters(), *model.transformer.parameters()]
+    shared = {id(parameter) for parameter in encoder}
+    return [
+        {"params": [parameter for parameter in model.parameters() if id(parameter) not in shared]},
+        {"params": encoder, "lr": hyperparameters.decode_learning_rate * hyperparameters.decode_encoder_lr_scale},
+    ]
 
 
 def _validation_calibration(

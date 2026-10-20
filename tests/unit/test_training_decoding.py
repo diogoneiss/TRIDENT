@@ -487,6 +487,61 @@ def test_the_masked_calibration_is_fitted_on_the_validation_mask_and_touches_not
     assert "impute/induced/masked_calibrated/impute_score" not in without_truth.result.metrics
 
 
+def _encoder_state(model) -> dict:
+    return {
+        name: tensor.detach().clone()
+        for name, tensor in [*model.embedder.state_dict().items(), *(("t." + k, v) for k, v in model.transformer.state_dict().items())]
+    }
+
+
+def test_a_frozen_encoder_stays_the_pre_trained_one_and_trains_again_after_the_freeze() -> None:
+    """E50. While ``DECODE_FREEZE_EPOCHS`` lasts, the decode stage trains the heads only: the
+    pre-trained embedder and transformer come out exactly as they went in. Past it they train."""
+    dataset = _dataset()
+    np.random.seed(0)
+    pretrained = _pretrained(dataset)
+    before = _encoder_state(pretrained.model)
+    frozen = train_and_evaluate_decoder(
+        dataset=dataset, fold=_fold(len(dataset.frame)), pretraining=pretrained,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=3, DECODE_FREEZE_EPOCHS=3), device=torch.device("cpu"),
+        tracker=BufferedFoldTracker(), seed=42, fold_ordinal=1, complete_sibling=_complete_frame(),
+    )
+    for name, tensor in _encoder_state(frozen.model).items():
+        assert torch.equal(tensor, before[name]), name
+    assert all(p.requires_grad is False for p in frozen.model.transformer.parameters())
+
+    # The model a run returns is its kept checkpoint, which may be a frozen epoch; the losses
+    # show the encoder training once the freeze ends: the same first epoch, then a different path.
+    np.random.seed(0)
+    thawed = train_and_evaluate_decoder(
+        dataset=dataset, fold=_fold(len(dataset.frame)), pretraining=_pretrained(dataset),
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=3, DECODE_FREEZE_EPOCHS=1), device=torch.device("cpu"),
+        tracker=BufferedFoldTracker(), seed=42, fold_ordinal=1, complete_sibling=_complete_frame(),
+    )
+    assert thawed.train_losses[0] == frozen.train_losses[0]
+    assert thawed.train_losses[1:] != frozen.train_losses[1:]
+    assert all(p.requires_grad for p in thawed.model.transformer.parameters())
+
+
+def test_the_encoder_learning_rate_scale_splits_the_optimizer_into_heads_and_encoder() -> None:
+    """E50. A scale other than 1.0 gives the embedder and transformer their own group at that
+    fraction of the decode learning rate; every parameter is in exactly one group. At 1.0 the
+    optimizer sees the model's parameters as before."""
+    from src.models import TridentDecoder
+    from src.training.decoding import _decode_parameters
+
+    dataset = _dataset()
+    pretrained = _pretrained(dataset)
+    model = TridentDecoder(embedder=pretrained.model.embedder, transformer=pretrained.model.transformer)
+    groups = _decode_parameters(model, _hyperparameters(DECODE_ENCODER_LR_SCALE=0.1, LR_DECODE=0.01))
+    heads, encoder = groups
+    assert encoder["lr"] == pytest.approx(0.001) and "lr" not in heads
+    ids = [id(p) for g in groups for p in g["params"]]
+    assert sorted(ids) == sorted(id(p) for p in model.parameters()) and len(ids) == len(set(ids))
+    assert {id(p) for p in encoder["params"]} == {id(p) for p in [*model.embedder.parameters(), *model.transformer.parameters()]}
+    assert list(_decode_parameters(model, _hyperparameters())) == list(model.parameters())
+
+
 def test_with_nothing_to_learn_the_induced_checkpoint_is_the_first_epoch_and_scores_as_the_headline() -> None:
     outcome, _ = _run(
         sibling=_complete_frame(), score_induced_checkpoint=True,

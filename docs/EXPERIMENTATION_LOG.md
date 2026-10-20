@@ -76,6 +76,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E47 | A deployable calibration: fitted on the validation mask, read with H | 2026-10-18 – 2026-10-19 | done | supported by the rule (HC_m better than H on 4 of 6 named, worse on none) but small: at most 0.4% of H, keeping 3–29% of the oracle calibration's gain; kr-vs-kp unchanged |
 | E48 | MaCoDE as an external deep baseline (vendored, inductive, the paper's settings) | 2026-10-19 | done | TRIDENT beats MaCoDE on 20/21 (development) and 14/15 (confirmation), never worse; MaCoDE beats the strong tier on 4 of 15 confirmation variants, so an external deep baseline only; strong on large or categorical tables, weak on small ones |
 | E49 | D1 of T28: the decode curves, pre-trained against not, from the store | 2026-10-19 | done | washout on pendigits (+58% head start erased by epoch ~185 of 450), real transfer on kr-vs-kp (M − C +2.5% at the minima), no clear effect on credit-g |
+| E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – | in progress | 24 cells: G, F100, L10, C0 on pendigits_20nan and kr-vs-kp_40nan, seeds 101/202/303 |
 
 ## Entries
 
@@ -1651,3 +1652,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   D3 would locate kr-vs-kp's gain. This is the decode loss, not `impute_score`.
 - **Sources:** `docs/tickets/imputation-pretraining/08-decode-curves.md` (Outcome);
   `scripts/experiments/decode_curves_report.py`.
+
+### E50 · The decode stage's levers against washing out the encoder (2026-10-19 – )
+
+- **Status:** in progress. Pre-registered before the first cell, after E49 and with the user's
+  agreement (2026-10-19).
+- **Hypothesis (T28, H3):** holding the pre-trained encoder fixed for the first decode epochs, or
+  giving it a lower learning rate, keeps what pre-training gave pendigits and improves its
+  `impute_score`, without costing kr-vs-kp.
+- **Scenarios:**
+  - **Code:** `--decode_freeze_epochs` and `--decode_encoder_lr_scale`, with defaults 0 and 1.0,
+    their tags, and a dry-run tag backfill. The fixtures are unchanged.
+  - **Arms:** G (today's default), F100 (heads only for 100 of 450 decode epochs), L10 (encoder
+    LR ×0.1) and C0 (no pre-training), all with `--score_checkpoints`.
+  - **Cells:** pendigits_20nan and kr-vs-kp_40nan, seeds 101/202/303; 24 cells, tag
+    `experiment=encoder-levers-2026-10-19`.
+  - **Integrity:** G equals E38 ALL and E39 D.
+- **Measures and decision rule:**
+  - **Primary:** F100 − G and L10 − G on K, induced.
+  - **Rule:** supported if a lever is better on pendigits and not worse on kr-vs-kp; refuted if
+    neither is better on pendigits; mixed otherwise.
+  - **Secondary:** H, masked, C0 − G, and the decode-loss minima.
+  - **Supported** leads to a 21-variant screening; no default changes.
+- **Sources:** `docs/tickets/imputation-pretraining/09-encoder-levers.md`;
+  `scripts/experiments/encoder_levers_run.py`, `encoder_levers_report.py`,
+  `run_encoder_levers_queue.sh`.

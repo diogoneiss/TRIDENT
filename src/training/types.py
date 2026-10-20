@@ -241,6 +241,12 @@ class Hyperparameters:
     # 0, every run before it existed, trains every epoch. The checkpoint is the best epoch
     # either way, and the schedule still spans the configured epochs.
     decode_patience: int = 0
+    # The decode stage's two levers against washing out the pre-trained encoder (T28, E50): the
+    # first ``decode_freeze_epochs`` epochs train the heads only, the embedder and transformer
+    # held fixed; and the encoder's learning rate is ``decode_encoder_lr_scale`` times the heads'.
+    # 0 and 1.0 are every run before them.
+    decode_freeze_epochs: int = 0
+    decode_encoder_lr_scale: float = 1.0
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
@@ -287,6 +293,10 @@ class Hyperparameters:
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
+        if self.decode_freeze_epochs < 0:
+            raise ValueError(f"The decode freeze counts epochs, so it cannot be {self.decode_freeze_epochs}")
+        if not self.decode_encoder_lr_scale > 0:
+            raise ValueError(f"The encoder's learning-rate scale must be positive, not {self.decode_encoder_lr_scale}")
         if self.pretraining_objective not in PRETRAINING_OBJECTIVES:
             raise ValueError(
                 f"Unknown pre-training objective {self.pretraining_objective!r}; "
@@ -337,6 +347,8 @@ class Hyperparameters:
             ),
             lambda_num=float(values.get("LAMBDA_NUM", values.get("lambda_num", 1.0))),
             decode_patience=int(values.get("DECODE_PATIENCE", values.get("decode_patience", 0))),
+            decode_freeze_epochs=int(values.get("DECODE_FREEZE_EPOCHS", values.get("decode_freeze_epochs", 0))),
+            decode_encoder_lr_scale=float(values.get("DECODE_ENCODER_LR_SCALE", values.get("decode_encoder_lr_scale", 1.0))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

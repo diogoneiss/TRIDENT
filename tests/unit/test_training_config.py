@@ -287,6 +287,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
+        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE",
     }
 
 
@@ -627,6 +628,25 @@ def test_the_imputation_output_is_calibrated_by_the_missing_rate_unless_a_run_sa
         parser.parse_args([*imputation, "--decode_calibration", "always"])
     with pytest.raises(ValueError, match="decode calibration"):
         Hyperparameters.from_mapping({"DECODE_CALIBRATION": "always"})
+
+
+def test_the_decode_encoder_levers_are_imputation_flags_off_by_default() -> None:
+    """E50: ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` default to every run
+    before them (0 and 1.0), apply to imputation only, and refuse a negative freeze or a scale
+    that is not positive."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    default = resolve_training_request(parser.parse_args(imputation)).hyperparameters
+    assert (default.decode_freeze_epochs, default.decode_encoder_lr_scale) == (0, 1.0)
+    asked = resolve_training_request(parser.parse_args([*imputation, "--decode_freeze_epochs", "100", "--decode_encoder_lr_scale", "0.1"]))
+    assert (asked.hyperparameters.decode_freeze_epochs, asked.hyperparameters.decode_encoder_lr_scale) == (100, 0.1)
+    for flag, value in (("--decode_freeze_epochs", "5"), ("--decode_encoder_lr_scale", "0.5")):
+        with pytest.raises(SystemExit, match=flag.lstrip("-")):
+            validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", flag, value]))
+    with pytest.raises(ValueError, match="freeze"):
+        Hyperparameters.from_mapping({"DECODE_FREEZE_EPOCHS": -1})
+    with pytest.raises(ValueError, match="scale"):
+        Hyperparameters.from_mapping({"DECODE_ENCODER_LR_SCALE": 0})
 
 
 def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:

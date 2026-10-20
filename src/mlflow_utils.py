@@ -75,6 +75,13 @@ BASELINE_CACHE_TAG = "baseline_cache"
 # ``scripts/backfill_decode_patience_tag.py`` and marked DECODE_PATIENCE_BACKFILLED_TAG.
 DECODE_PATIENCE_TAG = "decode_patience"
 DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
+# The decode stage's levers against washing out the pre-trained encoder (E50): the epochs that
+# train the heads only, and the encoder's learning-rate scale. On every imputation parent and
+# trial; runs recorded before them are stamped "0" and "1.0" by
+# ``scripts/backfill_decode_encoder_tags.py`` and marked DECODE_ENCODER_BACKFILLED_TAG.
+DECODE_FREEZE_EPOCHS_TAG = "decode_freeze_epochs"
+DECODE_ENCODER_LR_SCALE_TAG = "decode_encoder_lr_scale"
+DECODE_ENCODER_BACKFILLED_TAG = "decode_encoder_backfilled"
 # How an imputation run's decoder applied its heads, "batched" (the default since ADR 0012) or
 # "per_column". On every
 # imputation parent and trial; runs recorded before it are stamped "per_column" by
