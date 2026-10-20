@@ -8,13 +8,14 @@ This ticket was written and committed before the first cell.
     a random one.
   - **What came before:** E49 (D1) saw the head start wash out on pendigits. E50 then found that
     neither holding the encoder for 100 epochs nor slowing it helps.
-- **The user's go:** 2026-10-20, about 08:40 GMT-3, for T28's D2 and D3 before T29 and TabPFN.
+- **The user's go:** 2026-10-20, in the afternoon (after 14:50 GMT-3), for T28's D2 and D3
+  before T29 and TabPFN.
 - **No new code in `src/`.** E50's `--decode_freeze_epochs` set to the variant's own decode budget
   freezes the embedder and transformer for every decode epoch.
   - `EPOCHS_PRE 0` still enters `train_pretrainer`, so the random encoder is the Xavier sweep the
     stage starts from: the same start as E50's C0 arm.
-  - **Checked before launch:** FR on kc2_20nan at seed 7 (`--no-mlflow --check-frozen`, not a
-    study cell). All 154 tensors of the embedder and transformer leave the decode stage
+  - **Checked before launch** (about 19:19 GMT-3): FR on kc2_20nan at seed 7
+    (`--no-mlflow --check-frozen`, not a study cell). All 154 tensors of the embedder and transformer leave the decode stage
     bit-identical, on all five folds.
 
 ## Design (fixed before the first cell)
@@ -84,3 +85,10 @@ report's branch "usable but washing out, try the levers". Nothing here changes a
 | any | a diagnostic moves with `LR_PRE` or the batch | T12 first, in E26's shape |
 
 - **Any other combination:** reported, and the user chooses.
+
+## Launch
+
+- **Launched at 19:21 GMT-3 on 2026-10-20** on 68e0baf: four queues in
+  `/scratch2/diogoneiss/trident-2026-10-20-frozen-encoder/`.
+- **Expected end:** about 22:00–22:30 GMT-3.
+
