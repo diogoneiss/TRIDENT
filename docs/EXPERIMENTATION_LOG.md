@@ -83,7 +83,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
 | E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
 | E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
-| E57 | The default output against TabPFN: KC and H | 2026-10-21 – | in progress | a read of E44's runs and E55's CSVs; no run |
+| E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
 
 ## Entries
 
@@ -1904,14 +1904,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/11-tabpfn-panel.md` (Outcome);
   `scripts/experiments/metric_panel.py`, `metric_panel_report.py`.
 
-### E57 · The default output against TabPFN: KC and H (2026-10-21 – )
+### E57 · The default output against TabPFN: KC and H (2026-10-21)
 
-- **Status:** in progress. Pre-registered before the reading ran (2026-10-21).
+- **Status:** done 2026-10-21. Pre-registered before the reading ran.
 - **Hypothesis:** none directional. KC is the default output at 40nan and above (ADR 0027), and
   E55 read K.
 - **Scenarios:** E44's 15 confirmation variants (707/808/909) with their logged KC and H. The
   development variants at 40nan and above are read where their runs have KC.
 - **Measures and decision rule:** KC − TabPFN and H − TabPFN beside K − TabPFN, 15 fold pairs,
   1% SESOI; the calls that change from K to KC are listed. Descriptive; ADR 0028 stands.
-- **Sources:** `docs/tickets/imputation-protocol/12-default-output-vs-tabpfn.md`;
+- **Results:**
+  - **KC − TabPFN (confirmation):** better 6, no difference 4, equivalent 1, worse 4. The losses
+    are pendigits, electricity, vehicle and biodeg at 80nan.
+  - **The one change from K:** letter_80nan (worse → equivalent).
+  - **Calibration narrows the 80nan gaps** by up to half (vehicle +0.053 → +0.032).
+  - **H − TabPFN:** better 5, no difference 5, worse 5.
+- **Conclusion:** the thesis states KC − TabPFN: the default output never loses to TabPFN at 40–60nan
+  and loses on 4 of 6 at 80nan.
+- **Sources:** `docs/tickets/imputation-protocol/12-default-output-vs-tabpfn.md` (Outcome);
   `scripts/experiments/tabpfn_report.py`.
