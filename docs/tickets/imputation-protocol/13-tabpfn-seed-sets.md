@@ -162,7 +162,8 @@ rule and the 1% SESOI:
   - pendigits_20nan (worse at 101/202/303, at 1001/2002/3003 and at 42/7/13's labelled cell).
 - **K's wins repeat too:**
   - spambase at every rate (TabPFN worse on all of 404/505/606 and at 1001/2002/3003);
-  - letter_20nan;
+  - letter_20nan, on the two seed sets with today's encoder. 42/7/13's labelled cell, the old
+    encoder, is worse (+0.0053);
   - kc2_60nan;
   - biodeg_60nan.
 - **The MNAR statement holds against TabPFN.**
