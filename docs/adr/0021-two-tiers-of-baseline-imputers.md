@@ -43,6 +43,10 @@ baseline cache.
       `baseline/best_strong`.
   - **Log:** `/scratch2/diogoneiss/trident-2026-10-18-store-apply/`.
 
+**Amended on 2026-10-21 by ADR [0028](0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md):**
+TabPFN v2 joins the strong tier as an offline member. The runs still log the four members below;
+the readers add TabPFN wherever a study's offline pass exists.
+
 ## Context
 
 **What runs log today:**

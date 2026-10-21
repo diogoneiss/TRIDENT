@@ -189,6 +189,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   its best arm (E28, 0.323) and a validation loss still falling near epoch 450 (E27).
 - **T12 · A lower `LR_PRE` with the normalised objective:** every full-profile winner chose 2–34x
   below the default (E21).
+  - **Skipped by the user's decision (2026-10-21),** on my recommendation. T28's decision table pointed here (E53's `BATCH 64` moved credit-g's probe), but E52 and E53 show the decode stage rebuilding the encoder from scratch, so a better pre-trained one would be overwritten too.
 - **T13 · An EMA target encoder and a predictor for pre-training** (data2vec, BYOL; SMART, wiki
   `references/smart-paper`). These are the anti-collapse guards pre-training still lacks (ADR 0011,
   considered options). TRIDENT's target is the clean cell's input embedding from the same embedder,
@@ -250,7 +251,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - With the row's `date`, K − bar is worse at every rate; without it, never worse (better at
       20 and 80nan).
     - The boosters look values up by `date`, a 933-level key.
-    - **T29 closed.** A model-side encoding of `date` is an ADR for the user.
+    - **T29 closed.** A model-side encoding of `date` was set aside by the user (2026-10-21): the limit stays stated with its mechanism.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
@@ -260,7 +261,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 ### Later baselines and classification (plan 2026-10-17)
 
 - **T27 · MaCoDE, TabPFN v2 and classification step zero** (plan §2g; review items 10–12).
-  **MaCoDE done 2026-10-19 (E48,** [imputation-protocol/07](tickets/imputation-protocol/07-macode.md)**):** TRIDENT beats it on 20/21 and 14/15, never worse; an external deep baseline only. TabPFN v2: E55 done 2026-10-21 ([imputation-protocol/10](tickets/imputation-protocol/10-tabpfn.md)): better than the strong tier on 11/15 confirmation variants, so the rule proposes it for the strong tier (an ADR for the user). K − TabPFN 6/4/5; TabPFN wins at 80nan. Step zero not started.
+  **MaCoDE done 2026-10-19 (E48,** [imputation-protocol/07](tickets/imputation-protocol/07-macode.md)**):** TRIDENT beats it on 20/21 and 14/15, never worse; an external deep baseline only. TabPFN v2: E55 done 2026-10-21 ([imputation-protocol/10](tickets/imputation-protocol/10-tabpfn.md)): better than the strong tier on 11/15 confirmation variants. **The user accepted it into the strong tier (ADR 0028, 2026-10-21)** as an offline member; K − strong now reads 5/9/7 on development and 6/4/5 on confirmation. E56's panel: TabPFN's 80nan wins come with more shrunk fills. Step zero not started.
   - MaCoDE vendored behind an inductive wrapper, with its bins bug fixed first: 10–14 h of code,
     3–5 GPU-h off-store.
   - A column-wise TabPFN v2 in a separate venv pinned to `ModelVersion.V2`: 5–8 h of code and

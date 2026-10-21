@@ -15,9 +15,10 @@ Per variant, on the induced ``impute_score`` over 15 fold pairs with the verdict
 SESOI (ADR 0020):
 
 1. K − TabPFN (primary);
-2. TabPFN − the strong tier's best (missForest and E41's arms), TabPFN − the bar, TabPFN − the
-   tuned bar;
-3. K − the best of all, TabPFN included (MaCoDE too where its CSVs exist).
+2. TabPFN − the strong tier's live best (missForest and E41's arms, ``strong_live``), TabPFN − the
+   bar, TabPFN − the tuned bar;
+3. K − the best of all, TabPFN included (MaCoDE too where its CSVs exist);
+4. K − the strong tier before and after ADR 0028 (``strong_live`` and ``strong``, TabPFN in it).
 
 Also the fit time per fold.
 """
@@ -91,11 +92,14 @@ def report(label: str, found: list[tuple[str, Cells | None]]) -> None:
             print(f"- `{variant}`: incomplete")
             continue
         readings = {"K − tabpfn": contrast(cells, "K", "tabpfn"),
-                    "tabpfn − strong": contrast(cells, "tabpfn", "strong"),
+                    "tabpfn − strong": contrast(cells, "tabpfn", "strong_live"),
                     "tabpfn − bar": contrast(cells, "tabpfn", "bar")}
         if all(TUNED_BAR in frame.columns for _, frame in cells):
             readings["tabpfn − tuned"] = contrast(cells, "tabpfn", "tuned")
         readings["K − best_of_all"] = contrast(cells, "K", "best_of_all")
+        # ADR 0028: K against the strong tier with TabPFN in it, beside the live four.
+        readings["K − strong_live"] = contrast(cells, "K", "strong_live")
+        readings["K − strong (ADR 0028)"] = contrast(cells, "K", "strong")
         best = sorted({common.opponent(frame, "best_of_all")[0] for _, frame in cells})
         seconds = float(np.mean([frame["impute/induced/baseline/tabpfn/fit_seconds"].mean() for _, frame in cells]))
         print(f"- `{variant}`: " + "; ".join(f"{k} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}" for k, v in readings.items())
@@ -115,7 +119,7 @@ def main() -> int:
     report("Development set, seeds 101/202/303 (labelled variants: none on this set)", development)
     confirmation_cells = [(v, _with_tabpfn(confirmation.cells(v), options.tabpfn)) for v in confirmation.VARIANTS]
     report("Confirmation set (E44), seeds 707/808/909", confirmation_cells)
-    calls = [contrast(c, "tabpfn", "strong").call for _, c in confirmation_cells if c is not None]
+    calls = [contrast(c, "tabpfn", "strong_live").call for _, c in confirmation_cells if c is not None]
     if len(calls) == len(confirmation.VARIANTS):
         better = calls.count("better")
         print(f"Decision input: TabPFN better than the strong tier's best on {better} of {len(calls)} confirmation variants "

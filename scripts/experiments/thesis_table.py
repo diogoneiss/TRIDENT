@@ -2,7 +2,7 @@
 
 Read-only. Run from the checkout root:
 
-    uv run --python 3.11 python scripts/experiments/thesis_table.py [--seeds 101/202/303|42/7/13|404/505/606] [--linear DIR] [--tuned DIR]
+    uv run --python 3.11 python scripts/experiments/thesis_table.py [--seeds 101/202/303|42/7/13|404/505/606] [--linear DIR] [--tuned DIR] [--tabpfn DIR|none]
 
 Per seed set, the model's K on today's default (``report_common.development_source``: E34 K,
 E38 ALL and E39 D on 101/202/303; E35 K on 42/7/13, five variants labelled; E40 on 404/505/606)
@@ -18,7 +18,10 @@ against every opponent on the same folds:
 
 The baselines a run's fold CSV lacks (lgbm and missForest on E34/E35, E41's arms everywhere)
 come from E41's offline per-fold CSVs (``--linear``), which reproduce the logged baselines
-exactly; the tuned families come from E42's per-fold CSVs (``--tuned``). A development win under
+exactly; the tuned families come from E42's per-fold CSVs (``--tuned``). TabPFN v2, the strong
+tier's offline member since ADR 0028, comes from E55's per-fold CSVs (``--tabpfn``; ``none``
+reads the strong tier as before the ADR); it joins the strong and tuned strong tiers and the best
+of all wherever a seed set has it. A development win under
 D4 needs K to beat both the bar and the tuned bar. Every count is printed with its test. Labelled
 variants are never pooled.
 """
@@ -52,10 +55,11 @@ SESOI = 0.01
 DEFAULT_LINEAR = Path("/scratch2/diogoneiss/trident-2026-10-17-linear-baselines/csv")
 DEFAULT_TUNED = Path("/scratch2/diogoneiss/trident-2026-10-17-baseline-budget")
 TUNED_BAR = "impute/induced/baseline/tuned_bar/impute_score"
+DEFAULT_TABPFN = Path("/scratch2/diogoneiss/trident-2026-10-21-tabpfn/csv")
 LINEAR_ARMS = ("condexp", "softimpute", "ice")
 
 
-def _cells(variant: str, seeds: str, linear: Path, tuned: Path | None = None) -> list[tuple[common.Run, pd.DataFrame]] | None:
+def _cells(variant: str, seeds: str, linear: Path, tuned: Path | None = None, tabpfn: Path | None = None) -> list[tuple[common.Run, pd.DataFrame]] | None:
     source = common.development_source(variant, seeds)
     if source is None or (seeds == "404/505/606" and variant not in E40_VARIANTS):
         return None
@@ -87,6 +91,10 @@ def _cells(variant: str, seeds: str, linear: Path, tuned: Path | None = None) ->
                         if c.startswith("impute/") and c not in frame.columns and (not only_missforest or "/missforest_tuned" in c)
                     ]
                     frame = pd.concat([frame.reset_index(drop=True), extra[new]], axis=1)
+        if tabpfn is not None and (tabpfn / f"{variant}_s{seed}.csv").exists():
+            extra = pd.read_csv(tabpfn / f"{variant}_s{seed}.csv").sort_values("fold").reset_index(drop=True)
+            new = [c for c in extra.columns if c.startswith("impute/") and c not in frame.columns]
+            frame = pd.concat([frame.reset_index(drop=True), extra[new]], axis=1)
         cells.append((runs[0], frame))
     return cells
 
@@ -97,7 +105,7 @@ def _opponent(frame: pd.DataFrame, which: str) -> tuple[str, np.ndarray]:
             raise KeyError(which)
         return "tuned_bar", np.asarray(frame[TUNED_BAR], dtype=float)
     if which == "tuned_strong":
-        names = ["missforest_tuned", *LINEAR_ARMS]
+        names = ["missforest_tuned", *LINEAR_ARMS, *(n for n in common.OFFLINE_STRONG if f"impute/induced/baseline/{n}/impute_score" in frame.columns)]
         keys = [f"impute/induced/baseline/{name}/impute_score" for name in names]
         if any(key not in frame.columns for key in keys):
             raise KeyError(which)
@@ -127,6 +135,7 @@ def main() -> int:
     parser.add_argument("--seeds", default="101/202/303", choices=list(SEED_SETS))
     parser.add_argument("--linear", type=Path, default=DEFAULT_LINEAR)
     parser.add_argument("--tuned", type=Path, default=DEFAULT_TUNED)
+    parser.add_argument("--tabpfn", default=str(DEFAULT_TABPFN))
     options = parser.parse_args()
     print(f"## Development set, seeds {options.seeds}, induced impute_score, K readout")
     print()
@@ -135,7 +144,7 @@ def main() -> int:
     calls: dict[str, dict[str, str]] = {o: {} for o in OPPONENTS}
     gaps: dict[str, dict[str, float]] = {o: {} for o in OPPONENTS}
     for variant in DEVELOPMENT:
-        cells = _cells(variant, options.seeds, options.linear, options.tuned)
+        cells = _cells(variant, options.seeds, options.linear, options.tuned, None if options.tabpfn == "none" else Path(options.tabpfn))
         if cells is None:
             continue
         source = common.development_source(variant, options.seeds)

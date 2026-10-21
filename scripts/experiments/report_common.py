@@ -14,8 +14,9 @@ so the same words mean the same numbers everywhere:
 - **The bar** (the weak tier) is the best of the logged baselines outside
   ``summary.OUTSIDE_THE_BAR`` and outside ``STRONG``, chosen once per run on its CV mean (ADR 0007
   decision 8); never a name tuple. The **strong tier**
-  (plan §2b) is the best of ``STRONG``; **the best of all** the best of every baseline but the
-  withdrawn one; **the per-type bar** the best baseline per kind of cell, recombined with
+  (plan §2b) is the best of ``STRONG`` and, where a study's offline pass put it on the frame,
+  ``OFFLINE_STRONG`` (ADR 0028: TabPFN v2); ``strong_live`` is the best of ``STRONG`` alone, the
+  tier the runs log. **The best of all** is the best of every baseline but the withdrawn one; **the per-type bar** the best baseline per kind of cell, recombined with
   ``impute_score``'s cell weights (item 7b, D1).
 - **The verdict rule**: the 95% t-interval of the pooled fold differences excludes zero and every
   seed's mean difference agrees in sign. With a SESOI, a call without a verdict whose interval lies
@@ -54,7 +55,10 @@ WEAK = ("mean_mode", "knn5", "knn10", "hgb", "lgbm")
 DIAGNOSTIC = ("missforest_seq",)
 # Deep baselines read from offline passes (E48's MaCoDE): outside the bar and the strong tier,
 # compared on their own and in the best of all.
-DEEP = ("macode", "tabpfn")
+DEEP = ("macode",)
+# ADR 0028: the strong tier's offline member, read wherever a study's offline pass merged its
+# columns into the frame; the runs never log it, so ``baseline/best_strong`` stays the live four.
+OFFLINE_STRONG = ("tabpfn",)
 _TUNED = re.compile(r"_tuned(_masked)?$|^tuned_bar$")
 RULE = "fold-pair t, seed agreement"
 _SOURCE = """r.status = 'FINISHED' and r.lifecycle_stage = 'active'
@@ -146,14 +150,14 @@ def baselines_in(columns: Iterable[str], population: str) -> list[str]:
     so a new arm can never join the bar or a tier without being read."""
     pattern = re.compile(rf"^impute/{re.escape(population)}/baseline/([^/]+)/impute_score$")
     names = sorted({m.group(1) for column in columns if (m := pattern.match(column))})
-    unknown = [n for n in names if n not in (*WEAK, *STRONG, *DIAGNOSTIC, *DEEP, *OUTSIDE_THE_BAR) and not _TUNED.search(n)]
+    unknown = [n for n in names if n not in (*WEAK, *STRONG, *OFFLINE_STRONG, *DIAGNOSTIC, *DEEP, *OUTSIDE_THE_BAR) and not _TUNED.search(n)]
     if unknown:
         raise KeyError(f"baselines no class names: {unknown}; add them to WEAK, STRONG or DIAGNOSTIC")
     return names
 
 
 def _excluded(name: str) -> bool:
-    return name in OUTSIDE_THE_BAR or name in STRONG or name in DIAGNOSTIC or name in DEEP or bool(_TUNED.search(name))
+    return name in OUTSIDE_THE_BAR or name in STRONG or name in OFFLINE_STRONG or name in DIAGNOSTIC or name in DEEP or bool(_TUNED.search(name))
 
 
 def _best(frame: pd.DataFrame, names: Sequence[str], population: str) -> tuple[str, NDArray[np.float64]]:
@@ -164,12 +168,14 @@ def _best(frame: pd.DataFrame, names: Sequence[str], population: str) -> tuple[s
 
 
 def opponent(frame: pd.DataFrame, which: str, population: str = "induced") -> tuple[str, NDArray[np.float64]]:
-    """An opponent's name and its fold values on this run: ``bar``, ``strong``, ``best_of_all``,
-    ``per_type``, or a baseline's own name."""
+    """An opponent's name and its fold values on this run: ``bar``, ``strong``, ``strong_live``,
+    ``best_of_all``, ``per_type``, or a baseline's own name."""
     names = baselines_in(frame.columns, population)
     if which == "bar":
         return _best(frame, [n for n in names if not _excluded(n)], population)
     if which == "strong":
+        return _best(frame, [n for n in names if n in STRONG or n in OFFLINE_STRONG], population)
+    if which == "strong_live":
         return _best(frame, [n for n in names if n in STRONG], population)
     if which == "best_of_all":
         return _best(
