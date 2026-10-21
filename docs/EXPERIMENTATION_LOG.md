@@ -81,7 +81,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 | done | mixed: frozen FN beats random on pendigits (−53%) and kr-vs-kp (−16%), not on credit-g; the full decode overtakes it (+10 to +21%) and C0 ≈ G |
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
 | E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
-| E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 – | in progress | column-wise TabPFN v2 on E48's 108 pairs (confirmation first), offline, two GPU lanes from 01:00 GMT-3, deadline 08:00 |
+| E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
 
 ## Entries
 
@@ -1836,10 +1836,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `docs/reports/2026-10-20-t29-electricity.md`; `scripts/experiments/electricity_report.py`,
   `electricity_split.py`.
 
-### E55 · TabPFN v2 as an external foundation-model baseline (2026-10-21 – )
+### E55 · TabPFN v2 as an external foundation-model baseline (2026-10-21)
 
-- **Status:** in progress. Pre-registered before the first scored cell, on the user's go
-  (2026-10-20).
+- **Status:** done 2026-10-21 (01:00–03:48 GMT-3, 108 of 108 pairs). Pre-registered before the
+  first scored cell, on the user's go (2026-10-20).
 - **Hypothesis:** none directional. TabPFN v2 is the foundation-model baseline a reader will ask
   about. The question is how K compares, and whether it beats the strong tier often enough to
   join it.
@@ -1857,5 +1857,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Rule (E48's):** TabPFN joins the strong tier (an ADR for the user) only if it is better than
     the strong tier's best on 5 or more of 15 confirmation variants; otherwise an external
     baseline. No default changes.
-- **Sources:** `docs/tickets/imputation-protocol/10-tabpfn.md`; `src/training/tabpfn_baseline.py`;
+- **Results:**
+  - **TabPFN − strong:** better on 11 of 15 confirmation variants, worse on none (development 11,
+    5 and 1 equivalent, 4).
+  - **TabPFN − bar:** better on 13 of 15.
+  - **K − TabPFN:**
+    - confirmation: better 6, no difference 4, worse 5;
+    - development: better 8, no difference 6, worse 7;
+    - confirmation 40/60nan: never worse;
+    - confirmation 80nan: worse on 5 of 6.
+  - **K beats TabPFN** on spambase, letter, pendigits and biodeg below 80nan. TabPFN wins on
+    kr-vs-kp and credit-g at 40nan and above.
+- **Conclusion:** TabPFN is the strongest baseline so far. By the rule, propose it for the strong
+  tier (an ADR amending 0021, the user's decision). K's lead holds at 20–60nan on most tables and
+  fails at 80nan. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/10-tabpfn.md` (Outcome); `src/training/tabpfn_baseline.py`;
   `scripts/experiments/tabpfn_run.py`, `tabpfn_report.py`, `run_tabpfn_lanes.py`.

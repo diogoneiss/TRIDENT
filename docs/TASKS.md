@@ -260,7 +260,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 ### Later baselines and classification (plan 2026-10-17)
 
 - **T27 · MaCoDE, TabPFN v2 and classification step zero** (plan §2g; review items 10–12).
-  **MaCoDE done 2026-10-19 (E48,** [imputation-protocol/07](tickets/imputation-protocol/07-macode.md)**):** TRIDENT beats it on 20/21 and 14/15, never worse; an external deep baseline only. TabPFN v2: E55 pre-registered 2026-10-20 ([imputation-protocol/10](tickets/imputation-protocol/10-tabpfn.md)), as an optional uv extra, no separate venv. Step zero not started.
+  **MaCoDE done 2026-10-19 (E48,** [imputation-protocol/07](tickets/imputation-protocol/07-macode.md)**):** TRIDENT beats it on 20/21 and 14/15, never worse; an external deep baseline only. TabPFN v2: E55 done 2026-10-21 ([imputation-protocol/10](tickets/imputation-protocol/10-tabpfn.md)): better than the strong tier on 11/15 confirmation variants, so the rule proposes it for the strong tier (an ADR for the user). K − TabPFN 6/4/5; TabPFN wins at 80nan. Step zero not started.
   - MaCoDE vendored behind an inductive wrapper, with its bins bug fixed first: 10–14 h of code,
     3–5 GPU-h off-store.
   - A column-wise TabPFN v2 in a separate venv pinned to `ModelVersion.V2`: 5–8 h of code and
