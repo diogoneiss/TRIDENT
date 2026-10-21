@@ -82,6 +82,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
 | E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
 | E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
+| E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 – | in progress | 45 pairs, TabPFN refitted on the ledgers' induced cells; offline |
 
 ## Entries
 
@@ -1873,3 +1874,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   fails at 80nan. No default changes.
 - **Sources:** `docs/tickets/imputation-protocol/10-tabpfn.md` (Outcome); `src/training/tabpfn_baseline.py`;
   `scripts/experiments/tabpfn_run.py`, `tabpfn_report.py`, `run_tabpfn_lanes.py`.
+
+### E56 · ADR 0025's panel on K against TabPFN, confirmation set (2026-10-21 – )
+
+- **Status:** in progress. Pre-registered before the first cell (2026-10-21), the panel check
+  ADR 0025 asks for behind E55's new claim.
+- **Hypothesis:** none. The check is whether K − TabPFN's `impute_score` calls hold in the
+  per-kind ratios.
+- **Scenarios:**
+  - **Cells:** E44's 15 confirmation variants × 707/808/909. The model's fills come from the
+    ledgers; TabPFN is refitted on the same folds.
+  - **Code:** `metric_panel.py --fitters tabpfn` and `metric_panel_report.py --opponent tabpfn`,
+    with the defaults unchanged.
+  - **Running it:** two GPU lanes; no pair starts after 07:30 GMT-3.
+- **Measures and decision rule:** ADR 0025's reading.
+  - A call stands where the per-kind ratios agree, and disagreements are listed.
+  - Distributional metrics are caveats.
+  - No decision follows here.
+- **Sources:** `docs/tickets/imputation-protocol/11-tabpfn-panel.md`;
+  `scripts/experiments/metric_panel.py`, `metric_panel_report.py`.

@@ -1,6 +1,6 @@
 """Reading of the secondary metric panel (T24; D16): where the per-kind readings agree with impute_score.
 
-    uv run --python 3.11 python scripts/experiments/metric_panel_report.py <panel_dir> [--split] [<variant> ...]
+    uv run --python 3.11 python scripts/experiments/metric_panel_report.py <panel_dir> [--split] [--opponent <method>] [<variant> ...]
 
 Reads ``metric_panel.py``'s CSVs. Per (variant, seed) the opponent is the weak tier's best by mean
 ``impute_score`` (ADR 0007 decision 8, ADR 0020); per variant and metric, the model's fold values
@@ -8,6 +8,9 @@ minus the opponent's, over the 15 fold pairs, with the project's verdict rule. L
 every ratio, for the absolute bias, the Wasserstein distance and the category TV; for dispersion
 the reading is the distance from 1. A claim stands where the per-kind readings agree with
 ``impute_score``; every disagreement is listed.
+
+``--opponent <method>`` replaces the weak tier's best with one named method in the main reading
+(E56: ``tabpfn``).
 
 ``--split`` reads the subsets instead (E44's twin/no-twin split and D17's context-free rows): the
 same contrast on the twin cells, the other cells and the cells of rows with some context, beside
@@ -62,6 +65,10 @@ def main(argv: list[str]) -> int:
         sys.exit(__doc__)
     subsets = "--split" in argv
     argv = [a for a in argv if a != "--split"]
+    named = None
+    if "--opponent" in argv:
+        at = argv.index("--opponent")
+        named, argv = argv[at + 1], argv[:at] + argv[at + 2:]
     folder = Path(argv[0])
     frames = [pd.read_csv(path) for path in sorted(folder.glob("*.csv"))]
     if not frames:
@@ -78,7 +85,7 @@ def main(argv: list[str]) -> int:
         names: list[str] = []
         for seed, cell in rows.groupby("seed"):
             weak = cell[cell["method"].isin(common.WEAK)]
-            bar = str(weak.groupby("method")["impute_score"].mean().idxmin())
+            bar = named or str(weak.groupby("method")["impute_score"].mean().idxmin())
             names.append(bar)
             model = cell[cell["method"] == "model"].sort_values("fold")
             opponent = cell[cell["method"] == bar].sort_values("fold")

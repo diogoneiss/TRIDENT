@@ -1,12 +1,13 @@
 """The secondary metric panel, offline (T24; plan 2026-10-17 §2d, D16).
 
-    uv run --python 3.11 python -B scripts/experiments/metric_panel.py <state_dir> <out_dir> <variant> <seed> [<seed> ...] [--baselines] [--cell_suffix _G]
+    uv run --python 3.11 python -B scripts/experiments/metric_panel.py <state_dir> <out_dir> <variant> <seed> [<seed> ...] [--baselines] [--cell_suffix _G] [--fitters tabpfn]
 
 For each (variant, seed) of a queue study, the model's induced fills are read from the run's five
 fold ledgers (``<state_dir>/results/<variant>_s<seed>/<variant>/<timestamp>/imputation/
 imputation_fold_<n>_cells.csv``: the headline's fills, K on every run since ADR 0015). With
 ``--baselines``, every baseline family (the weak tier, missForest, E41's arms) is refitted on the
 same training fold, as ``recompute_folds`` rebuilds it, and asked for exactly the ledger's cells.
+``--fitters tabpfn`` refits TabPFN v2 alone instead (E56; run under ``uv run --extra tabpfn``).
 
 Per fold and method it writes, beside ``impute_score``:
 
@@ -47,6 +48,7 @@ from src.training.imputation_metrics import CATEGORICAL, NUMERICAL, mean_mode_ba
 from src.training.lightgbm_baseline import fit_lightgbm_imputers  # noqa: E402
 from src.training.linear_baselines import fit_linear_imputers  # noqa: E402
 from src.training.missforest import fit_missforest_imputers  # noqa: E402
+from src.training.tabpfn_baseline import fit_tabpfn_imputers  # noqa: E402
 from src.training.types import DatasetSpec  # noqa: E402
 
 THREADS = 4
@@ -54,6 +56,8 @@ FOLDS = 5
 FITTERS: Sequence[Callable[[pd.DataFrame, Sequence[str], Sequence[str]], list[BaselineImputer]]] = (
     fit_baseline_imputers, fit_lightgbm_imputers, fit_missforest_imputers, fit_linear_imputers,
 )
+# E56: TabPFN v2 alone, the optional extra's baseline (``src/training/tabpfn_baseline.py``).
+NAMED_FITTERS = {"tabpfn": (fit_tabpfn_imputers,)}
 
 
 def _ratio(value: float, naive: float) -> float:
@@ -128,6 +132,10 @@ def main(argv: list[str]) -> int:
     argv = [a for a in argv if a != "--baselines"]
     # A study whose cell directories carry the arm (E45/E46: ``<variant>_s<seed>_G``).
     suffix = ""
+    fitters = FITTERS
+    if "--fitters" in argv:
+        at = argv.index("--fitters")
+        fitters, argv = NAMED_FITTERS[argv[at + 1]], argv[:at] + argv[at + 2:]
     if "--cell_suffix" in argv:
         at = argv.index("--cell_suffix")
         suffix, argv = argv[at + 1], argv[:at] + argv[at + 2:]
@@ -174,7 +182,7 @@ def main(argv: list[str]) -> int:
                 continue
             hidden = np.zeros(test.shape, dtype=bool)
             hidden[positions, test.columns.get_indexer(pd.Index(cells["column"]))] = True
-            for fitter in FITTERS:
+            for fitter in fitters:
                 for imputer in fitter(train, numerical, categorical):
                     filled = imputer.impute(test, hidden).to_numpy(dtype=object)[positions, test.columns.get_indexer(pd.Index(cells["column"]))]
                     guesses = [float(g) if k == NUMERICAL else str(g) for g, k in zip(filled, cells["kind"])]
