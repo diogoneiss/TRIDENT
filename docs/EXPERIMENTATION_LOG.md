@@ -85,6 +85,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
 | E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
 | E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
+| E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – | in progress | 18 cells: ALL on pendigits and letter at 40/60/80nan, seeds 707/808/909, against E44's G |
+| E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 – | in progress | 45 confirmation pairs, offline; one GPU lane |
 
 ## Entries
 
@@ -1955,3 +1957,35 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   its standing against TabPFN. No default changes.
 - **Sources:** `docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md` (Outcome);
   `scripts/experiments/run_tabpfn_lanes.py`, `tabpfn_seed_sets_report.py`.
+
+### E59 · ADR 0018's bigger encoder on the large tables at 40–80nan (2026-10-21 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Hypothesis:** the bigger encoder (ALL), which helped the large tables at 20nan (E38), also helps
+  them at 40–80nan, where TabPFN leads at 80nan.
+- **Scenarios:** ALL on pendigits and letter at 40/60/80nan, seeds 707/808/909: 18 cells. G is E44's
+  default runs on the same folds. A development reading.
+- **Measures and decision rule:**
+  - **Primary:** ALL − G on K. Supported if better on 4 or more of 6 and worse on none; refuted if
+    better on 1 or none, or worse on 2 or more.
+  - **Secondary:** KC and H, and KC − TabPFN per arm.
+  - **Supported** leads to a fresh-seed confirmation before any ADR amending 0018.
+- **Sources:** `docs/tickets/imputation-protocol/14-large-encoder.md`;
+  `scripts/experiments/large_encoder_run.py`, `large_encoder_report.py`,
+  `run_large_encoder_queue.sh`.
+
+### E60 · Are TRIDENT's and TabPFN's errors complementary? A blend of their fills (2026-10-21 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Hypothesis:** none directional. If the two err on different cells, the average of their fills
+  beats both.
+- **Scenarios:** E44's 15 confirmation variants × 707/808/909. The model's K fills come from the
+  ledgers; TabPFN is refitted on the same folds. The blend averages numerical fills and keeps the
+  model's categories. Offline, one GPU lane.
+- **Measures and decision rule:**
+  - Blend − K and blend − TabPFN, 15 fold pairs.
+  - Complementary if the blend beats both on 5 or more of 15; not complementary on 1 or none;
+    mixed otherwise.
+  - Descriptive.
+- **Sources:** `docs/tickets/imputation-protocol/15-tabpfn-blend.md`;
+  `scripts/experiments/tabpfn_blend.py`.
