@@ -11,6 +11,7 @@ against every opponent on the same folds:
 - the bar (the weak tier);
 - the tuned bar (E42's validation-only budget, the tuned weak tier's best);
 - missForest;
+- TabPFN v2 (ADR 0028), where its offline pass exists;
 - the strong tier (missForest and E41's arms);
 - the tuned strong tier (E42's tuned missForest and E41's arms, the best by CV mean);
 - the best of all;
@@ -50,7 +51,7 @@ DEVELOPMENT = [
 SEED_SETS = {"101/202/303": [101, 202, 303], "42/7/13": [42, 7, 13], "404/505/606": [404, 505, 606]}
 E40_VARIANTS = {f"{t}_{level}nan" for t in ("kr-vs-kp", "spambase", "credit-g") for level in (40, 60, 80)} | {
     "vehicle_60nan", "biodeg_60nan", "kc2_60nan"}
-OPPONENTS = ("bar", "tuned", "missforest", "strong", "tuned_strong", "best_of_all", "per_type")
+OPPONENTS = ("bar", "tuned", "missforest", "tabpfn", "strong", "tuned_strong", "best_of_all", "per_type")
 SESOI = 0.01
 DEFAULT_LINEAR = Path("/scratch2/diogoneiss/trident-2026-10-17-linear-baselines/csv")
 DEFAULT_TUNED = Path("/scratch2/diogoneiss/trident-2026-10-17-baseline-budget")

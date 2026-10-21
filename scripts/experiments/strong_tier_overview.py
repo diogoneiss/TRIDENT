@@ -1,6 +1,6 @@
 """The TRIDENT-against-baselines page, again with the strong tier (ADR 0021), read-only.
 
-    uv run --python 3.11 python scripts/experiments/strong_tier_overview.py <old_page.html> <template.html> <out.html>
+    uv run --python 3.11 python scripts/experiments/strong_tier_overview.py <old_page.html> <template.html> <out.html> [--tabpfn]
 
 The first version of the page (artifact "TRIDENT contra os baselines de imputação", 2026-10-15)
 inlines its data as ``const DATA = {...};``. This script rebuilds every number of that data from the
@@ -11,6 +11,9 @@ to the store within 4.4e-16) beside missForest, and per population the strong ti
 lowest mean over the 15 folds, per seed as each run's ``best_strong_baseline`` tag would choose) and
 the model's paired difference to it. The section on why some tables impute better keeps the old
 page's data. The template's ``__DATA__`` is replaced by the data and written to ``out``.
+
+``--tabpfn`` (the third version, ADR 0028) merges E58's TabPFN v2 CSVs on the same folds and adds
+TabPFN to the strong tier; without it the second version's data comes back unchanged.
 
 The verdict is the old page's: the 95% t-interval over the 15 fold differences excludes zero and the
 three seeds' mean differences agree in sign.
@@ -33,12 +36,12 @@ if not (ROOT / "train.py").exists():
 sys.path.insert(0, str(ROOT))
 
 from scripts.experiments import report_common as common  # noqa: E402
-from scripts.experiments.thesis_table import DEFAULT_LINEAR, _cells  # noqa: E402
+from scripts.experiments.thesis_table import DEFAULT_LINEAR, DEFAULT_TABPFN, _cells  # noqa: E402
 
 SEEDS = "42/7/13"
 POPULATIONS = ("induced", "masked")
 WEAK = ("mean_mode", "knn5", "knn10", "hgb", "lgbm")
-STRONG = ("missforest", "condexp", "softimpute", "ice")
+STRONG: tuple[str, ...] = ("missforest", "condexp", "softimpute", "ice")
 NEW = ("condexp", "softimpute", "ice")
 CALLS = {"better": "model better", "worse": "baseline better", "none": "no detectable difference"}
 TOLERANCE = 1e-9
@@ -126,14 +129,19 @@ def population(cells: list[tuple[common.Run, pd.DataFrame]], population: str) ->
 
 
 def main(argv: list[str]) -> int:
+    global STRONG
+    with_tabpfn = "--tabpfn" in argv
+    argv = [a for a in argv if a != "--tabpfn"]
     if len(argv) != 3:
         sys.exit(__doc__)
+    if with_tabpfn:
+        STRONG = (*STRONG, "tabpfn")
     old_page, template, out = (Path(a) for a in argv)
     line = next(l for l in old_page.read_text().splitlines() if l.startswith("const DATA = "))
     old = json.loads(line[len("const DATA = "):].rstrip().rstrip(";"))
     variants = []
     for before in old["variants"]:
-        cells = _cells(before["variant"], SEEDS, DEFAULT_LINEAR)
+        cells = _cells(before["variant"], SEEDS, DEFAULT_LINEAR, None, DEFAULT_TABPFN if with_tabpfn else None)
         if cells is None:
             sys.exit(f"{before['variant']}: no complete cells on {SEEDS}")
         after = {key: value for key, value in before.items() if key != "populations"}
@@ -156,6 +164,7 @@ def main(argv: list[str]) -> int:
         "baselines": [*WEAK, *STRONG],
         "strong": list(STRONG),
         "linear_source": str(DEFAULT_LINEAR),
+        **({"tabpfn_source": str(DEFAULT_TABPFN)} if with_tabpfn else {}),
         "generated": datetime.now().strftime("%Y-%m-%d %H:%M") + " GMT-3",
         "first_version_generated": old["meta"]["generated"],
     }
