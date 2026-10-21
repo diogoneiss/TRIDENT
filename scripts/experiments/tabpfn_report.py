@@ -44,6 +44,9 @@ from scripts.experiments.thesis_table import DEFAULT_LINEAR, DEFAULT_TUNED, DEVE
 DEFAULT_TABPFN = Path("/scratch2/diogoneiss/trident-2026-10-21-tabpfn/csv")
 MACODE_CSV = Path("/scratch2/diogoneiss/trident-2026-10-19-macode/csv")
 TABPFN = "impute/induced/baseline/tabpfn/impute_score"
+# E57: K after the calibration on the validation gaps, the default output at 40% missing and above
+# (ADR 0027); logged by ``--score_calibrated`` on E44 and, where they have it, the development runs.
+KC = "impute/induced/calibrated/impute_score"
 Cells = list[tuple[common.Run, pd.DataFrame]]
 
 
@@ -66,8 +69,10 @@ def _with_tabpfn(cells: Cells | None, directory: Path) -> Cells | None:
 
 
 def _values(run: common.Run, frame: pd.DataFrame, name: str) -> np.ndarray:
-    if name == "K":
-        return common.model(frame, run, "K")
+    if name in ("K", "H"):
+        return common.model(frame, run, name)
+    if name == "KC":
+        return np.asarray(frame[KC], dtype=float)
     if name == "tabpfn":
         return np.asarray(frame[TABPFN], dtype=float)
     if name == "tuned":
@@ -111,6 +116,29 @@ def report(label: str, found: list[tuple[str, Cells | None]]) -> None:
     print()
 
 
+def readouts(label: str, found: list[tuple[str, Cells | None]]) -> None:
+    """E57: the default output (KC at 40nan and above, ADR 0027) and H (ADR 0024) against TabPFN."""
+    print(f"## E57: {label}, KC and H against TabPFN")
+    counts: dict[str, list[str]] = {}
+    changed = []
+    for variant, cells in found:
+        if cells is None or variant.endswith("_20nan"):
+            continue
+        if not all(KC in frame.columns for _, frame in cells):
+            print(f"- `{variant}`: no KC on these runs")
+            continue
+        readings = {name: contrast(cells, name, "tabpfn") for name in ("K", "KC", "H")}
+        print(f"- `{variant}`: " + "; ".join(f"{k} − tabpfn {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}" for k, v in readings.items()))
+        for k, v in readings.items():
+            counts.setdefault(k, []).append(v.call)
+        if readings["KC"].call != readings["K"].call:
+            changed.append(f"{variant}: K {readings['K'].call} -> KC {readings['KC'].call}")
+    for k, calls in counts.items():
+        print(f"  - {k} − tabpfn: {common.tally(calls)}")
+    print(f"  - calls that change from K to KC: {changed or 'none'}")
+    print()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--tabpfn", type=Path, default=DEFAULT_TABPFN)
@@ -126,6 +154,9 @@ def main() -> int:
               f"({'at least 5: propose it for the strong tier' if better >= 5 else 'fewer than 5: an external baseline only'}).")
     else:
         print(f"Decision input: incomplete, {len(calls)} of {len(confirmation.VARIANTS)} confirmation variants have every seed")
+    print()
+    readouts("confirmation set (E44), seeds 707/808/909", confirmation_cells)
+    readouts("development set at 40nan and above, seeds 101/202/303 (descriptive)", development)
     return 0
 
 
