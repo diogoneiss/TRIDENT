@@ -79,7 +79,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E50 | The decode stage's levers against washing out the encoder (freeze, encoder LR) | 2026-10-19 – 10-20 | done | refuted: F100 +3.4% and L10 +11.6% worse on pendigits; L10 also worse on kr-vs-kp; no pre-training is 1.2% worse on pendigits, equivalent on kr-vs-kp |
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 | done | mixed: frozen FN beats random on pendigits (−53%) and kr-vs-kp (−16%), not on credit-g; the full decode overtakes it (+10 to +21%) and C0 ≈ G |
-| E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 – | in progress | 24 probe cells (N, A on three tables; N_lr4, N_b64 on credit-g; seeds 101/202/303) on the CPU, 8 drift cells on the GPU; offline |
+| E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
 
 ## Entries
 
@@ -1764,9 +1764,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/frozen_encoder_run.py`, `frozen_encoder_report.py`,
   `run_frozen_encoder_queue.sh`.
 
-### E53 · T28's D2: collapse and linear probes on pre-training, and the encoder's drift (2026-10-20 – )
+### E53 · T28's D2: collapse and linear probes on pre-training, and the encoder's drift (2026-10-20)
 
-- **Status:** in progress. Pre-registered before the first study cell, with E52 (2026-10-20).
+- **Status:** done 2026-10-20. Pre-registered before the first study cell, with E52 (2026-10-20).
 - **Hypotheses (T28):**
   - **H1:** under N the stage collapses onto the column-constant part of its target.
   - **H2:** the encoder learns nothing linearly decodable about the hidden value.
@@ -1786,5 +1786,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     more of 3 tables. Value information if the probe gains more than 1% with seed agreement on 2
     or more of 3. H5 if N_lr4 or N_b64 moves a call or the probe by more than 1%.
   - **Then:** E52's decision table. No default changes.
-- **Sources:** `docs/tickets/imputation-pretraining/11-collapse-probes.md`;
+- **Results:** 24 probe cells and 8 drift cells.
+  - **Collapse under N:** none. pendigits' within-column share rises from 0.10 to 0.30 (NMSE 0.29).
+    credit-g's share falls 14% with a negative centred cosine (−4.6 to −16.7 SE).
+  - **Probes, start to end:** pendigits 0.787 → 0.506 (+35.8%), kr-vs-kp 0.954 → 0.882 (+7.5%),
+    credit-g +1.0% with one seed worse (absent).
+  - **H5:** `LR_PRE` ÷ 4 does not move; `BATCH 64` moves credit-g's probe by −0.016.
+  - **A:** erodes its target 40–55% (E04) and its probes gain less than N's.
+  - **Drift:** the decode keeps a CKA of 0.40 (pendigits) and 0.60 (kr-vs-kp) with N's start,
+    0.03 and 0.53 with random, and both starts end at the same score.
+- **Conclusion:** no collapse, value information present; washout (H3) is the mechanism. With
+  E52, the decision table's last row applies: T12 first with a `BATCH 64` arm, for the user to
+  decide. No default changes. Development seeds.
+- **Sources:** `docs/tickets/imputation-pretraining/11-collapse-probes.md` (Outcome);
   `scripts/experiments/pretrain_probe.py`.

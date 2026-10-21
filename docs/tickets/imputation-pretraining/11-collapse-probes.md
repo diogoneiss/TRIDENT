@@ -97,3 +97,121 @@ pre-registered study and an ADR for the user.
   (`drift_after_e52.sh`, two lanes).
 - **The reading** is `scripts/experiments/collapse_probes_report.py`, written before any study cell
   finished.
+
+## Outcome (2026-10-20, 22:31 GMT-3)
+
+- **All 24 probe cells** finished on the CPU between 19:34 and 21:35 GMT-3, none failed.
+- **All 8 drift cells** finished on the GPU between 22:20 and 22:29.
+
+**The printout** (`scripts/experiments/collapse_probes_report.py`, unedited):
+
+```text
+## Setting N
+- credit-g_20nan: no collapse; value information absent
+  - s101: within share 0.1949 -> 0.1670, raw 0.1637 -> 0.1359; centred cosine -0.0155 (-4.6 SE); NMSE 9.342 -> 1.033; erank target 2.41, prediction 26.14
+  - s202: within share 0.2008 -> 0.1712, raw 0.1546 -> 0.1288; centred cosine -0.0179 (-5.2 SE); NMSE 9.531 -> 1.041; erank target 2.41, prediction 24.79
+  - s303: within share 0.2182 -> 0.1875, raw 0.1874 -> 0.1544; centred cosine -0.0590 (-16.7 SE); NMSE 8.258 -> 1.028; erank target 2.34, prediction 24.19
+  - probe start [0.9502, 1.0428, 1.0333] -> final [0.9662, 1.0297, 0.9991], mean gain +0.0104 (+1.0% of the start); by kind (final: num 0.9324, cat 1.0352; start: num 0.9619, cat 1.0345)
+- kr-vs-kp_40nan: no collapse; value information present
+  - s101: within share 0.1380 -> 0.1338, raw 0.1389 -> 0.1338; centred cosine +0.0173 (+8.8 SE); NMSE 14.162 -> 0.907; erank target 1.02, prediction 26.46
+  - s202: within share 0.1425 -> 0.1361, raw 0.1422 -> 0.1349; centred cosine +0.0842 (+43.8 SE); NMSE 14.116 -> 0.923; erank target 1.03, prediction 27.37
+  - s303: within share 0.1532 -> 0.1447, raw 0.1518 -> 0.1434; centred cosine +0.1225 (+65.3 SE); NMSE 12.723 -> 0.920; erank target 1.03, prediction 27.88
+  - probe start [0.9511, 0.927, 0.9825] -> final [0.8587, 0.8942, 0.8928], mean gain +0.0716 (+7.5% of the start); by kind (final: num nan, cat 0.8819; start: num nan, cat 0.9535)
+- pendigits_20nan: no collapse; value information present
+  - s101: within share 0.1055 -> 0.3086, raw 0.1202 -> 0.3504; centred cosine +0.7729 (+656.6 SE); NMSE 13.587 -> 0.289; erank target 2.80, prediction 6.66
+  - s202: within share 0.1106 -> 0.3016, raw 0.1357 -> 0.3531; centred cosine +0.7677 (+656.8 SE); NMSE 12.209 -> 0.298; erank target 2.72, prediction 6.76
+  - s303: within share 0.1007 -> 0.2963, raw 0.1221 -> 0.3516; centred cosine +0.7682 (+657.6 SE); NMSE 14.386 -> 0.299; erank target 2.65, prediction 6.65
+  - probe start [0.7917, 0.7778, 0.7932] -> final [0.493, 0.5122, 0.5122], mean gain +0.2817 (+35.8% of the start); by kind (final: num 0.5058, cat nan; start: num 0.7875, cat nan)
+
+## Setting A
+- credit-g_20nan: no collapse; value information absent
+  - s101: within share 0.1754 -> 0.0980, raw 0.1754 -> 0.0980; centred cosine +0.0100 (+3.0 SE); NMSE 218.864 -> 4.591; erank target 2.36, prediction 29.46
+  - s202: within share 0.1849 -> 0.1058, raw 0.1849 -> 0.1058; centred cosine +0.0036 (+1.0 SE); NMSE 205.232 -> 4.418; erank target 2.38, prediction 27.75
+  - s303: within share 0.1849 -> 0.1067, raw 0.1849 -> 0.1067; centred cosine -0.0079 (-2.2 SE); NMSE 212.848 -> 4.671; erank target 2.32, prediction 26.70
+  - probe start [0.9677, 1.0222, 1.0033] -> final [0.9733, 1.0071, 1.0034], mean gain +0.0031 (+0.3% of the start); by kind (final: num 0.9400, cat 1.0247; start: num 0.9556, cat 1.0211)
+- kr-vs-kp_40nan: no collapse; value information present
+  - s101: within share 0.1375 -> 0.0615, raw 0.1375 -> 0.0615; centred cosine +0.0175 (+8.9 SE); NMSE 454.358 -> 2.265; erank target 1.03, prediction 45.34
+  - s202: within share 0.1488 -> 0.0707, raw 0.1488 -> 0.0707; centred cosine +0.0256 (+13.4 SE); NMSE 454.366 -> 2.169; erank target 1.03, prediction 46.81
+  - s303: within share 0.1408 -> 0.0636, raw 0.1408 -> 0.0636; centred cosine +0.0150 (+8.0 SE); NMSE 446.369 -> 2.175; erank target 1.03, prediction 48.70
+  - probe start [0.9212, 0.9496, 0.9526] -> final [0.9049, 0.9118, 0.9377], mean gain +0.0230 (+2.4% of the start); by kind (final: num nan, cat 0.9181; start: num nan, cat 0.9411)
+- pendigits_20nan: no collapse; value information present
+  - s101: within share 0.1106 -> 0.2176, raw 0.1106 -> 0.2176; centred cosine +0.6250 (+530.9 SE); NMSE 126.149 -> 0.434; erank target 2.44, prediction 7.83
+  - s202: within share 0.1438 -> 0.2266, raw 0.1438 -> 0.2266; centred cosine +0.6328 (+541.4 SE); NMSE 96.421 -> 0.411; erank target 2.39, prediction 7.80
+  - s303: within share 0.1367 -> 0.2041, raw 0.1367 -> 0.2041; centred cosine +0.6289 (+538.4 SE); NMSE 90.117 -> 0.404; erank target 2.29, prediction 7.61
+  - probe start [0.7986, 0.7751, 0.7788] -> final [0.579, 0.5805, 0.5794], mean gain +0.2045 (+26.1% of the start); by kind (final: num 0.5796, cat nan; start: num 0.7842, cat nan)
+
+Primary: N collapsing: no (0 of 3); value information under N: present (2 of 3)
+H5 N_lr4: collapse no collapse (N: no collapse); final probe [0.95, 1.0451, 1.017] against N's [0.9662, 1.0297, 0.9991] (mean +0.0057) -> does not move
+H5 N_b64: collapse no collapse (N: no collapse); final probe [0.9622, 1.0196, 0.9648] against N's [0.9662, 1.0297, 0.9991] (mean -0.0162) -> moves
+
+## Drift across today's decode stage (seed 101, fold 1)
+        variant start  linear_cka  induced_impute_score  rel_change/embedder  rel_change/transformer.pre_norm  rel_change/transformer.layers  rel_change/transformer.final_norm
+ credit-g_20nan     N      0.8733                0.8721               0.0896                           0.0135                         0.1577                                NaN
+ credit-g_20nan     R      0.7999                0.8939               0.0653                           0.0137                         0.1208                                NaN
+ credit-g_80nan     N      0.9953                1.0157               0.0357                           0.0078                         0.0720                                NaN
+ credit-g_80nan     R      0.9862                1.0131               0.0221                           0.0087                         0.0585                                NaN
+ kr-vs-kp_40nan     N      0.6026                0.7280               0.2844                           0.0575                         0.4237                                NaN
+ kr-vs-kp_40nan     R      0.5253                0.7280               0.3155                           0.0398                         0.3597                                NaN
+pendigits_20nan     N      0.3993                0.3227               0.1430                           0.1499                         0.6689                             0.1513
+pendigits_20nan     R      0.0307                0.3288               0.2363                           0.1330                         0.7519                             0.1073
+```
+
+**Reading, by the rule fixed in advance:**
+
+- **N collapsing: no** (0 of 3 tables).
+  - **pendigits_20nan is the opposite of collapse.** The within-column share of the target rises
+    from about 0.10 to 0.30, the embedder target's from 0.12 to 0.35. NMSE ends at 0.29, far
+    better than a per-column constant, and the centred cosine is +0.77.
+  - **kr-vs-kp_40nan:** the share barely falls (0.14 to 0.13), NMSE ends at 0.91 (below 1), and the
+    cosine is positive (+9 to +65 SE).
+  - **credit-g_20nan comes closest.** The share falls 14% (0.20 to 0.17; the raw target's 17%) and
+    NMSE ends at 1.03, no better than the column constant. But the centred cosine is negative at
+    −4.6 to −16.7 SE, so the rule's |cos| < 2 SE fails. The predictions point away from the
+    within-column part, which is not flat collapse.
+- **Value information under N: present** (2 of 3).
+  - **pendigits:** the probe goes from 0.787 to 0.506 (+35.8%).
+  - **kr-vs-kp:** from 0.954 to 0.882 (+7.5%).
+  - **credit-g: absent.** +1.0%, with one seed worse, near no information (about 1.0). Its
+    numbers carry a little (0.96 to 0.93); its categories do not (1.03 to 1.04).
+- **H5:**
+  - `LR_PRE` ÷ 4 does not move a call or the probe (+0.006).
+  - **`BATCH 64` moves credit-g's final probe:** −0.016, all three seeds lower. That is just over
+    the 1% margin, on a table whose probes sit near 1.0.
+
+**Secondary, without a rule:**
+
+- **The shipped objective (A) erodes its own target.** The within-column share falls 40–55% on
+  credit-g and kr-vs-kp (0.18 to 0.10, 0.14 to 0.06), as E04 found. The rule still reads no
+  collapse, because the cosine is significant on several seeds.
+  - A's probes gain less than N's: +2.4% on kr-vs-kp and +26.1% on pendigits, against N's +7.5%
+    and +35.8%.
+- **Drift across today's decode stage** (seed 101, fold 1):
+  - **pendigits:** the stage rewrites most of the transformer. The weights change 67% from N's
+    start and 75% from the random start. The outputs keep a linear CKA of 0.40 with N's start and
+    0.03 with the random one.
+  - **kr-vs-kp:** CKA 0.60 from N and 0.53 from random; the layers change 42% and 36%.
+  - **credit-g_20nan:** CKA 0.87 and 0.80.
+  - **credit-g_80nan:** CKA 0.99 from both starts. The kept checkpoint barely moves the encoder,
+    at mean/mode parity.
+  - **Both starts end at about the same score on every variant:** 0.323 against 0.329 on
+    pendigits, 0.728 against 0.728 on kr-vs-kp.
+
+**What it means, with E52** ([10](10-frozen-encoder.md), Outcome):
+
+- Today's normalised pre-training does not collapse. On the two tables where pre-training matters,
+  it leaves a real, linearly decodable representation: frozen, it beats a random encoder by 53% and
+  16%.
+- The decode stage then keeps only part of it: 40% CKA on pendigits, 60% on kr-vs-kp. From
+  random, it builds an encoder about as good: C0 − G within 1.7%.
+- So H3, washout, is the mechanism, not H1 or H2. The levers against washout did not help (E50),
+  because the decode stage's own encoder is as good as the one it overwrites.
+
+**What it leads to,** through E52's decision table: D3 mixed with value information present, and
+a diagnostic moving with the batch. The last row applies: **T12 first, in E26's shape, with a
+`BATCH 64` arm.** It is a pre-registered study for the user to decide, with two caveats:
+
+- what moved is credit-g's probe only, near no information;
+- by this reading, the decode stage would overwrite a better pre-trained encoder too.
+
+Nothing changes a default. The seeds are development seeds.
+
