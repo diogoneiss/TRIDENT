@@ -36,11 +36,13 @@ SESOI = 0.01
 Cells = list[tuple[common.Run, pd.DataFrame]]
 E51 = [f"{t}_20nan" for t in ("electricity", "letter", "pendigits", "spambase", "kr-vs-kp", "biodeg", "credit-g", "vehicle", "kc2")]
 SMOKE, FAMILY = "mnar-smoke-2026-10-17", "mnar-family-2026-10-17"
+# (MNAR variant, its study, MCAR control, the control's study); the dial's control is E45's, as
+# ``mnar_family_report.dial`` reads it.
 MNAR_PAIRS = [
-    *((f"{t}_probit_60nan", f"{t}_60nan", SMOKE) for t in ("biodeg", "kc2", "vehicle")),
-    ("spambase_probit_60nan", "spambase_60nan", FAMILY),
-    *((f"{t}_probit_20nan", f"{t}_20nan", FAMILY) for t in ("biodeg", "kc2", "vehicle")),
-    *((f"biodeg_probit{slope}_60nan", "biodeg_60nan", FAMILY) for slope in ("0p25", "1p0", "2p0")),
+    *((f"{t}_probit_60nan", SMOKE, f"{t}_60nan", SMOKE) for t in ("biodeg", "kc2", "vehicle")),
+    ("spambase_probit_60nan", FAMILY, "spambase_60nan", FAMILY),
+    *((f"{t}_probit_20nan", FAMILY, f"{t}_20nan", FAMILY) for t in ("biodeg", "kc2", "vehicle")),
+    *((f"biodeg_probit{slope}_60nan", FAMILY, "biodeg_60nan", SMOKE) for slope in ("0p25", "1p0", "2p0")),
 ]
 _FOUND: dict[tuple[str, str | None], dict[tuple[str, int], list[common.Run]]] = {}
 
@@ -107,8 +109,8 @@ def seed_set(label: str, variants: list[str], seeds: list[int], experiment: str,
 def mnar() -> None:
     print("## The MNAR family (G's H; E45 and E46)")
     counts: dict[str, list[str]] = {}
-    for mnar_variant, mcar_variant, source in MNAR_PAIRS:
-        a, b = cells(mnar_variant, [42, 7, 13], source, "G"), cells(mcar_variant, [42, 7, 13], source, "G")
+    for mnar_variant, mnar_from, mcar_variant, mcar_from in MNAR_PAIRS:
+        a, b = cells(mnar_variant, [42, 7, 13], mnar_from, "G"), cells(mcar_variant, [42, 7, 13], mcar_from, "G")
         if a is None or b is None:
             print(f"- `{mnar_variant}` against `{mcar_variant}`: incomplete")
             continue

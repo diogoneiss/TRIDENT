@@ -84,7 +84,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
 | E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
 | E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
-| E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 – | in progress | 156 pairs: 42/7/13, 404/505/606, E51's fresh seeds, the MNAR family; offline |
+| E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
 
 ## Entries
 
@@ -1925,9 +1925,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/12-default-output-vs-tabpfn.md` (Outcome);
   `scripts/experiments/tabpfn_report.py`.
 
-### E58 · The strong tier with TabPFN on the seed sets E55 did not cover (2026-10-21 – )
+### E58 · The strong tier with TabPFN on the seed sets E55 did not cover (2026-10-21)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Status:** done 2026-10-21 (10:06–14:07 GMT-3, 156 of 156). Pre-registered before the first
+  cell, on the user's go.
 - **Hypothesis:** none. ADR 0028's strong tier is read on every seed set the thesis uses.
 - **Scenarios:** TabPFN v2 offline, as in E55, on 156 pairs:
   - 21 development variants × 42/7/13;
@@ -1939,5 +1940,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - K − strong_live, K − strong and K − TabPFN on each seed set;
   - for MNAR, H − the same, and (H − TabPFN) MNAR minus MCAR.
   - Descriptive; no default changes.
-- **Sources:** `docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md`;
+- **Results:**
+  - **K − strong (with TabPFN):**
+    - 42/7/13: 3 better, 9 no difference, 4 worse (live four: 8/7/1);
+    - 404/505/606: 3/2/7 (live four: 6/4/2);
+    - E51's fresh seeds: 1/7/1 (live four: 6/3/0).
+  - **TabPFN's wins repeat** on credit-g and kr-vs-kp from 40nan and on pendigits_20nan; K's on
+    spambase, letter_20nan, kc2_60nan and biodeg_60nan.
+  - **MNAR:** H − TabPFN better 6, no difference 4, worse 0. (H − TabPFN) MNAR minus MCAR is never
+    worse.
+  - **The reader:** a correction for the dial pairs' control source, made before their lines were
+    read.
+- **Conclusion:** ADR 0028's tier reads the same way on every seed set. Under MNAR the model keeps
+  its standing against TabPFN. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md` (Outcome);
   `scripts/experiments/run_tabpfn_lanes.py`, `tabpfn_seed_sets_report.py`.
