@@ -80,7 +80,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 | done | mixed: frozen FN beats random on pendigits (−53%) and kr-vs-kp (−16%), not on credit-g; the full decode overtakes it (+10 to +21%) and C0 ≈ G |
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
-| E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 – | in progress | K − bar split by whether a cell's row has its date, on E51's and E44's electricity runs; offline |
+| E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
 
 ## Entries
 
@@ -1802,10 +1802,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-pretraining/11-collapse-probes.md` (Outcome);
   `scripts/experiments/pretrain_probe.py`.
 
-### E54 · T29's test: is the boosters' lead on electricity carried by `date` as a key? (2026-10-20 – )
+### E54 · T29's test: is the boosters' lead on electricity carried by `date` as a key? (2026-10-20)
 
-- **Status:** in progress. Pre-registered before any subset was computed, after T29's report
-  (2026-10-20).
+- **Status:** done 2026-10-20. Pre-registered before any subset was computed, after T29's
+  report (2026-10-20).
 - **Hypothesis:** hgb and lgbm beat the model on electricity by looking values up by `date`, a
   933-level key (48 rows per date, `day` constant within it). The model reads `date` as one scalar.
 - **Scenarios:**
@@ -1821,6 +1821,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     both; refuted if the date-missing side is also worse at both; mixed otherwise.
   - **Then:** supported → the limit is stated with its mechanism, and any model-side fix is an ADR
     for the user. Otherwise the limit is stated as is. No default changes.
-- **Sources:** `docs/tickets/imputation-protocol/09-electricity.md`;
+- **Results:** 12 of 12 cells; integrity passed on all 60 folds.
+  - **Date observed:** K − bar worse at every rate: +0.0252, +0.0253, +0.0334 and +0.0546 at 20,
+    40, 60 and 80nan.
+  - **Date missing:** never worse: −0.0341 (better), +0.0542 (no difference), −0.0016 (no
+    difference), −0.0127 (better).
+  - **`day`:** +0.13 to +0.05 with the date, no difference or better without it.
+  - **The regime split** does not separate the two sides consistently.
+- **Conclusion:** supported. The boosters look values up by `date`, a 933-level key; without it,
+  the model is the better imputer. The thesis states the limit with this mechanism. A model-side
+  response is an ADR for the user. T29 closes; no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/09-electricity.md` (Outcome);
   `docs/reports/2026-10-20-t29-electricity.md`; `scripts/experiments/electricity_report.py`,
   `electricity_split.py`.

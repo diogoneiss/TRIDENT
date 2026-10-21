@@ -246,8 +246,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - the limit is against hgb and lgbm only;
     - the model trails them most on `day` and `nswdemand`;
     - `date` is a 933-level key.
-  - **E54 pre-registered** ([imputation-protocol/09](tickets/imputation-protocol/09-electricity.md)):
-    K − bar split by whether a cell's row has its `date`.
+  - **E54 done 2026-10-20** ([imputation-protocol/09](tickets/imputation-protocol/09-electricity.md)): supported.
+    - With the row's `date`, K − bar is worse at every rate; without it, never worse (better at
+      20 and 80nan).
+    - The boosters look values up by `date`, a 933-level key.
+    - **T29 closed.** A model-side encoding of `date` is an ADR for the user.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
