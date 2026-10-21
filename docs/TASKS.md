@@ -253,6 +253,37 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - The boosters look values up by `date`, a 933-level key.
     - **T29 closed.** A model-side encoding of `date` was set aside by the user (2026-10-21): the limit stays stated with its mechanism.
 
+- **T30 · A MAR smoke** (the user's go to record it, 2026-10-21; not started).
+  - **The gap:** every variant is MCAR (`generate_splits.py`) or MNAR (E45/E46,
+    `generate_mnar.py`). Nothing tests missingness that depends on *other* observed columns.
+  - **Generator:** `datasets/generate_mar.py`. It draws from the `_00nan` table at the MCAR
+    siblings' counts, as `generate_mnar.py` does, never on top of a `_XXnan` variant.
+    - About 30% of the feature columns stay fully observed as drivers.
+    - In every other column the cells are drawn without replacement, with weights from a logistic on
+      the standardised drivers.
+    - Categorical tables can enter, since the drivers can be numerical.
+  - **Smoke, in E45's shape:** biodeg, kc2, vehicle and kr-vs-kp at 60nan, seeds 42/7/13, arm G.
+    Each MAR variant is read against its MCAR control.
+  - **Opponents:** the bar, the strong tier with TabPFN (ADR 0028, offline pass) and G's H.
+  - **Measure:** (H − opponent) MAR minus MCAR.
+  - **Caveat:** keeping drivers fully observed changes the per-column missing share against the
+    MCAR sibling; the ticket must say which counts it matches.
+  - **Cost:** the generator and a runner; a few GPU hours.
+- **T31 · Fresh MCAR draws: is a result tied to one missingness pattern?** (the user's go to record
+  it, 2026-10-21; not started).
+  - **The gap:** each MCAR rate is a single draw from `_00nan` (`inject_nans`, seed 42 + rate). The
+    seeds vary the folds and the model, never which cells are missing. The review of 2026-10-16
+    named it ("one MCAR draw each").
+    - The rates are drawn independently, not nested: 39.2% of biodeg_20nan's gaps are gaps at 40nan.
+  - **Design:** new MCAR draws from `_00nan` with other seeds, written beside the originals
+    (`<base>_<pp>nan_d2.csv`, …), on a subset spanning sizes and kinds.
+    - pendigits_20nan, kr-vs-kp_40nan, credit-g_60nan, biodeg_80nan;
+    - two extra draws each, at seeds 42/7/13.
+    - Today's default runs on them, with the bar, the strong tier and TabPFN.
+  - **Reading:** each draw's calls against the original's, with reversals listed (E51's rule).
+  - **Cost:** about 24 cells and a TabPFN pass; one GPU night.
+  - **Related:** T30, which would reuse the same generator scaffolding.
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
