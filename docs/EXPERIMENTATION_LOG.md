@@ -84,6 +84,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
 | E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
 | E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
+| E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 – | in progress | 156 pairs: 42/7/13, 404/505/606, E51's fresh seeds, the MNAR family; offline |
 
 ## Entries
 
@@ -1923,3 +1924,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   and loses on 4 of 6 at 80nan.
 - **Sources:** `docs/tickets/imputation-protocol/12-default-output-vs-tabpfn.md` (Outcome);
   `scripts/experiments/tabpfn_report.py`.
+
+### E58 · The strong tier with TabPFN on the seed sets E55 did not cover (2026-10-21 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Hypothesis:** none. ADR 0028's strong tier is read on every seed set the thesis uses.
+- **Scenarios:** TabPFN v2 offline, as in E55, on 156 pairs:
+  - 21 development variants × 42/7/13;
+  - E40's 12 × 404/505/606;
+  - E51's nine × 1001/2002/3003;
+  - ten MNAR variants × 42/7/13.
+  - Two GPU lanes, MNAR first; nothing to the store.
+- **Measures:**
+  - K − strong_live, K − strong and K − TabPFN on each seed set;
+  - for MNAR, H − the same, and (H − TabPFN) MNAR minus MCAR.
+  - Descriptive; no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md`;
+  `scripts/experiments/run_tabpfn_lanes.py`, `tabpfn_seed_sets_report.py`.
