@@ -80,6 +80,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E51 | Today's default on fresh seeds at 20nan, the stalest variants | 2026-10-20 | done | holds: K − bar better 7 / none 1 / worse 1 (electricity), no reversal; K − strong 6 / 3 / 0; KC better than K on letter and pendigits at 20nan (−2 to −3%) |
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 | done | mixed: frozen FN beats random on pendigits (−53%) and kr-vs-kp (−16%), not on credit-g; the full decode overtakes it (+10 to +21%) and C0 ≈ G |
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
+| E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 – | in progress | K − bar split by whether a cell's row has its date, on E51's and E44's electricity runs; offline |
 
 ## Entries
 
@@ -1800,3 +1801,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   decide. No default changes. Development seeds.
 - **Sources:** `docs/tickets/imputation-pretraining/11-collapse-probes.md` (Outcome);
   `scripts/experiments/pretrain_probe.py`.
+
+### E54 · T29's test: is the boosters' lead on electricity carried by `date` as a key? (2026-10-20 – )
+
+- **Status:** in progress. Pre-registered before any subset was computed, after T29's report
+  (2026-10-20).
+- **Hypothesis:** hgb and lgbm beat the model on electricity by looking values up by `date`, a
+  933-level key (48 rows per date, `day` constant within it). The model reads `date` as one scalar.
+- **Scenarios:**
+  - **Runs:** E51's electricity_20nan (seeds 1001/2002/3003) and E44's 40/60/80nan (707/808/909).
+  - **Fills:** the model's from the fold ledgers; hgb and lgbm refitted on the same folds.
+    Integrity: the full-cell scores equal the runs' to 1e-9.
+  - **Subsets:** the seven non-date columns' cells, split by whether the row's `date` is observed;
+    secondary splits for `day`, `nswdemand` and the constant regime.
+- **Measures and decision rule:**
+  - **Primary:** K − bar (the run's own booster) on each side, 15 fold pairs, 1% SESOI, at 20 and
+    60nan.
+  - **Rule:** supported if the date-observed side is worse and the date-missing side not worse at
+    both; refuted if the date-missing side is also worse at both; mixed otherwise.
+  - **Then:** supported → the limit is stated with its mechanism, and any model-side fix is an ADR
+    for the user. Otherwise the limit is stated as is. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/09-electricity.md`;
+  `docs/reports/2026-10-20-t29-electricity.md`; `scripts/experiments/electricity_report.py`,
+  `electricity_split.py`.

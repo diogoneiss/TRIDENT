@@ -242,6 +242,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Leads:** electricity's 8 columns with 45,312 rows; the bar's per-column wins; context-free
     rows (20.9% of cells at 80nan, no verdict changes without them).
   - **Output:** a short report, then at most one pre-registered test.
+  - **Report written 2026-10-20** ([2026-10-20-t29-electricity](reports/2026-10-20-t29-electricity.md)):
+    - the limit is against hgb and lgbm only;
+    - the model trails them most on `day` and `nswdemand`;
+    - `date` is a 933-level key.
+  - **E54 pre-registered** ([imputation-protocol/09](tickets/imputation-protocol/09-electricity.md)):
+    K − bar split by whether a cell's row has its `date`.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
