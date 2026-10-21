@@ -81,6 +81,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E52 | T28's D3: a frozen encoder, pre-trained against random | 2026-10-20 | done | mixed: frozen FN beats random on pendigits (−53%) and kr-vs-kp (−16%), not on credit-g; the full decode overtakes it (+10 to +21%) and C0 ≈ G |
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
 | E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
+| E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 – | in progress | column-wise TabPFN v2 on E48's 108 pairs (confirmation first), offline, two GPU lanes from 01:00 GMT-3, deadline 08:00 |
 
 ## Entries
 
@@ -1834,3 +1835,27 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/09-electricity.md` (Outcome);
   `docs/reports/2026-10-20-t29-electricity.md`; `scripts/experiments/electricity_report.py`,
   `electricity_split.py`.
+
+### E55 · TabPFN v2 as an external foundation-model baseline (2026-10-21 – )
+
+- **Status:** in progress. Pre-registered before the first scored cell, on the user's go
+  (2026-10-20).
+- **Hypothesis:** none directional. TabPFN v2 is the foundation-model baseline a reader will ask
+  about. The question is how K compares, and whether it beats the strong tier often enough to
+  join it.
+- **Scenarios:**
+  - **Code:** the optional extra `tabpfn==9.2.0` (lock: additions only) and
+    `src/training/tabpfn_baseline.py`, a column-wise wrapper over v2's checkpoints (10,000-row
+    context, 8 estimators).
+  - **Cells:** E48's: E44's confirmation set (15 variants × 707/808/909) first, then the
+    development set (21 × 101/202/303); 108 pairs.
+  - **Running it:** offline, two GPU lanes from 01:00 GMT-3. No pair starts unless it can end by
+    08:00; incomplete variants are not read.
+- **Measures and decision rule:**
+  - **Primary:** K − TabPFN per variant, 15 fold pairs, 1% SESOI.
+  - **Secondary:** TabPFN − strong, − bar, − tuned bar; K − best of all; fit time.
+  - **Rule (E48's):** TabPFN joins the strong tier (an ADR for the user) only if it is better than
+    the strong tier's best on 5 or more of 15 confirmation variants; otherwise an external
+    baseline. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/10-tabpfn.md`; `src/training/tabpfn_baseline.py`;
+  `scripts/experiments/tabpfn_run.py`, `tabpfn_report.py`, `run_tabpfn_lanes.py`.

@@ -19,6 +19,11 @@ dependencies = [
     "lightgbm>=4.7",
 ]
 
+[project.optional-dependencies]
+tabpfn = [
+    "tabpfn==9.2.0",
+]
+
 [tool.uv]
 package = false
 

@@ -54,7 +54,7 @@ WEAK = ("mean_mode", "knn5", "knn10", "hgb", "lgbm")
 DIAGNOSTIC = ("missforest_seq",)
 # Deep baselines read from offline passes (E48's MaCoDE): outside the bar and the strong tier,
 # compared on their own and in the best of all.
-DEEP = ("macode",)
+DEEP = ("macode", "tabpfn")
 _TUNED = re.compile(r"_tuned(_masked)?$|^tuned_bar$")
 RULE = "fold-pair t, seed agreement"
 _SOURCE = """r.status = 'FINISHED' and r.lifecycle_stage = 'active'
