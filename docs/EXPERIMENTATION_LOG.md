@@ -1794,7 +1794,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **H5:** `LR_PRE` ÷ 4 does not move; `BATCH 64` moves credit-g's probe by −0.016.
   - **A:** erodes its target 40–55% (E04) and its probes gain less than N's.
   - **Drift:** the decode keeps a CKA of 0.40 (pendigits) and 0.60 (kr-vs-kp) with N's start,
-    0.03 and 0.53 with random, and both starts end at the same score.
+    0.03 and 0.53 with random. On those two tables both starts end at about the same score.
 - **Conclusion:** no collapse, value information present; washout (H3) is the mechanism. With
   E52, the decision table's last row applies: T12 first with a `BATCH 64` arm, for the user to
   decide. No default changes. Development seeds.

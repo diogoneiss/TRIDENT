@@ -193,8 +193,10 @@ pendigits_20nan     R      0.0307                0.3288               0.2363    
   - **credit-g_20nan:** CKA 0.87 and 0.80.
   - **credit-g_80nan:** CKA 0.99 from both starts. The kept checkpoint barely moves the encoder,
     at mean/mode parity.
-  - **Both starts end at about the same score on every variant:** 0.323 against 0.329 on
-    pendigits, 0.728 against 0.728 on kr-vs-kp.
+  - **On pendigits and kr-vs-kp, both starts end at about the same score:** 0.323 against 0.329,
+    and 0.728 against 0.728.
+  - **On credit-g_20nan they do not:** 0.872 from N against 0.894 from random. That is one fold;
+    E52's C0 − G is +1.7% over 15.
 
 **What it means, with E52** ([10](10-frozen-encoder.md), Outcome):
 
