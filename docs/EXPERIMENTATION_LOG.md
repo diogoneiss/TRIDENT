@@ -82,7 +82,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E53 | T28's D2: collapse and linear probes on pre-training, and the encoder's drift | 2026-10-20 | done | no collapse under N (0 of 3); value information present (pendigits +36%, kr-vs-kp +7.5%, credit-g none); BATCH 64 moves credit-g's probe; the decode keeps 40–60% CKA |
 | E54 | T29's test: is the boosters' lead on electricity carried by `date` as a key? | 2026-10-20 | done | supported: with the row's date K − bar is worse (+0.025, +0.033 at 20/60nan); without it no worse (−0.034 better, −0.002); `day`'s +0.13 lead vanishes without the date |
 | E55 | TabPFN v2 as an external foundation-model baseline | 2026-10-21 | done | TabPFN beats the strong tier on 11/15 confirmation variants (rule: propose it for the strong tier); K − TabPFN 6/4/5 (confirmation), 8/6/7 (development); TabPFN wins at 80nan |
-| E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on all 15 (TabPFN's 80nan wins come with shrunk fills) |
+| E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
 
 ## Entries
 
@@ -1896,7 +1896,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **RMSE ratio:** agrees with `impute_score` on all 15 variants.
   - **MAE:** reverses K's wins on biodeg_40nan and pendigits_40nan.
   - **electricity_80nan:** worse on the numbers, better on `day`.
-  - **Dispersion:** K better on all 15; Wasserstein better on 11.
+  - **Dispersion:** K better on 14 of 15; Wasserstein better on 11.
 - **Conclusion:** E55's calls stand for point accuracy. TabPFN's 80nan wins come with fills more
   shrunk than K's, a caveat under ADR 0025 decision 4. It is reported with E55's proposal; no
   decision here.

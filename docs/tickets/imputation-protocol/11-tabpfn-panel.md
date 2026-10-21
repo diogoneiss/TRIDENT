@@ -99,8 +99,8 @@ Disagreements between impute_score and a panel metric (opposite verdicts, fold-p
   - **electricity_80nan:** K is worse in `impute_score` (numbers), but better on its categorical
     column (`day`: error and balanced error −0.005).
 - **The distribution caveat runs the other way from E44's.**
-  - K's fills keep the spread better than TabPFN's on all 15 variants: dispersion is better
-    everywhere it has a call. Wasserstein is better on 11.
+  - K's fills keep the spread better than TabPFN's on 14 of 15 variants (dispersion; no
+    difference on electricity_40nan). Wasserstein is better on 11.
   - So TabPFN's 80nan wins (letter, pendigits, vehicle, biodeg, electricity) are point-accuracy
     wins with more shrunk fills. On those five, K is better in dispersion, and in Wasserstein on
     four of them.
