@@ -319,8 +319,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
 - **T33 · A clean `[NULL]`/`[MASK]` ablation in the decode stage** (proposed 2026-10-22, about
-  19:25 GMT-3, from the wiki's sync of the fork; waits on the user's decision, and nothing runs
-  until then).
+  19:25 GMT-3, from the wiki's sync of the fork; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
   - **The gap:** E45/E46's t2 readout, Mx, changes three things at once (the gaps as `[NULL]` in the
     decode stage, the loss checkpoint and column-wise scoring), so it does not isolate the split
     ([imputation-protocol/06](tickets/imputation-protocol/06-mnar-family.md), "For the user").
@@ -336,7 +337,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost, for scale:** E46's 66 cells took 3 h 33 min on four queues.
 
 - **T34 · The tuned bar on the MAR folds** (proposed 2026-10-22, about 19:25 GMT-3, from the
-  wiki's sync; waits on the user's decision).
+  wiki's sync; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
   - **The gap:** ADR 0022 decision 5 says every new study that makes a claim against the bar runs
     E42's driver on its own folds, and D4 counts a win only against both bars. E63 and E64 read
     against the untuned bar only, so "the standing against the bar holds under MAR" has no D4
@@ -347,7 +350,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost, for scale:** E44's pass took about 4 hours on 4 CPU lanes.
 
 - **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
-  from the wiki's sync; waits on the user's decision).
+  from the wiki's sync; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
   - **The gap:** E45/E46's signed-bias panel shows every imputer under-predicting the hidden values
     and the model's bias moving least of 10 methods on 9 of 10 pairs. None of the 10 models the
     mechanism, so the claim "an imputer that models the mechanism shrinks the bias" (the wiki's H1d,
