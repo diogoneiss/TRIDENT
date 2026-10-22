@@ -4,7 +4,7 @@ This ticket was written and committed before the study's first cell. One smoke p
 and its disclosure is under "Before the ticket".
 
 - **Why:** this is T10's first step. The user's go was "vamos no 3 agora, dispare" (2026-10-22,
-  about 06:15 GMT-3), for the per-column categorical loss weighting.
+  about 06:10 GMT-3), for the per-column categorical loss weighting.
   - On 404/505/606, TabPFN beats K on all six kr-vs-kp and credit-g variants from 40nan (E58).
     These are the two most categorical tables.
 - **The plain lever has nothing to act on.**
@@ -68,7 +68,7 @@ and its disclosure is under "Before the ticket".
 
 ## Before the ticket (disclosed)
 
-- **One smoke pair, credit-g_40nan at s404, ran at about 06:30 GMT-3** to test the script. Both
+- **One smoke pair, credit-g_40nan at s404, ran at 06:19 GMT-3** to test the script. Both
   integrity checks passed, with TabPFN within 6.6e-6 of E58.
 - **The thresholds (5%, 20%, 50%) were in the script before it ran.**
 - **The tally's code paths were tested on that pair copied to three seeds.** It printed one
