@@ -6,7 +6,7 @@ This ticket was written and committed before the first cell.
   control, was worse on biodeg and kr-vs-kp, better on kc2, and showed no difference on vehicle,
   at one rate and one draw on seeds 42/7/13. This family asks whether that holds on more tables,
   both rates, a new draw and fresh seeds.
-- **The user's go:** "vamos fazer o 1 e 2 agora" (2026-10-22, about 15:20 GMT-3).
+- **The user's go:** "vamos fazer o 1 e 2 agora" (2026-10-22, about 18:55 GMT-3).
   - Item 1 is this family.
   - Item 2 is an arm whose decode masks follow the missingness propensity, E65. It is
     pre-registered in its own ticket before its first cell, once its flag is built, and runs after
