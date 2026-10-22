@@ -318,6 +318,47 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost:** about 2× the training time (1.98× pendigits, 2.05× letter).
   - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
+- **T33 · A clean `[NULL]`/`[MASK]` ablation in the decode stage** (proposed 2026-10-22, about
+  19:25 GMT-3, from the wiki's sync of the fork; waits on the user's decision, and nothing runs
+  until then).
+  - **The gap:** E45/E46's t2 readout, Mx, changes three things at once (the gaps as `[NULL]` in the
+    decode stage, the loss checkpoint and column-wise scoring), so it does not isolate the split
+    ([imputation-protocol/06](tickets/imputation-protocol/06-mnar-family.md), "For the user").
+  - **The signal worth checking:** on biodeg's dial, Mx's deficit to G's H shrinks against MCAR at
+    every slope (−0.014 to −0.026), and at slope 2.0 Mx beats G (−0.006), the only variant of E45 and
+    E46 where the untied arm wins.
+  - **What it would be:** the ablation the ticket names, `[NULL]` gaps alone, without column-wise
+    scoring and the loss checkpoint, on the dial and its MCAR control and on E46's four new pairs.
+    The design and the reading are the ticket's job.
+  - **Why it matters:** the user takes the `[NULL]`/`[MASK]` split as TRIDENT's main claim (wiki
+    `projects/trident/trident`, Positioning, 2026-10-15), and this is its only imputation-side test.
+    The classification-side ablation is the wiki's todo t2.
+  - **Cost, for scale:** E46's 66 cells took 3 h 33 min on four queues.
+
+- **T34 · The tuned bar on the MAR folds** (proposed 2026-10-22, about 19:25 GMT-3, from the
+  wiki's sync; waits on the user's decision).
+  - **The gap:** ADR 0022 decision 5 says every new study that makes a claim against the bar runs
+    E42's driver on its own folds, and D4 counts a win only against both bars. E63 and E64 read
+    against the untuned bar only, so "the standing against the bar holds under MAR" has no D4
+    reading yet.
+  - **What it would be:** `scripts/experiments/baseline_budget_run.py` on E63's and E64's folds,
+    offline and on the CPU, with nothing written to the store, after E64 and E65 end so that it does
+    not compete with them. The MNAR family (E45/E46) predates ADR 0022 and could be added.
+  - **Cost, for scale:** E44's pass took about 4 hours on 4 CPU lanes.
+
+- **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
+  from the wiki's sync; waits on the user's decision).
+  - **The gap:** E45/E46's signed-bias panel shows every imputer under-predicting the hidden values
+    and the model's bias moving least of 10 methods on 9 of 10 pairs. None of the 10 models the
+    mechanism, so the claim "an imputer that models the mechanism shrinks the bias" (the wiki's H1d,
+    `projects/trident/thesis-goals`) is untested.
+  - **Candidates, from the wiki** (`projects/trident/findings-2026-10-16-baselines-methodology`, "Not
+    quick"; `references/not-miwae-paper`, `references/nimiwae-paper`): not-MIWAE (TensorFlow code
+    with no license, so a clean-room rewrite), then NIMIWAE (a GPL-3 R package driving PyTorch 1.4 through
+    `reticulate`, CUDA required). Either would sit behind an inductive wrapper, as MaCoDE does (E48).
+  - **What it would read:** the signed bias and `impute_score` on E45/E46's ten MNAR files and their
+    controls, offline, beside the existing panel (`metric_panel.py --baselines`).
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
