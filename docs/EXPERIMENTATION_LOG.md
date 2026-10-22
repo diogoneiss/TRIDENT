@@ -2022,7 +2022,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E61 · Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read (2026-10-22)
 
-- **Status:** done 2026-10-22, 06:40 GMT-3. Pre-registered before the first cell, on the user's go
+- **Status:** done 2026-10-22, 06:33 GMT-3. Pre-registered before the first cell, on the user's go
   (2026-10-22).
   T10's first step.
 - **Hypothesis:** none directional. A per-column loss weighting can only help if K's deficit to

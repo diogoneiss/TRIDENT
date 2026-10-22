@@ -75,7 +75,7 @@ and its disclosure is under "Before the ticket".
   variant's line, with no stuck column, so I have seen that line.
   - The study reruns that pair, and a TabPFN refit with the same seed gives the same fills.
 
-## Outcome (2026-10-22, 06:40 GMT-3)
+## Outcome (2026-10-22, 06:33 GMT-3)
 
 **The run:** 18 of 18 pairs, 06:20–06:32 GMT-3, with none failed.
 
