@@ -272,7 +272,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **The user chose both (2026-10-22).**
     - **E64** ([imputation-protocol/19](tickets/imputation-protocol/19-mar-family.md)) runs the
       family first, on 404/505/606.
-    - **E65,** the propensity-mask arm, comes after it, behind a flag and with its own ticket.
+    - **E65** ([imputation-protocol/20](tickets/imputation-protocol/20-mar-propensity.md)), the
+      propensity-mask arm behind `--decode_mask_weighting`, runs beside it from a worktree on
+      branch `feat/decode-mask-propensity`.
   - **The gap:** every variant is MCAR (`generate_splits.py`) or MNAR (E45/E46,
     `generate_mnar.py`). Nothing tests missingness that depends on *other* observed columns.
   - **Generator:** `datasets/generate_mar.py`. It draws from the `_00nan` table at the MCAR
