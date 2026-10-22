@@ -282,6 +282,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   it, 2026-10-21). **Running since 2026-10-22 as E62**
   ([imputation-protocol/17](tickets/imputation-protocol/17-mcar-draws.md)): 36 cells, with draw 1
   rerun beside draws 2 and 3; biodeg_80nan at 42/7/13 for the first time.
+  - **Done 2026-10-22: holds.** No reversal on K − bar or K − strong across the three draws of the
+    four variants; two drifts are named in the ticket. The draw moves a contrast about as much as
+    the fold-and-seed interval (biodeg_80nan about twice), so the thesis's intervals are
+    conditional on the draw. **T31 closed.**
   - **The gap:** each MCAR rate is a single draw from `_00nan` (`inject_nans`, seed 42 + rate). The
     seeds vary the folds and the model, never which cells are missing. The review of 2026-10-16
     named it ("one MCAR draw each").

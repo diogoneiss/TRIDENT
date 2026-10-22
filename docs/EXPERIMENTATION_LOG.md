@@ -88,7 +88,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – 2026-10-22 | done | mixed: ALL − G on K better 3/6 (both at 40nan, pendigits_60nan), worse on letter_80nan (+0.4%, inside the SESOI); on KC 4/0; gain fades with the rate; the 80nan gap to TabPFN does not close |
 | E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
 | E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 | done | no target: no column stuck at the marginal on any of 6; K learns every column TabPFN learns, a few points less (gain correlation +0.76 to +0.94); T10's weighting half closes |
-| E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 – | in progress | 4 variants × 3 draws × seeds 42/7/13, 36 cells of today's default; TabPFN offline |
+| E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 | done | holds: no reversal on K − bar or K − strong across 3 draws of 4 variants; drifts on credit-g_60nan K − bar and pendigits_20nan KC − strong; the draw moves a contrast about as much as the fold-and-seed interval (biodeg_80nan about twice) |
 
 ## Entries
 
@@ -2056,9 +2056,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/16-categorical-deficit.md` (Outcome);
   `scripts/experiments/categorical_deficit.py`.
 
-### E62 · Fresh MCAR draws: is a result tied to one missingness pattern? (2026-10-22 – )
+### E62 · Fresh MCAR draws: is a result tied to one missingness pattern? (2026-10-22)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22). T31.
+- **Status:** done 2026-10-22, 11:39 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-22). T31.
 - **Hypothesis:** none directional. Each MCAR rate is one draw, so a call could be tied to which
   cells happen to be missing.
 - **Scenarios:**
@@ -2073,6 +2074,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Across draws: same, reversal or drift.
   - **Primary:** holds if K − bar and K − strong show no reversal on any variant; tied to the draw
     otherwise, each reversal named.
-- **Sources:** `docs/tickets/imputation-protocol/17-mcar-draws.md`;
+- **Results:**
+  - 36 of 36 cells and TabPFN pairs, 06:44–11:39 GMT-3. The gate (credit-g_60nan s42 against
+    E35) matched at 0.
+  - **K − bar:** better on every draw of pendigits_20nan, kr-vs-kp_40nan and biodeg_80nan. On
+    credit-g_60nan it drifts (shipped: no difference; fresh: better).
+  - **K − strong:** worse on every draw of all four, TabPFN the best each time.
+  - **KC − strong:** worse throughout, except on pendigits_20nan (shipped: no difference; fresh:
+    worse), where KC is not the default.
+  - The shipped draw is not systematically favourable to K.
+  - The span of the draws' means is 0.2–1.5× a draw's interval half-width, and 1.5–1.9× on
+    biodeg_80nan.
+- **Conclusion:** holds. No call depends on the MCAR draw on these four tables. The thesis's
+  intervals are conditional on the draw, which adds variation of the same order. No default
+  changes.
+- **Sources:** `docs/tickets/imputation-protocol/17-mcar-draws.md` (Outcome);
   `datasets/generate_mcar_draws.py`; `scripts/experiments/mcar_draws_run.py`,
   `mcar_draws_report.py`, `run_mcar_draws_queue.sh`.
