@@ -86,7 +86,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
 | E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
 | E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – | in progress | 18 cells: ALL on pendigits and letter at 40/60/80nan, seeds 707/808/909, against E44's G |
-| E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 – | in progress | 45 confirmation pairs, offline; one GPU lane |
+| E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
 
 ## Entries
 
@@ -1974,9 +1974,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/large_encoder_run.py`, `large_encoder_report.py`,
   `run_large_encoder_queue.sh`.
 
-### E60 · Are TRIDENT's and TabPFN's errors complementary? A blend of their fills (2026-10-21 – )
+### E60 · Are TRIDENT's and TabPFN's errors complementary? A blend of their fills (2026-10-21)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Status:** done 2026-10-22, 00:10 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-21).
 - **Hypothesis:** none directional. If the two err on different cells, the average of their fills
   beats both.
 - **Scenarios:** E44's 15 confirmation variants × 707/808/909. The model's K fills come from the
@@ -1987,5 +1988,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Complementary if the blend beats both on 5 or more of 15; not complementary on 1 or none;
     mixed otherwise.
   - Descriptive.
-- **Sources:** `docs/tickets/imputation-protocol/15-tabpfn-blend.md`;
+- **Results:**
+  - 45 of 45 pairs; the model's ledger score equals the run's K on every fold.
+  - **The blend beats both on 10 of 15:** pendigits and letter at 40/60/80nan, electricity_60nan,
+    and vehicle, biodeg and kc2 at 40nan.
+  - **Blend − K:** better 14, no difference 1 (kc2_80nan), worse 0.
+  - **Blend − TabPFN:** better 11, no difference 1 (electricity_40nan), equivalent 3 (electricity,
+    vehicle and biodeg at 80nan), worse 0.
+  - **The zero "worse" calls are arithmetic:** an averaged numerical fill's RMSE is never above
+    the mean of the two RMSEs. Only "better than the better one" is evidence.
+- **Conclusion:** complementary. The two fills' errors are not parallel: the blend gains on both at
+  40–60nan and on the large tables at 80nan. Elsewhere at 80nan it lands on TabPFN's level. The
+  model side is K, not KC. Descriptive; no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/15-tabpfn-blend.md` (Outcome);
   `scripts/experiments/tabpfn_blend.py`.
