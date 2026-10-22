@@ -87,6 +87,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
 | E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – 2026-10-22 | done | mixed: ALL − G on K better 3/6 (both at 40nan, pendigits_60nan), worse on letter_80nan (+0.4%, inside the SESOI); on KC 4/0; gain fades with the rate; the 80nan gap to TabPFN does not close |
 | E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
+| E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 – | in progress | 18 pairs of E40's runs (404/505/606), offline; two GPU lanes |
 
 ## Entries
 
@@ -2018,3 +2019,23 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   model side is K, not KC. Descriptive; no default changes.
 - **Sources:** `docs/tickets/imputation-protocol/15-tabpfn-blend.md` (Outcome);
   `scripts/experiments/tabpfn_blend.py`.
+
+### E61 · Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read (2026-10-22 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22).
+  T10's first step.
+- **Hypothesis:** none directional. A per-column loss weighting can only help if K's deficit to
+  TabPFN sits in columns where K learned just the marginal. Under MCAR, a plain column mean equals
+  the pooled term the loss already uses.
+- **Scenarios:**
+  - E40's runs of kr-vs-kp and credit-g at 40/60/80nan, seeds 404/505/606, 18 pairs;
+  - TabPFN v2 refitted per fold, as E60 did;
+  - errors per column from the ledgers; offline, two GPU lanes.
+- **Measures and decision rule:**
+  - K − TabPFN split exactly into its categorical and numerical terms. A variant counts if the
+    categorical term carries at least half of the gap.
+  - A column is "stuck" if K's gain over the mode is at most 5% while TabPFN's is at least 20%.
+  - A target if stuck columns hold at least 50% of the net excess errors on 3 or more counted
+    variants; no target on 1 or none; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/16-categorical-deficit.md`;
+  `scripts/experiments/categorical_deficit.py`.

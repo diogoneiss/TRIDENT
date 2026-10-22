@@ -184,6 +184,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   speed-ups.
 - **T10 · Per-column categorical loss weighting and an unbiased evaluation-mask draw** (handoff
   item 6).
+  - **Started 2026-10-22, by the user's go ("vamos no 3 agora, dispare").** E61
+    ([imputation-protocol/16](tickets/imputation-protocol/16-categorical-deficit.md)) reads per
+    column where K loses to TabPFN on kr-vs-kp and credit-g. A weighting follows only if the read
+    finds a target. Under MCAR, a plain column mean equals today's pooled term.
 
 ### Specific follow-ups
 
