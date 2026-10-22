@@ -1,0 +1,54 @@
+"""The summary lines of every reader behind the consolidated results report, in one pass. Read-only.
+
+    uv run --python 3.11 python scripts/experiments/results_digest.py
+
+Runs each study's pre-registered reader as it is (none is changed) and keeps only its summary
+lines: section headers, tallies and the "Primary" verdict. The per-variant lines stay in each
+ticket's Outcome, which this digest points to. Run from the checkout root.
+"""
+
+from __future__ import annotations
+
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path.cwd()
+if not (ROOT / "train.py").exists():
+    sys.exit(f"run from the TRIDENT checkout root, not {ROOT}")
+
+E = "scripts/experiments"
+SUMMARY = re.compile(r"^(##|Primary|- \(|  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
+# (label, ticket, command)
+READERS: list[tuple[str, str, list[str]]] = [
+    ("E55/E57: confirmation set against TabPFN and the strong tier", "imputation-protocol/10, 12",
+     [f"{E}/tabpfn_report.py"]),
+    ("E58: the other seed sets and MNAR, with TabPFN", "imputation-protocol/13",
+     [f"{E}/tabpfn_seed_sets_report.py"]),
+    ("E51: fresh seeds at 20nan", "imputation-protocol/08", [f"{E}/default_refresh_report.py", "--tally"]),
+    ("E62: fresh MCAR draws", "imputation-protocol/17", [f"{E}/mcar_draws_report.py", "--tally"]),
+    ("E63: MAR against matched MCAR controls", "imputation-protocol/18", [f"{E}/mar_smoke_report.py", "--tally"]),
+    ("E60: a TRIDENT-TabPFN blend", "imputation-protocol/15",
+     [f"{E}/tabpfn_blend.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-21-tabpfn-blend/csv"]),
+    ("E61: where K loses to TabPFN, per column", "imputation-protocol/16",
+     [f"{E}/categorical_deficit.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-22-categorical-deficit/csv"]),
+    ("E59: the bigger encoder at 40-80nan", "imputation-protocol/14", [f"{E}/large_encoder_report.py", "--tally"]),
+    ("E52: a frozen pre-trained encoder against a random one", "imputation-pretraining/10",
+     [f"{E}/frozen_encoder_report.py", "--tally"]),
+    ("E53: collapse and probes", "imputation-pretraining/11", [f"{E}/collapse_probes_report.py"]),
+]
+
+
+def main() -> int:
+    for label, ticket, command in READERS:
+        done = subprocess.run(["uv", "run", "--python", "3.11", "python", "-B", *command], capture_output=True, text=True)
+        kept = [line for line in done.stdout.splitlines() if SUMMARY.match(line)]
+        print(f"### {label} ({ticket})\n\n```text")
+        print("\n".join(kept) if kept else f"(no summary lines; exit {done.returncode})")
+        print("```\n")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

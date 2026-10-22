@@ -265,6 +265,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 - **T30 · A MAR smoke** (the user's go to record it, 2026-10-21). **Running since 2026-10-22 as E63**
   ([imputation-protocol/18](tickets/imputation-protocol/18-mar-smoke.md)), against matched MCAR
   controls: the same drivers and per-column counts (about 42% of feature cells).
+  - **Done 2026-10-22: loses ground.** (H − strong), MAR minus control, is worse on biodeg and
+    kr-vs-kp and better on kc2; (H − bar) is never worse. **Proposed, for the user:** a fuller MAR
+    family (the 20nan rung, a slope dial, spambase and credit-g), with an arm whose decode masks
+    follow the drivers, to test the mask-mismatch hypothesis.
   - **The gap:** every variant is MCAR (`generate_splits.py`) or MNAR (E45/E46,
     `generate_mnar.py`). Nothing tests missingness that depends on *other* observed columns.
   - **Generator:** `datasets/generate_mar.py`. It draws from the `_00nan` table at the MCAR

@@ -89,7 +89,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
 | E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 | done | no target: no column stuck at the marginal on any of 6; K learns every column TabPFN learns, a few points less (gain correlation +0.76 to +0.94); T10's weighting half closes |
 | E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 | done | holds: no reversal on K − bar or K − strong across 3 draws of 4 variants; drifts on credit-g_60nan K − bar and pendigits_20nan KC − strong; the draw moves a contrast about as much as the fold-and-seed interval (biodeg_80nan about twice) |
-| E63 | A MAR smoke against matched MCAR controls | 2026-10-22 – | in progress | biodeg, kc2, vehicle, kr-vs-kp at 60nan, MAR and matched control, seeds 42/7/13: 24 cells; TabPFN offline |
+| E63 | A MAR smoke against matched MCAR controls | 2026-10-22 | done | loses ground: (H − strong) MAR minus control worse on biodeg and kr-vs-kp, better on kc2; (H − bar) never worse; unlike MNAR, TabPFN gains under MAR on 2 of 4 |
 
 ## Entries
 
@@ -2093,9 +2093,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `datasets/generate_mcar_draws.py`; `scripts/experiments/mcar_draws_run.py`,
   `mcar_draws_report.py`, `run_mcar_draws_queue.sh`.
 
-### E63 · A MAR smoke against matched MCAR controls (2026-10-22 – )
+### E63 · A MAR smoke against matched MCAR controls (2026-10-22)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22). T30.
+- **Status:** done 2026-10-22, 15:12 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-22). T30.
 - **Hypothesis:** none directional. MAR, missingness that depends on other observed columns, is the
   one classical mechanism not yet tested.
 - **Scenarios:**
@@ -2108,5 +2109,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Per mechanism: H and K against the bar, the strong tier and TabPFN.
   - **Primary:** (H − bar) and (H − strong), MAR minus control. It holds if neither is worse on
     any table, loses ground if worse on 2 or more, and is mixed otherwise.
-- **Sources:** `docs/tickets/imputation-protocol/18-mar-smoke.md`; `datasets/generate_mar.py`;
-  `scripts/experiments/mar_smoke_run.py`, `mar_smoke_report.py`, `run_mar_smoke_queue.sh`.
+- **Results:**
+  - 24 of 24 cells and TabPFN pairs, 13:44–15:10 GMT-3.
+  - **(H − bar), MAR minus control:** better 1 (kc2), no difference 3, worse 0.
+  - **(H − strong), MAR minus control:** worse on biodeg (+0.0410) and kr-vs-kp (+0.0103), better
+    on kc2 (−0.1124), no difference on vehicle. TabPFN was the strong tier's best each time.
+  - **(K − H), MAR minus control:** no difference on all four.
+- **Conclusion:** loses ground. Under MAR, TRIDENT keeps its standing against the bar but loses
+  ground against TabPFN on two of four tables, unlike under MNAR. One untested hypothesis is that
+  the decode masks are uniform over observed cells while the test gaps follow the drivers. A
+  fuller MAR family is proposed for the user. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/18-mar-smoke.md` (Outcome);
+  `datasets/generate_mar.py`; `scripts/experiments/mar_smoke_run.py`, `mar_smoke_report.py`,
+  `run_mar_smoke_queue.sh`.
