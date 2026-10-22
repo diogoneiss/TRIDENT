@@ -91,6 +91,26 @@ def draw_dynamic_mask(null_values: np.ndarray, p_base: float) -> np.ndarray:
     # Already a boolean array; asarray only states the type, it neither copies nor draws.
     return np.asarray(dynamic_mask, dtype=bool)
 
+def draw_weighted_mask(null_values: np.ndarray, p_base: float, weights: np.ndarray) -> np.ndarray:
+    """``draw_dynamic_mask`` with each cell's probability multiplied by its weight (E65).
+
+    The same draws in the same order: one uniform matrix, then one uniform choice per row left
+    without a mask, as there. A cell's probability is clipped at 1. With every weight 1 the mask is
+    ``draw_dynamic_mask``'s, draw for draw. ``weights`` is (rows, columns) like ``null_values``.
+    """
+    prop_nulls = null_values.sum(axis=1) / null_values.shape[1]
+    p_dynamic = np.minimum(p_base * (1 - prop_nulls[:, None]) * weights, 1.0)
+    dynamic_mask = np.random.rand(*null_values.shape) < p_dynamic
+    dynamic_mask[null_values] = False
+    no_mask_rows = ~dynamic_mask.any(axis=1)
+    for i in np.where(no_mask_rows)[0]:
+        non_null_indices = np.where(~null_values[i])[0]
+        if len(non_null_indices) > 0:
+            random_index = np.random.choice(non_null_indices)
+            dynamic_mask[i, random_index] = True
+    return np.asarray(dynamic_mask, dtype=bool)
+
+
 def split_numeric_and_special(df, numerical_columns, device='cuda'):
     """
     Separates real numerical values from special tokens `[MASK]` and `[NULL]`.

@@ -69,10 +69,13 @@ class EpochMasker:
     ``encode(preprocess_table(frame, p_base))`` tensor for tensor.
     """
 
-    def __init__(self, embedder: "TabularEmbedder", frame, device) -> None:
+    def __init__(self, embedder: "TabularEmbedder", frame, device, weights: np.ndarray | None = None) -> None:
         from .utils import preprocess_table
 
         self._null_values = frame.isnull().to_numpy()
+        # Per-cell weights in frame order for ``draw_weighted_mask`` (E65); None draws uniformly,
+        # through ``draw_dynamic_mask``, exactly as before.
+        self._weights = weights
         self._base = embedder.encode(preprocess_table(frame.copy(), fine_tunning=True), device)
         columns = list(embedder.categorical_columns) + list(embedder.numerical_columns)
         self._order = np.array([frame.columns.get_loc(column) for column in columns], dtype=np.int64)
@@ -85,9 +88,12 @@ class EpochMasker:
         self._device = device
 
     def draw(self, p_base: float) -> "EncodedTable":
-        from .utils import draw_dynamic_mask
+        from .utils import draw_dynamic_mask, draw_weighted_mask
 
-        dynamic_mask = draw_dynamic_mask(self._null_values, p_base)
+        if self._weights is None:
+            dynamic_mask = draw_dynamic_mask(self._null_values, p_base)
+        else:
+            dynamic_mask = draw_weighted_mask(self._null_values, p_base, self._weights)
         positions = torch.tensor(dynamic_mask[:, self._order], dtype=torch.bool, device=self._device)
         categorical = positions[:, : self._n_categorical].t()
         numerical = positions[:, self._n_categorical :].t()

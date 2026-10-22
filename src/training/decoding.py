@@ -15,6 +15,7 @@ import torch.optim as optim
 from tqdm import tqdm
 
 from src.embedder import EncodedTable, EpochMasker, as_category_strings
+from src.training.mask_propensity import propensity_weights
 from src.models import TridentDecoder
 from src.utils import preprocess_table
 
@@ -142,8 +143,14 @@ def train_and_evaluate_decoder(
     mask_epoch = 0
 
     print("\n=== Starting Decoding (reconstructing hidden cells) ===")
-    # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once.
-    train_masker = EpochMasker(embedder, train_frame, device)
+    # Fresh masks every epoch, drawn as preprocess_table draws them, on tensors encoded once;
+    # with ``DECODE_MASK_WEIGHTING propensity`` (E65), weighted towards where the fold's gaps fall.
+    weights = (
+        propensity_weights(train_frame, dataset.categorical_columns)
+        if hyperparameters.decode_mask_weighting == "propensity"
+        else None
+    )
+    train_masker = EpochMasker(embedder, train_frame, device, weights=weights)
     for epoch in tqdm(range(hyperparameters.decode_epochs), desc="Decode epochs"):
         if hyperparameters.decode_freeze_epochs:
             # A frozen parameter gets no gradient, so AdamW leaves it alone, weight decay included.

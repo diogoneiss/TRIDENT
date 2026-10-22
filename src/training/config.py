@@ -9,6 +9,7 @@ from typing import Any, Mapping
 from .types import (
     DEFAULT_BASELINE_CACHE_DIR,
     DECODE_CALIBRATIONS,
+    DECODE_MASK_WEIGHTINGS,
     DECODE_CHECKPOINTS,
     DECODE_GAP_TOKENS,
     ENCODER_FINAL_NORMS,
@@ -34,7 +35,7 @@ from .types import (
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
     "decode_gap_token", "decode_checkpoint", "pretrain_gap_token", "encoder_final_norm",
-    "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale",
+    "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting",
 )
 
 
@@ -86,8 +87,9 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_calibration = getattr(args, "decode_calibration", None)
     if decode_calibration is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_calibration=decode_calibration)
-    # ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` win the same way (E50).
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale"):
+    # ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` win the same way (E50), and so
+    # does ``--decode_mask_weighting`` (E65).
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting"):
         value = getattr(args, flag, None)
         if value is not None:
             hyperparameters = dataclasses.replace(hyperparameters, **{flag: value})
@@ -175,6 +177,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODE_PATIENCE": values.decode_patience,
             "DECODE_FREEZE_EPOCHS": values.decode_freeze_epochs,
             "DECODE_ENCODER_LR_SCALE": values.decode_encoder_lr_scale,
+            "DECODE_MASK_WEIGHTING": values.decode_mask_weighting,
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
@@ -281,7 +284,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale"):
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting"):
         if getattr(args, flag, None) is not None and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -412,6 +415,17 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: the embedder's and transformer's learning rate in the decode stage "
             "as a fraction of the heads' (E50). Overrides DECODE_ENCODER_LR_SCALE. Default: 1.0, "
             "one learning rate for every parameter."
+        ),
+    )
+    parser.add_argument(
+        "--decode_mask_weighting",
+        choices=DECODE_MASK_WEIGHTINGS,
+        default=None,
+        help=(
+            "Imputation only: how the decode stage picks the training cells it hides each epoch "
+            "(E65). 'propensity' weights them towards the rows where the training fold's own "
+            "gaps fall, from a logistic model of each column's missingness on the others. "
+            "Overrides DECODE_MASK_WEIGHTING. Default: uniform, every run before it."
         ),
     )
     parser.add_argument(
