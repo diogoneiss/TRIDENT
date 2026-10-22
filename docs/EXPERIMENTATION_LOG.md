@@ -90,6 +90,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 | done | no target: no column stuck at the marginal on any of 6; K learns every column TabPFN learns, a few points less (gain correlation +0.76 to +0.94); T10's weighting half closes |
 | E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 | done | holds: no reversal on K − bar or K − strong across 3 draws of 4 variants; drifts on credit-g_60nan K − bar and pendigits_20nan KC − strong; the draw moves a contrast about as much as the fold-and-seed interval (biodeg_80nan about twice) |
 | E63 | A MAR smoke against matched MCAR controls | 2026-10-22 | done | loses ground: (H − strong) MAR minus control worse on biodeg and kr-vs-kp, better on kc2; (H − bar) never worse; unlike MNAR, TabPFN gains under MAR on 2 of 4 |
+| E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – | in progress | 6 tables × 20/60nan, MAR and matched control, + a slope dial on biodeg_60nan, seeds 404/505/606: 78 cells; TabPFN offline |
 
 ## Entries
 
@@ -2122,3 +2123,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/18-mar-smoke.md` (Outcome);
   `datasets/generate_mar.py`; `scripts/experiments/mar_smoke_run.py`, `mar_smoke_report.py`,
   `run_mar_smoke_queue.sh`.
+
+### E64 · The MAR family: does MAR cost the model ground against the strong tier? (2026-10-22 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22). T30.
+- **Hypothesis:** E63's smoke found MAR costing the model ground against TabPFN on biodeg and
+  kr-vs-kp (and the opposite on kc2). Does that hold more broadly?
+- **Scenarios:**
+  - biodeg, kc2, vehicle, kr-vs-kp, spambase and credit-g at 20 and 60nan;
+  - a new MAR draw (generator seed 4060) and matched controls;
+  - a slope dial (0.75, 1.5, 3) on biodeg_60nan;
+  - seeds 404/505/606, 78 cells of today's default;
+  - TabPFN as an offline pass.
+- **Measures and decision rule:**
+  - (H − bar), (H − strong) and (K − H), MAR minus control, fold-paired.
+  - **Primary,** (H − strong) over the 12 table-rates: supported if worse on 4 or more and better
+    on at most 1; refuted if worse on at most 1; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/19-mar-family.md`;
+  `datasets/generate_mar_family.py`; `scripts/experiments/mar_family_run.py`,
+  `mar_family_report.py`, `run_mar_family_queue.sh`.

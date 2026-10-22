@@ -269,6 +269,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     kr-vs-kp and better on kc2; (H − bar) is never worse. **Proposed, for the user:** a fuller MAR
     family (the 20nan rung, a slope dial, spambase and credit-g), with an arm whose decode masks
     follow the drivers, to test the mask-mismatch hypothesis.
+  - **The user chose both (2026-10-22).**
+    - **E64** ([imputation-protocol/19](tickets/imputation-protocol/19-mar-family.md)) runs the
+      family first, on 404/505/606.
+    - **E65,** the propensity-mask arm, comes after it, behind a flag and with its own ticket.
   - **The gap:** every variant is MCAR (`generate_splits.py`) or MNAR (E45/E46,
     `generate_mnar.py`). Nothing tests missingness that depends on *other* observed columns.
   - **Generator:** `datasets/generate_mar.py`. It draws from the `_00nan` table at the MCAR
