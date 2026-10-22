@@ -279,7 +279,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     MCAR sibling; the ticket must say which counts it matches.
   - **Cost:** the generator and a runner; a few GPU hours.
 - **T31 · Fresh MCAR draws: is a result tied to one missingness pattern?** (the user's go to record
-  it, 2026-10-21; not started).
+  it, 2026-10-21). **Running since 2026-10-22 as E62**
+  ([imputation-protocol/17](tickets/imputation-protocol/17-mcar-draws.md)): 36 cells, with draw 1
+  rerun beside draws 2 and 3; biodeg_80nan at 42/7/13 for the first time.
   - **The gap:** each MCAR rate is a single draw from `_00nan` (`inject_nans`, seed 42 + rate). The
     seeds vary the folds and the model, never which cells are missing. The review of 2026-10-16
     named it ("one MCAR draw each").
