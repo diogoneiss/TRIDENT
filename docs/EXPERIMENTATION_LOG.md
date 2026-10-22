@@ -1960,7 +1960,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E59 · ADR 0018's bigger encoder on the large tables at 40–80nan (2026-10-21 – 2026-10-22)
 
-- **Status:** done 2026-10-22, 06:10 GMT-3. Pre-registered before the first cell, on the user's go
+- **Status:** done 2026-10-22, 06:03 GMT-3. Pre-registered before the first cell, on the user's go
   (2026-10-21).
 - **Hypothesis:** the bigger encoder (ALL), which helped the large tables at 20nan (E38), also helps
   them at 40–80nan, where TabPFN leads at 80nan.
@@ -1982,15 +1982,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     equivalent with both.
 - **Conclusion:** mixed, and mixed without the worse call too (3 better, 4 needed). The bigger
   encoder's gain fades with the missing rate and is gone at 80nan, so it does not close the gap to
-  TabPFN there. The user chooses: ADR 0018 stays at 20nan, or a fresh-seed confirmation at 40nan
-  (and 60nan on KC) first. No default changes.
+  TabPFN there. No default changes.
+- **Decision (2026-10-22, 06:10 GMT-3):** the user keeps ADR 0018 at 20nan and records the bigger
+  encoder at 40–60nan as a future possibility (T32). The measured cost is about 2× the training
+  time (1.98× pendigits, 2.05× letter).
 - **Sources:** `docs/tickets/imputation-protocol/14-large-encoder.md` (Outcome);
   `scripts/experiments/large_encoder_run.py`, `large_encoder_report.py`,
   `run_large_encoder_queue.sh`.
 
 ### E60 · Are TRIDENT's and TabPFN's errors complementary? A blend of their fills (2026-10-21)
 
-- **Status:** done 2026-10-22, 00:10 GMT-3. Pre-registered before the first cell, on the user's go
+- **Status:** done 2026-10-22, 00:05 GMT-3. Pre-registered before the first cell, on the user's go
   (2026-10-21).
 - **Hypothesis:** none directional. If the two err on different cells, the average of their fills
   beats both.

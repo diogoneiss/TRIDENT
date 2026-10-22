@@ -35,7 +35,7 @@ On the induced `impute_score` over 15 fold pairs, with the verdict rule and the 
 - **Limit:** the blend touches numerical cells only. Electricity's `day` keeps the model's
   category.
 
-## Outcome (2026-10-22, 00:10 GMT-3)
+## Outcome (2026-10-22, 00:05 GMT-3)
 
 **The run:** 45 of 45 pairs, 19:28–22:57 GMT-3 on 2026-10-21, one lane beside E59; none failed.
 On every fold of every pair, the model's `impute_score` from the ledger equals the run's K.

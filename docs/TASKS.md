@@ -92,7 +92,7 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 
 ### T03 · Architecture defaults — done (E37, E38; [ADR 0018](adr/0018-bigger-encoder-on-the-large-tables.md): bigger encoder on pendigits_20nan and letter_20nan)
 
-**E59 (2026-10-22, [imputation-protocol/14](tickets/imputation-protocol/14-large-encoder.md)):** ALL on pendigits and letter at 40–80nan is mixed on K (better 3/6, worse on letter_80nan by +0.4%); on KC 4/0. The gain fades with the rate and is gone at 80nan. **Waits on the user:** ADR 0018 stays at 20nan, or a fresh-seed confirmation at 40nan (and 60nan on KC).
+**E59 (2026-10-22, [imputation-protocol/14](tickets/imputation-protocol/14-large-encoder.md)):** ALL on pendigits and letter at 40–80nan is mixed on K (better 3/6, worse on letter_80nan by +0.4%); on KC 4/0. The gain fades with the rate and is gone at 80nan. **Decided by the user (2026-10-22):** ADR 0018 stays at 20nan; the bigger encoder at 40–60nan is a future possibility (T32).
 
 **Screened 2026-10-06:** 4 layers + feed-forward 256 + a final LayerNorm (ALL) is better on 3 of 5
 variants and worse on none (credit-g_20nan a near miss), at 1.82x the time; it advances to a
@@ -285,6 +285,13 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Reading:** each draw's calls against the original's, with reversals listed (E51's rule).
   - **Cost:** about 24 cells and a TabPFN pass; one GPU night.
   - **Related:** T30, which would reuse the same generator scaffolding.
+
+- **T32 · The bigger encoder at 40–60nan on the large tables** (a future possibility, by the
+  user's decision on E59, 2026-10-22: "por enquanto nao vale a pena").
+  - **E59:** on pendigits and letter, about −4% on K at 40nan (−5% to −6% on KC), less at 60nan,
+    and nothing at 80nan.
+  - **Cost:** about 2× the training time (1.98× pendigits, 2.05× letter).
+  - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

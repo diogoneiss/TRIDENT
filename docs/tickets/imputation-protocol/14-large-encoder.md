@@ -47,7 +47,7 @@ pairs, with the verdict rule and the 1% SESOI:
   - **refuted:** ADR 0018 stays at 20nan;
   - **mixed:** reported, and the user chooses.
 
-## Outcome (2026-10-22, 06:10 GMT-3)
+## Outcome (2026-10-22, 06:03 GMT-3)
 
 **The run:** 18 of 18 cells, 19:28 GMT-3 on 2026-10-21 to 04:11 GMT-3 on 2026-10-22, with none
 failed. That is 8 h 43 min against the ticket's 6.6 h estimate.
@@ -108,3 +108,16 @@ letter_40nan), equivalent on 2, and worse on 1 (letter_80nan).
 - **ADR 0018 stays at 20nan.** The bigger encoder does not help where TabPFN leads.
 - **Or a fresh-seed confirmation** of ALL on pendigits and letter at 40nan, and at 60nan on KC,
   pre-registered first, before any ADR amending 0018.
+
+## Decision (2026-10-22, 06:10 GMT-3)
+
+- **The user's words:** "deixe o encoder maior como possibilidade futura para extrair mais um pouco
+  de performance, porem por enquanto nao vale a pena."
+- **ADR 0018 stays at 20nan.** No fresh-seed confirmation is run now.
+- **The bigger encoder at 40–60nan is recorded as a future possibility** (TASKS T32). It gains
+  about 4% on K at 40nan and more on KC, at about twice the training time.
+- **The measured cost,** per fold on cells with about three other trainings alongside, the load
+  E44's runs had: 1.98× on pendigits (883 s against 446 s) and 2.05× on letter (1,559 s against
+  760 s).
+  - The Outcome's 1.82× was E37's screening figure.
+  - The letter cells that shared the GPU with E60's lane are left out; they reached 2.9×.
