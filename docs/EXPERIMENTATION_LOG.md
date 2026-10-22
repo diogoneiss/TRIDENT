@@ -87,7 +87,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
 | E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – 2026-10-22 | done | mixed: ALL − G on K better 3/6 (both at 40nan, pendigits_60nan), worse on letter_80nan (+0.4%, inside the SESOI); on KC 4/0; gain fades with the rate; the 80nan gap to TabPFN does not close |
 | E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
-| E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 – | in progress | 18 pairs of E40's runs (404/505/606), offline; two GPU lanes |
+| E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 | done | no target: no column stuck at the marginal on any of 6; K learns every column TabPFN learns, a few points less (gain correlation +0.76 to +0.94); T10's weighting half closes |
 
 ## Entries
 
@@ -2020,9 +2020,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/15-tabpfn-blend.md` (Outcome);
   `scripts/experiments/tabpfn_blend.py`.
 
-### E61 · Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read (2026-10-22 – )
+### E61 · Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read (2026-10-22)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22).
+- **Status:** done 2026-10-22, 06:40 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-22).
   T10's first step.
 - **Hypothesis:** none directional. A per-column loss weighting can only help if K's deficit to
   TabPFN sits in columns where K learned just the marginal. Under MCAR, a plain column mean equals
@@ -2037,5 +2038,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - A column is "stuck" if K's gain over the mode is at most 5% while TabPFN's is at least 20%.
   - A target if stuck columns hold at least 50% of the net excess errors on 3 or more counted
     variants; no target on 1 or none; mixed otherwise.
-- **Sources:** `docs/tickets/imputation-protocol/16-categorical-deficit.md`;
+- **Results:**
+  - 18 of 18 pairs, 06:20–06:32 GMT-3. The model's ledger score equals K on every fold; TabPFN is
+    within 1.0e-3 of E58's.
+  - All 6 variants are counted (the categorical term carries 71–100% of the gap). No column is
+    stuck at the marginal on any of them.
+  - At 40–60nan, K's gain over the mode trails TabPFN's by about 3–10 points column by column. The
+    per-column gains correlate at +0.76 to +0.94.
+  - The top 20% of columns hold 53–89% of the excess (TabPFN's own errors: 38–47%), but they are
+    columns K has learned.
+  - credit-g_80nan: both are at the marginal, and K is a little below the mode, which KC's
+    fallback addresses.
+- **Conclusion:** no target. K's deficit is a uniform shortfall in conditional structure, not
+  columns it missed, so no per-column weighting can move it. T10's weighting half closes, and its
+  evaluation-mask half stays in the backlog. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/16-categorical-deficit.md` (Outcome);
   `scripts/experiments/categorical_deficit.py`.

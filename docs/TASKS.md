@@ -188,6 +188,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-protocol/16](tickets/imputation-protocol/16-categorical-deficit.md)) reads per
     column where K loses to TabPFN on kr-vs-kp and credit-g. A weighting follows only if the read
     finds a target. Under MCAR, a plain column mean equals today's pooled term.
+  - **E61 done 2026-10-22: no target.** No column is stuck at the marginal on any of the 6
+    variants. K learns every column TabPFN learns, a few points less (gain correlation +0.76 to
+    +0.94). **The weighting half closes;** the evaluation-mask half stays open.
 
 ### Specific follow-ups
 
