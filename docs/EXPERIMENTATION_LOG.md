@@ -85,7 +85,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E56 | ADR 0025's panel on K against TabPFN, confirmation set | 2026-10-21 | done | RMSE agrees everywhere; MAE disagrees on biodeg_40nan and pendigits_40nan (K's wins); K keeps the spread better on 14 of 15 (TabPFN's 80nan wins come with shrunk fills) |
 | E57 | The default output against TabPFN: KC and H | 2026-10-21 | done | KC − TabPFN 6/4/1 equivalent/4 on confirmation (all 4 losses at 80nan); only letter_80nan changes (worse → equivalent); H − TabPFN 5/5/5 |
 | E58 | The strong tier with TabPFN on the seed sets E55 did not cover | 2026-10-21 | done | K − strong: 42/7/13 8/7/1 → 3/9/4, 404/505/606 6/4/2 → 3/2/7, E51 6/3/0 → 1/7/1; MNAR: H − TabPFN 6/4/0, TabPFN gains no ground under MNAR |
-| E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – | in progress | 18 cells: ALL on pendigits and letter at 40/60/80nan, seeds 707/808/909, against E44's G |
+| E59 | ADR 0018's bigger encoder on the large tables at 40–80nan | 2026-10-21 – 2026-10-22 | done | mixed: ALL − G on K better 3/6 (both at 40nan, pendigits_60nan), worse on letter_80nan (+0.4%, inside the SESOI); on KC 4/0; gain fades with the rate; the 80nan gap to TabPFN does not close |
 | E60 | Are TRIDENT's and TabPFN's errors complementary? A blend of their fills | 2026-10-21 | done | complementary: the blend beats both on 10/15 (8/9 at 40–60nan; at 80nan only pendigits and letter); blend − K 14/1/0, blend − TabPFN 11/1/3 equivalent/0 |
 
 ## Entries
@@ -1958,9 +1958,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md` (Outcome);
   `scripts/experiments/run_tabpfn_lanes.py`, `tabpfn_seed_sets_report.py`.
 
-### E59 · ADR 0018's bigger encoder on the large tables at 40–80nan (2026-10-21 – )
+### E59 · ADR 0018's bigger encoder on the large tables at 40–80nan (2026-10-21 – 2026-10-22)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-21).
+- **Status:** done 2026-10-22, 06:10 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-21).
 - **Hypothesis:** the bigger encoder (ALL), which helped the large tables at 20nan (E38), also helps
   them at 40–80nan, where TabPFN leads at 80nan.
 - **Scenarios:** ALL on pendigits and letter at 40/60/80nan, seeds 707/808/909: 18 cells. G is E44's
@@ -1970,7 +1971,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     better on 1 or none, or worse on 2 or more.
   - **Secondary:** KC and H, and KC − TabPFN per arm.
   - **Supported** leads to a fresh-seed confirmation before any ADR amending 0018.
-- **Sources:** `docs/tickets/imputation-protocol/14-large-encoder.md`;
+- **Results:**
+  - 18 of 18 cells, 19:28 GMT-3 on 10-21 to 04:11 GMT-3 on 10-22 (8 h 43 min).
+  - **ALL − G on K, as a share of G's K:** pendigits −4.2% / −1.2% / +0.2% and letter −3.8% /
+    −0.1% / +0.4% at 40/60/80nan. Better 3, equivalent 2, worse 1 (letter_80nan, interval inside
+    the 1% SESOI).
+  - **On KC:** better 4 (both tables at 40 and 60nan), equivalent 2, worse 0. **On H:** better 2,
+    no difference 2, equivalent 1, worse 1.
+  - **KC − TabPFN at 80nan:** pendigits worse with both encoders (+0.0121 → +0.0104); letter
+    equivalent with both.
+- **Conclusion:** mixed, and mixed without the worse call too (3 better, 4 needed). The bigger
+  encoder's gain fades with the missing rate and is gone at 80nan, so it does not close the gap to
+  TabPFN there. The user chooses: ADR 0018 stays at 20nan, or a fresh-seed confirmation at 40nan
+  (and 60nan on KC) first. No default changes.
+- **Sources:** `docs/tickets/imputation-protocol/14-large-encoder.md` (Outcome);
   `scripts/experiments/large_encoder_run.py`, `large_encoder_report.py`,
   `run_large_encoder_queue.sh`.
 

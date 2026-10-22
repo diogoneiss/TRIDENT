@@ -92,6 +92,8 @@ is `[MASK]` at once (about 80% on credit-g_80nan, where every arm loses to mean/
 
 ### T03 · Architecture defaults — done (E37, E38; [ADR 0018](adr/0018-bigger-encoder-on-the-large-tables.md): bigger encoder on pendigits_20nan and letter_20nan)
 
+**E59 (2026-10-22, [imputation-protocol/14](tickets/imputation-protocol/14-large-encoder.md)):** ALL on pendigits and letter at 40–80nan is mixed on K (better 3/6, worse on letter_80nan by +0.4%); on KC 4/0. The gain fades with the rate and is gone at 80nan. **Waits on the user:** ADR 0018 stays at 20nan, or a fresh-seed confirmation at 40nan (and 60nan on KC).
+
 **Screened 2026-10-06:** 4 layers + feed-forward 256 + a final LayerNorm (ALL) is better on 3 of 5
 variants and worse on none (credit-g_20nan a near miss), at 1.82x the time; it advances to a
 21-variant confirmation, which needs the user's go-ahead. F256 alone also advances (better on
