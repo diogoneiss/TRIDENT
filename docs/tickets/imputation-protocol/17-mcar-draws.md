@@ -154,7 +154,9 @@ four variants.
 - **The shipped draw is not a favourable one.**
   - It is the most favourable to K against the strong tier on pendigits_20nan and kr-vs-kp_40nan.
   - It is the least favourable on credit-g_60nan, on both primary contrasts.
-  - On K − bar it sits between the other two on pendigits_20nan, kr-vs-kp_40nan and biodeg_80nan.
+  - On K − bar it sits between the other two on pendigits_20nan and biodeg_80nan.
+  - On kr-vs-kp_40nan the three draws' K − bar lie within 0.0022, and the shipped one is the
+    least favourable by 0.0001.
 - **How much the draw moves a contrast (descriptive):**
   - On pendigits_20nan, kr-vs-kp_40nan and credit-g_60nan, the span of the three draws' means is
     0.2 to 1.5 times a single draw's interval half-width.
