@@ -6,7 +6,7 @@ This ticket was written and committed before the first cell.
   - Every variant so far is MCAR (`generate_splits.py`, E62's draws) or MNAR (E45, E46). Nothing
     tests missingness that depends on *other*, observed columns.
   - This is the third classical mechanism.
-- **The user's go:** "Concordo com sua recomendação, vá" (2026-10-22, about 11:50 GMT-3), to "T30
+- **The user's go:** "Concordo com sua recomendação, vá" (2026-10-22, about 13:40 GMT-3), to "T30
   now on the GPU".
 - **The code, with nothing in `src/`:**
   - `datasets/generate_mar.py`, the generator;
