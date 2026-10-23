@@ -19,7 +19,7 @@ if not (ROOT / "train.py").exists():
     sys.exit(f"run from the TRIDENT checkout root, not {ROOT}")
 
 E = "scripts/experiments"
-SUMMARY = re.compile(r"^(##|Primary|- \(|  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
+SUMMARY = re.compile(r"^(##|Primary|- \(|- P − G|  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
 # (label, ticket, command)
 READERS: list[tuple[str, str, list[str]]] = [
     ("E55/E57: confirmation set against TabPFN and the strong tier", "imputation-protocol/10, 12",
@@ -28,7 +28,9 @@ READERS: list[tuple[str, str, list[str]]] = [
      [f"{E}/tabpfn_seed_sets_report.py"]),
     ("E51: fresh seeds at 20nan", "imputation-protocol/08", [f"{E}/default_refresh_report.py", "--tally"]),
     ("E62: fresh MCAR draws", "imputation-protocol/17", [f"{E}/mcar_draws_report.py", "--tally"]),
-    ("E63: MAR against matched MCAR controls", "imputation-protocol/18", [f"{E}/mar_smoke_report.py", "--tally"]),
+    ("E63: MAR against matched MCAR controls (smoke)", "imputation-protocol/18", [f"{E}/mar_smoke_report.py", "--tally"]),
+    ("E64: the MAR family", "imputation-protocol/19", [f"{E}/mar_family_report.py", "--tally"]),
+    ("E65: propensity-weighted decode masks", "imputation-protocol/20", [f"{E}/mar_propensity_report.py", "--tally"]),
     ("E60: a TRIDENT-TabPFN blend", "imputation-protocol/15",
      [f"{E}/tabpfn_blend.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-21-tabpfn-blend/csv"]),
     ("E61: where K loses to TabPFN, per column", "imputation-protocol/16",

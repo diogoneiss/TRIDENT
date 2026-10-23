@@ -1,7 +1,8 @@
-# What the imputation studies support, as of 2026-10-22 (consolidated)
+# What the imputation studies support, as of 2026-10-23 (consolidated)
 
-This report gathers E44–E63 into one statement for the thesis (built 2026-10-22, 15:12 GMT-3).
-It adds no new analysis.
+This report gathers E44–E65 into one statement for the thesis. It was built 2026-10-23,
+05:44 GMT-3, and first built 2026-10-22, 15:12 GMT-3, before E64 and E65. It adds no new
+analysis.
 
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
@@ -41,11 +42,14 @@ It adds no new analysis.
    per-column loss weighting has a target.
 6. **Capacity does not close the 80nan gap (E59).** The bigger encoder gains about 4% at 40nan,
    less at 60nan and nothing at 80nan. ADR 0018 stays at 20nan, and the rest is T32.
-7. **The standing holds across MCAR draws and under MNAR, and only partly under MAR.**
+7. **The standing holds across MCAR draws, under MNAR and under MAR.**
    - **Under MNAR (E45, E46, E58),** H is never worse than TabPFN (6 better, 4 no difference), and
      TabPFN gains no ground over MCAR.
-   - **Under MAR (E63), a smoke:** H keeps its standing against the bar, but TabPFN gains ground
-     on two of four tables (biodeg, kr-vs-kp) and loses it on kc2.
+   - **Under MAR (E63–E65):** E63's smoke read "loses ground" against TabPFN.
+     - The fuller family (E64, six tables at 20 and 60nan, a new draw and fresh seeds) refutes it.
+       (H − strong), MAR minus control, is worse only on biodeg_60nan, 1 of 12.
+     - The bar gains at 60nan on the three small numerical tables.
+     - Decode masks that follow the missingness (E65) do not help, and cost accuracy.
    - **Across MCAR draws (E62),** no call reverses.
 8. **Pre-training adds little because the decode stage washes the encoder out (E49–E53).** The
    pre-trained representation is real: frozen, it beats a random encoder on pendigits and
@@ -87,16 +91,26 @@ It adds no new analysis.
   - Value-dependent missingness on biodeg, kc2 and vehicle at 20 and 60nan and on spambase at
     60nan, plus a slope dial on biodeg.
   - (H − TabPFN), MNAR minus MCAR: better 1, no difference 9, worse 0.
-- **MAR (E63,** [18](../tickets/imputation-protocol/18-mar-smoke.md)**), a smoke:**
-  - **The tables:** biodeg, kc2, vehicle and kr-vs-kp at 60nan.
+- **MAR (E63, E64, E65;** [18](../tickets/imputation-protocol/18-mar-smoke.md),
+  [19](../tickets/imputation-protocol/19-mar-family.md),
+  [20](../tickets/imputation-protocol/20-mar-propensity.md)**):**
   - **The mechanism:** 30% fully observed driver columns decide which cells go in the others.
     Each MAR variant is read against an MCAR control with the same drivers and counts.
-  - **(H − bar), MAR minus control:** never worse (better on kc2).
-  - **(H − strong), MAR minus control:** worse on biodeg (+0.0410) and kr-vs-kp (+0.0103), better
-    on kc2, no difference on vehicle. The verdict is "loses ground".
-  - Unlike MNAR, missingness that depends on observed columns can favour TabPFN.
-  - **An untested hypothesis:** the decode masks are uniform over observed cells, while the test
-    gaps follow the drivers.
+  - **The smoke (E63):** biodeg, kc2, vehicle and kr-vs-kp at 60nan, seeds 42/7/13.
+    - (H − strong), MAR minus control, was worse on biodeg and kr-vs-kp and better on kc2: "loses
+      ground".
+  - **The family (E64):** those four plus spambase and credit-g, at 20 and 60nan, on a new draw
+    and seeds 404/505/606.
+    - (H − strong), MAR minus control, is worse only on biodeg_60nan (+0.0291), no difference on
+      11. The verdict is **refuted**.
+    - (H − bar) is worse on biodeg, kc2 and vehicle at 60nan.
+    - A slope dial on biodeg_60nan is not monotone.
+  - **The propensity-mask arm (E65):**
+    - It tests E63's hypothesis, that uniform decode masks miss where MAR's gaps sit, with masks
+      weighted by a fitted missingness propensity (`--decode_mask_weighting propensity`, off by
+      default).
+    - It is never better than the default, and worse on 6 of 12 under MAR and 5 of 12 under the
+      control. **Refuted.**
 
 ## 3. TRIDENT and TabPFN, closer
 
@@ -137,7 +151,8 @@ It adds no new analysis.
   [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53).
 - **One seed set or one draw:** E60 (the blend) and E61 (the per-column read) each rest on one
   seed set. Every per-variant interval is conditional on the MCAR draw (E62).
-- **MAR:** against TabPFN the model can lose ground (E63; four tables, one rate, one strength).
+- **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
+  exception on two draws. The bar gains at 60nan on the small numerical tables.
 
 ## 5. Open
 
@@ -147,8 +162,8 @@ It adds no new analysis.
   the user.
 - **T10's evaluation-mask half;** T08, T09, T11, T14 and T15 in the backlog.
 - **A replication of E60** on another seed set, if the hybrid argument enters the discussion.
-- **A fuller MAR family** (E63's proposal, for the user): the 20nan rung, a slope dial, spambase and
-  credit-g, and an arm whose decode masks follow the drivers.
+- **The decode-mask tag backfill** (`scripts/backfill_decode_mask_weighting_tag.py --apply`):
+  stamps `uniform` on runs before E65. It waits on the user's go and a store backup.
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)
 
@@ -240,7 +255,7 @@ Primary: K - bar holds: reversals none (fold-pair t, seed agreement)
 Primary: reversals on K − bar and K − strong: none -> holds (fold-pair t, seed agreement)
 ```
 
-### E63: MAR against matched MCAR controls (imputation-protocol/18)
+### E63: MAR against matched MCAR controls (smoke) (imputation-protocol/18)
 
 ```text
 ## `biodeg` at 60nan
@@ -263,6 +278,121 @@ Primary: reversals on K − bar and K − strong: none -> holds (fold-pair t, se
 - (H − strong) MAR minus control: better 1 / no difference 1 / worse 2 (fold-pair t, seed agreement)
 - (K − H) MAR minus control: better 0 / no difference 4 / worse 0 (fold-pair t, seed agreement)
 Primary: worse MAR-minus-control contrasts: ['biodeg (H − strong) MAR minus control', 'kr-vs-kp (H − strong) MAR minus control'] -> loses ground (fold-pair t, seed agreement)
+```
+
+### E64: the MAR family (imputation-protocol/19)
+
+```text
+## `biodeg_20nan`
+  - (H − bar) MAR minus control: +0.0091 [-0.0220, +0.0402] none
+  - (H − strong) MAR minus control: -0.0012 [-0.0575, +0.0552] none
+  - (K − H) MAR minus control: +0.0088 [-0.0211, +0.0387] none
+## `biodeg_60nan`
+  - (H − bar) MAR minus control: +0.0398 [+0.0186, +0.0610] worse
+  - (H − strong) MAR minus control: +0.0291 [+0.0081, +0.0500] worse
+  - (K − H) MAR minus control: -0.0080 [-0.0242, +0.0081] none
+## `kc2_20nan`
+  - (H − bar) MAR minus control: -0.1239 [-0.2481, +0.0003] none
+  - (H − strong) MAR minus control: -0.0327 [-0.1303, +0.0648] none
+  - (K − H) MAR minus control: -0.0471 [-0.1223, +0.0281] none
+## `kc2_60nan`
+  - (H − bar) MAR minus control: +0.0460 [+0.0058, +0.0862] worse
+  - (H − strong) MAR minus control: -0.0079 [-0.0732, +0.0573] none
+  - (K − H) MAR minus control: -0.0005 [-0.0532, +0.0521] none
+## `vehicle_20nan`
+  - (H − bar) MAR minus control: +0.0080 [-0.0271, +0.0431] none
+  - (H − strong) MAR minus control: -0.0025 [-0.0433, +0.0382] none
+  - (K − H) MAR minus control: +0.0037 [-0.0065, +0.0138] none
+## `vehicle_60nan`
+  - (H − bar) MAR minus control: +0.0258 [+0.0084, +0.0432] worse
+  - (H − strong) MAR minus control: -0.0026 [-0.0329, +0.0277] none
+  - (K − H) MAR minus control: -0.0016 [-0.0177, +0.0145] none
+## `kr-vs-kp_20nan`
+  - (H − bar) MAR minus control: -0.0079 [-0.0335, +0.0176] none
+  - (H − strong) MAR minus control: -0.0070 [-0.0265, +0.0125] none
+  - (K − H) MAR minus control: -0.0152 [-0.0340, +0.0037] none
+## `kr-vs-kp_60nan`
+  - (H − bar) MAR minus control: +0.0036 [-0.0097, +0.0170] none
+  - (H − strong) MAR minus control: +0.0020 [-0.0091, +0.0131] none
+  - (K − H) MAR minus control: -0.0021 [-0.0136, +0.0095] none
+## `spambase_20nan`
+  - (H − bar) MAR minus control: -0.0048 [-0.0185, +0.0089] none
+  - (H − strong) MAR minus control: +0.0004 [-0.0099, +0.0107] none
+  - (K − H) MAR minus control: +0.0062 [-0.0046, +0.0170] none
+## `spambase_60nan`
+  - (H − bar) MAR minus control: -0.0063 [-0.0166, +0.0039] none
+  - (H − strong) MAR minus control: -0.0018 [-0.0127, +0.0092] none
+  - (K − H) MAR minus control: +0.0014 [-0.0069, +0.0098] none
+## `credit-g_20nan`
+  - (H − bar) MAR minus control: -0.0142 [-0.0364, +0.0081] none
+  - (H − strong) MAR minus control: +0.0160 [-0.0005, +0.0325] none
+  - (K − H) MAR minus control: -0.0130 [-0.0375, +0.0114] none
+## `credit-g_60nan`
+  - (H − bar) MAR minus control: -0.0059 [-0.0275, +0.0157] none
+  - (H − strong) MAR minus control: +0.0036 [-0.0123, +0.0196] none
+  - (K − H) MAR minus control: -0.0041 [-0.0245, +0.0164] none
+## The dial: `biodeg_60nan`, (H − strong) MAR minus control by slope
+- (H − bar) MAR minus control: better 0 / no difference 9 / worse 3 (fold-pair t, seed agreement)
+- (H − strong) MAR minus control: better 0 / no difference 11 / worse 1 (fold-pair t, seed agreement)
+- (K − H) MAR minus control: better 0 / no difference 12 / worse 0 (fold-pair t, seed agreement)
+Primary, (H − strong) MAR minus control: worse on ['biodeg_60nan'], better on none -> refuted (fold-pair t, seed agreement)
+```
+
+### E65: propensity-weighted decode masks (imputation-protocol/20)
+
+```text
+## `biodeg_20nan`
+  - (P − G on H), MAR minus control: +0.0052 [-0.0340, +0.0444] none
+  - G's (H − strong), MAR minus control: -0.0012 none
+  - P's (H − strong), MAR minus control: +0.0040 none
+## `biodeg_60nan`
+  - (P − G on H), MAR minus control: -0.0063 [-0.0338, +0.0212] none
+  - G's (H − strong), MAR minus control: +0.0291 worse
+  - P's (H − strong), MAR minus control: +0.0228 none
+## `kc2_20nan`
+  - (P − G on H), MAR minus control: -0.0137 [-0.1001, +0.0726] none
+  - G's (H − strong), MAR minus control: -0.0327 none
+  - P's (H − strong), MAR minus control: -0.0464 none
+## `kc2_60nan`
+  - (P − G on H), MAR minus control: -0.0337 [-0.0811, +0.0136] none
+  - G's (H − strong), MAR minus control: -0.0079 none
+  - P's (H − strong), MAR minus control: -0.0417 none
+## `vehicle_20nan`
+  - (P − G on H), MAR minus control: -0.0079 [-0.0417, +0.0259] none
+  - G's (H − strong), MAR minus control: -0.0025 none
+  - P's (H − strong), MAR minus control: -0.0105 none
+## `vehicle_60nan`
+  - (P − G on H), MAR minus control: -0.0135 [-0.0362, +0.0092] none
+  - G's (H − strong), MAR minus control: -0.0026 none
+  - P's (H − strong), MAR minus control: -0.0161 none
+## `kr-vs-kp_20nan`
+  - (P − G on H), MAR minus control: -0.0012 [-0.0166, +0.0143] none
+  - G's (H − strong), MAR minus control: -0.0070 none
+  - P's (H − strong), MAR minus control: -0.0081 none
+## `kr-vs-kp_60nan`
+  - (P − G on H), MAR minus control: +0.0028 [-0.0119, +0.0174] none
+  - G's (H − strong), MAR minus control: +0.0020 none
+  - P's (H − strong), MAR minus control: +0.0047 none
+## `spambase_20nan`
+  - (P − G on H), MAR minus control: -0.0085 [-0.0232, +0.0063] none
+  - G's (H − strong), MAR minus control: +0.0004 none
+  - P's (H − strong), MAR minus control: -0.0081 none
+## `spambase_60nan`
+  - (P − G on H), MAR minus control: +0.0145 [+0.0041, +0.0248] worse
+  - G's (H − strong), MAR minus control: -0.0018 none
+  - P's (H − strong), MAR minus control: +0.0127 worse
+## `credit-g_20nan`
+  - (P − G on H), MAR minus control: +0.0023 [-0.0161, +0.0207] none
+  - G's (H − strong), MAR minus control: +0.0160 none
+  - P's (H − strong), MAR minus control: +0.0183 none
+## `credit-g_60nan`
+  - (P − G on H), MAR minus control: +0.0034 [-0.0149, +0.0216] none
+  - G's (H − strong), MAR minus control: +0.0036 none
+  - P's (H − strong), MAR minus control: +0.0070 none
+## The dial: `biodeg_60nan`, P − G on H under MAR by slope
+- P − G on H under MAR: better 0 / no difference 6 / worse 6 (fold-pair t, seed agreement)
+- P − G on H under the control: better 0 / no difference 7 / worse 5 (fold-pair t, seed agreement)
+Primary, P − G on H: under MAR better on none, worse on ['vehicle_20nan', 'kr-vs-kp_60nan', 'spambase_20nan', 'spambase_60nan', 'credit-g_20nan', 'credit-g_60nan']; under the control worse on ['kc2_60nan', 'vehicle_60nan', 'spambase_20nan', 'spambase_60nan', 'credit-g_20nan'] -> refuted (fold-pair t, seed agreement)
 ```
 
 ### E60: a TRIDENT-TabPFN blend (imputation-protocol/15)
