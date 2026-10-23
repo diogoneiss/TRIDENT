@@ -204,7 +204,8 @@ needed 4) and worse on 6. Under the control it is worse on 5.
     control. It does not.
 - **On biodeg_60nan,** E64's one MAR exception: G's (H − strong) MAR minus control is +0.0291,
   worse; P's is +0.0228, no difference. P − G under MAR there is +0.0011, no difference. So P does
-  not close the exception either; the call changes only because P is also weaker under the control.
+  not close the exception either. P's smaller MAR-minus-control gap comes from its control being a
+  little weaker (P − G under the control +0.0074, no difference), not from a gain under MAR.
 - **The dial:** no difference at any slope.
 - **Why P costs under MCAR too (a reading, not tested):**
   - Even under MCAR the fitted weights spread (E65's smoke of the weights: 0.11 to 0.22 on the
