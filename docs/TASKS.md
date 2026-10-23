@@ -359,6 +359,138 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost:** about 2× the training time (1.98× pendigits, 2.05× letter).
   - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
+- **T33 · A clean `[NULL]`/`[MASK]` ablation in the decode stage** (proposed 2026-10-22, about
+  19:25 GMT-3, from the wiki's sync of the fork; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **The gap:** E45/E46's t2 readout, Mx, changes three things at once (the gaps as `[NULL]` in the
+    decode stage, the loss checkpoint and column-wise scoring), so it does not isolate the split
+    ([imputation-protocol/06](tickets/imputation-protocol/06-mnar-family.md), "For the user").
+  - **The signal worth checking:** on biodeg's dial, Mx's deficit to G's H shrinks against MCAR at
+    every slope (−0.014 to −0.026), and at slope 2.0 Mx beats G (−0.006), the only variant of E45 and
+    E46 where the untied arm wins.
+  - **What it would be:** the ablation the ticket names, `[NULL]` gaps alone, without column-wise
+    scoring and the loss checkpoint, on the dial and its MCAR control and on E46's four new pairs.
+    The design and the reading are the ticket's job.
+  - **Why it matters:** the user takes the `[NULL]`/`[MASK]` split as TRIDENT's main claim (wiki
+    `projects/trident/trident`, Positioning, 2026-10-15), and this is its only imputation-side test.
+    The classification-side ablation is the wiki's todo t2.
+  - **Cost, for scale:** E46's 66 cells took 3 h 33 min on four queues.
+
+- **T34 · The tuned bar on the MAR folds** (proposed 2026-10-22, about 19:25 GMT-3, from the
+  wiki's sync; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **The gap:** ADR 0022 decision 5 says every new study that makes a claim against the bar runs
+    E42's driver on its own folds, and D4 counts a win only against both bars. E63 and E64 read
+    against the untuned bar only, so "the standing against the bar holds under MAR" has no D4
+    reading yet.
+  - **What it would be:** `scripts/experiments/baseline_budget_run.py` on E63's and E64's folds,
+    offline and on the CPU, with nothing written to the store, after E64 and E65 end so that it does
+    not compete with them. The MNAR family (E45/E46) predates ADR 0022 and could be added.
+  - **Cost, for scale:** E44's pass took about 4 hours on 4 CPU lanes.
+
+- **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
+  from the wiki's sync; accepted by the user; see below).
+  - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
+    It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **The gap:** E45/E46's signed-bias panel shows every imputer under-predicting the hidden values
+    and the model's bias moving least of 10 methods on 9 of 10 pairs. None of the 10 models the
+    mechanism, so the claim "an imputer that models the mechanism shrinks the bias" (the wiki's H1d,
+    `projects/trident/thesis-goals`) is untested.
+  - **Candidates, from the wiki** (`projects/trident/findings-2026-10-16-baselines-methodology`, "Not
+    quick"; `references/not-miwae-paper`, `references/nimiwae-paper`): not-MIWAE (TensorFlow code
+    with no license, so a clean-room rewrite), then NIMIWAE (a GPL-3 R package driving PyTorch 1.4 through
+    `reticulate`, CUDA required). Either would sit behind an inductive wrapper, as MaCoDE does (E48).
+  - **What it would read:** the signed bias and `impute_score` on E45/E46's ten MNAR files and their
+    controls, offline, beside the existing panel (`metric_panel.py --baselines`).
+
+- **T36 · A test-time re-masking ensemble: an uncertainty signal from the decoder** (proposed
+  2026-10-22, about 23:59 GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P1;
+  accepted by the user; see below).
+  - **Accepted by the user (2026-10-23, about 00:03 GMT-3):** "Aprovo T36 e T37". It runs after
+    T33–T35, pre-registered in its own ticket first; nothing starts before then.
+  - **Code authorization:** the in-run flag changes `src/`, so the ticket asks for it separately.
+  - **The gap:** the imputer gives one fill per cell and no uncertainty. The thesis's clinical
+    framing and multiple imputation both need one, and no task covers it.
+  - **Why no new training objective is needed:** the decode stage already trains on masks drawn
+    uniformly over observed cells (the hypothesis in
+    [imputation-protocol/18](tickets/imputation-protocol/18-mar-smoke.md)). A test row with some
+    of its observed cells also shown as `[MASK]` is therefore a row the decoder has seen in
+    training.
+  - **What it would be:** for each test row, R passes. Each pass shows a random share of the row's
+    observed cells as `[MASK]`, beside its real gaps (already `[MASK]`, ADR 0014). The pass then:
+    - averages the gap fills (numerical cells);
+    - takes the majority category or the mean probability (categorical cells);
+    - records the spread of the R fills per cell, the uncertainty proxy.
+    R, the re-mask share and the categorical rule are the ticket's job.
+  - **What it would read:**
+    - **(a) Accuracy:** the averaged fill against the single pass, on `impute_score` with the
+      verdict rule and the 1% SESOI. Both readouts: K, and H, since an uncertainty claim must
+      transfer (ADR 0024).
+    - **(b) Uncertainty:** whether the per-cell spread ranks the per-cell errors, for example a rank
+      correlation between spread and absolute error, and the coverage of spread-based intervals.
+    - **(c) The panel's dispersion (ADR 0025):** averaging shrinks fills, and keeping the spread
+      better than TabPFN (14 of 15, E56) is one of the model's few distributional wins. The
+      ticket says how much of it the average may spend.
+  - **What it needs:** the decoder's weights, which no run has kept.
+    - A run saves its model only under `--save_model`, which is off by default
+      (`src/training/runner.py`).
+    - T28's report found no imputation `.pt` file under `results/` or `mlruns/`.
+    - `save_model` pickles the whole object, with no loader in the repository (BACKLOG H3).
+    - So either the pass runs inside the run behind a new flag (a change to `src/`, needing the
+      user's code authorization), or the cells rerun with a weights-only save and a loader
+      (BACKLOG H3 first).
+    - Either way the cells are retrained.
+  - **Cells:**
+    - **Descriptive (as in E56, E57, E60):** E44's confirmation variants.
+    - **Feeding a default or an output:** a development seed set first, pre-registered.
+  - **Cost, for scale:**
+    - E44's 45 cells took about 8–9 h on 4 queues (T25), and the pass needs them retrained.
+    - On top of that, R decoder forward passes per test fold.
+  - **Attaches to:** the wiki's RQ1, todo t4 and ADR 0025's panel.
+
+- **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59
+  GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P2; accepted by the user; see
+  below).
+  - **Accepted by the user (2026-10-23, about 00:03 GMT-3):** "Aprovo T36 e T37". It runs after
+    T33–T35, pre-registered in its own ticket first; nothing starts before then.
+  - **The gap:**
+    - E60's equal-weight blend beats both K and TabPFN on 10 of 15 confirmation variants
+      ([imputation-protocol/15](tickets/imputation-protocol/15-tabpfn-blend.md), complementary,
+      descriptive).
+    - At 80nan on electricity, vehicle and biodeg it lands on TabPFN's level (equivalent).
+    - Categorical cells keep the model's category, since the ledgers hold no class probabilities.
+    - E61 found the categorical term carries 71–100% of K's gap to TabPFN on kr-vs-kp and
+      credit-g, spread over columns K already learns, so T10's per-column weighting has no target.
+    - A blend weight is a different lever, and it is untested.
+  - **What it would be:** a weight per column, from a small grid fixed in the ticket, never chosen
+    on the scored fold's truth. Two routes:
+    - **(a) Cross-fitted, offline, from what exists:** the weight for fold k is the one that
+      minimises the error on the other four folds' induced cells. It uses the existing fold
+      ledgers and TabPFN refits on the same folds, as `tabpfn_blend.py` does. Nothing is written to
+      the store or to `src/`, as in E60.
+    - **(b) On the validation rows' own gaps:** the signal K and the tuned bar use. The fold ledger
+      appears to hold the scored test cells only (`artifacts.write_imputation_preview`; the ticket
+      checks), so this would need K's and TabPFN's validation fills: a rerun or a new output.
+    - **Categorical columns:** a weight of 0 or 1 per column (pick K's or TabPFN's category, as
+      the per-variable hybrid selection does in the wiki's `concepts/hybrid-imputation-selection`),
+      unless class probabilities are logged.
+  - **What it would read:** weighted blend − equal blend and weighted blend − TabPFN, per variant,
+    on `impute_score` with the verdict rule and the 1% SESOI. The model side is K, as in E60.
+    - **The question that matters:** does it beat TabPFN where the equal blend only matched it (the
+      three 80nan variants) or lost to it? Losses: kr-vs-kp and credit-g from 40nan, on every
+      seed set (E55, E58).
+  - **Cells:**
+    - E44's 15 confirmation variants (as E60);
+    - E40's kr-vs-kp and credit-g runs at 40/60/80nan on 404/505/606 (E61's set), where TabPFN
+      leads and the categorical deficit sits.
+  - **Descriptive or a decision:** descriptive, like E60, unless the user wants a hybrid output.
+    That would need its own pre-registered rule on a fresh seed set.
+  - **Cost, for scale:** E60's 45 pairs ran in about 3.5 h on one lane, TabPFN refits included.
+  - **Attaches to:** the wiki's H1d, todo t4, and its C5/C7 claims (competitive with TabPFN;
+    complementary errors).
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
