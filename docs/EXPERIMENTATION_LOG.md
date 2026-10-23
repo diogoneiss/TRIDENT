@@ -90,7 +90,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E61 | Where does K lose to TabPFN on kr-vs-kp and credit-g? A per-column read | 2026-10-22 | done | no target: no column stuck at the marginal on any of 6; K learns every column TabPFN learns, a few points less (gain correlation +0.76 to +0.94); T10's weighting half closes |
 | E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 | done | holds: no reversal on K − bar or K − strong across 3 draws of 4 variants; drifts on credit-g_60nan K − bar and pendigits_20nan KC − strong; the draw moves a contrast about as much as the fold-and-seed interval (biodeg_80nan about twice) |
 | E63 | A MAR smoke against matched MCAR controls | 2026-10-22 | done | loses ground: (H − strong) MAR minus control worse on biodeg and kr-vs-kp, better on kc2; (H − bar) never worse; unlike MNAR, TabPFN gains under MAR on 2 of 4 |
-| E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – | in progress | 6 tables × 20/60nan, MAR and matched control, + a slope dial on biodeg_60nan, seeds 404/505/606: 78 cells; TabPFN offline |
+| E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – 2026-10-23 | done | refuted: (H − strong) MAR minus control worse on 1 of 12 (biodeg_60nan, replicating the smoke); (H − bar) worse on 3 (the small numerical tables at 60nan); the smoke's "loses ground" does not survive |
 | E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – | in progress | arm P (`--decode_mask_weighting propensity`) on E64's 26 variants × 404/505/606, against E64's G; from a worktree beside E64 |
 
 ## Entries
@@ -2125,9 +2125,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `datasets/generate_mar.py`; `scripts/experiments/mar_smoke_run.py`, `mar_smoke_report.py`,
   `run_mar_smoke_queue.sh`.
 
-### E64 · The MAR family: does MAR cost the model ground against the strong tier? (2026-10-22 – )
+### E64 · The MAR family: does MAR cost the model ground against the strong tier? (2026-10-22 – 2026-10-23)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22). T30.
+- **Status:** done 2026-10-23, 04:19 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-22). T30.
 - **Hypothesis:** E63's smoke found MAR costing the model ground against TabPFN on biodeg and
   kr-vs-kp (and the opposite on kc2). Does that hold more broadly?
 - **Scenarios:**
@@ -2140,7 +2141,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - (H − bar), (H − strong) and (K − H), MAR minus control, fold-paired.
   - **Primary,** (H − strong) over the 12 table-rates: supported if worse on 4 or more and better
     on at most 1; refuted if worse on at most 1; mixed otherwise.
-- **Sources:** `docs/tickets/imputation-protocol/19-mar-family.md`;
+- **Results:**
+  - 78 of 78 cells. Two spambase cells died of CUDA out of memory, from my concurrent scheduling,
+    and were rerun before the read.
+  - **(H − strong), MAR minus control:** worse on biodeg_60nan only (+0.0291), no difference on 11.
+  - **(H − bar), MAR minus control:** worse on biodeg_60nan, kc2_60nan and vehicle_60nan, no
+    difference on 9.
+  - **(K − H):** no difference on 12.
+  - **The dial:** not monotone.
+- **Conclusion:** refuted. Against the strong tier, MAR does not broadly cost TRIDENT ground.
+  biodeg_60nan is a replicated exception, and the smoke's kr-vs-kp is not. The bar gains at 60nan
+  on the small numerical tables. E65 is read as exploratory, and no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/19-mar-family.md` (Outcome);
   `datasets/generate_mar_family.py`; `scripts/experiments/mar_family_run.py`,
   `mar_family_report.py`, `run_mar_family_queue.sh`.
 

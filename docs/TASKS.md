@@ -270,8 +270,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     family (the 20nan rung, a slope dial, spambase and credit-g), with an arm whose decode masks
     follow the drivers, to test the mask-mismatch hypothesis.
   - **The user chose both (2026-10-22).**
-    - **E64** ([imputation-protocol/19](tickets/imputation-protocol/19-mar-family.md)) runs the
-      family first, on 404/505/606.
+    - **E64** ([imputation-protocol/19](tickets/imputation-protocol/19-mar-family.md)), done
+      2026-10-23: **refuted.** (H − strong), MAR minus control, is worse only on biodeg_60nan (1 of
+      12), and the smoke's "loses ground" does not survive. (H − bar) is worse on the three small
+      numerical tables at 60nan.
     - **E65** ([imputation-protocol/20](tickets/imputation-protocol/20-mar-propensity.md)), the
       propensity-mask arm behind `--decode_mask_weighting`, runs beside it from a worktree on
       branch `feat/decode-mask-propensity`.
