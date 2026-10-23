@@ -91,7 +91,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E62 | Fresh MCAR draws: is a result tied to one missingness pattern? | 2026-10-22 | done | holds: no reversal on K − bar or K − strong across 3 draws of 4 variants; drifts on credit-g_60nan K − bar and pendigits_20nan KC − strong; the draw moves a contrast about as much as the fold-and-seed interval (biodeg_80nan about twice) |
 | E63 | A MAR smoke against matched MCAR controls | 2026-10-22 | done | loses ground: (H − strong) MAR minus control worse on biodeg and kr-vs-kp, better on kc2; (H − bar) never worse; unlike MNAR, TabPFN gains under MAR on 2 of 4 |
 | E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – 2026-10-23 | done | refuted: (H − strong) MAR minus control worse on 1 of 12 (biodeg_60nan, replicating the smoke); (H − bar) worse on 3 (the small numerical tables at 60nan); the smoke's "loses ground" does not survive |
-| E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – | in progress | arm P (`--decode_mask_weighting propensity`) on E64's 26 variants × 404/505/606, against E64's G; from a worktree beside E64 |
+| E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – 2026-10-23 | done | refuted: P − G on H better on 0 of 12 under MAR, worse on 6; worse on 5 under the control; the interaction is null on 11; the flag stays off |
 
 ## Entries
 
@@ -2156,9 +2156,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `datasets/generate_mar_family.py`; `scripts/experiments/mar_family_run.py`,
   `mar_family_report.py`, `run_mar_family_queue.sh`.
 
-### E65 · Do decode masks that follow the missingness help under MAR? (2026-10-22 – )
+### E65 · Do decode masks that follow the missingness help under MAR? (2026-10-22 – 2026-10-23)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-22).
+- **Status:** done 2026-10-23, 05:43 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-22).
 - **Hypothesis:** E63's. The model loses ground under MAR because its decode masks are uniform over
   observed cells while the test gaps follow the drivers. Masks weighted by a fitted missingness
   propensity should help under MAR and be neutral under the control.
@@ -2172,6 +2173,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Primary:** supported if P − G on H under MAR is better on 4 or more of 12 and worse on at
     most 1, and under the control worse on at most 1; refuted if better on at most 1 under MAR;
     mixed otherwise.
-- **Sources:** `docs/tickets/imputation-protocol/20-mar-propensity.md`;
+- **Results:**
+  - 78 of 78 cells, none failed.
+  - **P − G on H under MAR:** better 0, no difference 6, worse 6.
+  - **Under the control:** better 0, no difference 7, worse 5. spambase loses most.
+  - **(P − G), MAR minus control:** no difference on 11, worse on spambase_60nan.
+  - **The dial:** no difference at any slope.
+- **Conclusion:** refuted. Propensity-weighted decode masks cost accuracy under both mechanisms,
+  and the mask-mismatch hypothesis finds no support. With E64 having refuted the MAR loss of ground
+  itself, there is little left to explain. The flag stays, off by default; no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/20-mar-propensity.md` (Outcome);
   `src/training/mask_propensity.py`; `scripts/experiments/mar_propensity_run.py`,
-  `mar_propensity_report.py`, `run_mar_propensity_queue.sh` (on the branch until the merge).
+  `mar_propensity_report.py`, `run_mar_propensity_queue.sh`.

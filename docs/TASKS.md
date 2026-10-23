@@ -274,9 +274,13 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       2026-10-23: **refuted.** (H − strong), MAR minus control, is worse only on biodeg_60nan (1 of
       12), and the smoke's "loses ground" does not survive. (H − bar) is worse on the three small
       numerical tables at 60nan.
-    - **E65** ([imputation-protocol/20](tickets/imputation-protocol/20-mar-propensity.md)), the
-      propensity-mask arm behind `--decode_mask_weighting`, runs beside it from a worktree on
-      branch `feat/decode-mask-propensity`.
+    - **E65** ([imputation-protocol/20](tickets/imputation-protocol/20-mar-propensity.md)), done
+      2026-10-23: **refuted.** The propensity-mask arm behind `--decode_mask_weighting` is never
+      better and is worse on 6 of 12 under MAR and 5 of 12 under the control. The flag stays, off
+      by default; its tag backfill waits on the user's go.
+  - **T30 closed (2026-10-23).** Under MAR, TRIDENT's standing against the strong tier holds on
+    six tables at 20 and 60nan, with biodeg_60nan the exception. The bar gains at 60nan on the
+    small numerical tables.
   - **The gap:** every variant is MCAR (`generate_splits.py`) or MNAR (E45/E46,
     `generate_mnar.py`). Nothing tests missingness that depends on *other* observed columns.
   - **Generator:** `datasets/generate_mar.py`. It draws from the `_00nan` table at the MCAR
