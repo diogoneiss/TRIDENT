@@ -219,6 +219,18 @@ needed 4) and worse on 6. Under the control it is worse on 5.
 
 - **refuted:** the mask mismatch is not the mechanism. And since E64 refuted the MAR loss of
   ground, there is no MAR limit against the strong tier to explain, beyond biodeg_60nan.
-- **The flag stays,** off by default, as a documented negative result. Its tag's backfill still
-  needs the user's go.
+- **The flag stays,** off by default, as a documented negative result.
+
+## The tag backfill (2026-10-23)
+
+- **The user's go:** "sim, faça isso" (about 06:32 GMT-3).
+- **The backup** was taken first with SQLite's backup API, at 06:33 GMT-3: quick_check ok, 13,606
+  runs, at `/scratch2/diogoneiss/trident-2026-10-23-mask-tag-apply/mlflow.db`.
+- **`scripts/backfill_decode_mask_weighting_tag.py --apply`** ran 06:36–06:53 GMT-3. It stamped
+  `decode_mask_weighting=uniform` and `decode_mask_weighting_backfilled=true` on 2,967 imputation
+  runs in 1,563 trees, and on their mirrors.
+- **A second dry run** finds 0 runs.
+- **Every imputation parent now carries the tag:** 1,526 uniform and 78 propensity (E65).
+  - The 11 parents without a mirror are FAILED runs, which are not mirrored. Two of them are E64's
+    cells that died of CUDA out of memory.
 - No default changes.

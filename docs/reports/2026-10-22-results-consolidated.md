@@ -162,8 +162,8 @@ analysis.
   the user.
 - **T10's evaluation-mask half;** T08, T09, T11, T14 and T15 in the backlog.
 - **A replication of E60** on another seed set, if the hybrid argument enters the discussion.
-- **The decode-mask tag backfill** (`scripts/backfill_decode_mask_weighting_tag.py --apply`):
-  stamps `uniform` on runs before E65. It waits on the user's go and a store backup.
+- **The decode-mask tag backfill:** done 2026-10-23, 06:36–06:53 GMT-3, on the user's go and after
+  a store backup. It stamped `uniform` on 2,967 runs (ticket 20).
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)
 

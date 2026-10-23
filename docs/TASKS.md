@@ -277,7 +277,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - **E65** ([imputation-protocol/20](tickets/imputation-protocol/20-mar-propensity.md)), done
       2026-10-23: **refuted.** The propensity-mask arm behind `--decode_mask_weighting` is never
       better and is worse on 6 of 12 under MAR and 5 of 12 under the control. The flag stays, off
-      by default; its tag backfill waits on the user's go.
+      by default; its tag was backfilled (`uniform`, 2,967 runs) on 2026-10-23 after a store backup.
   - **T30 closed (2026-10-23).** Under MAR, TRIDENT's standing against the strong tier holds on
     six tables at 20 and 60nan, with biodeg_60nan the exception. The bar gains at 60nan on the
     small numerical tables.
