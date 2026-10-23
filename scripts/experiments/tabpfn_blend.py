@@ -1,8 +1,12 @@
 """E60: are TRIDENT's and TabPFN's errors complementary? A blend of their fills, offline
 (imputation-protocol/15). Nothing is written to the store.
 
-    uv run --python 3.11 --extra tabpfn python -B scripts/experiments/tabpfn_blend.py <variant> <seed> <out_dir>
-    uv run --python 3.11 python -B scripts/experiments/tabpfn_blend.py --tally <out_dir>
+    uv run --python 3.11 --extra tabpfn python -B scripts/experiments/tabpfn_blend.py [--set e40] <variant> <seed> <out_dir>
+    uv run --python 3.11 python -B scripts/experiments/tabpfn_blend.py --tally [--set e40] <out_dir>
+
+``--set e40`` is E66's replication (imputation-protocol/21): E40's runs at 404/505/606, twelve
+variants at 40nan and above. There the rule counts only the variants with numerical cells, since
+on an all-categorical table the blend is the model's fill by construction.
 
 On E44's confirmation runs, per fold:
 
@@ -44,10 +48,20 @@ EXPERIMENT = "confirmation-2026-10-17"
 SEEDS = (707, 808, 909)
 FOLDS = 5
 SESOI = 0.01
+# (state, experiment, seeds, variants, the "complementary" floor, the "not complementary" ceiling).
+SETS: dict[str, tuple[Path, str, tuple[int, ...], tuple[str, ...], int, int]] = {
+    "confirmation": (STATE, EXPERIMENT, SEEDS, tuple(confirmation.VARIANTS), 5, 1),
+    "e40": (
+        Path("/scratch2/diogoneiss/trident-2026-10-16-calibration"), "calibration-2026-10-16", (404, 505, 606),
+        (*(f"{t}_{level}nan" for t in ("kr-vs-kp", "spambase", "credit-g") for level in (40, 60, 80)),
+         "vehicle_60nan", "biodeg_60nan", "kc2_60nan"),
+        3, 1,
+    ),
+}
 
 
-def _ledger(variant: str, seed: int, fold: int) -> pd.DataFrame:
-    found = sorted((STATE / "results" / f"{variant}_s{seed}" / variant).glob(f"*/imputation/imputation_fold_{fold}_cells.csv"))
+def _ledger(variant: str, seed: int, fold: int, state: Path = STATE) -> pd.DataFrame:
+    found = sorted((state / "results" / f"{variant}_s{seed}" / variant).glob(f"*/imputation/imputation_fold_{fold}_cells.csv"))
     if len(found) != 1:
         raise FileNotFoundError(f"{variant} s{seed} fold {fold}: {len(found)} ledgers")
     frame = pd.read_csv(found[0], dtype={"actual": object, "imputed": object})
@@ -58,11 +72,15 @@ def _score(cells: pd.DataFrame, naive: dict[str, float | str]) -> float:
     return float(score_cells(cells, naive).metrics.get("impute_score", float("nan")))
 
 
-def blend(variant: str, seed: int, out: Path) -> None:
+def blend(variant: str, seed: int, out: Path, which: str = "confirmation") -> None:
     from src.training.tabpfn_baseline import fit_tabpfn_imputers
 
     warnings.filterwarnings("ignore")
-    run = common.parents(EXPERIMENT)[(variant, seed)][0]
+    state, experiment = SETS[which][0], SETS[which][1]
+    found = common.parents(experiment)[(variant, seed)]
+    if len(found) != 1:
+        raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
+    run = found[0]
     logged = common.model(common.fold_table(run), run, "K")
     dataset = prepare_dataset(DatasetSpec.from_name(variant, None))
     features = dataset.frame.drop(columns=[dataset.label_column])
@@ -73,7 +91,7 @@ def blend(variant: str, seed: int, out: Path) -> None:
         train = features.iloc[np.asarray(fold.train_indices)].reset_index(drop=True)
         test = features.iloc[np.asarray(fold.test_indices)].reset_index(drop=True)
         naive = dict(mean_mode_baselines(train, numerical, categorical))
-        cells = _ledger(variant, seed, ordinal)
+        cells = _ledger(variant, seed, ordinal, state)
         numeric = (cells["kind"] == NUMERICAL).to_numpy()
         cells.loc[numeric, "actual"] = cells.loc[numeric, "actual"].astype(float)
         cells.loc[numeric, "imputed"] = cells.loc[numeric, "imputed"].astype(float)
@@ -95,16 +113,18 @@ def blend(variant: str, seed: int, out: Path) -> None:
     print(f"DONE {variant} s{seed}: model equals the run's K on 5 folds, {time.time() - started:.0f} s", flush=True)
 
 
-def tally(out: Path) -> None:
+def tally(out: Path, which: str = "confirmation") -> None:
+    _, _, seeds, variants, floor, ceiling = SETS[which]
     table = pd.concat([pd.read_csv(p) for p in sorted(out.glob("*.csv"))], ignore_index=True)
     both = []
     counts: dict[str, list[str]] = {}
-    for variant in confirmation.VARIANTS:
+    counted = []
+    for variant in variants:
         rows = table[table.variant == variant]
-        if rows["seed"].nunique() < len(SEEDS):
+        if rows["seed"].nunique() < len(seeds):
             print(f"- `{variant}`: incomplete")
             continue
-        values = {m: [rows[(rows.seed == s) & (rows.method == m)].sort_values("fold")["impute_score"].to_numpy(dtype=float) for s in SEEDS]
+        values = {m: [rows[(rows.seed == s) & (rows.method == m)].sort_values("fold")["impute_score"].to_numpy(dtype=float) for s in seeds]
                   for m in ("model", "tabpfn", "blend")}
         readings = {}
         for other in ("model", "tabpfn"):
@@ -112,24 +132,36 @@ def tally(out: Path) -> None:
             readings[other] = common.verdict(diffs, sesoi=SESOI * float(np.mean([o.mean() for o in values[other]])))
             counts.setdefault(f"blend − {other}", []).append(readings[other].call)
         share = float(rows["numeric_share"].mean())
-        print(f"- `{variant}` (numeric share {share:.2f}): " + "; ".join(f"blend − {o} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}" for o, v in readings.items()))
+        excluded = which != "confirmation" and share == 0
+        note = " (no numerical cell: the blend is the model's fill, not counted)" if excluded else ""
+        print(f"- `{variant}` (numeric share {share:.2f}){note}: " + "; ".join(f"blend − {o} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}" for o, v in readings.items()))
+        if excluded:
+            continue
+        counted.append(variant)
         if readings["model"].call == "better" and readings["tabpfn"].call == "better":
             both.append(variant)
     for k, calls in counts.items():
         print(f"  - {k}: {common.tally(calls)}")
     complete = len(counts.get("blend − model", []))
-    if complete < len(confirmation.VARIANTS):
-        print(f"\nPrimary: incomplete ({complete} of {len(confirmation.VARIANTS)})")
+    if complete < len(variants):
+        print(f"\nPrimary: incomplete ({complete} of {len(variants)})")
         return
-    reading = "complementary" if len(both) >= 5 else "not complementary" if len(both) <= 1 else "mixed"
-    print(f"\nPrimary: the blend beats both on {len(both)} of {complete} ({both or 'none'}) -> {reading} ({common.RULE})")
+    reading = "complementary" if len(both) >= floor else "not complementary" if len(both) <= ceiling else "mixed"
+    print(f"\nPrimary: the blend beats both on {len(both)} of {len(counted)} counted ({both or 'none'}) -> {reading} ({common.RULE})")
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    which = "confirmation"
+    if "--set" in argv:
+        i = argv.index("--set")
+        which = argv[i + 1]
+        argv = argv[:i] + argv[i + 2:]
+        if which not in SETS:
+            sys.exit(f"unknown set {which!r}; expected one of {', '.join(SETS)}")
     if argv[:1] == ["--tally"] and len(argv) == 2:
-        tally(Path(argv[1]))
+        tally(Path(argv[1]), which)
     elif len(argv) == 3:
-        blend(argv[0], int(argv[1]), Path(argv[2]))
+        blend(argv[0], int(argv[1]), Path(argv[2]), which)
     else:
         sys.exit(__doc__)
