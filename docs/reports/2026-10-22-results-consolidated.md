@@ -1,7 +1,7 @@
 # What the imputation studies support, as of 2026-10-23 (consolidated)
 
-This report gathers E44–E65 into one statement for the thesis. It was built 2026-10-23,
-05:44 GMT-3, and first built 2026-10-22, 15:12 GMT-3, before E64 and E65. It adds no new
+This report gathers E44–E66 into one statement for the thesis. It was built 2026-10-23,
+07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3, before E64–E66. It adds no new
 analysis.
 
 - **Every number is a pre-registered reader's output.**
@@ -35,8 +35,10 @@ analysis.
    - **TabPFN leads at 80nan, and on kr-vs-kp and credit-g from 40nan.**
    - At 80nan, TabPFN's wins come with more shrunk fills: TRIDENT's dispersion is closer to the
      truth on 14 of 15 confirmation variants (E56).
-4. **TRIDENT's and TabPFN's errors are complementary (E60).** An equal-weight average of their
-   fills beats both on 10 of 15 confirmation variants.
+4. **TRIDENT's and TabPFN's errors are complementary, on numerical tables where the two are close
+   (E60, E66).** An equal-weight average of their numerical fills beats both on 10 of 15
+   confirmation variants. On E40's tables and seeds it does so on 3 of 9 (E66, at the rule's floor).
+   Where one method dominates, the blend lands near the better one.
 5. **Where TabPFN wins on the categorical tables, the deficit is uniform (E61).** TRIDENT learns
    every column TabPFN learns, a few points less. No column is stuck at the marginal, so no
    per-column loss weighting has a target.
@@ -124,7 +126,12 @@ analysis.
   - The blend beats both on 8 of 9 variants at 40–60nan, and at 80nan only on pendigits and letter.
     Elsewhere at 80nan it lands on TabPFN's level.
   - The zero "worse" calls are arithmetic (Minkowski), so only "beats the better one" counts.
-  - One seed set, and K rather than KC.
+  - **E66** ([21](../tickets/imputation-protocol/21-tabpfn-blend-replication.md)), on E40's
+    tables at 404/505/606: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan,
+    biodeg_60nan).
+    - On spambase at 40–60nan, where K leads, it is equivalent to K.
+    - On credit-g, where TabPFN's lead is in the categorical cells, it cannot reach TabPFN.
+  - K rather than KC, and numerical cells only.
 - **The categorical deficit (E61,** [16](../tickets/imputation-protocol/16-categorical-deficit.md)**):**
   - On kr-vs-kp and credit-g from 40nan, K's per-column gains over the mode correlate with
     TabPFN's at +0.76 to +0.94, a few points lower.
@@ -149,8 +156,8 @@ analysis.
   (E57: H − TabPFN 5 / 5 / 5).
 - **Pre-training:** washed out by the decode stage (T28,
   [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53).
-- **One seed set or one draw:** E60 (the blend) and E61 (the per-column read) each rest on one
-  seed set. Every per-variant interval is conditional on the MCAR draw (E62).
+- **One seed set or one draw:** E61 (the per-column read) rests on one seed set. The blend's
+  complementarity (E60, E66) holds on two, narrower on the second. Every per-variant interval is conditional on the MCAR draw (E62).
 - **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
   exception on two draws. The bar gains at 60nan on the small numerical tables.
 
@@ -161,7 +168,8 @@ analysis.
 - **T32:** the bigger encoder at 40–60nan, about 4% at 2× the training time, kept for later by
   the user.
 - **T10's evaluation-mask half;** T08, T09, T11, T14 and T15 in the backlog.
-- **A replication of E60** on another seed set, if the hybrid argument enters the discussion.
+- **A blend weighted on the validation gaps** (after E66), so a dominant method keeps its lead.
+  Blending categorical cells would need both methods' class probabilities.
 - **The decode-mask tag backfill:** done 2026-10-23, 06:36–06:53 GMT-3, on the user's go and after
   a store backup. It stamped `uniform` on 2,967 runs (ticket 20).
 
@@ -400,7 +408,15 @@ Primary, P − G on H: under MAR better on none, worse on ['vehicle_20nan', 'kr-
 ```text
   - blend − model: better 14 / no difference 1 / worse 0 (fold-pair t, seed agreement)
   - blend − tabpfn: better 11 / no difference 1 / equivalent 3 / worse 0 (fold-pair t, seed agreement)
-Primary: the blend beats both on 10 of 15 (['pendigits_40nan', 'pendigits_60nan', 'pendigits_80nan', 'letter_40nan', 'letter_60nan', 'letter_80nan', 'electricity_60nan', 'vehicle_40nan', 'biodeg_40nan', 'kc2_40nan']) -> complementary (fold-pair t, seed agreement)
+Primary: the blend beats both on 10 of 15 counted (['pendigits_40nan', 'pendigits_60nan', 'pendigits_80nan', 'letter_40nan', 'letter_60nan', 'letter_80nan', 'electricity_60nan', 'vehicle_40nan', 'biodeg_40nan', 'kc2_40nan']) -> complementary (fold-pair t, seed agreement)
+```
+
+### E66: the blend on E40's tables and seeds (imputation-protocol/21)
+
+```text
+  - blend − model: better 6 / no difference 1 / equivalent 5 / worse 0 (fold-pair t, seed agreement)
+  - blend − tabpfn: better 6 / no difference 0 / worse 6 (fold-pair t, seed agreement)
+Primary: the blend beats both on 3 of 9 counted (['spambase_80nan', 'vehicle_60nan', 'biodeg_60nan']) -> complementary (fold-pair t, seed agreement)
 ```
 
 ### E61: where K loses to TabPFN, per column (imputation-protocol/16)

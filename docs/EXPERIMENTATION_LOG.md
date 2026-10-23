@@ -92,7 +92,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E63 | A MAR smoke against matched MCAR controls | 2026-10-22 | done | loses ground: (H − strong) MAR minus control worse on biodeg and kr-vs-kp, better on kc2; (H − bar) never worse; unlike MNAR, TabPFN gains under MAR on 2 of 4 |
 | E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – 2026-10-23 | done | refuted: (H − strong) MAR minus control worse on 1 of 12 (biodeg_60nan, replicating the smoke); (H − bar) worse on 3 (the small numerical tables at 60nan); the smoke's "loses ground" does not survive |
 | E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – 2026-10-23 | done | refuted: P − G on H better on 0 of 12 under MAR, worse on 6; worse on 5 under the control; the interaction is null on 11; the flag stays off |
-| E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 – | in progress | E60's blend on E40's 12 variants × 404/505/606 (9 with numerical cells counted), offline; two GPU lanes |
+| E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 | done | complementary at the floor: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan, biodeg_60nan); where one method dominates it lands near the better one; on credit-g it cannot reach TabPFN (categorical cells) |
 
 ## Entries
 
@@ -2187,9 +2187,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `src/training/mask_propensity.py`; `scripts/experiments/mar_propensity_run.py`,
   `mar_propensity_report.py`, `run_mar_propensity_queue.sh`.
 
-### E66 · Does E60's complementarity hold on other tables and seeds? (2026-10-23 – )
+### E66 · Does E60's complementarity hold on other tables and seeds? (2026-10-23)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-23).
+- **Status:** done 2026-10-23, 07:58 GMT-3. Pre-registered before the first cell, on the user's go
+  (2026-10-23).
 - **Hypothesis:** E60's. TRIDENT's and TabPFN's errors are complementary, so an equal-weight blend
   of their numerical fills beats both.
 - **Scenarios:** E40's runs at 404/505/606: kr-vs-kp, spambase and credit-g at 40/60/80nan, and
@@ -2200,5 +2201,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Over the 9 variants with numerical cells: complementary if the blend beats both on 3 or more;
     not complementary on 1 or none; mixed otherwise.
   - kr-vs-kp is printed, not counted.
-- **Sources:** `docs/tickets/imputation-protocol/21-tabpfn-blend-replication.md`;
+- **Results:**
+  - 36 of 36 pairs; the ledgers equal K on every fold.
+  - **The blend beats both on 3 of 9:** spambase_80nan, vehicle_60nan and biodeg_60nan.
+  - **Blend − K:** better 6, no difference 1, equivalent 5, worse 0. The equivalents are spambase
+    at 40 and 60nan, where K leads, and kr-vs-kp by construction.
+  - **Blend − TabPFN:** better 6, worse 6. The worse are credit-g's three, where TabPFN leads on
+    categorical cells the blend does not touch, and kr-vs-kp's three.
+- **Conclusion:** complementary, at the floor. The effect is real but narrower than E60's 10 of 15:
+  it shows on numerical tables where the two methods are close, and an equal-weight blend cannot
+  move categorical cells. Descriptive; no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/21-tabpfn-blend-replication.md` (Outcome);
   `scripts/experiments/tabpfn_blend.py` (`--set e40`).

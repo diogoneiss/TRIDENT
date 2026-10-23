@@ -33,6 +33,8 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E65: propensity-weighted decode masks", "imputation-protocol/20", [f"{E}/mar_propensity_report.py", "--tally"]),
     ("E60: a TRIDENT-TabPFN blend", "imputation-protocol/15",
      [f"{E}/tabpfn_blend.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-21-tabpfn-blend/csv"]),
+    ("E66: the blend on E40's tables and seeds", "imputation-protocol/21",
+     [f"{E}/tabpfn_blend.py", "--tally", "--set", "e40", "/scratch2/diogoneiss/trident-2026-10-23-tabpfn-blend-e40/csv"]),
     ("E61: where K loses to TabPFN, per column", "imputation-protocol/16",
      [f"{E}/categorical_deficit.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-22-categorical-deficit/csv"]),
     ("E59: the bigger encoder at 40-80nan", "imputation-protocol/14", [f"{E}/large_encoder_report.py", "--tally"]),
