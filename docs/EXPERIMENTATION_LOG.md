@@ -93,6 +93,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – 2026-10-23 | done | refuted: (H − strong) MAR minus control worse on 1 of 12 (biodeg_60nan, replicating the smoke); (H − bar) worse on 3 (the small numerical tables at 60nan); the smoke's "loses ground" does not survive |
 | E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – 2026-10-23 | done | refuted: P − G on H better on 0 of 12 under MAR, worse on 6; worse on 5 under the control; the interaction is null on 11; the flag stays off |
 | E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 | done | complementary at the floor: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan, biodeg_60nan); where one method dominates it lands near the better one; on credit-g it cannot reach TabPFN (categorical cells) |
+| E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 – | in progress | arm N (`DECODE_GAP_TOKEN null` only) on 8 MNAR pairs (biodeg's dial, E46's four), seeds 42/7/13, against E45/E46's G: 39 cells |
+| E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 – | in progress | E42's driver on E64's 24 and E63's 8 variants, 96 pairs, offline CPU |
 
 ## Entries
 
@@ -2213,3 +2215,34 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   move categorical cells. Descriptive; no default changes.
 - **Sources:** `docs/tickets/imputation-protocol/21-tabpfn-blend-replication.md` (Outcome);
   `scripts/experiments/tabpfn_blend.py` (`--set e40`).
+
+### E67 · The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? (2026-10-23 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-23). T33.
+- **Hypothesis:** the `[NULL]`/`[MASK]` split helps more under value-dependent missingness. E45/E46's
+  Mx hinted at it on biodeg's steep tilt but changed three things at once.
+- **Scenarios:**
+  - arm N, today's default with `DECODE_GAP_TOKEN null` only;
+  - 8 MNAR pairs: biodeg's dial (slopes 0.25, 0.5, 1.0, 2.0) against biodeg_60nan, and E46's four
+    pairs;
+  - seeds 42/7/13, 39 cells, against E45/E46's G on the same folds.
+- **Measures and decision rule:**
+  - N − G on H and K per mechanism, and the interaction (N − G), MNAR minus MCAR.
+  - **Primary,** the interaction on H over 8 pairs: supported if better on 3 or more and worse on
+    none; refuted if better on at most 1; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/22-null-gaps.md`;
+  `scripts/experiments/null_gaps_run.py`, `null_gaps_report.py`, `run_null_gaps_queue.sh`.
+
+### E68 · The tuned bar on the MAR folds: D4 under MAR (2026-10-23 – )
+
+- **Status:** in progress. Pre-registered before the first pair, on the user's go (2026-10-23). T34.
+- **Hypothesis:** none directional. ADR 0022 decision 5 asks every claim against the bar to face the
+  tuned bar too, and the MAR studies E63 and E64 did not.
+- **Scenarios:** E42's driver (knn, hgb and lgbm tuned on validation gaps) on E64's 24 variants at
+  404/505/606 and E63's 8 at 42/7/13. That is 96 pairs, offline, on four CPU lanes.
+- **Measures and decision rule:**
+  - H and K against the bar and the tuned bar per mechanism, and D4.
+  - **Primary,** over E64's 12 table-rates, (H − tuned bar) MAR minus control: supported if worse on
+    4 or more and better on at most 1; refuted if worse on at most 1; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/23-mar-tuned-bar.md`;
+  `scripts/experiments/baseline_budget_run.py`, `mar_tuned_bar_report.py`.

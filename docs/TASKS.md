@@ -377,6 +377,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     `projects/trident/trident`, Positioning, 2026-10-15), and this is its only imputation-side test.
     The classification-side ablation is the wiki's todo t2.
   - **Cost, for scale:** E46's 66 cells took 3 h 33 min on four queues.
+  - **Running since 2026-10-23 as E67** ([imputation-protocol/22](tickets/imputation-protocol/22-null-gaps.md)): arm N, `DECODE_GAP_TOKEN null` alone, on 8 MNAR pairs against E45/E46's G.
 
 - **T34 · The tuned bar on the MAR folds** (proposed 2026-10-22, about 19:25 GMT-3, from the
   wiki's sync; accepted by the user; see below).
@@ -391,6 +392,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     offline and on the CPU, with nothing written to the store, after E64 and E65 end so that it does
     not compete with them. The MNAR family (E45/E46) predates ADR 0022 and could be added.
   - **Cost, for scale:** E44's pass took about 4 hours on 4 CPU lanes.
+  - **Running since 2026-10-23 as E68** ([imputation-protocol/23](tickets/imputation-protocol/23-mar-tuned-bar.md)): E42's driver on E63's and E64's folds, 96 pairs, offline CPU.
 
 - **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
   from the wiki's sync; accepted by the user; see below).
