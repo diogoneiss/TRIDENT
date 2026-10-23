@@ -57,6 +57,7 @@ def train_pretrainer(
         numerical_columns=dataset.numerical_columns,
         dimensao=hyperparameters.dimension,
         hidden_dim=hyperparameters.hidden_dimension,
+        batched_lookup=hyperparameters.embedding_lookup == "batched",
     )
     transformer = TabularTransformerEncoder(
         d_model=embedder.dimensao,

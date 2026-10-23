@@ -85,6 +85,10 @@ DEFAULT_DECODE_CALIBRATION = "none"
 # (``src/training/mask_propensity.py``).
 DECODE_MASK_WEIGHTINGS: tuple[str, ...] = ("uniform", "propensity")
 DEFAULT_DECODE_MASK_WEIGHTING = "uniform"
+# How the embedder reads its categorical tables (T06): one lookup a column, every run before it,
+# or one gather over all of them ("batched"), which differs in the backward's rounding only.
+EMBEDDING_LOOKUPS: tuple[str, ...] = ("per_column", "batched")
+DEFAULT_EMBEDDING_LOOKUP = "per_column"
 # The cut ``auto`` calibrates at: the share of the feature cells a table is missing. It separates
 # the benchmark's 20nan variants (about 0.2) from its 40nan and heavier ones (about 0.4 and up).
 CALIBRATION_MISSING_RATE = 0.3
@@ -259,6 +263,7 @@ class Hyperparameters:
     pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
     encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
     decode_mask_weighting: str = DEFAULT_DECODE_MASK_WEIGHTING
+    embedding_lookup: str = DEFAULT_EMBEDDING_LOOKUP
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -296,6 +301,10 @@ class Hyperparameters:
         if self.decode_gap_token not in DECODE_GAP_TOKENS:
             raise ValueError(
                 f"Unknown decode gap token {self.decode_gap_token!r}; expected one of {', '.join(DECODE_GAP_TOKENS)}"
+            )
+        if self.embedding_lookup not in EMBEDDING_LOOKUPS:
+            raise ValueError(
+                f"Unknown embedding lookup {self.embedding_lookup!r}; expected one of {', '.join(EMBEDDING_LOOKUPS)}"
             )
         if self.decode_mask_weighting not in DECODE_MASK_WEIGHTINGS:
             raise ValueError(
@@ -362,6 +371,7 @@ class Hyperparameters:
             decode_mask_weighting=str(
                 values.get("DECODE_MASK_WEIGHTING", values.get("decode_mask_weighting", DEFAULT_DECODE_MASK_WEIGHTING))
             ),
+            embedding_lookup=str(values.get("EMBEDDING_LOOKUP", values.get("embedding_lookup", DEFAULT_EMBEDDING_LOOKUP))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

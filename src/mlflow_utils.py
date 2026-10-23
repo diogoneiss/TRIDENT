@@ -87,6 +87,11 @@ DECODE_ENCODER_BACKFILLED_TAG = "decode_encoder_backfilled"
 # marked DECODE_MASK_WEIGHTING_BACKFILLED_TAG.
 DECODE_MASK_WEIGHTING_TAG = "decode_mask_weighting"
 DECODE_MASK_WEIGHTING_BACKFILLED_TAG = "decode_mask_weighting_backfilled"
+# How the embedder read its categorical tables (T06): "per_column" or "batched". On every
+# imputation parent and trial; runs recorded before it are stamped "per_column" by a backfill and
+# marked EMBEDDING_LOOKUP_BACKFILLED_TAG.
+EMBEDDING_LOOKUP_TAG = "embedding_lookup"
+EMBEDDING_LOOKUP_BACKFILLED_TAG = "embedding_lookup_backfilled"
 # How an imputation run's decoder applied its heads, "batched" (the default since ADR 0012) or
 # "per_column". On every
 # imputation parent and trial; runs recorded before it are stamped "per_column" by

@@ -115,8 +115,13 @@ class TabularEmbedder(nn.Module):
       - [CLS] token + Positional Embedding
     """
     def __init__(self, df, categorical_columns, numerical_columns,
-                 dimensao=4, hidden_dim=32):
+                 dimensao=4, hidden_dim=32, batched_lookup=False):
         super().__init__()
+        # ``EMBEDDING_LOOKUP batched`` (T06): the categorical columns' tables are read with one
+        # gather over their rows laid end to end, instead of one lookup a column. The same
+        # parameters and the same forward values; the backward sums each row's gradient in a
+        # different order, so it differs from the per-column path in rounding only.
+        self.batched_lookup = batched_lookup
 
         self.categorical_columns = categorical_columns
         self.numerical_columns = numerical_columns
@@ -176,6 +181,15 @@ class TabularEmbedder(nn.Module):
             key: nn.Embedding(self.num_categories[col], self.dimensao)
             for col, key in zip(self.categorical_columns, self.categorical_keys)
         })
+        # Where each column's rows start in the tables laid end to end, for the batched lookup.
+        # A buffer that is never saved and draws nothing, so the state dict and the seeded
+        # initialisation stay as they were.
+        sizes = [self.num_categories[col] for col in self.categorical_columns]
+        self.register_buffer(
+            "_lookup_offsets",
+            torch.tensor([0] + sizes[:-1], dtype=torch.long).cumsum(0) if sizes else torch.zeros(0, dtype=torch.long),
+            persistent=False,
+        )
 
         # -----------------------
         # 3) MLP for Numerical columns
@@ -306,7 +320,13 @@ class TabularEmbedder(nn.Module):
         # =============== #
         # 1) EMBEDDINGS OF CATEGORICAL COLUMNS
         # =============== #
-        if self.categorical_keys:
+        if self.categorical_keys and self.batched_lookup:
+            # (n_categorical, batch) ids shifted to each column's rows, read in one gather:
+            # (batch, n_categorical, d), as the per-column stack below gives it.
+            table = torch.cat([self.embedding_layers[key].weight for key in self.categorical_keys])
+            ids = torch.stack(list(encoded.cat_indices)) + self._lookup_offsets[:, None]
+            token_groups.append(nn.functional.embedding(ids.t(), table))
+        elif self.categorical_keys:
             token_groups.append(
                 torch.stack(
                     [

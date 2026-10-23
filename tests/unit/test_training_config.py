@@ -287,7 +287,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
-        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING",
+        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP",
     }
 
 
@@ -703,3 +703,19 @@ def test_the_decode_mask_weighting_is_an_imputation_flag_uniform_by_default() ->
         parser.parse_args([*imputation, "--decode_mask_weighting", "random"])
     with pytest.raises(ValueError, match="decode mask weighting"):
         Hyperparameters.from_mapping({"DECODE_MASK_WEIGHTING": "random"})
+
+
+def test_the_embedding_lookup_is_an_imputation_flag_per_column_by_default() -> None:
+    """T06: ``--embedding_lookup`` defaults to every run before it ("per_column"), takes "batched",
+    applies to imputation only for now, and refuses anything else."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.embedding_lookup == "per_column"
+    asked = resolve_training_request(parser.parse_args([*imputation, "--embedding_lookup", "batched"]))
+    assert asked.hyperparameters.embedding_lookup == "batched"
+    with pytest.raises(SystemExit, match="embedding_lookup"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--embedding_lookup", "batched"]))
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--embedding_lookup", "fused"])
+    with pytest.raises(ValueError, match="embedding lookup"):
+        Hyperparameters.from_mapping({"EMBEDDING_LOOKUP": "fused"})

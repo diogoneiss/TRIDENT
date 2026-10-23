@@ -1,11 +1,12 @@
 """T06 feasibility: a short real run, eager against ``torch.compile``, timed (2026-10-23). Read-only.
 
-    uv run --python 3.11 --with setuptools python scripts/experiments/compile_bench.py <eager|transformer|both> <variant> <out_dir>
+    uv run --python 3.11 --with setuptools python scripts/experiments/compile_bench.py <eager|transformer|both|lookup> <variant> <out_dir>
 
 Runs today's default with EPOCHS_PRE 30 and EPOCHS_DECODE 60 at seed 404, five folds, without MLflow.
 ``transformer`` compiles every TabularTransformerEncoder's forward, and ``both`` also every
 TabularEmbedder's, by patching their constructors, so ``src/`` is not changed. ``--with setuptools``
-is needed only because triton 3.1 imports it, and nothing is added to the lock. Per-epoch rates are
+is needed only because triton 3.1 imports it, and nothing is added to the lock. ``lookup`` runs
+eager with ``EMBEDDING_LOOKUP batched`` (T06's exact lever), needing no extra package. Per-epoch rates are
 read from the tqdm lines of the output. Run from the checkout root.
 """
 import json, sys, time
@@ -36,6 +37,8 @@ if mode == "both":
 
 resolved, _ = load_hyperparameters(Namespace(dataset_name=variant, task="imputation"))
 config = {**complete_configuration(resolved, "imputation"), "EPOCHS_PRE": 30, "EPOCHS_DECODE": 60}
+if mode == "lookup":
+    config["EMBEDDING_LOOKUP"] = "batched"
 args = Namespace(dataset_name=variant, label_column="class", output_dir=out + f"/{mode}/results", metrics_dir=out + f"/{mode}/metrics",
                  disable_mlflow=True, plot_losses=False, save_model=False, seed=404, cv_folds=5, task="imputation",
                  hyperparams_override=config, score_checkpoints=True, score_calibrated=True)

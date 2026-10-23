@@ -17,6 +17,7 @@ from src.mlflow_utils import (
     DECODE_CHECKPOINT_TAG,
     DECODE_CALIBRATION_TAG,
     DECODE_MASK_WEIGHTING_TAG,
+    EMBEDDING_LOOKUP_TAG,
     MEASURED_MISSING_RATE_TAG,
     PRETRAIN_OBJECTIVE_TAG,
     PRETRAIN_GAP_TOKEN_TAG,
@@ -163,6 +164,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     DECODE_CHECKPOINT_TAG: request.hyperparameters.decode_checkpoint,
                     DECODE_CALIBRATION_TAG: request.hyperparameters.decode_calibration,
                     DECODE_MASK_WEIGHTING_TAG: request.hyperparameters.decode_mask_weighting,
+                    EMBEDDING_LOOKUP_TAG: request.hyperparameters.embedding_lookup,
                     **(
                         {MEASURED_MISSING_RATE_TAG: f"{measured_missing_rate:.4f}"}
                         if measured_missing_rate is not None

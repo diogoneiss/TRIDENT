@@ -188,9 +188,24 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       0.761 and 0.766 on this short run, so adoption would need a flag and an equivalence study.
     - **triton 3.1 needs `setuptools`,** which the lock does not have; the benchmark used
       `uv run --with setuptools`.
-    - **Waits on the user:** a flag plus an equivalence-and-speed study on the large tables, or
-      exact eager levers (one gather for the categorical embeddings, fewer host syncs), or closing
-      T06.
+    - **The user chose the exact eager levers (2026-10-23).**
+  - **`--embedding_lookup batched`** (`EMBEDDING_LOOKUP`, off by default; tag `embedding_lookup`;
+    backfill script `scripts/backfill_embedding_lookup_tag.py`, not applied).
+    - The categorical tables are read in one gather. The forward values are the same, and the
+      gradients differ in float rounding only (at most 2e-7 relative, microbenchmark).
+    - **Measured** (`compile_bench.py lookup`, same short runs):
+      - kr-vs-kp_40nan: pre-training +21%, decode +12%, run −11%;
+      - credit-g_40nan: −2%;
+      - biodeg_60nan (no categorical column): unchanged, with identical scores.
+    - On kr-vs-kp the rounding difference grows over training into a different trajectory (K
+      0.7701 → 0.7649 on the short run), so adoption needs an equivalence reading like ADR 0012's.
+  - **Host syncs:** the decoder's `nonzero` is about 4% of a run. It cannot be removed exactly.
+  - **Where that leaves T06:**
+    - The exact levers save little outside kr-vs-kp.
+    - The numerical tables are bound by the transformer's and decoder's many small kernels. Only
+      compilation fuses those, and it changes the dropout draws.
+    - **Waits on the user:** keep the flag off; adopt it (an ADR and a fixture update); or try
+      compiling for new work, such as T27, where there are no old runs to stay comparable with.
 
 ### Model selection
 
