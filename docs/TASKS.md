@@ -172,6 +172,25 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 - **T06 · `torch.compile` or CUDA graphs** on the decode loop. Likely 1.5–3x on a launch-bound
   loop, but the per-batch count of hidden cells varies, which breaks CUDA graphs; numerics change
   slightly. Related: [BACKLOG P2](BACKLOG.md) (fused attention).
+  - **Measured 2026-10-23** (`scripts/experiments/compile_bench.py`, kr-vs-kp_40nan, seed 404, five
+    folds, EPOCHS_PRE 30 and EPOCHS_DECODE 60, alone on the GPU). These are measurements, not a
+    pre-registered study.
+    - **Where the time goes** (cProfile): the backward pass (about 4.5 ms a batch), the per-column
+      categorical embeddings (36 lookups a forward on kr-vs-kp), and the decoder's `nonzero` host
+      syncs. The run is launch-bound.
+    - **Compiling the transformer only:** about +10% a steady epoch (decode 10.5 → 12 it/s), and
+      about 40 s of compilation per cell. Over a whole cell, about break-even.
+    - **Compiling the embedder and the transformer:** about +23% a steady epoch (decode 10.5 → 13
+      it/s, pre-training 13.5 → 16.6 it/s), and 40–60 s of compilation per cell.
+      - Break-even on a medium cell (about 5.5 min alone); a likely net gain only on the large
+        tables.
+    - **Not rounding-only:** compiled dropout draws from its own generator. K moved from 0.770 to
+      0.761 and 0.766 on this short run, so adoption would need a flag and an equivalence study.
+    - **triton 3.1 needs `setuptools`,** which the lock does not have; the benchmark used
+      `uv run --with setuptools`.
+    - **Waits on the user:** a flag plus an equivalence-and-speed study on the large tables, or
+      exact eager levers (one gather for the categorical embeddings, fewer host syncs), or closing
+      T06.
 
 ### Model selection
 
