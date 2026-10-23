@@ -169,7 +169,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
 ### Speed
 
-- **T06 · `torch.compile` or CUDA graphs** on the decode loop. Likely 1.5–3x on a launch-bound
+- **T06 · `torch.compile` or CUDA graphs** on the decode loop. **Closed by the user (2026-10-23):** the
+  batched lookup stays off by default, so imputation results stay comparable; see the measurements below. Likely 1.5–3x on a launch-bound
   loop, but the per-batch count of hidden cells varies, which breaks CUDA graphs; numerics change
   slightly. Related: [BACKLOG P2](BACKLOG.md) (fused attention).
   - **Measured 2026-10-23** (`scripts/experiments/compile_bench.py`, kr-vs-kp_40nan, seed 404, five
@@ -204,8 +205,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - The exact levers save little outside kr-vs-kp.
     - The numerical tables are bound by the transformer's and decoder's many small kernels. Only
       compilation fuses those, and it changes the dropout draws.
-    - **Waits on the user:** keep the flag off; adopt it (an ADR and a fixture update); or try
-      compiling for new work, such as T27, where there are no old runs to stay comparable with.
+    - **Decided (2026-10-23, the user's "1"):** keep the flag off and close T06. Compilation, with
+      the flag, stays an option for new work such as T27.
 
 ### Model selection
 
