@@ -168,8 +168,12 @@ analysis.
 - **T32:** the bigger encoder at 40–60nan, about 4% at 2× the training time, kept for later by
   the user.
 - **T10's evaluation-mask half;** T08, T09, T11, T14 and T15 in the backlog.
-- **A blend weighted on the validation gaps** (after E66), so a dominant method keeps its lead.
-  Blending categorical cells would need both methods' class probabilities.
+- **T37, per-column weights for the K + TabPFN blend** (accepted by the user on 2026-10-23), so a
+  dominant method keeps its lead (after E66). Blending categorical cells would need both methods'
+  class probabilities.
+- **T33–T36,** accepted by the user on 2026-10-22 and 2026-10-23: a clean `[NULL]`/`[MASK]` decode
+  ablation, the tuned bar on the MAR folds, an MNAR-aware imputer, and a test-time re-masking
+  ensemble.
 - **The decode-mask tag backfill:** done 2026-10-23, 06:36–06:53 GMT-3, on the user's go and after
   a store backup. It stamped `uniform` on 2,967 runs (ticket 20).
 

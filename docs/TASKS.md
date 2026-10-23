@@ -363,6 +363,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   19:25 GMT-3, from the wiki's sync of the fork; accepted by the user; see below).
   - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
     It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **Unblocked (2026-10-23):** E64 and E65 ended, both refuted ([19](tickets/imputation-protocol/19-mar-family.md), [20](tickets/imputation-protocol/20-mar-propensity.md)).
   - **The gap:** E45/E46's t2 readout, Mx, changes three things at once (the gaps as `[NULL]` in the
     decode stage, the loss checkpoint and column-wise scoring), so it does not isolate the split
     ([imputation-protocol/06](tickets/imputation-protocol/06-mnar-family.md), "For the user").
@@ -381,6 +382,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   wiki's sync; accepted by the user; see below).
   - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
     It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **Unblocked (2026-10-23):** E64 and E65 ended, both refuted ([19](tickets/imputation-protocol/19-mar-family.md), [20](tickets/imputation-protocol/20-mar-propensity.md)).
   - **The gap:** ADR 0022 decision 5 says every new study that makes a claim against the bar runs
     E42's driver on its own folds, and D4 counts a win only against both bars. E63 and E64 read
     against the untuned bar only, so "the standing against the bar holds under MAR" has no D4
@@ -394,6 +396,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   from the wiki's sync; accepted by the user; see below).
   - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".
     It runs after E64 and E65 end, pre-registered in its own ticket first; nothing starts before then.
+  - **Unblocked (2026-10-23):** E64 and E65 ended, both refuted ([19](tickets/imputation-protocol/19-mar-family.md), [20](tickets/imputation-protocol/20-mar-propensity.md)).
   - **The gap:** E45/E46's signed-bias panel shows every imputer under-predicting the hidden values
     and the model's bias moving least of 10 methods on 9 of 10 pairs. None of the 10 models the
     mechanism, so the claim "an imputer that models the mechanism shrinks the bias" (the wiki's H1d,
@@ -490,6 +493,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost, for scale:** E60's 45 pairs ran in about 3.5 h on one lane, TabPFN refits included.
   - **Attaches to:** the wiki's H1d, todo t4, and its C5/C7 claims (competitive with TabPFN;
     complementary errors).
+  - **Since (2026-10-23):** E66 ([21](tickets/imputation-protocol/21-tabpfn-blend-replication.md)) replicated the equal-weight blend on E40's tables and seeds at the rule's floor (3 of 9).
+    Where one method dominates, the equal-weight blend lands near the better one, and on credit-g it
+    cannot reach TabPFN, which is the case per-column weights address.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
