@@ -881,3 +881,29 @@ def test_a_patience_that_never_runs_out_changes_nothing() -> None:
     shared = {k: v for k, v in without.result.metrics.items()}
     assert {k: patient.result.metrics[k] for k in shared} == shared
     assert "decode/epochs_trained" not in without.result.metrics
+
+
+def test_the_propensity_weighting_hands_the_folds_weights_to_the_decode_masks(monkeypatch) -> None:
+    """E65. With ``DECODE_MASK_WEIGHTING propensity`` the decode stage's epoch masker gets the
+    training fold's propensity weights, one per cell; by default it gets none and draws as before."""
+    from src.training import decoding
+
+    seen: list = []
+    real = decoding.EpochMasker
+
+    def recording(embedder, frame, device, weights=None):
+        seen.append((frame.shape, weights))
+        return real(embedder, frame, device, weights=weights)
+
+    monkeypatch.setattr(decoding, "EpochMasker", recording)
+    dataset = _dataset()
+    for weighting in ("propensity", "uniform"):
+        np.random.seed(0)
+        train_and_evaluate_decoder(
+            dataset=dataset, fold=_fold(len(dataset.frame)), pretraining=_pretrained(dataset),
+            hyperparameters=_hyperparameters(EPOCHS_DECODE=1, DECODE_MASK_WEIGHTING=weighting), device=torch.device("cpu"),
+            tracker=BufferedFoldTracker(), seed=42, fold_ordinal=1, complete_sibling=_complete_frame(),
+        )
+    (shape, weights), (_, none) = seen
+    assert isinstance(weights, np.ndarray) and weights.shape == shape
+    assert none is None

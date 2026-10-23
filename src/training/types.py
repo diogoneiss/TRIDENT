@@ -80,6 +80,11 @@ DEFAULT_DECODE_CHECKPOINT = "loss"
 # with no complete sibling has no gaps to fit on and keeps ``none``.
 DECODE_CALIBRATIONS: tuple[str, ...] = ("none", "gaps", "auto")
 DEFAULT_DECODE_CALIBRATION = "none"
+# How the decode stage picks the training cells it hides each epoch (E65): "uniform", every run
+# before it, or "propensity", weighted towards the rows where the fold's own gaps fall
+# (``src/training/mask_propensity.py``).
+DECODE_MASK_WEIGHTINGS: tuple[str, ...] = ("uniform", "propensity")
+DEFAULT_DECODE_MASK_WEIGHTING = "uniform"
 # The cut ``auto`` calibrates at: the share of the feature cells a table is missing. It separates
 # the benchmark's 20nan variants (about 0.2) from its 40nan and heavier ones (about 0.4 and up).
 CALIBRATION_MISSING_RATE = 0.3
@@ -253,6 +258,7 @@ class Hyperparameters:
     decode_calibration: str = DEFAULT_DECODE_CALIBRATION
     pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
     encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
+    decode_mask_weighting: str = DEFAULT_DECODE_MASK_WEIGHTING
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -290,6 +296,10 @@ class Hyperparameters:
         if self.decode_gap_token not in DECODE_GAP_TOKENS:
             raise ValueError(
                 f"Unknown decode gap token {self.decode_gap_token!r}; expected one of {', '.join(DECODE_GAP_TOKENS)}"
+            )
+        if self.decode_mask_weighting not in DECODE_MASK_WEIGHTINGS:
+            raise ValueError(
+                f"Unknown decode mask weighting {self.decode_mask_weighting!r}; expected one of {', '.join(DECODE_MASK_WEIGHTINGS)}"
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
@@ -349,6 +359,9 @@ class Hyperparameters:
             decode_patience=int(values.get("DECODE_PATIENCE", values.get("decode_patience", 0))),
             decode_freeze_epochs=int(values.get("DECODE_FREEZE_EPOCHS", values.get("decode_freeze_epochs", 0))),
             decode_encoder_lr_scale=float(values.get("DECODE_ENCODER_LR_SCALE", values.get("decode_encoder_lr_scale", 1.0))),
+            decode_mask_weighting=str(
+                values.get("DECODE_MASK_WEIGHTING", values.get("decode_mask_weighting", DEFAULT_DECODE_MASK_WEIGHTING))
+            ),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

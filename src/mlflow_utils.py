@@ -82,6 +82,11 @@ DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
 DECODE_FREEZE_EPOCHS_TAG = "decode_freeze_epochs"
 DECODE_ENCODER_LR_SCALE_TAG = "decode_encoder_lr_scale"
 DECODE_ENCODER_BACKFILLED_TAG = "decode_encoder_backfilled"
+# How the decode stage picked the training cells it hid (E65): "uniform" or "propensity". On every
+# imputation parent and trial; runs recorded before it are stamped "uniform" by a backfill and
+# marked DECODE_MASK_WEIGHTING_BACKFILLED_TAG.
+DECODE_MASK_WEIGHTING_TAG = "decode_mask_weighting"
+DECODE_MASK_WEIGHTING_BACKFILLED_TAG = "decode_mask_weighting_backfilled"
 # How an imputation run's decoder applied its heads, "batched" (the default since ADR 0012) or
 # "per_column". On every
 # imputation parent and trial; runs recorded before it are stamped "per_column" by

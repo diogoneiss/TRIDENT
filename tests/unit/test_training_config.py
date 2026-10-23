@@ -287,7 +287,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
-        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE",
+        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING",
     }
 
 
@@ -687,3 +687,19 @@ def test_the_encoder_has_no_final_norm_unless_a_run_asks_for_one() -> None:
         parser.parse_args([*imputation, "--encoder_final_norm", "rms"])
     with pytest.raises(ValueError, match="encoder final norm"):
         Hyperparameters.from_mapping({"ENCODER_FINAL_NORM": "rms"})
+
+
+def test_the_decode_mask_weighting_is_an_imputation_flag_uniform_by_default() -> None:
+    """E65: ``--decode_mask_weighting`` defaults to every run before it ("uniform"), takes
+    "propensity", applies to imputation only, and refuses anything else."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.decode_mask_weighting == "uniform"
+    asked = resolve_training_request(parser.parse_args([*imputation, "--decode_mask_weighting", "propensity"]))
+    assert asked.hyperparameters.decode_mask_weighting == "propensity"
+    with pytest.raises(SystemExit, match="decode_mask_weighting"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_mask_weighting", "propensity"]))
+    with pytest.raises(SystemExit):
+        parser.parse_args([*imputation, "--decode_mask_weighting", "random"])
+    with pytest.raises(ValueError, match="decode mask weighting"):
+        Hyperparameters.from_mapping({"DECODE_MASK_WEIGHTING": "random"})
