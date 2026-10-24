@@ -41,3 +41,42 @@ This ticket was written and committed before its first run.
   duplicate-run spread (0.0002–0.009 macro-F1), descriptively.
   - With the companion test passing, a difference points at the machine or the environment, not
     the code; this check cannot tell those two apart, and Stage 2 does not need it to.
+
+## Outcome (2026-10-23, 23:49 GMT-3)
+
+**The runs:** both reruns on gorgona8's GPU (CUDA), 23:47–23:49 GMT-3, after the pre-registration
+commit (bad6625). State and logs in `/scratch2/diogoneiss/trident-2026-10-23-cls-stage0/`.
+
+**The printout** (`cls_determinism_run.py --compare`, unedited):
+
+```text
+## `vehicle_40nan` (sweep run e77e0631c05e42cf9a55d84ee5ded3ce)
+- accuracy: HEAD [0.606383, 0.578014, 0.58156] against the sweep's [0.592199, 0.574468, 0.609929]; largest difference 2.84e-02
+- f1_micro: HEAD [0.606383, 0.578014, 0.58156] against the sweep's [0.592199, 0.574468, 0.609929]; largest difference 2.84e-02
+- f1_macro: HEAD [0.595913, 0.577132, 0.575883] against the sweep's [0.586808, 0.577565, 0.601809]; largest difference 2.59e-02
+- largest difference over accuracy, f1_micro, f1_macro: 2.84e-02
+## `kc2_40nan` (sweep run 64154c92c62742e7a5191dcb80e1f530)
+- accuracy: HEAD [0.787356, 0.833333, 0.787356] against the sweep's [0.781609, 0.747126, 0.810345]; largest difference 8.62e-02
+- f1_micro: HEAD [0.787356, 0.833333, 0.787356] against the sweep's [0.781609, 0.747126, 0.810345]; largest difference 8.62e-02
+- f1_macro: HEAD [0.685568, 0.774279, 0.702317] against the sweep's [0.680147, 0.698298, 0.747126]; largest difference 7.60e-02
+- largest difference over accuracy, f1_micro, f1_macro: 8.62e-02
+```
+
+**The companion check:** `pytest -m integration tests/integration/test_vehicle_regression.py`
+passed (1 passed, 6 s).
+
+**Verdict: does not reproduce.** The largest fold difference is 0.028 on vehicle_40nan and 0.086 on
+kc2_40nan (macro-F1 0.026 and 0.076), against the sweep's duplicate spread of 0.0002–0.009.
+
+**Reading:**
+
+- **The differences are fold noise in size, not a shift.** The 3-fold means move by −0.006
+  (vehicle, 0.583 against 0.589 macro-F1) and +0.012 (kc2, 0.721 against 0.709), and the folds
+  move in both directions. kc2's fold SD in the sweep is 0.035.
+- **The code path is not the suspect.** The regression test passes, so with the machine and the
+  environment both changed, this check cannot tell which one moved the numbers, as the ticket said.
+- **What it leads to, as pre-registered:** Stage 2 reruns arm A (the default, `EPOCHS_PRE 300`) on
+  gorgona8 beside arm B, in its own ticket. The old sweep stays a descriptive reference only.
+- **For Stage 2's design:** whether gorgona8 is deterministic run to run is not shown here. Stage
+  2's ticket should check it (a duplicate of one cell) before pairing A and B fold by fold.
+

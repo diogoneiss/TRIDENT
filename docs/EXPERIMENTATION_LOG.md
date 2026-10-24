@@ -96,7 +96,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 | refuted | the interaction on H is better on 1 of 8 pairs and worse on 2; on biodeg's dial `[NULL]` alone costs more as the tilt steepens, so Mx's signal came from its other two changes |
 | E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 – | in progress | E42's driver on E64's 24 and E63's 8 variants, 96 pairs, offline CPU |
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
-| E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 – | in progress | vehicle_40nan and kc2_40nan reruns of the sweep's runs, plus the vehicle regression test |
+| E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 
 ## Entries
 
@@ -2278,9 +2278,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/24-blend-weights.md`;
   `scripts/experiments/blend_weights.py`, `run_blend_weights_queue.sh`.
 
-### E70 · Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? (2026-10-23 – )
+### E70 · Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? (2026-10-23)
 
-- **Status:** in progress. Pre-registered before the first run, on the user's go ("sim aprovo",
+- **Status:** done, does not reproduce (2026-10-23, 23:49 GMT-3). Pre-registered before the first run, on the user's go ("sim aprovo",
   2026-10-23, 23:44 GMT-3). T27, classification step zero.
 - **Hypothesis:** none directional; a gate for Stage 2's pairing with the old sweep (arm A).
 - **Scenarios:** reruns of the sweep's vehicle_40nan and kc2_40nan runs at HEAD on gorgona8's GPU
@@ -2291,3 +2291,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   arm A on gorgona8, and the difference is reported against the 0.0002–0.009 duplicate spread.
 - **Sources:** `docs/tickets/classification-step-zero/01-determinism.md`;
   `scripts/experiments/cls_determinism_run.py`.
+- **Results:** largest fold difference 0.028 (vehicle_40nan) and 0.086 (kc2_40nan); macro-F1 0.026
+  and 0.076. Means move by −0.006 and +0.012, folds in both directions. The vehicle regression test
+  passes.
+- **Conclusion:** does not reproduce. Stage 2 reruns arm A on gorgona8 beside arm B; the old sweep is
+  a descriptive reference only. Stage 2 checks gorgona8's run-to-run determinism first.
