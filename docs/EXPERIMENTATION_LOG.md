@@ -97,7 +97,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 | mixed | (H − tuned bar) MAR minus control worse on 3 of 12 (biodeg/kc2/vehicle at 60nan), better on 2; the model is never behind the tuned bar on E64's family; D4 not lower under MAR |
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – 2026-10-24 | mixed | weighted − TabPFN better on 3 of 10 hard variants (the 80nan ties), worse on 1 (kr-vs-kp_60nan, +0.0016); beats both on 13 of 21 (equal blend 10); categorical tables reach TabPFN, not past it |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
-| E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
+| E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-23 – 2026-10-24 | no gain detected | B − A and C − A no verdict at every level (means −0.005 to +0.004 macro-F1), seeds 42 and 7; the paper's +1.7 points is outside the intervals at 0–60nan |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 
 ## Entries
@@ -2316,9 +2316,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** does not reproduce. Stage 2 reruns arm A on gorgona8 beside arm B; the old sweep is
   a descriptive reference only. Stage 2 checks gorgona8's run-to-run determinism first.
 
-### E71 · Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? (2026-10-24 – )
+### E71 · Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? (2026-10-23 – 2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim aprovo",
+- **Status:** done, no gain detected (2026-10-24, 09:36 GMT-3). Pre-registered before the first cell, on the user's go ("sim aprovo",
   2026-10-23, 23:44 GMT-3). T27, classification step zero.
 - **Hypothesis:** none directional. The paper's Table 4 reports about +1.7 macro-F1 from
   pre-training; the fork's default sweep already sits within 0.017 of the no-pre-training arm.
@@ -2330,6 +2330,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   over 9 tables, with the verdict rule; descriptive (folds within a table are not independent).
 - **Sources:** `docs/tickets/classification-step-zero/02-no-pretraining.md`;
   `scripts/experiments/cls_stage2_run.py`, `run_cls_stage2_queue.sh`.
+- **Amendment (2026-10-24, 00:38 GMT-3):** the sweep-run lookup matched E71's own runs; seven cells
+  failed before training, the lookup was fixed, and the seven were rerun (ticket 02).
+- **Results:** seeds 42 and 7 complete, seed 13 at 89 of 135 (not read); stop at 09:34 GMT-3.
+  - B − A: +0.003 / +0.003 / +0.004 / −0.005 / −0.005 at 0/20/40/60/80nan, no verdict at any.
+  - C − A: +0.003 / −0.004 / +0.001 / −0.004 / −0.004, no verdict at any.
+  - A's means within 0.011 of the old sweep's at every level.
+- **Conclusion:** pre-training gives no detectable gain on classification under the fork's
+  defaults, as E24 found for imputation; a 1.7-point gain is outside the intervals at 0–60nan.
 
 ### E72 · An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? (2026-10-24)
 

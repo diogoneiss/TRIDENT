@@ -78,3 +78,55 @@ On test macro-F1, fold-paired (the arms share their folds), over the complete se
   override came from; all of them name the sweep's run of their variant.
 - **The seven reruns** go on a repair queue (`repair.sh` in the state directory) beside the four,
   since the queues' lists were fixed at launch. The design and the reading do not change.
+
+## Outcome (2026-10-24, 09:36 GMT-3)
+
+**The run:** 23:54 GMT-3 on 2026-10-23 to 09:36 GMT-3 on 2026-10-24, four GPU queues and the
+repair queue. Seeds 42 and 7 complete (135 cells each), seed 13 stopped at 89 of 135 and is not
+read. 359 cells done; the 7 failures are the amendment's, all rerun and done.
+- **The stop came at 09:34, not 09:30:** the waiter checked the clock every 5 minutes. The last
+  running cells ended by 09:36, before the GPU window closed at 10:00. The stop depended on the
+  clock only.
+- **Two queues ran dry early** (queue 2 at 07:56, queue 4 at 08:11), since the queues' cost
+  weights balanced each seed's cells imperfectly; this cost seed 13 time, not correctness.
+
+**The printout** (`cls_stage2_run.py --tally`, unedited):
+
+```text
+Complete seeds: [42, 7] of [42, 7, 13]
+
+## B − A, test macro-F1
+- 00nan (A's mean 0.8533): B − A +0.0033 [-0.0005, +0.0071] no verdict; tables from credit-g -0.0042 to letter +0.0099
+- 20nan (A's mean 0.7942): B − A +0.0033 [-0.0016, +0.0082] no verdict; tables from electricity -0.0037 to kc2 +0.0076
+- 40nan (A's mean 0.7337): B − A +0.0036 [-0.0044, +0.0116] no verdict; tables from letter -0.0076 to vehicle +0.0220
+- 60nan (A's mean 0.6557): B − A -0.0051 [-0.0118, +0.0017] no verdict; tables from credit-g -0.0117 to biodeg +0.0046
+- 80nan (A's mean 0.5414): B − A -0.0050 [-0.0190, +0.0091] no verdict; tables from vehicle -0.0416 to credit-g +0.0415
+
+## C − A, test macro-F1
+- 00nan (A's mean 0.8533): C − A +0.0026 [-0.0028, +0.0081] no verdict; tables from biodeg -0.0127 to letter +0.0161
+- 20nan (A's mean 0.7942): C − A -0.0042 [-0.0100, +0.0016] no verdict; tables from biodeg -0.0162 to kc2 +0.0112
+- 40nan (A's mean 0.7337): C − A +0.0012 [-0.0073, +0.0097] no verdict; tables from letter -0.0102 to vehicle +0.0104
+- 60nan (A's mean 0.6557): C − A -0.0042 [-0.0122, +0.0038] no verdict; tables from credit-g -0.0212 to biodeg +0.0243
+- 80nan (A's mean 0.5414): C − A -0.0036 [-0.0171, +0.0098] no verdict; tables from vehicle -0.0303 to credit-g +0.0270
+```
+
+**Verdict: no detectable pre-training gain at any level.** B − A and C − A have no verdict at every
+rate, with means between −0.005 and +0.004 macro-F1.
+
+**Reading:**
+
+- **Pre-training buys nothing measurable under the fork's defaults.** Without pre-training (B) the
+  model is within half a point of A at every level, and giving the dropped epochs to fine-tuning
+  (C) changes nothing either. This is E24's imputation finding, now on classification.
+- **The paper's Table 4 gain of about 1.7 points is outside the intervals at 0–60nan:** a gain that
+  size would read B − A ≈ −0.017, and the lower bounds are −0.001, −0.002, −0.004 and −0.012. At
+  80nan the interval (−0.019 to +0.009) still includes it. The intervals are summaries, not tests
+  (the 54 fold pairs of a level come from 9 tables × 3 folds × 2 seeds).
+- **Table by table the sign varies,** most at 80nan (vehicle −0.042, credit-g +0.042 on B − A),
+  where fold noise is largest.
+- **A reproduces the old sweep's level:** A's means (0.853 / 0.794 / 0.734 / 0.656 / 0.541) are
+  within 0.011 of the sweep's (0.858 / 0.799 / 0.742 / 0.661 / 0.531), though not fold by fold
+  (E70).
+- **What it leads to:** step zero's Stage 4 can keep TRIDENT's pre-training arm or drop it at no
+  measured cost; that, with its tuning, is in the plan's decisions. No default changes.
+
