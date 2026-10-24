@@ -507,6 +507,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     Where one method dominates, the equal-weight blend lands near the better one, and on credit-g it
     cannot reach TabPFN, which is the case per-column weights address.
   - **Running since 2026-10-23 as E69** ([imputation-protocol/24](tickets/imputation-protocol/24-blend-weights.md)), on the user's go ("vamos com t37", about 22:50 GMT-3), ahead of T35: route (a), cross-fitted, on E60's 15 variants and E61's 6.
+  - **Done 2026-10-24 by E69: mixed.** Better than TabPFN on 3 of 10 hard variants (the 80nan
+    ties), worse on 1 by 0.0016; better than both on 13 of 21. On kr-vs-kp and credit-g the
+    per-column pick reaches TabPFN, not past it. A hybrid output would need a fresh-seed rule; the
+    user decides.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

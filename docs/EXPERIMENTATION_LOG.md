@@ -95,7 +95,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 | done | complementary at the floor: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan, biodeg_60nan); where one method dominates it lands near the better one; on credit-g it cannot reach TabPFN (categorical cells) |
 | E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 | refuted | the interaction on H is better on 1 of 8 pairs and worse on 2; on biodeg's dial `[NULL]` alone costs more as the tilt steepens, so Mx's signal came from its other two changes |
 | E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 | mixed | (H − tuned bar) MAR minus control worse on 3 of 12 (biodeg/kc2/vehicle at 60nan), better on 2; the model is never behind the tuned bar on E64's family; D4 not lower under MAR |
-| E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
+| E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – 2026-10-24 | mixed | weighted − TabPFN better on 3 of 10 hard variants (the 80nan ties), worse on 1 (kr-vs-kp_60nan, +0.0016); beats both on 13 of 21 (equal blend 10); categorical tables reach TabPFN, not past it |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 – | in progress | clean-room MIWAE and not-MIWAE refitted on E45/E46's ten MNAR pairs and controls, seeds 42/7/13, 51 pairs, offline CPU |
@@ -2270,9 +2270,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   tables, against the plain and the tuned bar alike, and it never puts the model behind the tuned
   bar on E64's family.
 
-### E69 · Per-column weights for the K + TabPFN blend, cross-fitted (2026-10-23 – )
+### E69 · Per-column weights for the K + TabPFN blend, cross-fitted (2026-10-23 – 2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("vamos com t37",
+- **Status:** done, mixed (2026-10-24, 00:37 GMT-3). Pre-registered before the first cell, on the user's go ("vamos com t37",
   2026-10-23, about 22:50 GMT-3). T37.
 - **Hypothesis:** a weight per column, chosen on the other folds' cells, lets the blend beat TabPFN
   where E60/E66's equal blend only matched it or lost (TabPFN's 80nan ties; kr-vs-kp and credit-g's
@@ -2287,6 +2287,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     refuted if better on at most 1; mixed otherwise. Descriptive, no default changes.
 - **Sources:** `docs/tickets/imputation-protocol/24-blend-weights.md`;
   `scripts/experiments/blend_weights.py`, `run_blend_weights_queue.sh`.
+- **Results:** 63 of 63 pairs, 22:58–00:36 GMT-3, none failed; fills reproduce E60/E66 within 2.2e-16.
+  - Primary, weighted − TabPFN on the 10 hard variants: better on electricity_80nan, vehicle_80nan
+    and biodeg_80nan; worse on kr-vs-kp_60nan (+0.0016); equivalent or no difference on the rest.
+  - Weighted − equal: better 14 / none 3 / equivalent 3 / worse 1. Weighted − model: better 21 of 21.
+    Beats both: 13 of 21 (equal blend 10).
+  - Weights: a column's modal choice holds on 57–100% of folds; TabPFN's weight rises with
+    missingness except on kc2.
+- **Conclusion:** mixed, for the user. Per-column weights win where the two are close on numerical
+  cells and reach TabPFN's level on categorical ones, without passing it.
 
 ### E70 · Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? (2026-10-23)
 
