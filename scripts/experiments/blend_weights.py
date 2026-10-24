@@ -87,20 +87,36 @@ def apply(cells: pd.DataFrame, weights: dict[str, float], default_numerical: flo
 
 
 def run_pair(which: str, variant: str, seed: int, out: Path) -> None:
+    source = SETS[which][0]
+    started = time.time()
+    table = score_pair(collect(blend.SETS[source][0], blend.SETS[source][1], "K", variant, seed), variant, seed, out)
+    note = ""
+    prior = PRIOR[source] / f"{variant}_s{seed}.csv"
+    if prior.exists():
+        before = pd.read_csv(prior)
+        drift = []
+        for ours, theirs in (("tabpfn", "tabpfn"), ("equal", "blend")):
+            a = table[table.method == ours].sort_values("fold")["impute_score"].to_numpy(dtype=float)
+            b = before[before.method == theirs].sort_values("fold")["impute_score"].to_numpy(dtype=float)
+            drift.append(f"{ours} vs the earlier run {np.abs(a - b).max():.1e}")
+        note = "; " + ", ".join(drift)
+    print(f"DONE {variant} s{seed}: model equals the run's K on 5 folds{note}, {time.time() - started:.0f} s", flush=True)
+
+
+def collect(state: Path, experiment: str, readout: str, variant: str, seed: int) -> list[tuple[pd.DataFrame, dict[str, float | str]]]:
+    """Every fold's induced cells with the model's fill (the ledger's, asserted equal to the run's
+    ``readout``) and TabPFN v2's, refitted on the same training fold."""
     from src.training.tabpfn_baseline import fit_tabpfn_imputers
 
     warnings.filterwarnings("ignore")
-    source = SETS[which][0]
-    state, experiment = blend.SETS[source][0], blend.SETS[source][1]
     found = common.parents(experiment)[(variant, seed)]
     if len(found) != 1:
         raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
     run = found[0]
-    logged = common.model(common.fold_table(run), run, "K")
+    logged = common.model(common.fold_table(run), run, readout)
     dataset = prepare_dataset(DatasetSpec.from_name(variant, None))
     features = dataset.frame.drop(columns=[dataset.label_column])
     numerical, categorical = list(dataset.numerical_columns), list(dataset.categorical_columns)
-    started = time.time()
     folds: list[tuple[pd.DataFrame, dict[str, float | str]]] = []
     for ordinal, fold in enumerate(build_folds(dataset.frame, dataset.label_column, blend.FOLDS, seed), start=1):
         train = features.iloc[np.asarray(fold.train_indices)].reset_index(drop=True)
@@ -121,6 +137,11 @@ def run_pair(which: str, variant: str, seed: int, out: Path) -> None:
         frame = cells[["row", "column", "kind", "actual"]].assign(
             model=cells["imputed"], tabpfn=[float(g) if k == NUMERICAL else str(g) for g, k in zip(filled, cells["kind"])], fold=ordinal)
         folds.append((frame, naive))
+    return folds
+
+
+def score_pair(folds: list[tuple[pd.DataFrame, dict[str, float | str]]], variant: str, seed: int, out: Path) -> pd.DataFrame:
+    """Cross-fit the weights fold by fold and write the scores, the weights and the cells."""
     pooled = pd.concat([f for f, _ in folds], ignore_index=True)
     rows: list[dict[str, object]] = []
     weights: list[dict[str, object]] = []
@@ -147,17 +168,7 @@ def run_pair(which: str, variant: str, seed: int, out: Path) -> None:
     table.to_csv(out / "csv" / f"{variant}_s{seed}.csv", index=False)
     pd.DataFrame(weights).to_csv(out / "weights" / f"{variant}_s{seed}.csv", index=False)
     pooled.to_csv(out / "cells" / f"{variant}_s{seed}.csv.gz", index=False)
-    note = ""
-    prior = PRIOR[source] / f"{variant}_s{seed}.csv"
-    if prior.exists():
-        before = pd.read_csv(prior)
-        drift = []
-        for ours, theirs in (("tabpfn", "tabpfn"), ("equal", "blend")):
-            a = table[table.method == ours].sort_values("fold")["impute_score"].to_numpy(dtype=float)
-            b = before[before.method == theirs].sort_values("fold")["impute_score"].to_numpy(dtype=float)
-            drift.append(f"{ours} vs the earlier run {np.abs(a - b).max():.1e}")
-        note = "; " + ", ".join(drift)
-    print(f"DONE {variant} s{seed}: model equals the run's K on 5 folds{note}, {time.time() - started:.0f} s", flush=True)
+    return table
 
 
 def _values(table: pd.DataFrame, variant: str, seeds: list[int], method: str) -> list[np.ndarray]:

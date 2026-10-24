@@ -100,6 +100,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-23 – 2026-10-24 | no gain detected | B − A and C − A no verdict at every level (means −0.005 to +0.004 macro-F1), seeds 42 and 7; the paper's +1.7 points is outside the intervals at 0–60nan |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 | E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 – | in progress | one not-MIWAE fit per fold read with the decoder's weighted means (primary) and 10,000 draws; E72's six failed pairs, 27 pairs, offline CPU |
+| E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 – | in progress | today's default (KC) at 1212/2323/3434 on E69's 10 hard variants, then E69's cross-fitted blend; 30 cells + 30 pairs, GPU |
 
 ## Entries
 
@@ -2377,3 +2378,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   mixed otherwise. Pairs where notmiwae_mean is not below the mean fill are flagged.
 - **Sources:** `docs/tickets/imputation-protocol/26-notmiwae-fill.md`; `scripts/experiments/not_miwae.py`,
   `metric_panel.py --fitters notmiwae_fills`, `notmiwae_fill_report.py`, `run_notmiwae_fill_queue.sh`.
+
+### E74 · The per-column KC + TabPFN hybrid as an output, on fresh seeds (2026-10-24 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("2 gosto da
+  ideia", "sim, mas lance o 2 imediatamente em seguida", 2026-10-24, 11:49 and 11:56 GMT-3). T37.
+- **Hypothesis:** E69's per-column hybrid improves today's default output (KC) and is never
+  meaningfully behind TabPFN.
+- **Scenarios:** today's default trained at 1212/2323/3434 on E69's 10 hard variants (30 cells, KC
+  headline by ADR 0027), then E69's cross-fitted blend against a refitted TabPFN v2 (30 pairs).
+- **Measures and decision rule:** hybrid − KC and hybrid − TabPFN per variant, with the 1% SESOI.
+  Supported if better than KC on 8 or more and worse than TabPFN on at most 1; refuted if better
+  than KC on at most 5 or worse than TabPFN on 3 or more; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/27-hybrid-output.md`;
+  `scripts/experiments/hybrid_blend.py`, `blend_weights.py`, `run_hybrid_queue.sh`.

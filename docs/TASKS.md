@@ -516,6 +516,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ties), worse on 1 by 0.0016; better than both on 13 of 21. On kr-vs-kp and credit-g the
     per-column pick reaches TabPFN, not past it. A hybrid output would need a fresh-seed rule; the
     user decides.
+  - **Running from 2026-10-24 as E74** ([imputation-protocol/27](tickets/imputation-protocol/27-hybrid-output.md)), on the user's go: the hybrid over today's default (KC) on fresh seeds 1212/2323/3434, the 10 hard variants.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
