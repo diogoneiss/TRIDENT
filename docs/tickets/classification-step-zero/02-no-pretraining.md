@@ -1,4 +1,4 @@
-# Stage 2: what does pre-training buy classification under the fork's defaults? Arms A, B and C on gorgona8 (E71; pre-registered 2026-10-24)
+# Stage 2: what does pre-training buy classification under the fork's defaults? Arms A, B and C on gorgona8 (E71; pre-registered 2026-10-23)
 
 This ticket was written and committed before the study's first cell. Two smoke cells ran before it
 with MLflow off, written to a scratch directory and not counted (see "Launch").
@@ -56,3 +56,10 @@ On test macro-F1, fold-paired (the arms share their folds), over the complete se
 - **Smoke cells (not counted), MLflow off, to a scratch directory:** kc2_00nan, seed 42, arms B and
   C, 23:51 GMT-3. Both ran to the end (`EPOCHS_PRE 0` works under `cosine_legacy`); their fold
   macro-F1 was seen.
+- **The determinism gate (23:53 GMT-3):** vehicle_40nan, seed 42, arm A, MLflow off, equals
+  Stage 0's rerun of the same cell on every fold, with a largest difference of 0 on accuracy and
+  macro-F1, while E69 shared the GPU. So gorgona8 is deterministic run to run, fold-paired
+  differences here carry no run noise, and E70's mismatch with the old sweep comes from the
+  machine or the environment.
+- **Launched** on the commit that records this gate: four GPU queues (`run_cls_stage2_queue.sh`),
+  beside E69's two lanes.
