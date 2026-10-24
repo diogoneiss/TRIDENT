@@ -5,7 +5,8 @@
     uv run --python 3.11 python -B scripts/experiments/cls_determinism_run.py --compare <variant> <out_dir>
 
 The sweep's run is the latest active, non-mirror classification parent of ``<variant>`` with seed
-42, 3 folds and ``cosine_legacy`` (review item 13's selection). Its ``hyperparameters.json`` is
+42, 3 folds and ``cosine_legacy`` (review item 13's selection), started before 2026-09-12 and
+carrying no ``experiment`` tag, so a study's own runs never match. Its ``hyperparameters.json`` is
 passed as ``hyperparams_override``, with ``lr_scheduler='cosine_legacy'``, 3 folds and seed 42,
 MLflow off and a private metrics directory. ``--compare`` prints both runs' test metrics fold by
 fold and the largest difference.
@@ -27,6 +28,8 @@ if not (ROOT / "train.py").exists():
 sys.path.insert(0, str(ROOT))
 
 METRICS = ("accuracy", "f1_micro", "f1_macro")
+# The sweep's last run started on 2026-09-10; a later run, such as E71's own, is never the sweep's.
+SWEEP_BEFORE = 1789171200000  # 2026-09-12 00:00 UTC, in MLflow's epoch milliseconds
 
 
 def sweep_run(variant: str) -> tuple[str, Path]:
@@ -43,9 +46,11 @@ def sweep_run(variant: str) -> tuple[str, Path]:
           and exists (select 1 from params p where p.run_uuid = r.run_uuid and p.key = 'seed' and p.value = '42')
           and exists (select 1 from params p where p.run_uuid = r.run_uuid and p.key = 'cv_folds' and p.value = '3')
           and not exists (select 1 from tags t where t.run_uuid = r.run_uuid and t.key = 'is_mirror' and t.value = 'true')
+          and not exists (select 1 from tags t where t.run_uuid = r.run_uuid and t.key = 'experiment')
+          and r.start_time < ?
         order by r.start_time desc limit 1
         """,
-        (variant,),
+        (variant, SWEEP_BEFORE),
     ).fetchall()
     if not rows:
         sys.exit(f"no sweep run of {variant}")

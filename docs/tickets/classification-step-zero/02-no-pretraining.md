@@ -63,3 +63,18 @@ On test macro-F1, fold-paired (the arms share their folds), over the complete se
   machine or the environment.
 - **Launched** on the commit that records this gate: four GPU queues (`run_cls_stage2_queue.sh`),
   beside E69's two lanes.
+
+## Amendment (2026-10-24, 00:39 GMT-3)
+
+- **A defect in the runner, found and fixed mid-run.** `cls_determinism_run.sweep_run` picked the
+  latest classification run with seed 42, 3 folds and `cosine_legacy`, and from 00:15 GMT-3 E71's
+  own runs matched it. Seven seed-42 cells started between 00:34 and 00:38 GMT-3 failed before
+  training (no MLflow run), reading a newer run's missing artifacts: electricity 40nan A, 60nan A,
+  80nan C and 20nan B, and letter 00nan C, 20nan C and 60nan C.
+- **The fix (00:38 GMT-3):** the lookup now takes only runs started before 2026-09-12 with no
+  `experiment` tag. All 45 variants resolve to the sweep's runs again, and E70's two runs keep the
+  same ids.
+- **Every cell that trained used the sweep's configuration.** Each cell log prints the run its
+  override came from; all of them name the sweep's run of their variant.
+- **The seven reruns** go on a repair queue (`repair.sh` in the state directory) beside the four,
+  since the queues' lists were fixed at launch. The design and the reading do not change.
