@@ -187,7 +187,7 @@ chooses.
 - **The ground MAR costs is at 60nan on the numerical tables, and against both bars alike.** The
   three worse table-rates are the ones where E64 found (H − bar) worse at 60nan. On them H − bar and
   H − tuned bar barely differ (biodeg_60nan −0.0097 and −0.0108 under MAR), so tuning the bar adds
-  nothing there: the model's lead shrinks by about 0.03–0.04 from the control to MAR, and it stays
+  nothing there: the model's lead shrinks by 0.026–0.043 from the control to MAR, and it stays
   ahead or level.
 - **Where tuning the bar matters, it matters under both mechanisms.** On kr-vs-kp_60nan,
   spambase_60nan and credit-g_60nan the model beats the plain bar but not the tuned one, under MAR
@@ -198,5 +198,5 @@ chooses.
   not from MAR helping the model: kc2_20nan's control has no verdict against either bar.
 - **For the user (mixed):** a statement the data support is "under MAR the model stays ahead of or
   level with the tuned bar on all 12 table-rates; at 60nan on biodeg, kc2 and vehicle its lead
-  over both bars shrinks by about 0.03–0.04 from MCAR". No default changes.
+  over both bars shrinks by 0.026–0.043 from MCAR". No default changes.
 
