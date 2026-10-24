@@ -98,7 +98,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – 2026-10-24 | mixed | weighted − TabPFN better on 3 of 10 hard variants (the 80nan ties), worse on 1 (kr-vs-kp_60nan, +0.0016); beats both on 13 of 21 (equal blend 10); categorical tables reach TabPFN, not past it |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
-| E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 – | in progress | clean-room MIWAE and not-MIWAE refitted on E45/E46's ten MNAR pairs and controls, seeds 42/7/13, 51 pairs, offline CPU |
+| E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 
 ## Entries
 
@@ -2331,9 +2331,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/classification-step-zero/02-no-pretraining.md`;
   `scripts/experiments/cls_stage2_run.py`, `run_cls_stage2_queue.sh`.
 
-### E72 · An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? (2026-10-24 – )
+### E72 · An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? (2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim aprovo",
+- **Status:** done, mixed (2026-10-24, 05:33 GMT-3). Pre-registered before the first cell, on the user's go ("sim aprovo",
   2026-10-23, 23:44 GMT-3). T35.
 - **Hypothesis:** modelling the missingness mechanism shrinks the bias MNAR adds (the wiki's H1d).
 - **Scenarios:** clean-room MIWAE and not-MIWAE (self-masking logistic, sign learnt), identical but
@@ -2345,3 +2345,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     better on 4 or more and worse on at most 1; refuted if better on at most 1; mixed otherwise.
 - **Sources:** `docs/tickets/imputation-protocol/25-not-miwae.md`; `scripts/experiments/not_miwae.py`,
   `metric_panel.py --fitters vae`, `vae_mnar_report.py`, `run_vae_mnar_queue.sh`.
+- **Results:** 51 of 51 pairs, 00:01–05:30 GMT-3, none failed.
+  - Primary interaction: better on vehicle_probit_60nan, vehicle_probit_20nan and
+    biodeg_probit2p0_60nan; worse on none; no difference on seven.
+  - not-MIWAE's `impute_score`: 1.7–4.5 on biodeg and 8.3–9.4 on spambase (worse than the mean
+    fill, fill dispersion ≥ the truth's), 0.82–0.92 on kc2, 0.61 on vehicle (the model 0.62).
+  - notmiwae − model on `impute_score` under MNAR: worse 9 / no difference 1.
+- **Conclusion:** mixed, for the user. H1d holds on vehicle, where the implementation imputes
+  competently; on biodeg and spambase the fill fails, so those pairs do not test it.

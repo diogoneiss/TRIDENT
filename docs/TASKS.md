@@ -417,6 +417,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **What it would read:** the signed bias and `impute_score` on E45/E46's ten MNAR files and their
     controls, offline, beside the existing panel (`metric_panel.py --baselines`).
   - **Running from 2026-10-24 as E72** ([imputation-protocol/25](tickets/imputation-protocol/25-not-miwae.md)): clean-room MIWAE and not-MIWAE, on the user's go ("sim aprovo", 2026-10-23, 23:44 GMT-3).
+  - **Done 2026-10-24 by E72: mixed.** The interaction is better on 3 of 10 and worse on none. On
+    vehicle not-MIWAE matches the model's error and its MNAR bias shift is the smallest of 12
+    methods; on biodeg and spambase its fills fail (worse than the mean fill), so those pairs do not
+    test H1d. A better-conditioned fill would be a new pre-registered study; the user decides.
 
 - **T36 · A test-time re-masking ensemble: an uncertainty signal from the decoder** (proposed
   2026-10-22, about 23:59 GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P1;

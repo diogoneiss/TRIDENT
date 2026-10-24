@@ -72,7 +72,7 @@ def tally() -> None:
                 call = v.call if metric != "signed_bias" else {"better": "lower", "worse": "higher"}.get(v.call, v.call)
                 parts.append(f"{a} − {b} {metric} {v.mean:+.4f} {call}")
                 if tag == "MNAR":
-                    counts.setdefault(f"MNAR: {a} − {b} on {metric}", []).append(call)
+                    counts.setdefault(f"MNAR: {a} − {b} on {metric}", []).append(v.call)
             levels = ", ".join(f"{m} {np.concatenate(bias._per_seed(frame, m, 'signed_bias')).mean():+.3f}" for m in ("model", "miwae", "notmiwae"))
             print(f"- {tag}: " + "; ".join(parts) + f" (signed bias: {levels})")
         mnar_frame, mcar_frame = found["MNAR"], found["MCAR"]
