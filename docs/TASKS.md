@@ -521,6 +521,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     per-column pick reaches TabPFN, not past it. A hybrid output would need a fresh-seed rule; the
     user decides.
   - **Running from 2026-10-24 as E74** ([imputation-protocol/27](tickets/imputation-protocol/27-hybrid-output.md)), on the user's go: the hybrid over today's default (KC) on fresh seeds 1212/2323/3434, the 10 hard variants.
+  - **Done 2026-10-24 by E74: mixed.** Better than KC on 7 of 10 (rule needed 8), worse than
+    TabPFN on 2 by ≤0.005 (kr-vs-kp). E69's three numerical 80nan wins replicate; TabPFN alone beats
+    KC on 8. Whether to propose an opt-in hybrid output is the user's call.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

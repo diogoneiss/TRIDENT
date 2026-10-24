@@ -100,7 +100,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-23 – 2026-10-24 | no gain detected | B − A and C − A no verdict at every level (means −0.005 to +0.004 macro-F1), seeds 42 and 7; the paper's +1.7 points is outside the intervals at 0–60nan |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 | E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 | supported by the count, one informative pair | interaction better on 3 of 6, worse on none; 2 of the 3 are flagged (fill not below the mean fill); the mean fill removes E72's failure but both VAEs sit near the mean fill on these tables |
-| E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 – | in progress | today's default (KC) at 1212/2323/3434 on E69's 10 hard variants, then E69's cross-fitted blend; 30 cells + 30 pairs, GPU |
+| E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
 
 ## Entries
 
@@ -2388,9 +2388,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   as the tilt steepens, but on these tables both VAEs impute near the mean fill. H1d's support is
   where the VAE is competent: vehicle (E72) and biodeg_probit_60nan.
 
-### E74 · The per-column KC + TabPFN hybrid as an output, on fresh seeds (2026-10-24 – )
+### E74 · The per-column KC + TabPFN hybrid as an output, on fresh seeds (2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("2 gosto da
+- **Status:** done, mixed (2026-10-24, 17:15 GMT-3). Pre-registered before the first cell, on the user's go ("2 gosto da
   ideia", "sim, mas lance o 2 imediatamente em seguida", 2026-10-24, 11:49 and 11:56 GMT-3). T37.
 - **Hypothesis:** E69's per-column hybrid improves today's default output (KC) and is never
   meaningfully behind TabPFN.
@@ -2401,3 +2401,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   than KC on at most 5 or worse than TabPFN on 3 or more; mixed otherwise.
 - **Sources:** `docs/tickets/imputation-protocol/27-hybrid-output.md`;
   `scripts/experiments/hybrid_blend.py`, `blend_weights.py`, `run_hybrid_queue.sh`.
+- **Results:** 30 + 30 of 30, none failed; ledgers equal the runs' KC.
+  - Hybrid − KC: better 7 / no difference 3 / worse 0. Hybrid − TabPFN: better 3 / no difference 1
+    / equivalent 4 / worse 2 (kr-vs-kp 40 and 60nan). TabPFN − KC: better 8 / no difference 2.
+  - Beats both on electricity_80nan, vehicle_80nan and biodeg_80nan, E69's same three.
+- **Conclusion:** mixed, for the user. The hybrid is never worse than today's default and best of
+  the three on numerical 80nan; elsewhere its gain over KC is TabPFN's own.
