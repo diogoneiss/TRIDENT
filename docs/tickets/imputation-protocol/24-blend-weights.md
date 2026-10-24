@@ -180,7 +180,7 @@ needed at most 1 better. By the ticket, the user chooses.
 - **On the categorical tables a per-column pick reaches TabPFN, not past it.** On kr-vs-kp and
   credit-g the equal blend was worse than TabPFN on all six; the weighted blend is equivalent on
   four, no different on credit-g_40nan, and worse by 0.0016 on kr-vs-kp_60nan. It takes TabPFN's
-  category on 58–79% of kr-vs-kp's columns, and the columns it keeps from K do not add a margin.
+  category on 57–79% of kr-vs-kp's column-folds, and the columns it keeps from K do not add a margin.
   E61's categorical deficit is closed by choosing TabPFN, not overturned.
 - **The weights add almost everywhere and never cost the model:** weighted − equal is better on 14
   of 21 and worse on 1 (vehicle_40nan, +0.003); weighted − model is better on all 21.
