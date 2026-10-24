@@ -99,7 +99,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-23 – 2026-10-24 | no gain detected | B − A and C − A no verdict at every level (means −0.005 to +0.004 macro-F1), seeds 42 and 7; the paper's +1.7 points is outside the intervals at 0–60nan |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
-| E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 – | in progress | one not-MIWAE fit per fold read with the decoder's weighted means (primary) and 10,000 draws; E72's six failed pairs, 27 pairs, offline CPU |
+| E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 | supported by the count, one informative pair | interaction better on 3 of 6, worse on none; 2 of the 3 are flagged (fill not below the mean fill); the mean fill removes E72's failure but both VAEs sit near the mean fill on these tables |
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 – | in progress | today's default (KC) at 1212/2323/3434 on E69's 10 hard variants, then E69's cross-fitted blend; 30 cells + 30 pairs, GPU |
 
 ## Entries
@@ -2364,9 +2364,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** mixed, for the user. H1d holds on vehicle, where the implementation imputes
   competently; on biodeg and spambase the fill fails, so those pairs do not test it.
 
-### E73 · not-MIWAE with a mean-based fill on biodeg and spambase (2026-10-24 – )
+### E73 · not-MIWAE with a mean-based fill on biodeg and spambase (2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim, mas lance o
+- **Status:** done, supported by the count with two of three pairs flagged (2026-10-24, 13:53 GMT-3). Pre-registered before the first cell, on the user's go ("sim, mas lance o
   2 imediatamente em seguida", 2026-10-24, 11:56 GMT-3). T35.
 - **Hypothesis:** with a fill that works, modelling the mechanism shrinks the MNAR bias on biodeg
   and spambase too (H1d). A pilot outside the study found E72's draw-averaged fill produced extreme
@@ -2378,6 +2378,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   mixed otherwise. Pairs where notmiwae_mean is not below the mean fill are flagged.
 - **Sources:** `docs/tickets/imputation-protocol/26-notmiwae-fill.md`; `scripts/experiments/not_miwae.py`,
   `metric_panel.py --fitters notmiwae_fills`, `notmiwae_fill_report.py`, `run_notmiwae_fill_queue.sh`.
+- **Results:** 27 of 27 pairs, 12:04–13:52 GMT-3, none failed.
+  - Interaction better on biodeg_probit_60nan, biodeg_probit1p0_60nan and biodeg_probit2p0_60nan,
+    worse on none; flagged (notmiwae_mean not below 1.0): slopes 1.0 and 2.0, and spambase.
+  - notmiwae_mean's `impute_score` 0.84–1.03, level with MIWAE; E72's fill 1.7–9.4; 10,000 draws
+    1.5–8.3. The model 0.76–0.95.
+  - On biodeg's dial the interaction grows with the tilt: none, −0.036, −0.095, −0.160.
+- **Conclusion:** the mean fill fixes E72's failure, and the mechanism term shrinks the bias more
+  as the tilt steepens, but on these tables both VAEs impute near the mean fill. H1d's support is
+  where the VAE is competent: vehicle (E72) and biodeg_probit_60nan.
 
 ### E74 · The per-column KC + TabPFN hybrid as an output, on fresh seeds (2026-10-24 – )
 

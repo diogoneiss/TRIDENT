@@ -422,6 +422,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     methods; on biodeg and spambase its fills fail (worse than the mean fill), so those pairs do not
     test H1d. A better-conditioned fill would be a new pre-registered study; the user decides.
   - **Running from 2026-10-24 as E73** ([imputation-protocol/26](tickets/imputation-protocol/26-notmiwae-fill.md)), on the user's go: the decoder's weighted means as the fill, on E72's six failed pairs.
+  - **Done 2026-10-24 by E73:** the count says supported (3 of 6, none worse), but two of the three
+    are flagged pairs where the fill is not below the mean fill. The mean fill fixes E72's failure;
+    both VAEs sit near the mean fill on biodeg and spambase. H1d holds where the VAE imputes
+    competently (vehicle, biodeg_probit_60nan). T35 closed unless the user wants more.
 
 - **T36 · A test-time re-masking ensemble: an uncertainty signal from the decoder** (proposed
   2026-10-22, about 23:59 GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P1;
