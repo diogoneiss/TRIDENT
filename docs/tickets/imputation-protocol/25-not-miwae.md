@@ -193,7 +193,7 @@ none. Supported needed 4; refuted needed at most 1 better. By the ticket, the us
   2.1 on spambase_probit_60nan; the model's 0.53 and 0.25). That is a fill built from too few
   effective draws on these wide (41 and 57 columns), skewed tables, a likely case of
   importance-weight degeneracy; this study does not test that explanation. MIWAE stays near the
-  mean fill there (0.89–1.03). So on six of the ten pairs (biodeg's six) and spambase's, the
+  mean fill there (0.84–1.03). So on six of the ten pairs (biodeg's five and spambase's), the
   primary contrast compares a failed fill with a weak one, and their calls say little about H1d.
 - **Where not-MIWAE is a working imputer, it does what H1d says.** On vehicle (18 columns) its
   `impute_score` matches the model's (0.608 against 0.620 under MNAR at 60nan), and modelling the
@@ -201,7 +201,7 @@ none. Supported needed 4; refuted needed at most 1 better. By the ticket, the us
   - interaction better at 60nan (−0.073) and at 20nan (−0.020);
   - its signed bias under MNAR at 60nan is −0.111 against MIWAE's −0.203 and the model's −0.162;
   - it moves least of the 12 methods from MCAR to MNAR at 60nan (−0.066; the model −0.133).
-- **kc2 (21 columns)** sits between: not-MIWAE works (0.83–0.92) but worse than MIWAE, and the
+- **kc2 (21 columns)** sits between: not-MIWAE works (0.82–0.91) but worse than MIWAE, and the
   interaction shows no difference at either rate.
 - **The model still leads everywhere on error:** notmiwae − model on `impute_score` under MNAR is
   worse on 9 of 10 and no different on vehicle_probit_60nan.

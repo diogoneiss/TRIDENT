@@ -2349,7 +2349,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Primary interaction: better on vehicle_probit_60nan, vehicle_probit_20nan and
     biodeg_probit2p0_60nan; worse on none; no difference on seven.
   - not-MIWAE's `impute_score`: 1.7–4.5 on biodeg and 8.3–9.4 on spambase (worse than the mean
-    fill, fill dispersion ≥ the truth's), 0.82–0.92 on kc2, 0.61 on vehicle (the model 0.62).
+    fill, fill dispersion ≥ the truth's), 0.82–0.91 on kc2, 0.61 on vehicle (the model 0.62).
   - notmiwae − model on `impute_score` under MNAR: worse 9 / no difference 1.
 - **Conclusion:** mixed, for the user. H1d holds on vehicle, where the implementation imputes
   competently; on biodeg and spambase the fill fails, so those pairs do not test it.
