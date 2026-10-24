@@ -94,7 +94,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – 2026-10-23 | done | refuted: P − G on H better on 0 of 12 under MAR, worse on 6; worse on 5 under the control; the interaction is null on 11; the flag stays off |
 | E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 | done | complementary at the floor: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan, biodeg_60nan); where one method dominates it lands near the better one; on credit-g it cannot reach TabPFN (categorical cells) |
 | E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 | refuted | the interaction on H is better on 1 of 8 pairs and worse on 2; on biodeg's dial `[NULL]` alone costs more as the tilt steepens, so Mx's signal came from its other two changes |
-| E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 – | in progress | E42's driver on E64's 24 and E63's 8 variants, 96 pairs, offline CPU |
+| E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 | mixed | (H − tuned bar) MAR minus control worse on 3 of 12 (biodeg/kc2/vehicle at 60nan), better on 2; the model is never behind the tuned bar on E64's family; D4 not lower under MAR |
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
@@ -2247,9 +2247,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   signal came from the loss checkpoint and column-wise scoring. No MNAR-specific gain on the
   imputation side; ADR 0014 stands; the split's test moves to classification (wiki t2).
 
-### E68 · The tuned bar on the MAR folds: D4 under MAR (2026-10-23 – )
+### E68 · The tuned bar on the MAR folds: D4 under MAR (2026-10-23)
 
-- **Status:** in progress. Pre-registered before the first pair, on the user's go (2026-10-23). T34.
+- **Status:** done, mixed (2026-10-23, 23:54 GMT-3). Pre-registered before the first pair, on the user's go (2026-10-23). T34.
 - **Hypothesis:** none directional. ADR 0022 decision 5 asks every claim against the bar to face the
   tuned bar too, and the MAR studies E63 and E64 did not.
 - **Scenarios:** E42's driver (knn, hgb and lgbm tuned on validation gaps) on E64's 24 variants at
@@ -2260,6 +2260,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     4 or more and better on at most 1; refuted if worse on at most 1; mixed otherwise.
 - **Sources:** `docs/tickets/imputation-protocol/23-mar-tuned-bar.md`;
   `scripts/experiments/baseline_budget_run.py`, `mar_tuned_bar_report.py`.
+- **Results:** 96 of 96 pairs, 17:55–23:53 GMT-3, none failed.
+  - Primary, (H − tuned bar) MAR minus control: better 2 / no difference 7 / worse 3 (worse:
+    biodeg_60nan, kc2_60nan, vehicle_60nan; better: kc2_20nan, spambase_60nan). On K: 3 / 7 / 2.
+  - H − tuned bar under MAR: better on 6 of 12, worse on none (control: 5 better, none worse).
+  - D4 on H: 6 of 12 under MAR, 5 under the control; on K 8 and 4. E63's smoke: better 1 / none 3.
+- **Conclusion:** mixed, for the user. MAR costs the model ground only at 60nan on the numerical
+  tables, against the plain and the tuned bar alike, and it never puts the model behind the tuned
+  bar on E64's family.
 
 ### E69 · Per-column weights for the K + TabPFN blend, cross-fitted (2026-10-23 – )
 

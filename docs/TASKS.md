@@ -397,6 +397,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     not compete with them. The MNAR family (E45/E46) predates ADR 0022 and could be added.
   - **Cost, for scale:** E44's pass took about 4 hours on 4 CPU lanes.
   - **Running since 2026-10-23 as E68** ([imputation-protocol/23](tickets/imputation-protocol/23-mar-tuned-bar.md)): E42's driver on E63's and E64's folds, 96 pairs, offline CPU.
+  - **Done 2026-10-23 by E68: mixed** (worse on 3 of 12, better on 2). The model is never behind
+    the tuned bar on E64's family under MAR; at 60nan on biodeg, kc2 and vehicle its lead over both
+    bars shrinks. The reading of the thesis's MAR statement is the user's.
 
 - **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
   from the wiki's sync; accepted by the user; see below).
