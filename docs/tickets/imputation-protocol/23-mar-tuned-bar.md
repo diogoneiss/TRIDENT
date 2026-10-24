@@ -200,3 +200,9 @@ chooses.
   level with the tuned bar on all 12 table-rates; at 60nan on biodeg, kc2 and vehicle its lead
   over both bars shrinks by 0.026–0.043 from MCAR". No default changes.
 
+## The user's decision (2026-10-24)
+
+- **"1 ok"**: the thesis states E68's reading as the Outcome proposed it: under MAR the model stays
+  ahead of or level with the tuned bar on all 12 table-rates of E64's family; at 60nan on biodeg,
+  kc2 and vehicle its lead over both bars shrinks by 0.026–0.043 from MCAR. No default changes.
+

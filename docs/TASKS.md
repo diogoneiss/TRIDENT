@@ -399,7 +399,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Running since 2026-10-23 as E68** ([imputation-protocol/23](tickets/imputation-protocol/23-mar-tuned-bar.md)): E42's driver on E63's and E64's folds, 96 pairs, offline CPU.
   - **Done 2026-10-23 by E68: mixed** (worse on 3 of 12, better on 2). The model is never behind
     the tuned bar on E64's family under MAR; at 60nan on biodeg, kc2 and vehicle its lead over both
-    bars shrinks. The reading of the thesis's MAR statement is the user's.
+    bars shrinks. **The user accepted that wording (2026-10-24, "1 ok"); T34 closed.**
 
 - **T35 · An MNAR-aware imputer on the MNAR family** (proposed 2026-10-22, about 19:25 GMT-3,
   from the wiki's sync; accepted by the user; see below).
