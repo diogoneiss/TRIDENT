@@ -98,6 +98,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
+| E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 – | in progress | clean-room MIWAE and not-MIWAE refitted on E45/E46's ten MNAR pairs and controls, seeds 42/7/13, 51 pairs, offline CPU |
 
 ## Entries
 
@@ -2320,3 +2321,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   over 9 tables, with the verdict rule; descriptive (folds within a table are not independent).
 - **Sources:** `docs/tickets/classification-step-zero/02-no-pretraining.md`;
   `scripts/experiments/cls_stage2_run.py`, `run_cls_stage2_queue.sh`.
+
+### E72 · An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? (2026-10-24 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim aprovo",
+  2026-10-23, 23:44 GMT-3). T35.
+- **Hypothesis:** modelling the missingness mechanism shrinks the bias MNAR adds (the wiki's H1d).
+- **Scenarios:** clean-room MIWAE and not-MIWAE (self-masking logistic, sign learnt), identical but
+  for the mechanism term; K 20, batch 16, Adam 1e-3, 100,000 steps; refitted per training fold on
+  E45/E46's 17 variants at 42/7/13 and asked for the ledgers' induced cells (51 pairs).
+- **Measures and decision rule:**
+  - notmiwae − miwae on `abs_bias`, `signed_bias` and `impute_score`, and notmiwae − model (K);
+  - **primary,** (notmiwae − miwae on `abs_bias`), MNAR minus MCAR, over 10 pairs: supported if
+    better on 4 or more and worse on at most 1; refuted if better on at most 1; mixed otherwise.
+- **Sources:** `docs/tickets/imputation-protocol/25-not-miwae.md`; `scripts/experiments/not_miwae.py`,
+  `metric_panel.py --fitters vae`, `vae_mnar_report.py`, `run_vae_mnar_queue.sh`.

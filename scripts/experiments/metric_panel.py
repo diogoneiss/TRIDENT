@@ -7,7 +7,8 @@ fold ledgers (``<state_dir>/results/<variant>_s<seed>/<variant>/<timestamp>/impu
 imputation_fold_<n>_cells.csv``: the headline's fills, K on every run since ADR 0015). With
 ``--baselines``, every baseline family (the weak tier, missForest, E41's arms) is refitted on the
 same training fold, as ``recompute_folds`` rebuilds it, and asked for exactly the ledger's cells.
-``--fitters tabpfn`` refits TabPFN v2 alone instead (E56; run under ``uv run --extra tabpfn``).
+``--fitters tabpfn`` refits TabPFN v2 alone instead (E56; run under ``uv run --extra tabpfn``);
+``--fitters vae`` refits MIWAE and not-MIWAE alone (E72).
 
 Per fold and method it writes, beside ``impute_score``:
 
@@ -50,6 +51,7 @@ from src.training.linear_baselines import fit_linear_imputers  # noqa: E402
 from src.training.missforest import fit_missforest_imputers  # noqa: E402
 from src.training.tabpfn_baseline import fit_tabpfn_imputers  # noqa: E402
 from src.training.types import DatasetSpec  # noqa: E402
+from scripts.experiments.not_miwae import fit_vae_imputers  # noqa: E402
 
 THREADS = 4
 FOLDS = 5
@@ -57,7 +59,8 @@ FITTERS: Sequence[Callable[[pd.DataFrame, Sequence[str], Sequence[str]], list[Ba
     fit_baseline_imputers, fit_lightgbm_imputers, fit_missforest_imputers, fit_linear_imputers,
 )
 # E56: TabPFN v2 alone, the optional extra's baseline (``src/training/tabpfn_baseline.py``).
-NAMED_FITTERS = {"tabpfn": (fit_tabpfn_imputers,)}
+# E72: MIWAE and not-MIWAE, clean-room (``scripts/experiments/not_miwae.py``).
+NAMED_FITTERS = {"tabpfn": (fit_tabpfn_imputers,), "vae": (fit_vae_imputers,)}
 
 
 def _ratio(value: float, naive: float) -> float:
