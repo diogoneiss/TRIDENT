@@ -97,6 +97,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 – | in progress | E42's driver on E64's 24 and E63's 8 variants, 96 pairs, offline CPU |
 | E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
+| E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-24 – | in progress | arms A (default), B (`EPOCHS_PRE 0`), C (`EPOCHS_PRE 0`, `EPOCH_FINE 450`) on 45 variants, 3 folds, seeds 42/7/13 as the GPU window allows |
 
 ## Entries
 
@@ -2296,3 +2297,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   passes.
 - **Conclusion:** does not reproduce. Stage 2 reruns arm A on gorgona8 beside arm B; the old sweep is
   a descriptive reference only. Stage 2 checks gorgona8's run-to-run determinism first.
+
+### E71 · Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? (2026-10-24 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim aprovo",
+  2026-10-23, 23:44 GMT-3). T27, classification step zero.
+- **Hypothesis:** none directional. The paper's Table 4 reports about +1.7 macro-F1 from
+  pre-training; the fork's default sweep already sits within 0.017 of the no-pre-training arm.
+- **Scenarios:** the old sweep's configuration as an override, `cosine_legacy`, 3 folds, on all 45
+  variants. A as is; B with `EPOCHS_PRE 0`; C with `EPOCHS_PRE 0` and `EPOCH_FINE 450`. Seeds 42,
+  then 7, then 13, on four GPU queues, with a clock stop at 09:30 GMT-3 on 2026-10-24; only complete
+  seeds are read. A rerun on gorgona8, since E70 found the old sweep does not reproduce.
+- **Measures and decision rule:** per level, B − A and C − A on test macro-F1, fold-paired, pooled
+  over 9 tables, with the verdict rule; descriptive (folds within a table are not independent).
+- **Sources:** `docs/tickets/classification-step-zero/02-no-pretraining.md`;
+  `scripts/experiments/cls_stage2_run.py`, `run_cls_stage2_queue.sh`.
