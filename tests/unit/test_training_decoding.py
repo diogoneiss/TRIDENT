@@ -411,6 +411,70 @@ def test_the_induced_checkpoint_tracks_the_validation_gaps_score_without_touchin
     assert not any("induced_checkpoint" in key or "calibrated" in key for key in plain.result.metrics)
 
 
+
+def test_the_remask_passes_add_their_own_family_and_move_nothing_else() -> None:
+    """T36 (E75): ``score_remask`` fills the induced cells again from averaged re-masking passes,
+    at the run's checkpoint and at every other criterion's. The passes draw from their own stream,
+    so the run's model, metrics and ledger rows, and the global stream the next fold trains on,
+    are those it would have had without the flag."""
+    dataset = _dataset()
+    hyperparameters = _hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT="induced", DECODE_CALIBRATION="gaps")
+    np.random.seed(0)
+    reference, _ = _run(dataset=dataset, sibling=_complete_frame(), score_checkpoints=True, hyperparameters=hyperparameters)
+    after_reference = np.random.random()
+    np.random.seed(0)
+    asked, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_checkpoints=True, hyperparameters=hyperparameters,
+        score_remask=True,
+    )
+    assert np.random.random() == after_reference
+
+    metrics = asked.result.metrics
+    for key, value in reference.result.metrics.items():
+        assert metrics[key] == value, key
+    for family in ("remask", "remask_calibrated", "loss_checkpoint_remask", "masked_checkpoint_remask"):
+        assert f"impute/induced/{family}/impute_score" in metrics, family
+    assert not any("remask" in key for key in reference.result.metrics)
+    for name, tensor in reference.model.state_dict().items():
+        assert bool((asked.model.state_dict()[name] == tensor).all()), name
+    cells = asked.scored_cells
+    added = cells["population"].str.startswith("induced_remask") | (cells["population"] == "induced_uncalibrated")
+    old = cells[~added].drop(columns="spread")
+    assert old.reset_index(drop=True).equals(reference.scored_cells)
+    induced = cells[cells["population"] == "induced"]
+    remasked = cells[cells["population"] == "induced_remask"]
+    assert remasked[["row", "column", "actual"]].reset_index(drop=True).equals(
+        induced[["row", "column", "actual"]].reset_index(drop=True)
+    )
+    assert remasked["spread"].notna().all() and (remasked["spread"] >= 0).all()
+    assert set(cells["population"]) >= {"induced_remask_loss_checkpoint", "induced_remask_masked_checkpoint"}
+    single = cells[cells["population"] == "induced_uncalibrated"]
+    assert single[["row", "column", "actual"]].reset_index(drop=True).equals(
+        induced[["row", "column", "actual"]].reset_index(drop=True)
+    )
+
+
+def test_with_nothing_re_masked_the_passes_fill_exactly_as_the_single_pass() -> None:
+    """At a re-mask rate of 0 every pass is the single pass, so the averaged fill is K's own, with
+    no spread and a full vote: the passes change only what is hidden, never how a gap is shown."""
+    from src.training import decoding
+
+    dataset = _dataset()
+    outcome, _ = _run(dataset=dataset, sibling=_complete_frame())
+    model = outcome.model
+    features = dataset.frame.drop(columns=[dataset.label_column])
+    test = _fold().test_indices
+    frame = features.iloc[test].reset_index(drop=True)
+    device = torch.device("cpu")
+    single = decoding._score_induced_missing(model, dataset, frame, _complete_frame(), test, device)
+    passes = decoding._remask_induced(model, dataset, frame, _complete_frame(), test, device, 0.0, 42, 1, "induced_remask")
+
+    shared = ["row", "column", "kind", "actual", "imputed"]
+    assert passes[shared].equals(single[shared])
+    assert (passes["spread"] == 0).all()
+    assert (passes.loc[passes["kind"] == "categorical", "confidence"] == 1.0).all()
+
+
 def test_under_gaps_the_induced_headline_is_the_calibrated_readout_and_nothing_else_moves() -> None:
     """ADR 0027. With ``DECODE_CALIBRATION gaps`` the induced headline is what the older
     ``score_calibrated`` diagnostic scored on the same trajectory, the uncalibrated headline moves

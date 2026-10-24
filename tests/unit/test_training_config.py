@@ -576,6 +576,7 @@ def test_the_selection_diagnostics_are_imputation_flags_and_off_unless_asked() -
         ("--score_calibrated", "score_calibrated"),
         ("--score_masked_calibration", "score_masked_calibration"),
         ("--score_checkpoints", "score_checkpoints"),
+        ("--score_remask", "score_remask"),
     ):
         assert getattr(resolve_training_request(parser.parse_args(imputation)), field) is False
         assert getattr(resolve_training_request(parser.parse_args([*imputation, flag])), field) is True

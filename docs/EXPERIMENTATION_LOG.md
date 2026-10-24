@@ -101,6 +101,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 | E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 | supported by the count, one informative pair | interaction better on 3 of 6, worse on none; 2 of the 3 are flagged (fill not below the mean fill); the mean fill removes E72's failure but both VAEs sit near the mean fill on these tables |
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
+| E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 | in progress | |
 
 ## Entries
 
@@ -2407,3 +2408,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Beats both on electricity_80nan, vehicle_80nan and biodeg_80nan, E69's same three.
 - **Conclusion:** mixed, for the user. The hybrid is never worse than today's default and best of
   the three on numerical 80nan; elsewhere its gain over KC is TabPFN's own.
+
+### E75 · A test-time re-masking ensemble: averaged passes and their spread (2026-10-24)
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("Aprovo T36 e
+  T37", 2026-10-23; "autorizo o 1, vá", 2026-10-24, about 18:15 GMT-3, the `src/` authorization). T36.
+- **Hypothesis:** averaging 20 passes that each also hide a fresh draw of the row's observed cells
+  improves the induced fill under K and H, and the passes' spread ranks the per-cell errors.
+- **Scenarios:** today's default with `--score_checkpoints --score_remask` on E44's 15 confirmation
+  variants at 707/808/909 (45 cells); passes at K and H, uncalibrated, and calibrated against KC.
+- **Measures and decision rule:** remask − single pass on induced `impute_score`, 1% SESOI. Supported
+  if better on 8 or more and worse on at most 1 under both K and H; refuted if better on at most 3 or
+  worse on 5 or more under K; mixed otherwise. Descriptive: Spearman of spread against error,
+  90% coverage, and the panel's dispersion.
+- **Sources:** `docs/tickets/imputation-protocol/28-remask-ensemble.md`;
+  `scripts/experiments/remask_ensemble.py`, `run_remask_queue.sh`; `src/training/decoding.py`
+  (`_remask_induced`).

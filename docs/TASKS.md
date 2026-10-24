@@ -471,6 +471,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - E44's 45 cells took about 8–9 h on 4 queues (T25), and the pass needs them retrained.
     - On top of that, R decoder forward passes per test fold.
   - **Attaches to:** the wiki's RQ1, todo t4 and ADR 0025's panel.
+  - **Running from 2026-10-24 as E75** ([imputation-protocol/28](tickets/imputation-protocol/28-remask-ensemble.md)), on the user's code authorization ("autorizo o 1, vá", about 18:15 GMT-3): the in-run flag `--score_remask` (off by default), 20 passes at K and H, on E44's 15 variants at 707/808/909.
 
 - **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59
   GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P2; accepted by the user; see

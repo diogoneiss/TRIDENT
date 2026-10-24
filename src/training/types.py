@@ -623,6 +623,9 @@ class TrainingRequest:
     # criterion would keep (``loss``, ``induced``, ``masked``), on the same trajectory. Never
     # ranks a fold.
     score_checkpoints: bool = False
+    # T36's diagnostic (E75): the induced test cells also filled by re-masking passes, averaged, at
+    # the run's checkpoint and at every other criterion's. Never ranks a fold.
+    score_remask: bool = False
     # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.

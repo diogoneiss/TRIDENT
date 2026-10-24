@@ -227,6 +227,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         score_calibrated=getattr(args, "score_calibrated", False),
         score_masked_calibration=getattr(args, "score_masked_calibration", False),
         score_checkpoints=getattr(args, "score_checkpoints", False),
+        score_remask=getattr(args, "score_remask", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
         config_source=config_source,
@@ -255,7 +256,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         raise SystemExit("error: --score_null_path requires --task imputation")
     if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_column_wise requires --task imputation")
-    for flag in ("score_induced_checkpoint", "score_calibrated", "score_masked_calibration", "score_checkpoints"):
+    for flag in ("score_induced_checkpoint", "score_calibrated", "score_masked_calibration", "score_checkpoints", "score_remask"):
         if getattr(args, flag, False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -607,6 +608,17 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Also score the test split at the epoch every other decode checkpoint criterion "
             "would keep (loss, induced, masked), on the same trajectory, as "
             "impute/*/<criterion>_checkpoint/*. A diagnostic (E43). Requires --task imputation."
+        ),
+    )
+    parser.add_argument(
+        "--score_remask",
+        action="store_true",
+        help=(
+            "Also fill the induced test cells from 20 passes that each hide a fresh draw of the "
+            "row's observed cells too, averaged (numbers) or voted (categories), with each cell's "
+            "spread in the ledger. As impute/induced/remask/*, remask_calibrated/* under ADR 0027, "
+            "and <criterion>_checkpoint_remask/* with --score_checkpoints. A diagnostic (T36, "
+            "E75). Requires --task imputation."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")

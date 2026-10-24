@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from src.embedder import EncodedTable, EpochMasker, as_category_strings
 from src.training.mask_propensity import propensity_weights
-from src.models import TridentDecoder
+from src.models import DecodedCells, TridentDecoder
 from src.utils import preprocess_table
 
 from .data import evaluation_mask, in_variant_dtypes
@@ -53,6 +53,7 @@ def train_and_evaluate_decoder(
     score_calibrated: bool = False,
     score_masked_calibration: bool = False,
     score_checkpoints: bool = False,
+    score_remask: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -318,6 +319,34 @@ def train_and_evaluate_decoder(
             {f"impute/induced/{name}": value for name, value in induced_baselines.metrics.items()}
         )
         baseline_per_column["induced"] = induced_baselines.per_column
+        if score_remask:
+            # T36 (E75): the same gaps, filled by re-masking passes at the run's own checkpoint. A
+            # diagnostic; under ADR 0027 its calibration is fitted on the validation gaps' passes.
+            remasked = _remask_induced(
+                model, dataset, test_frame, complete_sibling, fold.test_indices, device,
+                hyperparameters.mask_probability, seed, fold_ordinal, "induced_remask",
+            )
+            cells = pd.concat([cells, remasked], ignore_index=True)
+            metrics.update(
+                {f"impute/induced/remask/{name}": value for name, value in score_cells(remasked, baselines).metrics.items()}
+            )
+            if calibrate:
+                # The ledger's induced rows hold the calibrated guesses; the single pass the
+                # passes are read against goes beside them, uncalibrated.
+                cells = pd.concat([cells, raw_induced.assign(population="induced_uncalibrated")], ignore_index=True)
+                remask_fit = fit_calibration(
+                    _remask_induced(
+                        model, dataset, validation_frame, complete_sibling, fold.validation_indices, device,
+                        hyperparameters.mask_probability, seed, fold_ordinal, "induced_remask",
+                    ),
+                    baselines,
+                )
+                metrics.update(
+                    {
+                        f"impute/induced/remask_calibrated/{name}": value
+                        for name, value in score_cells(apply_calibration(remasked, remask_fit, baselines), baselines).metrics.items()
+                    }
+                )
         if score_null_path:
             # The same gaps, left as the [NULL] the variant stores rather than swapped to
             # [MASK]. The head was never trained at a null position, so this measures
@@ -448,6 +477,18 @@ def train_and_evaluate_decoder(
                         for name, value in score_cells(at_criterion, baselines).metrics.items()
                     }
                 )
+                if score_remask:
+                    remasked_at = _remask_induced(
+                        model, dataset, test_frame, complete_sibling, fold.test_indices, device,
+                        hyperparameters.mask_probability, seed, fold_ordinal, f"induced_remask_{criterion}_checkpoint",
+                    )
+                    cells = pd.concat([cells, remasked_at], ignore_index=True)
+                    metrics.update(
+                        {
+                            f"impute/induced/{criterion}_checkpoint_remask/{name}": value
+                            for name, value in score_cells(remasked_at, baselines).metrics.items()
+                        }
+                    )
             masked_at_criterion = _score_population(model, hidden_test, clean_test, "masked", raw_variant)
             metrics.update(
                 {
@@ -511,6 +552,7 @@ def _score_induced_missing(
     device: torch.device,
     as_mask: bool = True,
     column_wise: bool = False,
+    prediction: DecodedCells | None = None,
 ) -> pd.DataFrame:
     """Score the cells the dataset is actually missing, against the complete sibling.
 
@@ -520,7 +562,8 @@ def _score_induced_missing(
     variant stores, which is the diagnostic path. With ``column_wise`` the gaps are asked
     one column at a time, that column's as ``[MASK]`` and every other gap as ``[NULL]``.
     ``rows`` are the positions of ``frame``'s rows in the whole table, so the sibling's
-    truths line up with them.
+    truths line up with them. ``prediction``, when given, is scored in place of one pass over the
+    gaps (T36's averaged passes).
     """
     hidden = frame.mask(frame.isna(), "[MASK]" if as_mask else "[NULL]")
     if column_wise:
@@ -573,12 +616,65 @@ def _score_induced_missing(
         scored = pd.concat(parts, ignore_index=True)
     else:
         scored = _score_population(
-            model, encoded, embedder.encode(encodable_truth, device), population, raw_truth
+            model, encoded, embedder.encode(encodable_truth, device), population, raw_truth, prediction
         )
     for (row, column), value in unseen.items():
         hit = (scored["row"] == row) & (scored["column"] == column)
         scored.loc[hit, ["actual", "actual_original"]] = value
     return scored
+
+
+# T36 (E75): how many re-masking passes fill each gap; fixed in imputation-protocol/28.
+REMASK_PASSES = 20
+
+
+def _remask_induced(
+    model, dataset: PreparedDataset, frame: pd.DataFrame, complete_sibling: pd.DataFrame, rows,
+    device: torch.device, p_base: float, seed: int, fold_ordinal: int, population: str,
+) -> pd.DataFrame:
+    """The frame's gaps filled from ``REMASK_PASSES`` passes, scored as ``_score_induced_missing``.
+
+    Each pass shows the gaps as ``[MASK]`` and also hides a fresh draw of the row's observed cells,
+    at the decode stage's own rate (``p_base`` times the row's observed share, as
+    ``draw_dynamic_mask``; no cell is forced, since every scored row already holds a gap). A number
+    is the mean of its passes and a category the most voted one, with the vote share as its
+    ``confidence``. ``spread`` is the passes' standard deviation of a number, or one minus the vote
+    share. The draws come from their own stream, seeded by the run's seed and the fold, so the
+    global stream the later folds train on never moves.
+    """
+    embedder = model.embedder
+    nulls = frame.isnull().to_numpy()
+    rate = p_base * (1 - nulls.mean(axis=1, keepdims=True))
+    masker = EpochMasker(embedder, frame, device)
+    gaps = embedder.encode(frame.mask(frame.isna(), "[MASK]"), device).masked_positions
+    generator = np.random.default_rng([seed, fold_ordinal])
+    numbers, votes = [], []
+    with torch.no_grad():
+        for _ in range(REMASK_PASSES):
+            hidden = (generator.random(nulls.shape) < rate) & ~nulls
+            passed = model.predict(_select(embedder.gaps_as_mask(masker.apply(hidden)), gaps))
+            numbers.append(passed.numerical_values.double().cpu())
+            votes.append(passed.categorical_ids.cpu())
+    values = torch.stack(numbers)  # (passes, numerical columns, rows)
+    ids = torch.stack(votes)
+    chosen = ids.mode(dim=0).values
+    share = (ids == chosen).double().mean(dim=0)
+    averaged = DecodedCells(
+        categorical_ids=chosen.to(device),
+        numerical_values=values.mean(dim=0).float().to(device),
+        categorical_confidence=share.float().to(device),
+    )
+    cells = _score_induced_missing(model, dataset, frame, complete_sibling, rows, device, prediction=averaged)
+    cells["population"] = population
+    cells["spread"] = 1.0 - cells["confidence"]
+    numerical = (cells["kind"] == NUMERICAL).to_numpy()
+    position = {column: index for index, column in enumerate(embedder.numerical_columns)}
+    spread = values.std(dim=0, unbiased=False).numpy()
+    cells.loc[numerical, "spread"] = spread[
+        cells.loc[numerical, "column"].map(position).to_numpy(dtype=np.int64),
+        cells.loc[numerical, "row"].to_numpy(dtype=np.int64),
+    ]
+    return cells
 
 
 def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dict]:
@@ -779,11 +875,14 @@ def _already_missing(frame: pd.DataFrame) -> int:
     return int(frame.isna().to_numpy().sum())
 
 
-def _score_population(model, hidden, truth, population: str, raw_truth=None) -> pd.DataFrame:
+def _score_population(
+    model, hidden, truth, population: str, raw_truth=None, prediction: DecodedCells | None = None
+) -> pd.DataFrame:
     """One row per cell the model was asked to fill, with the truth beside its guess."""
     embedder = model.embedder
-    with torch.no_grad():
-        prediction = model.predict(hidden)
+    if prediction is None:
+        with torch.no_grad():
+            prediction = model.predict(hidden)
     mask = hidden.masked_positions
     rows: list[dict] = []
 

@@ -211,6 +211,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         score_calibrated=request.score_calibrated,
                         score_masked_calibration=request.score_masked_calibration,
                         score_checkpoints=request.score_checkpoints,
+                        score_remask=request.score_remask,
                         score_search_objective=request.score_search_objective,
                         baseline_cache_dir=request.runtime.baseline_cache_dir,
                     )

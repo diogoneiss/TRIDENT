@@ -94,6 +94,14 @@ class EpochMasker:
             dynamic_mask = draw_dynamic_mask(self._null_values, p_base)
         else:
             dynamic_mask = draw_weighted_mask(self._null_values, p_base, self._weights)
+        return self.apply(dynamic_mask)
+
+    def apply(self, dynamic_mask: np.ndarray) -> "EncodedTable":
+        """The frame with these cells hidden, as ``draw`` hides the cells it draws.
+
+        ``dynamic_mask`` is (rows, columns) in the frame's column order. T36's re-masking passes
+        hide cells drawn from their own stream through here.
+        """
         positions = torch.tensor(dynamic_mask[:, self._order], dtype=torch.bool, device=self._device)
         categorical = positions[:, : self._n_categorical].t()
         numerical = positions[:, self._n_categorical :].t()
