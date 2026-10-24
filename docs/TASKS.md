@@ -378,6 +378,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     The classification-side ablation is the wiki's todo t2.
   - **Cost, for scale:** E46's 66 cells took 3 h 33 min on four queues.
   - **Running since 2026-10-23 as E67** ([imputation-protocol/22](tickets/imputation-protocol/22-null-gaps.md)): arm N, `DECODE_GAP_TOKEN null` alone, on 8 MNAR pairs against E45/E46's G.
+  - **Closed 2026-10-23 by E67: refuted.** The interaction on H is better on 1 of 8 pairs and worse
+    on 2. On biodeg's dial, `[NULL]` gaps alone cost more as the tilt steepens (+0.030 at slope
+    0.25 to +0.099 at 2.0, against +0.058 under MCAR), so Mx's signal came from its other two
+    changes. ADR 0014 stands; the split's test moves to the classification side (wiki t2).
 
 - **T34 · The tuned bar on the MAR folds** (proposed 2026-10-22, about 19:25 GMT-3, from the
   wiki's sync; accepted by the user; see below).

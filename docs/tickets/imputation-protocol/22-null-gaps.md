@@ -67,3 +67,77 @@ On the induced `impute_score` over 15 fold pairs, with the verdict rule:
   on both. So the pairing with E45's and E46's G holds at today's commit.
 - **Launched** on the commit of this ticket: four queues (`run_null_gaps_queue.sh`), beside
   E68's CPU lanes.
+
+
+## Outcome (2026-10-23, 21:53 GMT-3)
+
+**The run:** 39 of 39 cells of N, 17:55–20:01 GMT-3 on four queues, with none failed. Every pair
+found its three G seeds in E45 or E46.
+
+**The printout** (`scripts/experiments/null_gaps_report.py --tally`, unedited):
+
+```text
+## `biodeg_probit0p25_60nan` against `biodeg_60nan`
+- H: MNAR N − G +0.0297 [+0.0222, +0.0372] worse; MCAR N − G +0.0583 [+0.0422, +0.0744] worse; (N − G), MNAR minus MCAR -0.0286 [-0.0442, -0.0130] better
+- K: MNAR N − G +0.0282 [+0.0194, +0.0371] worse; MCAR N − G +0.0489 [+0.0387, +0.0591] worse; (N − G), MNAR minus MCAR -0.0206 [-0.0354, -0.0059] better
+
+## `biodeg_probit_60nan` against `biodeg_60nan`
+- H: MNAR N − G +0.0659 [+0.0485, +0.0833] worse; MCAR N − G +0.0583 [+0.0422, +0.0744] worse; (N − G), MNAR minus MCAR +0.0076 [-0.0131, +0.0283] none
+- K: MNAR N − G +0.0507 [+0.0403, +0.0611] worse; MCAR N − G +0.0489 [+0.0387, +0.0591] worse; (N − G), MNAR minus MCAR +0.0018 [-0.0127, +0.0164] none
+
+## `biodeg_probit1p0_60nan` against `biodeg_60nan`
+- H: MNAR N − G +0.0757 [+0.0670, +0.0844] worse; MCAR N − G +0.0583 [+0.0422, +0.0744] worse; (N − G), MNAR minus MCAR +0.0174 [+0.0029, +0.0319] worse
+- K: MNAR N − G +0.0734 [+0.0643, +0.0824] worse; MCAR N − G +0.0489 [+0.0387, +0.0591] worse; (N − G), MNAR minus MCAR +0.0245 [+0.0106, +0.0384] worse
+
+## `biodeg_probit2p0_60nan` against `biodeg_60nan`
+- H: MNAR N − G +0.0987 [+0.0912, +0.1061] worse; MCAR N − G +0.0583 [+0.0422, +0.0744] worse; (N − G), MNAR minus MCAR +0.0404 [+0.0238, +0.0570] worse
+- K: MNAR N − G +0.0875 [+0.0803, +0.0946] worse; MCAR N − G +0.0489 [+0.0387, +0.0591] worse; (N − G), MNAR minus MCAR +0.0386 [+0.0259, +0.0513] worse
+
+## `spambase_probit_60nan` against `spambase_60nan`
+- H: MNAR N − G +0.0188 [+0.0101, +0.0275] worse; MCAR N − G +0.0301 [+0.0012, +0.0590] worse; (N − G), MNAR minus MCAR -0.0113 [-0.0420, +0.0193] none
+- K: MNAR N − G +0.0139 [+0.0105, +0.0173] worse; MCAR N − G +0.0048 [+0.0028, +0.0068] worse; (N − G), MNAR minus MCAR +0.0091 [+0.0048, +0.0133] worse
+
+## `biodeg_probit_20nan` against `biodeg_20nan`
+- H: MNAR N − G +0.0305 [+0.0133, +0.0478] worse; MCAR N − G +0.0256 [+0.0090, +0.0422] worse; (N − G), MNAR minus MCAR +0.0049 [-0.0191, +0.0290] none
+- K: MNAR N − G +0.0247 [+0.0104, +0.0390] worse; MCAR N − G +0.0322 [+0.0004, +0.0639] worse; (N − G), MNAR minus MCAR -0.0074 [-0.0436, +0.0287] none
+
+## `kc2_probit_20nan` against `kc2_20nan`
+- H: MNAR N − G +0.0156 [-0.0100, +0.0412] none; MCAR N − G +0.0069 [-0.0169, +0.0306] none; (N − G), MNAR minus MCAR +0.0088 [-0.0245, +0.0420] none
+- K: MNAR N − G +0.0079 [-0.0100, +0.0258] none; MCAR N − G -0.0000 [-0.0241, +0.0240] none; (N − G), MNAR minus MCAR +0.0079 [-0.0135, +0.0293] none
+
+## `vehicle_probit_20nan` against `vehicle_20nan`
+- H: MNAR N − G +0.0425 [+0.0104, +0.0746] worse; MCAR N − G +0.0167 [+0.0025, +0.0309] worse; (N − G), MNAR minus MCAR +0.0258 [-0.0076, +0.0593] none
+- K: MNAR N − G +0.0235 [-0.0022, +0.0492] none; MCAR N − G +0.0068 [+0.0007, +0.0129] worse; (N − G), MNAR minus MCAR +0.0167 [-0.0078, +0.0413] none
+
+## The dial (biodeg at 60nan), (N − G on H), MNAR minus MCAR by slope
+- slope 0p25: better
+- slope 0p5: none
+- slope 1p0: worse
+- slope 2p0: worse
+
+- (N − G on H), MNAR minus MCAR: better 1 / no difference 5 / worse 2 (fold-pair t, seed agreement)
+- (N − G on K), MNAR minus MCAR: better 1 / no difference 4 / worse 3 (fold-pair t, seed agreement)
+
+Primary, (N − G on H), MNAR minus MCAR: better on ['biodeg_probit0p25_60nan'], worse on ['biodeg_probit1p0_60nan', 'biodeg_probit2p0_60nan'] -> refuted (fold-pair t, seed agreement)
+```
+
+**Verdict: refuted.** The interaction on H is better on 1 of 8 pairs (biodeg's slope 0.25) and
+worse on 2 (slopes 1.0 and 2.0); the rule's refuted is better on at most 1.
+
+**Reading:**
+
+- **N is worse than G almost everywhere, under both mechanisms.** N − G on H is "worse" on 7 of 8
+  MNAR variants and on 4 of 5 MCAR controls (kc2_20nan shows no difference either way). Under MCAR
+  this replicates E32's choice in reverse: ADR 0014's `mask` beats `null` in the decode stage.
+- **The dial runs against the hypothesis.** On biodeg at 60nan, N's deficit on H grows with the
+  tilt: +0.030 at slope 0.25, +0.066 at 0.5, +0.076 at 1.0 and +0.099 at 2.0, against +0.058 under
+  MCAR. So the interaction is better at the mildest tilt and worse at the two steepest. The
+  steeper the value-dependent missingness, the more showing a gap as `[NULL]` costs, not the less.
+- **K tells the same story** (better 1, worse 3): the slope-1.0 and slope-2.0 pairs and
+  spambase_probit_60nan are worse.
+- **E45/E46's Mx signal came from its other two changes.** Mx beat G at slope 2.0, but the
+  `[NULL]` token alone is at its largest deficit there. The loss checkpoint and column-wise scoring
+  carried Mx's gain, as the ticket's refuted branch says.
+- **What it leaves:** the `[NULL]`/`[MASK]` split has no MNAR-specific gain on the imputation side
+  under today's default. The thesis claim's test moves to the classification side (wiki t2). No
+  default changes; ADR 0014 stands.
