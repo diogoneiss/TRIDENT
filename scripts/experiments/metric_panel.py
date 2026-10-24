@@ -8,7 +8,8 @@ imputation_fold_<n>_cells.csv``: the headline's fills, K on every run since ADR 
 ``--baselines``, every baseline family (the weak tier, missForest, E41's arms) is refitted on the
 same training fold, as ``recompute_folds`` rebuilds it, and asked for exactly the ledger's cells.
 ``--fitters tabpfn`` refits TabPFN v2 alone instead (E56; run under ``uv run --extra tabpfn``);
-``--fitters vae`` refits MIWAE and not-MIWAE alone (E72).
+``--fitters vae`` refits MIWAE and not-MIWAE alone (E72); ``--fitters notmiwae_fills`` refits
+not-MIWAE once and reads it with two fills (E73).
 
 Per fold and method it writes, beside ``impute_score``:
 
@@ -51,7 +52,7 @@ from src.training.linear_baselines import fit_linear_imputers  # noqa: E402
 from src.training.missforest import fit_missforest_imputers  # noqa: E402
 from src.training.tabpfn_baseline import fit_tabpfn_imputers  # noqa: E402
 from src.training.types import DatasetSpec  # noqa: E402
-from scripts.experiments.not_miwae import fit_vae_imputers  # noqa: E402
+from scripts.experiments.not_miwae import fit_notmiwae_fills, fit_vae_imputers  # noqa: E402
 
 THREADS = 4
 FOLDS = 5
@@ -60,7 +61,8 @@ FITTERS: Sequence[Callable[[pd.DataFrame, Sequence[str], Sequence[str]], list[Ba
 )
 # E56: TabPFN v2 alone, the optional extra's baseline (``src/training/tabpfn_baseline.py``).
 # E72: MIWAE and not-MIWAE, clean-room (``scripts/experiments/not_miwae.py``).
-NAMED_FITTERS = {"tabpfn": (fit_tabpfn_imputers,), "vae": (fit_vae_imputers,)}
+# E73: one not-MIWAE fit read with two fills (``fit_notmiwae_fills``).
+NAMED_FITTERS = {"tabpfn": (fit_tabpfn_imputers,), "vae": (fit_vae_imputers,), "notmiwae_fills": (fit_notmiwae_fills,)}
 
 
 def _ratio(value: float, naive: float) -> float:

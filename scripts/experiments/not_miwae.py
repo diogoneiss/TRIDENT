@@ -96,6 +96,10 @@ class VaeImputer:
         self.numerical, self.categorical, self.mnar = list(numerical), list(categorical), mnar
         self.modes: dict[str, str] = {}
         self.model: _Model | None = None
+        # E72's fill: not-MIWAE averages its draws, MIWAE the decoder's means, over DRAWS samples.
+        # E73 adds "mean" for not-MIWAE: the decoder's means under not-MIWAE's weights.
+        self.fill = "draws" if mnar else "mean"
+        self.draws = DRAWS
 
     def fit(self, frame: pd.DataFrame) -> None:
         torch.set_num_threads(THREADS)
@@ -130,10 +134,11 @@ class VaeImputer:
         x = torch.tensor(np.where(observed, values, 0.0), dtype=torch.float32)
         mask = torch.tensor(observed, dtype=torch.float32)
         fills = []
-        for start in range(0, x.shape[0], 64):
-            log_w, mean, completed = self.model.log_weights(x[start:start + 64], mask[start:start + 64], DRAWS)
+        chunk = max(1, 64 * DRAWS // self.draws)
+        for start in range(0, x.shape[0], chunk):
+            log_w, mean, completed = self.model.log_weights(x[start:start + chunk], mask[start:start + chunk], self.draws)
             weights = torch.softmax(log_w, dim=0).unsqueeze(-1)
-            guess = completed if self.mnar else mean
+            guess = completed if self.fill == "draws" else mean
             fills.append((weights * guess).sum(0))
         filled = torch.cat(fills).numpy().astype(np.float64)
         out[self.numerical] = np.where(observed, values, filled)
@@ -149,3 +154,33 @@ def fit_vae_imputers(frame: pd.DataFrame, numerical: Sequence[str], categorical:
     for imputer in imputers:
         imputer.fit(frame)
     return imputers
+
+
+class _FillView:
+    """One fitted not-MIWAE read with another fill (E73): shares the model, renames the method."""
+
+    def __init__(self, fitted: VaeImputer, name: str, fill: str, draws: int) -> None:
+        self.name, self.fitted, self.fill, self.draws = name, fitted, fill, draws
+
+    def fit(self, frame: pd.DataFrame) -> None:
+        raise RuntimeError("a fill view reads an already fitted model")
+
+    def impute(self, frame: pd.DataFrame, hidden: NDArray[np.bool_]) -> pd.DataFrame:
+        fill, draws = self.fitted.fill, self.fitted.draws
+        self.fitted.fill, self.fitted.draws = self.fill, self.draws
+        try:
+            return self.fitted.impute(frame, hidden)
+        finally:
+            self.fitted.fill, self.fitted.draws = fill, draws
+
+
+E73_DRAWS = 10_000
+
+
+def fit_notmiwae_fills(frame: pd.DataFrame, numerical: Sequence[str], categorical: Sequence[str]) -> list[BaselineImputer]:
+    """E73: one not-MIWAE fit (E72's settings) read two ways with 10,000 draws: ``notmiwae_draws``
+    (E72's fill, more draws) and ``notmiwae_mean`` (the decoder's means under its weights)."""
+    fitted = VaeImputer(numerical, categorical, mnar=True)
+    fitted.fit(frame)
+    return [_FillView(fitted, "notmiwae_draws", "draws", E73_DRAWS), _FillView(fitted, "notmiwae_mean", "mean", E73_DRAWS)]
+

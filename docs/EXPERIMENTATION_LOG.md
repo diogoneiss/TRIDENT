@@ -99,6 +99,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E70 | Classification step zero, Stage 0: does HEAD on gorgona8 reproduce the old sweep's folds? | 2026-10-23 | does not reproduce | fold differences up to 0.026 (vehicle) and 0.076 (kc2) macro-F1, against a 0.009 duplicate spread; the regression test passes; Stage 2 reruns arm A on gorgona8 |
 | E71 | Classification step zero, Stage 2: what does pre-training buy classification under the fork's defaults? | 2026-10-23 – 2026-10-24 | no gain detected | B − A and C − A no verdict at every level (means −0.005 to +0.004 macro-F1), seeds 42 and 7; the paper's +1.7 points is outside the intervals at 0–60nan |
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
+| E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 – | in progress | one not-MIWAE fit per fold read with the decoder's weighted means (primary) and 10,000 draws; E72's six failed pairs, 27 pairs, offline CPU |
 
 ## Entries
 
@@ -2361,3 +2362,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - notmiwae − model on `impute_score` under MNAR: worse 9 / no difference 1.
 - **Conclusion:** mixed, for the user. H1d holds on vehicle, where the implementation imputes
   competently; on biodeg and spambase the fill fails, so those pairs do not test it.
+
+### E73 · not-MIWAE with a mean-based fill on biodeg and spambase (2026-10-24 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim, mas lance o
+  2 imediatamente em seguida", 2026-10-24, 11:56 GMT-3). T35.
+- **Hypothesis:** with a fill that works, modelling the mechanism shrinks the MNAR bias on biodeg
+  and spambase too (H1d). A pilot outside the study found E72's draw-averaged fill produced extreme
+  values; the decoder's weighted means did not.
+- **Scenarios:** E72's not-MIWAE fit, read as `notmiwae_mean` (primary) and `notmiwae_draws` (10,000
+  draws); MIWAE from E72; biodeg's five MNAR pairs and spambase's, 9 variants at 42/7/13, 27 pairs.
+- **Measures and decision rule:** (notmiwae_mean − miwae on `abs_bias`), MNAR minus MCAR, over 6
+  pairs: supported if better on 3 or more and worse on at most 1; refuted if better on at most 1;
+  mixed otherwise. Pairs where notmiwae_mean is not below the mean fill are flagged.
+- **Sources:** `docs/tickets/imputation-protocol/26-notmiwae-fill.md`; `scripts/experiments/not_miwae.py`,
+  `metric_panel.py --fitters notmiwae_fills`, `notmiwae_fill_report.py`, `run_notmiwae_fill_queue.sh`.
