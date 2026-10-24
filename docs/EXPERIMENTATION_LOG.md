@@ -2382,7 +2382,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Interaction better on biodeg_probit_60nan, biodeg_probit1p0_60nan and biodeg_probit2p0_60nan,
     worse on none; flagged (notmiwae_mean not below 1.0): slopes 1.0 and 2.0, and spambase.
   - notmiwae_mean's `impute_score` 0.84–1.03, level with MIWAE; E72's fill 1.7–9.4; 10,000 draws
-    1.5–8.3. The model 0.76–0.95.
+    1.5–8.3. The model 0.59–0.95.
   - On biodeg's dial the interaction grows with the tilt: none, −0.036, −0.095, −0.160.
 - **Conclusion:** the mean fill fixes E72's failure, and the mechanism term shrinks the bias more
   as the tilt steepens, but on these tables both VAEs impute near the mean fill. H1d's support is

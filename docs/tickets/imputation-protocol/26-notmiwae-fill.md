@@ -144,7 +144,7 @@ biodeg_probit_20nan).
   The draws read with 10,000 samples stays broken (1.5–8.3), confirming the pilot's diagnosis.
 - **But on these tables both VAEs impute at about the mean fill's level.** MIWAE and notmiwae_mean
   sit at 0.84–0.91 on biodeg's MCAR controls and at 0.97–1.03 on biodeg's 60nan dial and spambase,
-  against the model's 0.76–0.95. Where a method barely beats the mean fill, a smaller bias says
+  against the model's 0.59–0.95. Where a method barely beats the mean fill, a smaller bias says
   little about imputing well; that is why the ticket flagged those pairs.
 - **The mechanism term does move the fills the right way as the tilt steepens:** on biodeg's dial
   the interaction goes from no difference at slope 0.25 to −0.036 at 0.5, −0.095 at 1.0 and −0.160
