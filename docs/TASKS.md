@@ -502,6 +502,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Since (2026-10-23):** E66 ([21](tickets/imputation-protocol/21-tabpfn-blend-replication.md)) replicated the equal-weight blend on E40's tables and seeds at the rule's floor (3 of 9).
     Where one method dominates, the equal-weight blend lands near the better one, and on credit-g it
     cannot reach TabPFN, which is the case per-column weights address.
+  - **Running since 2026-10-23 as E69** ([imputation-protocol/24](tickets/imputation-protocol/24-blend-weights.md)), on the user's go ("vamos com t37", about 22:50 GMT-3), ahead of T35: route (a), cross-fitted, on E60's 15 variants and E61's 6.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

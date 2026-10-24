@@ -93,8 +93,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E64 | The MAR family: does MAR cost the model ground against the strong tier? | 2026-10-22 – 2026-10-23 | done | refuted: (H − strong) MAR minus control worse on 1 of 12 (biodeg_60nan, replicating the smoke); (H − bar) worse on 3 (the small numerical tables at 60nan); the smoke's "loses ground" does not survive |
 | E65 | Do decode masks that follow the missingness help under MAR? | 2026-10-22 – 2026-10-23 | done | refuted: P − G on H better on 0 of 12 under MAR, worse on 6; worse on 5 under the control; the interaction is null on 11; the flag stays off |
 | E66 | Does E60's complementarity hold on other tables and seeds? | 2026-10-23 | done | complementary at the floor: the blend beats both on 3 of 9 (spambase_80nan, vehicle_60nan, biodeg_60nan); where one method dominates it lands near the better one; on credit-g it cannot reach TabPFN (categorical cells) |
-| E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 | refuted | arm N (`DECODE_GAP_TOKEN null` only) on 8 MNAR pairs (biodeg's dial, E46's four), seeds 42/7/13, against E45/E46's G: 39 cells |
+| E67 | The gaps as `[NULL]` in the decode stage, alone: does the token help under MNAR? | 2026-10-23 | refuted | the interaction on H is better on 1 of 8 pairs and worse on 2; on biodeg's dial `[NULL]` alone costs more as the tilt steepens, so Mx's signal came from its other two changes |
 | E68 | The tuned bar on the MAR folds: D4 under MAR | 2026-10-23 – | in progress | E42's driver on E64's 24 and E63's 8 variants, 96 pairs, offline CPU |
+| E69 | Per-column weights for the K + TabPFN blend, cross-fitted | 2026-10-23 – | in progress | E60's fills on E44's 15 confirmation variants and E40's kr-vs-kp/credit-g at 40–80nan, 63 pairs, offline GPU |
 
 ## Entries
 
@@ -2257,3 +2258,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     4 or more and better on at most 1; refuted if worse on at most 1; mixed otherwise.
 - **Sources:** `docs/tickets/imputation-protocol/23-mar-tuned-bar.md`;
   `scripts/experiments/baseline_budget_run.py`, `mar_tuned_bar_report.py`.
+
+### E69 · Per-column weights for the K + TabPFN blend, cross-fitted (2026-10-23 – )
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("vamos com t37",
+  2026-10-23, about 22:50 GMT-3). T37.
+- **Hypothesis:** a weight per column, chosen on the other folds' cells, lets the blend beat TabPFN
+  where E60/E66's equal blend only matched it or lost (TabPFN's 80nan ties; kr-vs-kp and credit-g's
+  categorical cells).
+- **Scenarios:** E60's fills (K from the ledgers, TabPFN v2 refitted) on E44's 15 confirmation
+  variants at 707/808/909 and E40's kr-vs-kp and credit-g at 40/60/80nan at 404/505/606: 63 pairs.
+  Numerical weights from {0, 0.25, 0.5, 0.75, 1}, categorical a pick of either category; fold k's
+  weights from the other four folds' induced cells; ties to the equal blend.
+- **Measures and decision rule:**
+  - weighted − equal, weighted − TabPFN and weighted − model per variant, with the 1% SESOI;
+  - **primary,** weighted − TabPFN on the 10 hard variants: supported if better on 4 or more;
+    refuted if better on at most 1; mixed otherwise. Descriptive, no default changes.
+- **Sources:** `docs/tickets/imputation-protocol/24-blend-weights.md`;
+  `scripts/experiments/blend_weights.py`, `run_blend_weights_queue.sh`.
