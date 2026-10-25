@@ -1,9 +1,11 @@
-"""E75: a test-time re-masking ensemble on E44's confirmation variants (imputation-protocol/28, T36).
+"""E75: a test-time re-masking ensemble on E44's confirmation variants (imputation-protocol/28, T36);
+E76: its replication on the 21 development variants (imputation-protocol/29), with ``--study e76``.
 
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py train <variant> <seed> [--no-mlflow]
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --todo <n>
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --tally
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --within-column   (post hoc)
+    uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --study e76 <any of the above>
 
 ``train`` runs one cell of today's default imputation configuration, read as a default run of the
 checkout reads it, five folds, with ``--score_checkpoints`` (H) and ``--score_remask`` (the passes),
@@ -39,12 +41,43 @@ VARIANTS = [
 SESOI = 0.01
 QUEUES = 4
 ROWS = {"electricity": 45312, "letter": 20000, "pendigits": 10992, "biodeg": 1055, "vehicle": 846, "kc2": 522}
-# (remask, single pass) fold-table columns per readout; K and H are uncalibrated, KC is ADR 0027's.
+# The passes' fold-table column per readout; the single pass is ``readout_key``'s (K and H
+# uncalibrated, KC ADR 0027's, read only where the run is calibrated).
 ACCURACY = {
-    "K": ("impute/induced/remask/impute_score", "impute/induced/uncalibrated/impute_score"),
-    "H": ("impute/induced/loss_checkpoint_remask/impute_score", "impute/induced/loss_checkpoint/impute_score"),
-    "KC": ("impute/induced/remask_calibrated/impute_score", "impute/induced/impute_score"),
+    "K": "impute/induced/remask/impute_score",
+    "H": "impute/induced/loss_checkpoint_remask/impute_score",
+    "KC": "impute/induced/remask_calibrated/impute_score",
 }
+STUDY = "e75"
+DEVELOPMENT_SEEDS = "101/202/303"
+
+
+def _use_development() -> None:
+    """E76's cells: the 21 development variants at 101/202/303 (thesis_table.DEVELOPMENT)."""
+    global EXPERIMENT, STATE, SEEDS, VARIANTS, STUDY
+    EXPERIMENT, STATE, SEEDS, STUDY = "remask-development-2026-10-25", Path("/scratch2/diogoneiss/trident-2026-10-25-remask-dev"), (101, 202, 303), "e76"
+    VARIANTS = [
+        *(f"{table}_{level}nan" for table in ("kr-vs-kp", "spambase", "credit-g") for level in (20, 40, 60, 80)),
+        "vehicle_20nan", "vehicle_60nan", "biodeg_20nan", "biodeg_60nan", "kc2_20nan", "kc2_60nan",
+        "pendigits_20nan", "letter_20nan", "electricity_20nan",
+    ]
+    ROWS.update({"kr-vs-kp": 3196, "spambase": 4601, "credit-g": 1000})
+
+
+def _reference(variant: str, seed: int) -> common.Run | None:
+    """The run of the same cell the study's K is checked against: E44's, or the thesis table's."""
+    if STUDY == "e75":
+        found = common.parents("confirmation-2026-10-17").get((variant, seed))
+    else:
+        source = common.development_source(variant, DEVELOPMENT_SEEDS)
+        found = None if source is None else common.parents(source.experiment, source.arm).get((variant, seed))
+    return found[0] if found else None
+
+
+def _single(frame: pd.DataFrame) -> pd.DataFrame:
+    """The single pass's ledger rows, uncalibrated: beside a calibrated run's ``induced`` rows, or those."""
+    population = "induced_uncalibrated" if (frame["population"] == "induced_uncalibrated").any() else "induced"
+    return frame[frame["population"] == population]
 LEDGER = {"K": "induced_remask", "H": "induced_remask_loss_checkpoint"}
 Z90 = 1.645
 
@@ -121,7 +154,6 @@ def _interval(values: list[float]) -> tuple[float, float, float, int]:
 
 def tally() -> None:
     runs = common.parents(EXPERIMENT)
-    reference = common.parents("confirmation-2026-10-17")
     calls: dict[str, dict[str, str]] = {readout: {} for readout in ACCURACY}
     signals: dict[str, dict[str, list[str]]] = {readout: {"num_rank": [], "cat_rank": []} for readout in LEDGER}
     dispersion_calls: list[str] = []
@@ -133,8 +165,10 @@ def tally() -> None:
             continue
         tables = [common.fold_table(f[0]) for f in found if f]
         parts = []
-        for readout, (ours, theirs) in ACCURACY.items():
-            single = [np.asarray(t[theirs], dtype=float) for t in tables]
+        for readout, ours in ACCURACY.items():
+            if ours not in tables[0].columns:
+                continue
+            single = [common.model(t, f[0], readout) for t, f in zip(tables, found) if f]
             diffs = [np.asarray(t[ours], dtype=float) - s for t, s in zip(tables, single)]
             v = common.verdict(diffs, sesoi=SESOI * float(np.mean([s.mean() for s in single])))
             calls[readout][variant] = v.call
@@ -153,21 +187,23 @@ def tally() -> None:
                 if measure in signals[readout]:
                     signals[readout][measure].append("signal" if np.isfinite(low) and low > 0 else "no signal")
             lines.append(f"{readout}: " + ", ".join(shown))
-        single_cat = [_signals(frame[frame["population"] == "induced_uncalibrated"].assign(spread=lambda c: 1.0 - c["confidence"].astype(float))).get("cat_rank", float("nan")) for frame in ledgers.values()]
+        single_cat = [_signals(_single(frame).assign(spread=lambda c: 1.0 - c["confidence"].astype(float))).get("cat_rank", float("nan")) for frame in ledgers.values()]
         mean, low, high, n = _interval(single_cat)
         if n:
             lines.append(f"single pass, 1 − confidence: cat_rank {mean:+.3f} [{low:+.3f}, {high:+.3f}] ({n} folds)")
         print("  - uncertainty, " + "; ".join(lines))
         diffs = [np.array([_dispersion(ledgers[seed, fold][ledgers[seed, fold]["population"] == "induced_remask"])
-                           - _dispersion(ledgers[seed, fold][ledgers[seed, fold]["population"] == "induced_uncalibrated"]) for fold in range(1, 6)])
+                           - _dispersion(_single(ledgers[seed, fold])) for fold in range(1, 6)])
                  for seed in SEEDS]
-        v = common.verdict(diffs)
-        call = {"better": "lower", "worse": "higher"}.get(v.call, v.call)
-        dispersion_calls.append(call)
-        print(f"  - dispersion, remask − K: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {call}")
+        if np.isfinite(np.concatenate(diffs)).all():
+            v = common.verdict(diffs)
+            call = {"better": "lower", "worse": "higher"}.get(v.call, v.call)
+            dispersion_calls.append(call)
+            print(f"  - dispersion, remask − K: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {call}")
         for seed, f in zip(SEEDS, found):
-            if f and (variant, seed) in reference:
-                old = common.model(common.fold_table(reference[variant, seed][0]), reference[variant, seed][0], "K")
+            old_run = _reference(variant, seed)
+            if f and old_run is not None:
+                old = common.model(common.fold_table(old_run), old_run, "K")
                 new = common.model(common.fold_table(f[0]), f[0], "K")
                 reproduced.append(float(np.max(np.abs(old - new))))
     print()
@@ -179,7 +215,11 @@ def tally() -> None:
                 print(f"- {measure}, {readout}: signal on {marks.count('signal')} of {len(marks)} variants with the kind")
     print(f"- dispersion, remask − K: lower {dispersion_calls.count('lower')}, higher {dispersion_calls.count('higher')}, of {len(dispersion_calls)}")
     if reproduced:
-        print(f"- K against E44's run of the same cell, largest fold difference: {max(reproduced):.2e} over {len(reproduced)} cells")
+        print(f"- K against the earlier run of the same cell, largest fold difference: {max(reproduced):.2e} over {len(reproduced)} cells")
+    if STUDY == "e76":
+        print()
+        development_primary(within_column())
+        return
     if len(calls["K"]) < len(VARIANTS):
         print(f"\nPrimary: incomplete ({len(calls['K'])} of {len(VARIANTS)})")
         return
@@ -195,11 +235,15 @@ def tally() -> None:
           f"worse on {worse['K'] or 'none'} (K) and {worse['H'] or 'none'} (H) -> {reading} ({common.RULE})")
 
 
-def within_column() -> None:
+def within_column() -> dict[str, dict[str, str]]:
     """Post hoc, after E75's Outcome (not pre-registered): ``num_rank`` within each numerical column,
     averaged over the columns with a usable value, per fold; does the spread rank cells, or only
     columns? Also the column-level part: Spearman of each column's mean spread against its RMSE."""
+    marks: dict[str, dict[str, str]] = {readout: {} for readout in LEDGER}
     for variant in VARIANTS:
+        if any((variant, seed) not in common.parents(EXPERIMENT) for seed in SEEDS):
+            print(f"- `{variant}`: incomplete")
+            continue
         parts = []
         for readout, population in LEDGER.items():
             within, between = [], []
@@ -216,11 +260,36 @@ def within_column() -> None:
             for name, values in (("within", within), ("columns", between)):
                 mean, low, high, n = _interval(values)
                 parts.append(f"{readout} {name} {mean:+.3f} [{low:+.3f}, {high:+.3f}] ({n})")
+                if name == "within" and n:
+                    marks[readout][variant] = "signal" if low > 0 else "against" if high < 0 else "no signal"
         print(f"- `{variant}`: " + "; ".join(parts))
+    return marks
+
+
+def development_primary(marks: dict[str, dict[str, str]]) -> None:
+    """E76's rule (imputation-protocol/29): the within-column signal on the variants up to 60nan
+    that hold numerical gaps, under K and H."""
+    scope = [v for v in VARIANTS if not v.endswith("_80nan") and v in marks["K"]]
+    counts = {r: sum(marks[r].get(v) == "signal" for v in scope) for r in ("K", "H")}
+    against = [v for v in scope if marks["K"].get(v) == "against"]
+    if len(scope) < 15:
+        print(f"Primary: incomplete ({len(scope)} of 15 variants up to 60nan with numerical gaps)")
+        return
+    if all(counts[r] >= 13 for r in ("K", "H")) and not against:
+        reading = "supported"
+    elif counts["K"] <= 10 or against:
+        reading = "refuted"
+    else:
+        reading = "mixed"
+    print(f"Primary: within-column signal on {counts['K']} (K) and {counts['H']} (H) of {len(scope)} variants up to 60nan, "
+          f"ranking against the errors on {against or 'none'} (K) -> {reading}")
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:2] == ["--study", "e76"]:
+        _use_development()
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) in (3, 4):
         train(argv[1], int(argv[2]), argv[3:] == ["--no-mlflow"])
     elif argv[:1] == ["--todo"] and len(argv) == 2:

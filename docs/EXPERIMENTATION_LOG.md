@@ -102,6 +102,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 | supported by the count, one informative pair | interaction better on 3 of 6, worse on none; 2 of the 3 are flagged (fill not below the mean fill); the mean fill removes E72's failure but both VAEs sit near the mean fill on these tables |
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
 | E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
+| E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 | in progress | |
 
 ## Entries
 
@@ -2434,3 +2435,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** mixed on accuracy, and the gains at 80nan are shrinkage that calibration already
   takes, so averaging is not proposed. The numerical spread meets the pre-stated bar for an opt-in
   uncertainty output, a ranking signal and not an interval; the user decides on an ADR.
+
+### E76 · Does the re-masking spread rank cells on the development variants? (2026-10-25)
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-25, about
+  09:45 GMT-3). T36; tests ADR 0030's (proposed) scope.
+- **Hypothesis:** the numerical spread ranks the errors within a column up to 60nan (E75's post-hoc
+  reading), on other tables and seeds.
+- **Scenarios:** today's default with `--score_checkpoints --score_remask` on the 21 development
+  variants at 101/202/303 (63 cells).
+- **Measures and decision rule:** within-column Spearman of spread against absolute error, a signal
+  where its 95% interval over 15 folds lies above 0, on the 15 variants up to 60nan with numerical
+  gaps. Supported if a signal on 13 or more under K and H and none against under K; refuted if 10 or
+  fewer under K or any against; mixed otherwise. E75's other measures descriptive.
+- **Sources:** `docs/tickets/imputation-protocol/29-remask-development.md`;
+  `scripts/experiments/remask_ensemble.py --study e76`, `run_remask_queue.sh` (`STUDY=e76`).
