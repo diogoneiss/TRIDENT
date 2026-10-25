@@ -42,3 +42,19 @@ This ticket was written and committed before the study's reading was run on E75'
 - **supported:** ADR 0030 is amended to offer a cross-fitted interval beside the rank, for the user's
   decision.
 - **otherwise:** ADR 0030 stays a rank and says the spread does not beat a constant width.
+
+## Amendment (2026-10-25, about 09:58 GMT-3, before any result was read)
+
+- **What happened:** the first run of the reader warned that quantiles came out NaN.
+  - A numerical cell whose 20 passes agree has spread 0, so |error| / spread is infinite there, and
+    the 90% quantile can fall between two infinities.
+  - The design did not say what to do with such cells.
+- **What was looked at:** only those warnings and the share of zero-spread cells per variant. That
+  share is under 2% at 40nan, 0.4–7% at 60nan, and 10–32% at 80nan (biodeg_80nan 0.5%). No width or
+  coverage was read, and that run's output was discarded.
+- **The fix:**
+  - The spread is floored, per column, at the smallest positive spread on the fit folds, for both
+    the fit and the scored cells.
+  - A column with no positive spread on its fit folds gets a floor of 1, which makes its spread
+    interval a constant one.
+  - The rule and every other part of the design are unchanged.

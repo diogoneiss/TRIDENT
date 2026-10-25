@@ -278,10 +278,13 @@ def _intervals(cells: pd.DataFrame, others: pd.DataFrame) -> tuple[float, float,
         fit = others[others["column"] == column]
         if fit.empty:
             continue
-        ratio = fit["error"] / fit["spread"].where(fit["spread"] > 0)
-        q = float(np.quantile(ratio.fillna(np.inf), 0.9))
+        # Amendment (2026-10-25, before the reading): a cell whose 20 passes agree has spread 0, so
+        # the spread is floored at the column's smallest positive spread on the fit folds.
+        positive = fit["spread"][fit["spread"] > 0]
+        floor = float(positive.min()) if len(positive) else 1.0
+        q = float(np.quantile(fit["error"] / fit["spread"].clip(lower=floor), 0.9))
         w = float(np.quantile(fit["error"], 0.9))
-        for arm, half in (("spread", q * group["spread"]), ("constant", pd.Series(w, index=group.index))):
+        for arm, half in (("spread", q * group["spread"].clip(lower=floor)), ("constant", pd.Series(w, index=group.index))):
             covered[arm].append((group["error"] <= half).to_numpy())
             widths[arm].append(2 * half.to_numpy(dtype=float))
     if not covered["spread"]:
