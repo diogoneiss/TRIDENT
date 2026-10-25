@@ -5,6 +5,7 @@ E76: its replication on the 21 development variants (imputation-protocol/29), wi
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --todo <n>
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --tally
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --within-column   (post hoc)
+    uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --conformal   (E77, imputation-protocol/30)
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --study e76 <any of the above>
 
 ``train`` runs one cell of today's default imputation configuration, read as a default run of the
@@ -266,6 +267,86 @@ def within_column() -> dict[str, dict[str, str]]:
     return marks
 
 
+def _intervals(cells: pd.DataFrame, others: pd.DataFrame) -> tuple[float, float, float, float]:
+    """E77: one fold's numerical cells, per column, under the two 90% intervals fitted on the other
+    folds' cells of that column: ``q`` × spread (q, the 90% quantile of |error| / spread) and a
+    constant half-width (the 90% quantile of |error|). Coverage and mean width of each, pooled
+    over the fold's cells; a column absent from the other folds is left out."""
+    covered: dict[str, list[np.ndarray]] = {"spread": [], "constant": []}
+    widths: dict[str, list[np.ndarray]] = {"spread": [], "constant": []}
+    for column, group in cells.groupby("column"):
+        fit = others[others["column"] == column]
+        if fit.empty:
+            continue
+        ratio = fit["error"] / fit["spread"].where(fit["spread"] > 0)
+        q = float(np.quantile(ratio.fillna(np.inf), 0.9))
+        w = float(np.quantile(fit["error"], 0.9))
+        for arm, half in (("spread", q * group["spread"]), ("constant", pd.Series(w, index=group.index))):
+            covered[arm].append((group["error"] <= half).to_numpy())
+            widths[arm].append(2 * half.to_numpy(dtype=float))
+    if not covered["spread"]:
+        return (float("nan"),) * 4
+    return (
+        float(np.concatenate(covered["spread"]).mean()), float(np.concatenate(widths["spread"]).mean()),
+        float(np.concatenate(covered["constant"]).mean()), float(np.concatenate(widths["constant"]).mean()),
+    )
+
+
+def _numerical(frame: pd.DataFrame, population: str, centre: str) -> pd.DataFrame:
+    """A population's numerical cells with its spread and the absolute error of the ``centre``
+    population's fill on the same cell."""
+    spread = frame[(frame["population"] == population) & (frame["kind"] == "numerical")][["row", "column", "spread"]]
+    fills = frame[(frame["population"] == centre) & (frame["kind"] == "numerical")][["row", "column", "imputed", "actual"]]
+    cells = spread.merge(fills, on=["row", "column"], validate="one_to_one")
+    assert len(cells) == len(spread) == len(fills), "the populations hold different cells"
+    return cells.assign(error=(cells["imputed"].astype(float) - cells["actual"].astype(float)).abs(), spread=cells["spread"].astype(float))
+
+
+def conformal() -> None:
+    """E77's reading (imputation-protocol/30): per variant, the spread interval's width relative to
+    the constant one, (spread − constant) / constant per fold, cross-fitted within each seed."""
+    readouts = {"K": ("induced_remask", "induced"), "H": ("induced_remask_loss_checkpoint", "induced_remask_loss_checkpoint")}
+    calls: dict[str, dict[str, str]] = {r: {} for r in readouts}
+    for variant in VARIANTS:
+        if any((variant, seed) not in common.parents(EXPERIMENT) for seed in SEEDS):
+            print(f"- `{variant}`: incomplete")
+            continue
+        parts = []
+        for readout, (population, centre) in readouts.items():
+            relative: list[float] = []
+            cover: dict[str, list[float]] = {"spread": [], "constant": []}
+            for seed in SEEDS:
+                folds = {k: _numerical(_ledger(variant, seed, k), population, centre) for k in range(1, 6)}
+                if all(f.empty for f in folds.values()):
+                    break
+                for k, cells in folds.items():
+                    others = pd.concat([f for j, f in folds.items() if j != k], ignore_index=True)
+                    cs, ws, cc, wc = _intervals(cells, others)
+                    relative.append((ws - wc) / wc)
+                    cover["spread"].append(cs)
+                    cover["constant"].append(cc)
+            if not relative:
+                continue
+            v = common.verdict([np.asarray(relative[i:i + 5]) for i in range(0, len(relative), 5)], sesoi=SESOI)
+            calls[readout][variant] = v.call
+            parts.append(f"{readout}: width (spread − constant) / constant {v.mean:+.3f} [{v.low:+.3f}, {v.high:+.3f}] {v.call}; "
+                         f"coverage spread {np.mean(cover['spread']):.3f}, constant {np.mean(cover['constant']):.3f}")
+        if parts:
+            print(f"- `{variant}`: " + "; ".join(parts))
+    print()
+    for readout, by_variant in calls.items():
+        print(f"- width, {readout}: {common.tally(by_variant.values())}")
+    scored = calls["K"]
+    if len(scored) < sum(1 for v in VARIANTS if not v.startswith("kr-vs-kp")):
+        print(f"\nPrimary: incomplete ({len(scored)})")
+        return
+    better = [v for v, c in scored.items() if c == "better"]
+    worse = [v for v, c in scored.items() if c == "worse"]
+    reading = "supported" if len(better) >= 10 and len(worse) <= 1 else "refuted" if len(better) <= 5 or len(worse) >= 4 else "mixed"
+    print(f"\nPrimary: the spread interval is narrower than the constant one at the same target on {len(better)} of {len(scored)} (K), "
+          f"wider on {worse or 'none'} -> {reading} ({common.RULE})")
+
+
 def development_primary(marks: dict[str, dict[str, str]]) -> None:
     """E76's rule (imputation-protocol/29): the within-column signal on the variants up to 60nan
     that hold numerical gaps, under K and H."""
@@ -294,6 +375,8 @@ if __name__ == "__main__":
         train(argv[1], int(argv[2]), argv[3:] == ["--no-mlflow"])
     elif argv[:1] == ["--todo"] and len(argv) == 2:
         todo(int(argv[1]))
+    elif argv == ["--conformal"]:
+        conformal()
     elif argv == ["--within-column"]:
         within_column()
     elif argv in (["--tally"], []):

@@ -103,6 +103,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
 | E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 | in progress | |
+| E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | in progress | |
 
 ## Entries
 
@@ -2450,3 +2451,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   fewer under K or any against; mixed otherwise. E75's other measures descriptive.
 - **Sources:** `docs/tickets/imputation-protocol/29-remask-development.md`;
   `scripts/experiments/remask_ensemble.py --study e76`, `run_remask_queue.sh` (`STUDY=e76`).
+
+### E77 · Does the re-masking spread make intervals narrower at the same coverage? (2026-10-25)
+
+- **Status:** in progress. Pre-registered before the reading ran (2026-10-25, on item 4 of the plan
+  the user accepted). Offline, on E75's ledgers. T36; ADR 0030 (proposed).
+- **Hypothesis:** scaled to a 90% target, the spread gives narrower intervals than a constant width
+  at the same coverage.
+- **Scenarios:** E75's 15 variants × 3 seeds × 5 folds; per numerical column, a spread interval and a
+  constant one, each fitted on the other four folds; centred on the headline fill (K) and on H's
+  passes (descriptive).
+- **Measures and decision rule:** (spread − constant) / constant mean width, 1% SESOI. Supported if
+  narrower on 10 or more under K and wider on at most 1; refuted if narrower on 5 or fewer or wider
+  on 4 or more; mixed otherwise. Disclosure: the self-check saw two folds of one E75 cell before this
+  entry (ticket).
+- **Sources:** `docs/tickets/imputation-protocol/30-remask-conformal.md`;
+  `scripts/experiments/remask_ensemble.py --conformal`.
