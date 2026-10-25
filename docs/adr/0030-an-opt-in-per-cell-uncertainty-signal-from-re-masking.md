@@ -1,6 +1,7 @@
 # ADR 0030: An opt-in per-cell uncertainty signal from re-masking passes (proposed)
 
-- **Status:** proposed, 2026-10-25. For the user's decision. The user asked for the proposal
+- **Status:** proposed, 2026-10-25. For the user's decision. Amended the same day with E77 (refuted: no
+  better intervals) before any decision. The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
   ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
 - **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
@@ -32,6 +33,10 @@
   - **Columns:** they carry the rest. On electricity the column-level relation is negative.
 - **It is a ranking, not an interval.** At a nominal 90% (fill ± 1.645 spreads), coverage is
   17–66%. The spread is too narrow, more so as missingness grows.
+- **It does not beat a constant width (E77, [30](../tickets/imputation-protocol/30-remask-conformal.md),
+  refuted).** Scaled to 90% coverage with cross-fitting, the spread interval is wider than a
+  per-column constant one on 15 of 15 variants. At 40nan it is 9–144% wider. The ranking is real but
+  too weak to adapt a width.
 - **Categories:** the single pass's own 1 − confidence ranks the misses better than the vote share,
   on all 3 variants with categorical gaps.
 - **The averaged fill is not an output.**
@@ -72,19 +77,21 @@
     vehicle_40nan, 20 forward passes per checkpoint, more on the large tables.
 - **The averaged fill as the output.** Rejected on E75 (a): it is worse on pendigits and letter at
   40–60nan, and calibration already takes its 80nan gain.
-- **Scaled into intervals now.** Deferred. One option is a factor fitted on the validation gaps so
-  that 90% of them fall inside, as split conformal does. That needs its own pre-registered study.
+- **Scaled into intervals.** Rejected on E77: a cross-fitted spread interval is wider than a
+  constant one at the same coverage on 15 of 15. A per-column constant interval needs no passes at
+  all.
 
 ## Consequences
 
 - **What the thesis can claim:** the decoder gives, without retraining, a per-cell signal that ranks
   its numerical errors up to 60% missing. The claim cites E75's ρ and the coverage shortfall beside
   it.
+- **What it cannot claim:** a better interval. E77 found a constant per-column width narrower at the
+  same coverage, so the signal's use is to flag cells (which fills to check first), not to size them.
 - **Limits that travel with the claim:**
   - It was tested on one seed set and the 15 confirmation variants, under MCAR only.
   - kr-vs-kp and credit-g, the categorical-heavy tables, and the MAR and MNAR families are untested.
   - The cell-level reading is post-hoc.
 - **Follow-ups, each its own pre-registered study if the user wants it:**
   - a replication on the development variants (101/202/303);
-  - the conformal scaling into intervals;
   - the MNAR family, where an honest signal should grow with the mechanism's tilt.

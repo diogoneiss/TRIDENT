@@ -58,3 +58,44 @@ This ticket was written and committed before the study's reading was run on E75'
   - A column with no positive spread on its fit folds gets a floor of 1, which makes its spread
     interval a constant one.
   - The rule and every other part of the design are unchanged.
+
+## Outcome (2026-10-25, 09:59 GMT-3)
+
+**The printout** (`scripts/experiments/remask_ensemble.py --conformal`, on the amended reader, unedited):
+
+```text
+- `pendigits_40nan`: K: width (spread − constant) / constant +0.316 [+0.308, +0.325] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +0.233 [+0.223, +0.243] worse; coverage spread 0.900, constant 0.900
+- `pendigits_60nan`: K: width (spread − constant) / constant +0.468 [+0.455, +0.481] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +0.431 [+0.410, +0.451] worse; coverage spread 0.900, constant 0.900
+- `pendigits_80nan`: K: width (spread − constant) / constant +2415.799 [+1225.109, +3606.488] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +1914.865 [+1566.428, +2263.301] worse; coverage spread 0.900, constant 0.900
+- `letter_40nan`: K: width (spread − constant) / constant +0.443 [+0.435, +0.451] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +0.394 [+0.386, +0.401] worse; coverage spread 0.900, constant 0.900
+- `letter_60nan`: K: width (spread − constant) / constant +0.729 [+0.718, +0.741] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +0.766 [+0.725, +0.808] worse; coverage spread 0.900, constant 0.900
+- `letter_80nan`: K: width (spread − constant) / constant +1911.780 [+1675.251, +2148.310] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +3331.681 [+2312.246, +4351.115] worse; coverage spread 0.900, constant 0.900
+- `electricity_40nan`: K: width (spread − constant) / constant +1.436 [+1.366, +1.507] worse; coverage spread 0.899, constant 0.900; H: width (spread − constant) / constant +1.361 [+1.282, +1.440] worse; coverage spread 0.900, constant 0.900
+- `electricity_60nan`: K: width (spread − constant) / constant +11.038 [+6.955, +15.122] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +17.987 [+7.748, +28.226] worse; coverage spread 0.900, constant 0.900
+- `electricity_80nan`: K: width (spread − constant) / constant +10794.694 [+9104.367, +12485.021] worse; coverage spread 0.900, constant 0.900; H: width (spread − constant) / constant +33750.872 [+20746.426, +46755.319] worse; coverage spread 0.900, constant 0.899
+- `vehicle_40nan`: K: width (spread − constant) / constant +0.395 [+0.339, +0.451] worse; coverage spread 0.897, constant 0.895; H: width (spread − constant) / constant +0.408 [+0.335, +0.482] worse; coverage spread 0.895, constant 0.896
+- `vehicle_80nan`: K: width (spread − constant) / constant +65.673 [+23.563, +107.783] worse; coverage spread 0.899, constant 0.898; H: width (spread − constant) / constant +33.882 [+20.901, +46.863] worse; coverage spread 0.898, constant 0.898
+- `biodeg_40nan`: K: width (spread − constant) / constant +0.542 [+0.171, +0.913] worse; coverage spread 0.892, constant 0.891; H: width (spread − constant) / constant +0.078 [+0.025, +0.130] worse; coverage spread 0.898, constant 0.896
+- `biodeg_80nan`: K: width (spread − constant) / constant +2.224 [+0.709, +3.739] worse; coverage spread 0.872, constant 0.893; H: width (spread − constant) / constant +16.354 [+4.562, +28.147] worse; coverage spread 0.844, constant 0.892
+- `kc2_40nan`: K: width (spread − constant) / constant +0.092 [+0.036, +0.147] worse; coverage spread 0.893, constant 0.897; H: width (spread − constant) / constant +0.037 [-0.043, +0.116] none; coverage spread 0.892, constant 0.894
+- `kc2_80nan`: K: width (spread − constant) / constant +3.748 [+3.050, +4.446] worse; coverage spread 0.897, constant 0.898; H: width (spread − constant) / constant +3.506 [+2.943, +4.069] worse; coverage spread 0.895, constant 0.896
+
+- width, K: better 0 / no difference 0 / worse 15 (fold-pair t, seed agreement)
+- width, H: better 0 / no difference 1 / worse 14 (fold-pair t, seed agreement)
+
+Primary: the spread interval is narrower than the constant one at the same target on 0 of 15 (K), wider on ['pendigits_40nan', 'pendigits_60nan', 'pendigits_80nan', 'letter_40nan', 'letter_60nan', 'letter_80nan', 'electricity_40nan', 'electricity_60nan', 'electricity_80nan', 'vehicle_40nan', 'vehicle_80nan', 'biodeg_40nan', 'biodeg_80nan', 'kc2_40nan', 'kc2_80nan'] -> refuted (fold-pair t, seed agreement)
+```
+
+**Reading: refuted.** The spread interval is narrower on 0 of 15 and wider on all 15 under K (H:
+wider on 14, no difference on kc2_40nan), at the same coverage (both 0.84–0.90, nearly all 0.89–0.90).
+
+- **At 40nan, where zero spreads are 0–2%**, the floor plays no part, and the spread interval is still
+  9–144% wider: kc2 +0.09, vehicle +0.40, pendigits +0.32, letter +0.44, biodeg +0.54,
+  electricity +1.44.
+- **At 60 and 80nan the ratios are dominated by the amendment's floor.** The zero-spread cells,
+  scaled by the smallest positive spread, drive q up, so those magnitudes (up to ×10⁴) measure the
+  floor, not the spread. The 40nan reading alone already decides the rule.
+- **What it means:** the within-column ranking E75 found (ρ about 0.1–0.5) is too weak to adapt a
+  width. A per-column constant interval, fitted the same way, is narrower at the same coverage.
+- **What it leads to, as fixed above:** ADR 0030 stays a rank and says the spread does not beat a
+  constant width.

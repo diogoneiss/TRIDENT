@@ -477,6 +477,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     spread ranks the errors on 12 of 15 under K and H (the pre-stated bar) but covers 17–66% at a
     nominal 90%. An opt-in uncertainty output (a ranking signal) is the user's call.
   - **ADR 0030 proposed 2026-10-25** on the user's request ("Podemos propor essa ADR"): the numerical spread as an opt-in per-cell ranking signal up to 60nan (a post-hoc within-column check holds on 9 of 9 there), categorical uncertainty from the single pass's confidence, the fill unchanged. Awaits the user's decision.
+  - **E77 done 2026-10-25, refuted** ([imputation-protocol/30](tickets/imputation-protocol/30-remask-conformal.md)): a cross-fitted spread interval is wider than a per-column constant one on 15 of 15 at the same 90% coverage; ADR 0030 stays a rank (amended).
   - **Running from 2026-10-25 as E76** ([imputation-protocol/29](tickets/imputation-protocol/29-remask-development.md)): the within-column reading, pre-registered, on the 21 development variants at 101/202/303.
 
 - **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59

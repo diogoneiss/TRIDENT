@@ -103,7 +103,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
 | E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 | in progress | |
-| E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | in progress | |
+| E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
 
 ## Entries
 
@@ -2454,7 +2454,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E77 · Does the re-masking spread make intervals narrower at the same coverage? (2026-10-25)
 
-- **Status:** in progress. Pre-registered before the reading ran (2026-10-25, on item 4 of the plan
+- **Status:** done, refuted (2026-10-25, 09:59 GMT-3). Pre-registered before the reading ran (2026-10-25, on item 4 of the plan
   the user accepted). Offline, on E75's ledgers. T36; ADR 0030 (proposed).
 - **Hypothesis:** scaled to a 90% target, the spread gives narrower intervals than a constant width
   at the same coverage.
@@ -2467,3 +2467,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   entry (ticket).
 - **Sources:** `docs/tickets/imputation-protocol/30-remask-conformal.md`;
   `scripts/experiments/remask_ensemble.py --conformal`.
+- **Amendment (before the reading):** zero spreads (passes that agree; 10–32% of cells at 80nan)
+  floored at the column's smallest positive spread.
+- **Results:** narrower on 0 / wider on 15 under K; H wider on 14, no difference on 1; coverage
+  0.84–0.90 for both. At 40nan the spread interval is 9–144% wider; the 60–80nan magnitudes reflect
+  the floor.
+- **Conclusion:** refuted. The spread ranks errors within a column but too weakly to adapt an
+  interval; ADR 0030 stays a rank.
