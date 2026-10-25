@@ -141,6 +141,11 @@ fold metrics leaves it unchanged.
   - On the 3090 Ti with four queues, a rough guess is 10–15 h per untuned 300/150 arm, and about a
     fifth of that at 40/40.
   - Tuning multiplies by the trial count.
+  - **Timed on 2026-10-25** (decision 6): one fold of electricity_40nan at `--cv_folds 10`, seed 42,
+    the sweep's configuration (300/150, `cosine_legacy`), alone on gorgona8's RTX 3090 Ti, took about
+    5 min 50 s (09:49:45–09:55:35 GMT-3, data loading included), so about 1 h for a 10-fold cell
+    alone. E71's electricity_40nan arm A, 3-fold under four queues, took 890–960 s a fold. The run
+    was stopped after fold 1, to free the GPU for E76; MLflow off.
   - **A reduced option:** tune on a subset and evaluate on all 45. The subset must cover every
     level on every base; the 21-variant subset has 80nan for only 3 bases (review #16, trap 4).
 
