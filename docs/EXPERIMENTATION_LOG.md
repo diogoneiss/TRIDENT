@@ -101,7 +101,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E72 | An imputer that models the mechanism: does not-MIWAE shrink the MNAR bias? | 2026-10-24 | mixed | interaction better on 3 of 10 (vehicle at 60 and 20nan, biodeg slope 2.0), worse on none; not-MIWAE's fills fail on biodeg and spambase (impute_score 1.7–9.4); on vehicle it matches the model and its bias moves least of 12 |
 | E73 | not-MIWAE with a mean-based fill on biodeg and spambase | 2026-10-24 | supported by the count, one informative pair | interaction better on 3 of 6, worse on none; 2 of the 3 are flagged (fill not below the mean fill); the mean fill removes E72's failure but both VAEs sit near the mean fill on these tables |
 | E74 | The per-column KC + TabPFN hybrid as an output, on fresh seeds | 2026-10-24 | mixed | better than KC on 7 of 10 (rule needed 8), worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005); beats both on E69's same three numerical 80nan variants; TabPFN alone beats KC on 8 |
-| E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 | in progress | |
+| E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
 
 ## Entries
 
@@ -2411,7 +2411,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E75 · A test-time re-masking ensemble: averaged passes and their spread (2026-10-24)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("Aprovo T36 e
+- **Status:** done, mixed (2026-10-25, 02:38 GMT-3). Pre-registered before the first cell, on the user's go ("Aprovo T36 e
   T37", 2026-10-23; "autorizo o 1, vá", 2026-10-24, about 18:15 GMT-3, the `src/` authorization). T36.
 - **Hypothesis:** averaging 20 passes that each also hide a fresh draw of the row's observed cells
   improves the induced fill under K and H, and the passes' spread ranks the per-cell errors.
@@ -2424,3 +2424,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/28-remask-ensemble.md`;
   `scripts/experiments/remask_ensemble.py`, `run_remask_queue.sh`; `src/training/decoding.py`
   (`_remask_induced`).
+- **Results:** 45 of 45, none failed; K equals E44's runs to the last digit.
+  - Accuracy, remask − single: better 4 / no difference 5 / equivalent 2 / worse 4 (K); 6 / 3 / 2 / 4
+    (H); calibrated against KC, 1 / 2 / 4 / 8. Worse on pendigits and letter at 40/60nan, better at
+    80nan on numerical tables.
+  - Dispersion lower on 15 of 15. `num_rank` signals on 12 of 15 (K and H), none at pendigits,
+    letter and vehicle 80nan; `coverage90` 0.17–0.66. Categorical: the single pass's confidence ranks
+    misses better than the vote share on 3 of 3.
+- **Conclusion:** mixed on accuracy, and the gains at 80nan are shrinkage that calibration already
+  takes, so averaging is not proposed. The numerical spread meets the pre-stated bar for an opt-in
+  uncertainty output, a ranking signal and not an interval; the user decides on an ADR.

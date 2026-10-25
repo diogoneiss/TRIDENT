@@ -472,6 +472,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - On top of that, R decoder forward passes per test fold.
   - **Attaches to:** the wiki's RQ1, todo t4 and ADR 0025's panel.
   - **Running from 2026-10-24 as E75** ([imputation-protocol/28](tickets/imputation-protocol/28-remask-ensemble.md)), on the user's code authorization ("autorizo o 1, vá", about 18:15 GMT-3): the in-run flag `--score_remask` (off by default), 20 passes at K and H, on E44's 15 variants at 707/808/909.
+  - **Done 2026-10-25 by E75: mixed on accuracy.** Averaging is worse on pendigits and letter at
+    40/60nan and better at 80nan, where it is shrinkage that calibration already takes. The numerical
+    spread ranks the errors on 12 of 15 under K and H (the pre-stated bar) but covers 17–66% at a
+    nominal 90%. An opt-in uncertainty output (a ranking signal) is the user's call.
 
 - **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59
   GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P2; accepted by the user; see
