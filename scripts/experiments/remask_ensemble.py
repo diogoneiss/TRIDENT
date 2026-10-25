@@ -3,6 +3,7 @@
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py train <variant> <seed> [--no-mlflow]
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --todo <n>
     uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --tally
+    uv run --python 3.11 python -B scripts/experiments/remask_ensemble.py --within-column   (post hoc)
 
 ``train`` runs one cell of today's default imputation configuration, read as a default run of the
 checkout reads it, five folds, with ``--score_checkpoints`` (H) and ``--score_remask`` (the passes),
@@ -194,12 +195,38 @@ def tally() -> None:
           f"worse on {worse['K'] or 'none'} (K) and {worse['H'] or 'none'} (H) -> {reading} ({common.RULE})")
 
 
+def within_column() -> None:
+    """Post hoc, after E75's Outcome (not pre-registered): ``num_rank`` within each numerical column,
+    averaged over the columns with a usable value, per fold; does the spread rank cells, or only
+    columns? Also the column-level part: Spearman of each column's mean spread against its RMSE."""
+    for variant in VARIANTS:
+        parts = []
+        for readout, population in LEDGER.items():
+            within, between = [], []
+            for seed in SEEDS:
+                for fold in range(1, 6):
+                    frame = _ledger(variant, seed, fold)
+                    numbers = frame[(frame["population"] == population) & (frame["kind"] == "numerical")]
+                    error = (numbers["imputed"].astype(float) - numbers["actual"].astype(float)).abs()
+                    cells = numbers.assign(error=error, spread=numbers["spread"].astype(float))
+                    ranks = [g["spread"].corr(g["error"], method="spearman") for _, g in cells.groupby("column") if len(g) > 2]
+                    within.append(float(np.nanmean(ranks)) if np.isfinite(ranks).any() else float("nan"))
+                    by_column = cells.groupby("column").agg(spread=("spread", "mean"), rmse=("error", lambda e: float(np.sqrt(np.mean(e ** 2)))))
+                    between.append(float(by_column["spread"].corr(by_column["rmse"], method="spearman")) if len(by_column) > 2 else float("nan"))
+            for name, values in (("within", within), ("columns", between)):
+                mean, low, high, n = _interval(values)
+                parts.append(f"{readout} {name} {mean:+.3f} [{low:+.3f}, {high:+.3f}] ({n})")
+        print(f"- `{variant}`: " + "; ".join(parts))
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:1] == ["train"] and len(argv) in (3, 4):
         train(argv[1], int(argv[2]), argv[3:] == ["--no-mlflow"])
     elif argv[:1] == ["--todo"] and len(argv) == 2:
         todo(int(argv[1]))
+    elif argv == ["--within-column"]:
+        within_column()
     elif argv in (["--tally"], []):
         tally()
     else:

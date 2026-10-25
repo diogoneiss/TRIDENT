@@ -185,3 +185,35 @@ Primary: remask better than the single pass on 4 (K) and 6 (H) of 15, worse on [
     an interval, by the rule fixed above. Whether to write that ADR is the user's call.
   - Categorical uncertainty is better read from the single pass's confidence, which every run
     already logs.
+
+## Post hoc: cells or columns? (2026-10-25, 09:37 GMT-3; not pre-registered)
+
+After the Outcome, for the ADR the user asked for (ADR 0030, proposed). The pooled `num_rank` could
+reflect only which columns are hard. `remask_ensemble.py --within-column` computes Spearman within each
+numerical column, averaged over columns per fold (`within`), and each column's mean spread against its
+RMSE (`columns`). Printout, unedited:
+
+```text
+- `pendigits_40nan`: K within +0.336 [+0.332, +0.340] (15); K columns +0.791 [+0.773, +0.809] (15); H within +0.333 [+0.328, +0.339] (15); H columns +0.784 [+0.767, +0.800] (15)
+- `pendigits_60nan`: K within +0.228 [+0.221, +0.235] (15); K columns +0.619 [+0.582, +0.655] (15); H within +0.220 [+0.210, +0.229] (15); H columns +0.559 [+0.502, +0.617] (15)
+- `pendigits_80nan`: K within -0.055 [-0.061, -0.050] (15); K columns -0.617 [-0.693, -0.542] (15); H within -0.059 [-0.065, -0.052] (15); H columns -0.586 [-0.694, -0.478] (15)
+- `letter_40nan`: K within +0.205 [+0.201, +0.209] (15); K columns +0.512 [+0.443, +0.581] (15); H within +0.204 [+0.199, +0.208] (15); H columns +0.495 [+0.425, +0.565] (15)
+- `letter_60nan`: K within +0.129 [+0.122, +0.136] (15); K columns +0.331 [+0.246, +0.416] (15); H within +0.120 [+0.113, +0.126] (15); H columns +0.046 [-0.110, +0.202] (15)
+- `letter_80nan`: K within -0.005 [-0.012, +0.002] (15); K columns -0.781 [-0.824, -0.738] (15); H within -0.001 [-0.009, +0.006] (15); H columns -0.763 [-0.844, -0.683] (15)
+- `electricity_40nan`: K within +0.205 [+0.194, +0.216] (15); K columns -0.693 [-0.887, -0.499] (15); H within +0.198 [+0.182, +0.214] (15); H columns -0.690 [-0.880, -0.501] (15)
+- `electricity_60nan`: K within +0.057 [+0.049, +0.066] (15); K columns -0.529 [-0.733, -0.324] (15); H within +0.052 [+0.044, +0.061] (15); H columns -0.626 [-0.808, -0.445] (15)
+- `electricity_80nan`: K within -0.075 [-0.081, -0.068] (15); K columns -0.381 [-0.553, -0.209] (15); H within -0.084 [-0.092, -0.075] (15); H columns -0.367 [-0.554, -0.179] (15)
+- `vehicle_40nan`: K within +0.138 [+0.121, +0.155] (15); K columns +0.680 [+0.601, +0.759] (15); H within +0.125 [+0.105, +0.146] (15); H columns +0.629 [+0.537, +0.722] (15)
+- `vehicle_80nan`: K within -0.008 [-0.031, +0.016] (15); K columns -0.029 [-0.276, +0.219] (15); H within -0.011 [-0.034, +0.012] (15); H columns -0.208 [-0.524, +0.107] (15)
+- `biodeg_40nan`: K within +0.423 [+0.409, +0.437] (15); K columns +0.051 [-0.049, +0.151] (15); H within +0.432 [+0.420, +0.443] (15); H columns +0.071 [-0.024, +0.166] (15)
+- `biodeg_80nan`: K within +0.219 [+0.178, +0.260] (15); K columns +0.105 [+0.019, +0.191] (15); H within +0.180 [+0.119, +0.241] (15); H columns +0.129 [+0.021, +0.238] (15)
+- `kc2_40nan`: K within +0.482 [+0.453, +0.510] (15); K columns +0.704 [+0.632, +0.777] (15); H within +0.464 [+0.438, +0.491] (15); H columns +0.662 [+0.601, +0.723] (15)
+- `kc2_80nan`: K within +0.257 [+0.220, +0.295] (15); K columns +0.561 [+0.426, +0.696] (15); H within +0.232 [+0.178, +0.286] (15); H columns +0.477 [+0.346, +0.608] (15)
+```
+
+- **Within columns,** the interval lies above 0 on 11 of 15 under K and under H: all 9 variants at
+  40–60nan (ρ 0.06–0.48) and biodeg_80nan and kc2_80nan. Not on pendigits, letter, electricity or
+  vehicle at 80nan.
+- The cell-level signal is weaker than the pooled one where columns add to it (electricity_40nan
+  0.21 against 0.36; biodeg_40nan 0.42 against 0.65); on electricity the column-level relation is
+  negative.

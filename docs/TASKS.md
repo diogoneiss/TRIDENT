@@ -476,6 +476,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     40/60nan and better at 80nan, where it is shrinkage that calibration already takes. The numerical
     spread ranks the errors on 12 of 15 under K and H (the pre-stated bar) but covers 17–66% at a
     nominal 90%. An opt-in uncertainty output (a ranking signal) is the user's call.
+  - **ADR 0030 proposed 2026-10-25** on the user's request ("Podemos propor essa ADR"): the numerical spread as an opt-in per-cell ranking signal up to 60nan (a post-hoc within-column check holds on 9 of 9 there), categorical uncertainty from the single pass's confidence, the fill unchanged. Awaits the user's decision.
 
 - **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59
   GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P2; accepted by the user; see

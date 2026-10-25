@@ -1,0 +1,90 @@
+# ADR 0030: An opt-in per-cell uncertainty signal from re-masking passes (proposed)
+
+- **Status:** proposed, 2026-10-25. For the user's decision. The user asked for the proposal
+  ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
+  ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
+- **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
+  and ADR 0027 (the calibrated output). It amends none of them.
+
+## Context
+
+- **The imputer gives one fill per cell and no uncertainty.** The thesis's clinical framing and
+  multiple imputation both need one (T36).
+- **`--score_remask`** (5dc83bd) is a diagnostic flag, off by default.
+  - It fills each gap from 20 passes that also hide a fresh draw of the row's observed cells, at
+    the decode stage's own rate, and writes each cell's `spread` to the fold ledger.
+  - The spread is the passes' standard deviation of a number, or 1 − the vote share of a category.
+  - It changes no training: with the flag on, every metric and ledger row of a run is identical.
+- **E75 pre-registered a bar for proposing this ADR:** the numerical spread must rank the absolute
+  errors (Spearman, 95% interval above 0) on 12 or more of 15 variants, under K and under H.
+  - The study ran on E44's 15 confirmation variants at seeds 707/808/909, 45 cells.
+  - **It met the bar exactly:** 12 of 15 under K and 12 of 15 under H.
+  - Pooled ρ was 0.65–0.66 on biodeg_40nan and kc2_40nan, and 0.14–0.37 on pendigits, letter and
+    electricity at 40–60nan.
+  - It found no signal at 80nan on pendigits, letter and vehicle.
+- **A post-hoc check (not pre-registered):** does the spread rank cells, or only columns?
+  - It ran within each numerical column (`remask_ensemble.py --within-column`; printout in the
+    ticket).
+  - **Cells:** it ranks them on 11 of 15 under K and under H.
+    - At 40–60nan it holds on all 9 variants, with ρ 0.06–0.48. That is weaker than pooled:
+      electricity_40nan drops from 0.36 to 0.21, biodeg_40nan from 0.65 to 0.42.
+    - At 80nan it holds only on the small tables: biodeg (0.22) and kc2 (0.26).
+  - **Columns:** they carry the rest. On electricity the column-level relation is negative.
+- **It is a ranking, not an interval.** At a nominal 90% (fill ± 1.645 spreads), coverage is
+  17–66%. The spread is too narrow, more so as missingness grows.
+- **Categories:** the single pass's own 1 − confidence ranks the misses better than the vote share,
+  on all 3 variants with categorical gaps.
+- **The averaged fill is not an output.**
+  - Its accuracy is mixed: better 4 and worse 4 under K.
+  - Its 80nan gains are shrinkage. Dispersion was lower on 15 of 15, and once calibrated it was
+    worse than KC on 8.
+
+## Decision (proposed)
+
+1. **The uncertainty signal is opt-in, through `--score_remask`.** It stays off by default.
+   - A run that asks for it carries `spread` on its ledger's `induced_remask` rows, at the run's
+     checkpoint.
+   - With `--score_checkpoints`, it also carries `spread` on the `induced_remask_loss_checkpoint`
+     rows (H).
+2. **The fill stays the run's headline:** KC under ADR 0027, K below 40nan. The averaged fill and
+   `impute/induced/*remask*` stay diagnostics and are never the output.
+3. **For numerical cells, the signal is `spread`, read as a rank.** A higher spread means a larger
+   error is more likely.
+   - It is never presented as an interval, a standard error or a probability.
+   - A claim using it reads it on H as well as K (ADR 0024). E75 met that.
+4. **For categorical cells, the signal is the single pass's `1 − confidence`,** which every run's
+   ledger already holds. The vote share is not used.
+5. **Its scope is up to 60% missing.**
+   - At 80nan it is unsupported, unless a study shows it on that table. E75 showed it only on
+     biodeg and kc2.
+   - A report that uses it states the scope.
+6. **No backfill and no tag,** as for the other `--score_*` diagnostics. The ledger columns and
+   metric keys mark a run that has it. On acceptance, the flag's help text says it is the
+   uncertainty output; no other code changes.
+
+## Considered options
+
+- **Keep it descriptive (no ADR).** Rejected in this proposal. It met the bar fixed before the run,
+  under both readouts, and the within-column check holds at every rate up to 60nan.
+- **On by default.** Rejected.
+  - As an interval it is not calibrated.
+  - Every run would carry four more ledger populations and the passes' cost: +0.3 s a fold on
+    vehicle_40nan, 20 forward passes per checkpoint, more on the large tables.
+- **The averaged fill as the output.** Rejected on E75 (a): it is worse on pendigits and letter at
+  40–60nan, and calibration already takes its 80nan gain.
+- **Scaled into intervals now.** Deferred. One option is a factor fitted on the validation gaps so
+  that 90% of them fall inside, as split conformal does. That needs its own pre-registered study.
+
+## Consequences
+
+- **What the thesis can claim:** the decoder gives, without retraining, a per-cell signal that ranks
+  its numerical errors up to 60% missing. The claim cites E75's ρ and the coverage shortfall beside
+  it.
+- **Limits that travel with the claim:**
+  - It was tested on one seed set and the 15 confirmation variants, under MCAR only.
+  - kr-vs-kp and credit-g, the categorical-heavy tables, and the MAR and MNAR families are untested.
+  - The cell-level reading is post-hoc.
+- **Follow-ups, each its own pre-registered study if the user wants it:**
+  - a replication on the development variants (101/202/303);
+  - the conformal scaling into intervals;
+  - the MNAR family, where an honest signal should grow with the mechanism's tilt.
