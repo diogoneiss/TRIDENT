@@ -65,7 +65,13 @@ This ticket was written and committed before the study's first cell.
     and 202.
   - The four running cells left source runs in `RUNNING` in the store: pendigits_20nan at all three
     seeds, and letter_20nan at 303. The reader counts finished runs only.
-  - Those runs are left as they are; marking them failed is a store write, for the user.
+  - **Removed on the user's request** ("Destrua as runs presas no mlflow", 2026-10-26, about 16:55 GMT-3).
+    - A backup was taken first through SQLite's API:
+      `/var/tmp/diogoneiss/backups/mlflow.db.before-e76-orphan-delete`, 16,482 runs.
+    - Then `MlflowClient.delete_run` and `mlflow gc --run-ids` ran on exactly those four: 7e2d2b8c,
+      200cccf7, c71c07ba and 6e0fbca7, all started on 2026-10-25. The store now holds 16,478 runs.
+    - `gc` also removed experiment 0 ("Default"). It had been deleted since 2026-09-29 and held no
+      runs.
 - **What was done:**
   - The four cells' partial output and logs were moved to `interrupted/` in the state directory,
     so each cell has one ledger.
