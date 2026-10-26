@@ -55,3 +55,20 @@ This ticket was written and committed before the study's first cell.
 **What each reading leads to:**
 - **supported:** ADR 0030's scope stands, now on a pre-registered reading, for the user's decision.
 - **mixed or refuted:** ADR 0030's scope is narrowed or withdrawn before the user decides.
+
+## Amendment (2026-10-26, 16:51 GMT-3): the machine went down mid-run
+
+- **What happened:** launched 2026-10-25, 09:55 GMT-3, on 10b4452. gorgona8 went down at about
+  13:09 GMT-3 that day. Four running cells' logs stopped in the same second, and so did the store
+  replica's cron. It came back on 2026-10-26 at 15:02 GMT-3.
+  - 5 of 63 cells had finished: electricity_20nan at all three seeds, and letter_20nan at 101
+    and 202.
+  - The four running cells left source runs in `RUNNING` in the store: pendigits_20nan at all three
+    seeds, and letter_20nan at 303. The reader counts finished runs only.
+  - Those runs are left as they are; marking them failed is a store write, for the user.
+- **What was done:**
+  - The four cells' partial output and logs were moved to `interrupted/` in the state directory,
+    so each cell has one ledger.
+  - The four queues were relaunched; they skip finished cells, so the four interrupted cells
+    rerun from scratch.
+  - Nothing in the design or the reading changes, and nothing had been read.
