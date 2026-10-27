@@ -1,6 +1,6 @@
 # ADR 0031: An opt-in offline hybrid output: KC and TabPFN, per column
 
-- **Status:** **proposed on 2026-10-27, 12:44 GMT-3** for the user's decision. The user asked for it to be
+- **Status:** **accepted on 2026-10-27, 12:51 GMT-3** by the user ("eu apoio a 031"). Proposed 2026-10-27, 12:44 GMT-3. The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -94,6 +94,10 @@
   output, like KC.
 - **It cannot say:** that the hybrid is a better imputer than TabPFN in general, or that it is
   deployable.
+- **What it is for (the user, on acceptance):** a measure of the method's *viability*: what a
+  per-column hedge with TabPFN can reach when the weights are known well.
+  - In a real deployment the weights would be found by trying combinations on the data at hand.
+    That is the deployable route under Considered options, and the follow-up that answers it.
 - **Follow-ups, each its own pre-registered study if the user wants it:**
   - E82, the in-run validation-gap weights;
   - the deployable masked-weight hybrid with H;
