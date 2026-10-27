@@ -1,6 +1,8 @@
 # ADR 0031: An opt-in offline hybrid output: KC and TabPFN, per column
 
-- **Status:** **accepted on 2026-10-27, 12:51 GMT-3** by the user ("eu apoio a 031"). Proposed 2026-10-27, 12:44 GMT-3. The user asked for it to be
+- **Status:** **accepted on 2026-10-27, 12:51 GMT-3** by the user ("eu apoio a 031"). Proposed 2026-10-27, 12:44 GMT-3.
+  Amended 2026-10-27, 19:20 GMT-3 with E82's deployable route, on the user's decision ("show, registre essa
+  decisão"). The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -98,7 +100,26 @@
   per-column hedge with TabPFN can reach when the weights are known well.
   - In a real deployment the weights would be found by trying combinations on the data at hand.
     That is the deployable route under Considered options, and the follow-up that answers it.
+- **The deployable route was tested and did not reach TabPFN (E82,
+  [imputation-protocol/31](../tickets/imputation-protocol/31-deployable-hybrid.md), refuted,
+  2026-10-27).**
+  - **What it was:** H, which reads no complete table, plus TabPFN, with E69's per-column weights
+    chosen on the validation split's *observed* cells hidden in 5 groups. This is "trying weight
+    combinations on the data at hand".
+  - **Against H:** better on 10 of 10.
+  - **Against KC:** better on 7 of 10 and worse on none, without the complete table.
+  - **Against TabPFN:** worse on 5 (vehicle_80nan, biodeg_80nan, kr-vs-kp_60/80nan,
+    credit-g_60nan), by 0.5–2.3%. Better on 2 (electricity).
+  - **Against the oracle** (the same rule with complete-table weights): worse on 6. With the
+    oracle's weights, the H-side hybrid is at TabPFN's level (post hoc).
+  - **So the selection, not H, is the loss:** it breaks on columns with few selection cells
+    (about 20 a column a fold at 80nan on the small tables) and on categorical picks.
+- **The decision this records:** the hybrid stays a benchmark output, as decided above. Its
+  deployable form is viable against the TRIDENT readouts (H, KC) and not yet against TabPFN.
+  - On the 10 hard variants the order is TabPFN ≳ deployable hybrid > KC > H.
+  - On the broader sets TabPFN is not uniformly better (E57: KC better on 6 of 15, worse on 4).
 - **Follow-ups, each its own pre-registered study if the user wants it:**
-  - E82, the in-run validation-gap weights;
-  - the deployable masked-weight hybrid with H;
+  - a deployable selection with more cells, or with fewer weights (one per table, or shrinkage
+    toward the equal blend where a column has few cells), which is offline on E82's files;
+  - the in-run validation-gap weights (benchmark-class);
   - MAR and MNAR.
