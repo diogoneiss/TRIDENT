@@ -1,0 +1,147 @@
+=== credit-g_20nan
+  induced  G 0.8817  M 0.9018  best baseline 0.9138
+  masked   G 0.8831  M 0.9172
+    G - M, induced (primary) over 15 pairs: -0.0200 [-0.0392, -0.0009]; s101 -0.0135, s202 -0.0116, s303 -0.0350 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0342 [-0.0498, -0.0185]; s101 -0.0309, s202 -0.0346, s303 -0.0370 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0117 [-0.0232, -0.0001]; s42 -0.0181, s7 +0.0044, s13 +0.0038, s101 -0.0135, s202 -0.0116, s303 -0.0350 -> no detectable difference
+  fold time per cell: G 6.1 min, M 5.6 min
+=== credit-g_40nan
+  induced  G 0.9734  M 0.9784  best baseline 0.9645
+  masked   G 0.9895  M 1.0067
+    G - M, induced (primary) over 15 pairs: -0.0050 [-0.0203, +0.0103]; s101 -0.0177, s202 +0.0009, s303 +0.0018 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0172 [-0.0426, +0.0083]; s101 -0.0403, s202 -0.0174, s303 +0.0062 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0105 [-0.0205, -0.0006]; s42 +0.0055, s7 -0.0391, s13 -0.0147, s101 -0.0177, s202 +0.0009, s303 +0.0018 -> no detectable difference
+  fold time per cell: G 4.5 min, M 3.9 min
+=== credit-g_60nan
+  induced  G 1.0003  M 1.0133  best baseline 1.0000
+  masked   G 0.9923  M 0.9973
+    G - M, induced (primary) over 15 pairs: -0.0130 [-0.0299, +0.0039]; s101 -0.0103, s202 -0.0101, s303 -0.0186 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0049 [-0.0285, +0.0186]; s101 -0.0281, s202 +0.0165, s303 -0.0033 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0110 [-0.0218, -0.0002]; s42 -0.0058, s7 +0.0016, s13 -0.0226, s101 -0.0103, s202 -0.0101, s303 -0.0186 -> no detectable difference
+  fold time per cell: G 3.5 min, M 2.6 min
+=== credit-g_80nan
+  induced  G 1.0305  M 1.0562  best baseline 1.0000
+  masked   G 1.0109  M 1.0096
+    G - M, induced (primary) over 15 pairs: -0.0256 [-0.0477, -0.0036]; s101 -0.0222, s202 -0.0486, s303 -0.0061 -> G better
+    G - M, masked (secondary) over 15 pairs: +0.0013 [-0.0139, +0.0165]; s101 +0.0106, s202 -0.0072, s303 +0.0005 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0207 [-0.0331, -0.0082]; s42 -0.0174, s7 +0.0025, s13 -0.0322, s101 -0.0222, s202 -0.0486, s303 -0.0061 -> no detectable difference
+  fold time per cell: G 4.2 min, M 3.7 min
+=== kr-vs-kp_20nan
+  induced  G 0.5947  M 0.6205  best baseline 0.6118
+  masked   G 0.6669  M 0.6963
+    G - M, induced (primary) over 15 pairs: -0.0258 [-0.0349, -0.0167]; s101 -0.0253, s202 -0.0236, s303 -0.0286 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0294 [-0.0412, -0.0176]; s101 -0.0325, s202 -0.0327, s303 -0.0230 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0239 [-0.0318, -0.0161]; s42 -0.0195, s7 -0.0341, s13 -0.0124, s101 -0.0253, s202 -0.0236, s303 -0.0286 -> G better
+  fold time per cell: G 16.4 min, M 16.0 min
+=== kr-vs-kp_40nan
+  induced  G 0.7600  M 0.7760  best baseline 0.7721
+  masked   G 0.7939  M 0.8098
+    G - M, induced (primary) over 15 pairs: -0.0161 [-0.0290, -0.0031]; s101 -0.0224, s202 -0.0072, s303 -0.0186 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0159 [-0.0380, +0.0061]; s101 -0.0055, s202 -0.0024, s303 -0.0398 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0128 [-0.0206, -0.0050]; s42 -0.0020, s7 -0.0150, s13 -0.0118, s101 -0.0224, s202 -0.0072, s303 -0.0186 -> G better
+  fold time per cell: G 17.6 min, M 17.2 min
+=== kr-vs-kp_60nan
+  induced  G 0.8716  M 0.8964  best baseline 0.9090
+  masked   G 0.9026  M 0.9131
+    G - M, induced (primary) over 15 pairs: -0.0249 [-0.0330, -0.0167]; s101 -0.0180, s202 -0.0289, s303 -0.0276 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0105 [-0.0289, +0.0079]; s101 -0.0047, s202 -0.0337, s303 +0.0070 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0253 [-0.0310, -0.0196]; s42 -0.0247, s7 -0.0263, s13 -0.0263, s101 -0.0180, s202 -0.0289, s303 -0.0276 -> G better
+  fold time per cell: G 18.6 min, M 18.1 min
+=== kr-vs-kp_80nan
+  induced  G 1.0104  M 1.0087  best baseline 1.0000
+  masked   G 1.0203  M 1.0168
+    G - M, induced (primary) over 15 pairs: +0.0017 [-0.0150, +0.0185]; s101 +0.0024, s202 -0.0007, s303 +0.0035 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: +0.0036 [-0.0327, +0.0399]; s101 +0.0481, s202 -0.0167, s303 -0.0207 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: +0.0053 [-0.0079, +0.0185]; s42 +0.0164, s7 +0.0265, s13 -0.0164, s101 +0.0024, s202 -0.0007, s303 +0.0035 -> no detectable difference
+  fold time per cell: G 15.8 min, M 14.8 min
+=== spambase_20nan
+  induced  G 0.8495  M 0.8764  best baseline 0.8597
+  masked   G 0.8708  M 0.8944
+    G - M, induced (primary) over 15 pairs: -0.0270 [-0.0367, -0.0173]; s101 -0.0379, s202 -0.0197, s303 -0.0233 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0235 [-0.0296, -0.0174]; s101 -0.0244, s202 -0.0216, s303 -0.0246 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0223 [-0.0292, -0.0154]; s42 -0.0140, s7 -0.0136, s13 -0.0254, s101 -0.0379, s202 -0.0197, s303 -0.0233 -> G better
+  fold time per cell: G 33.0 min, M 32.2 min
+=== spambase_40nan
+  induced  G 0.9064  M 0.9421  best baseline 0.9345
+  masked   G 0.9074  M 0.9195
+    G - M, induced (primary) over 15 pairs: -0.0357 [-0.0508, -0.0206]; s101 -0.0179, s202 -0.0443, s303 -0.0449 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0120 [-0.0210, -0.0031]; s101 -0.0129, s202 -0.0093, s303 -0.0140 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0434 [-0.0600, -0.0269]; s42 -0.0493, s7 -0.0682, s13 -0.0360, s101 -0.0179, s202 -0.0443, s303 -0.0449 -> G better
+  fold time per cell: G 34.2 min, M 32.8 min
+=== spambase_60nan
+  induced  G 0.9438  M 1.0195  best baseline 0.9814
+  masked   G 0.9357  M 0.9440
+    G - M, induced (primary) over 15 pairs: -0.0757 [-0.1401, -0.0113]; s101 -0.0718, s202 -0.0642, s303 -0.0912 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0083 [-0.0210, +0.0043]; s101 -0.0069, s202 -0.0170, s303 -0.0011 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0529 [-0.0871, -0.0187]; s42 -0.0157, s7 -0.0297, s13 -0.0450, s101 -0.0718, s202 -0.0642, s303 -0.0912 -> G better
+  fold time per cell: G 31.1 min, M 30.6 min
+=== spambase_80nan
+  induced  G 0.9946  M 1.0272  best baseline 1.0000
+  masked   G 1.0013  M 0.9986
+    G - M, induced (primary) over 15 pairs: -0.0326 [-0.0659, +0.0007]; s101 -0.0331, s202 -0.0615, s303 -0.0032 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: +0.0027 [-0.0120, +0.0174]; s101 +0.0075, s202 +0.0042, s303 -0.0036 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0310 [-0.0529, -0.0091]; s42 -0.0096, s7 -0.0121, s13 -0.0668, s101 -0.0331, s202 -0.0615, s303 -0.0032 -> G better
+  fold time per cell: G 34.0 min, M 34.5 min
+=== vehicle_20nan
+  induced  G 0.4148  M 0.4336  best baseline 0.4643
+  masked   G 0.4317  M 0.4599
+    G - M, induced (primary) over 15 pairs: -0.0188 [-0.0238, -0.0138]; s101 -0.0215, s202 -0.0119, s303 -0.0230 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0283 [-0.0381, -0.0184]; s101 -0.0415, s202 -0.0220, s303 -0.0212 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0177 [-0.0248, -0.0107]; s42 -0.0249, s7 -0.0136, s13 -0.0116, s101 -0.0215, s202 -0.0119, s303 -0.0230 -> G better
+  fold time per cell: G 3.7 min, M 2.9 min
+=== vehicle_60nan
+  induced  G 0.6586  M 0.6806  best baseline 0.7034
+  masked   G 0.6322  M 0.6461
+    G - M, induced (primary) over 15 pairs: -0.0220 [-0.0352, -0.0088]; s101 -0.0283, s202 -0.0152, s303 -0.0225 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0139 [-0.0260, -0.0017]; s101 -0.0132, s202 -0.0146, s303 -0.0138 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0227 [-0.0339, -0.0116]; s42 -0.0056, s7 -0.0191, s13 -0.0458, s101 -0.0283, s202 -0.0152, s303 -0.0225 -> G better
+  fold time per cell: G 3.2 min, M 2.9 min
+=== biodeg_20nan
+  induced  G 0.5991  M 0.6325  best baseline 0.6508
+  masked   G 0.5393  M 0.5704
+    G - M, induced (primary) over 15 pairs: -0.0334 [-0.0436, -0.0233]; s101 -0.0274, s202 -0.0386, s303 -0.0343 -> G better
+    G - M, masked (secondary) over 15 pairs: -0.0312 [-0.0562, -0.0062]; s101 +0.0045, s202 -0.0552, s303 -0.0428 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0295 [-0.0388, -0.0203]; s42 -0.0169, s7 -0.0133, s13 -0.0466, s101 -0.0274, s202 -0.0386, s303 -0.0343 -> G better
+  fold time per cell: G 6.4 min, M 6.2 min
+=== biodeg_60nan
+  induced  G 0.7795  M 0.8355  best baseline 0.8622
+  masked   G 0.7850  M 0.7803
+    G - M, induced (primary) over 15 pairs: -0.0559 [-0.0735, -0.0384]; s101 -0.0620, s202 -0.0457, s303 -0.0601 -> G better
+    G - M, masked (secondary) over 15 pairs: +0.0047 [-0.0334, +0.0428]; s101 +0.0036, s202 -0.0075, s303 +0.0180 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0571 [-0.0683, -0.0459]; s42 -0.0448, s7 -0.0626, s13 -0.0675, s101 -0.0620, s202 -0.0457, s303 -0.0601 -> G better
+  fold time per cell: G 5.8 min, M 5.5 min
+=== kc2_20nan
+  induced  G 0.5402  M 0.5683  best baseline 0.5216
+  masked   G 0.4604  M 0.4992
+    G - M, induced (primary) over 15 pairs: -0.0281 [-0.0718, +0.0155]; s101 -0.0553, s202 +0.0144, s303 -0.0435 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0388 [-0.0809, +0.0034]; s101 -0.0528, s202 -0.0175, s303 -0.0460 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0175 [-0.0411, +0.0061]; s42 +0.0078, s7 -0.0202, s13 -0.0081, s101 -0.0553, s202 +0.0144, s303 -0.0435 -> no detectable difference
+  fold time per cell: G 2.0 min, M 1.7 min
+=== kc2_60nan
+  induced  G 0.5699  M 0.6632  best baseline 0.7242
+  masked   G 0.5959  M 0.5870
+    G - M, induced (primary) over 15 pairs: -0.0933 [-0.1508, -0.0358]; s101 -0.1515, s202 -0.0763, s303 -0.0521 -> G better
+    G - M, masked (secondary) over 15 pairs: +0.0089 [-0.0633, +0.0812]; s101 -0.0207, s202 +0.0364, s303 +0.0112 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0800 [-0.1194, -0.0405]; s42 -0.0769, s7 -0.0661, s13 -0.0567, s101 -0.1515, s202 -0.0763, s303 -0.0521 -> G better
+  fold time per cell: G 2.1 min, M 2.0 min
+=== pendigits_20nan
+  induced  G 0.3335  M 0.3345  best baseline 0.3510
+  masked   G 0.3688  M 0.3718
+    G - M, induced (primary) over 15 pairs: -0.0010 [-0.0027, +0.0007]; s101 -0.0002, s202 -0.0011, s303 -0.0017 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0030 [-0.0040, -0.0021]; s101 -0.0037, s202 -0.0037, s303 -0.0016 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0013 [-0.0024, -0.0001]; s42 +0.0008, s7 -0.0020, s13 -0.0033, s101 -0.0002, s202 -0.0011, s303 -0.0017 -> no detectable difference
+  fold time per cell: G 36.2 min, M 35.8 min
+=== letter_20nan
+  induced  G 0.4595  M 0.4607  best baseline 0.4722
+  masked   G 0.4971  M 0.5000
+    G - M, induced (primary) over 15 pairs: -0.0012 [-0.0024, -0.0001]; s101 -0.0021, s202 -0.0017, s303 +0.0001 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0029 [-0.0040, -0.0017]; s101 -0.0029, s202 -0.0030, s303 -0.0027 -> G better
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0013 [-0.0021, -0.0006]; s42 -0.0012, s7 -0.0012, s13 -0.0019, s101 -0.0021, s202 -0.0017, s303 +0.0001 -> no detectable difference
+  fold time per cell: G 56.3 min, M 62.5 min
+=== electricity_20nan
+  induced  G 0.6177  M 0.6261  best baseline 0.6022
+  masked   G 0.6628  M 0.7012
+    G - M, induced (primary) over 15 pairs: -0.0084 [-0.0173, +0.0004]; s101 -0.0049, s202 -0.0127, s303 -0.0077 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0384 [-0.0809, +0.0041]; s101 -0.0196, s202 -0.0309, s303 -0.0648 -> no detectable difference
+    G - M, induced, pooled with E32 (secondary) over 30 pairs: -0.0065 [-0.0148, +0.0018]; s42 +0.0011, s7 -0.0147, s13 -0.0003, s101 -0.0049, s202 -0.0127, s303 -0.0077 -> no detectable difference
+  fold time per cell: G 106.8 min, M 99.1 min

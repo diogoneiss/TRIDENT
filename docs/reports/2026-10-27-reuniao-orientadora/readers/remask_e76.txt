@@ -1,0 +1,92 @@
+- `kr-vs-kp_20nan`: K 0.5866, remask − single -0.0041 [-0.0097, +0.0015] none; H 0.5947, remask − single -0.0021 [-0.0077, +0.0035] none
+  - uncertainty, K: cat_rank +0.363 [+0.352, +0.374] (15 folds); H: cat_rank +0.369 [+0.359, +0.379] (15 folds); single pass, 1 − confidence: cat_rank +0.437 [+0.433, +0.441] (15 folds)
+- `kr-vs-kp_40nan`: K 0.7258, remask − single +0.0038 [-0.0026, +0.0102] none; H 0.7262, remask − single +0.0004 [-0.0051, +0.0058] equivalent; KC 0.7254, remask − single +0.0097 [+0.0054, +0.0140] worse
+  - uncertainty, K: cat_rank +0.352 [+0.344, +0.360] (15 folds); H: cat_rank +0.346 [+0.333, +0.358] (15 folds); single pass, 1 − confidence: cat_rank +0.443 [+0.439, +0.446] (15 folds)
+- `kr-vs-kp_60nan`: K 0.8711, remask − single -0.0060 [-0.0104, -0.0015] better; H 0.8716, remask − single -0.0049 [-0.0083, -0.0015] better; KC 0.8609, remask − single +0.0026 [-0.0022, +0.0075] equivalent
+  - uncertainty, K: cat_rank +0.278 [+0.263, +0.293] (15 folds); H: cat_rank +0.273 [+0.257, +0.289] (15 folds); single pass, 1 − confidence: cat_rank +0.424 [+0.420, +0.429] (15 folds)
+- `kr-vs-kp_80nan`: K 0.9815, remask − single -0.0005 [-0.0012, +0.0003] equivalent; H 1.0104, remask − single -0.0009 [-0.0019, +0.0001] equivalent; KC 0.9733, remask − single +0.0058 [+0.0017, +0.0099] worse
+  - uncertainty, K: cat_rank +0.143 [+0.113, +0.173] (15 folds); H: cat_rank +0.196 [+0.165, +0.227] (15 folds); single pass, 1 − confidence: cat_rank +0.370 [+0.363, +0.377] (15 folds)
+- `spambase_20nan`: K 0.8529, remask − single +0.0023 [-0.0012, +0.0059] equivalent; H 0.8495, remask − single +0.0036 [-0.0012, +0.0085] none
+  - uncertainty, K: num_rank +0.693 [+0.682, +0.705] (15 folds), coverage90 +0.352 [+0.334, +0.371] (15 folds); H: num_rank +0.689 [+0.674, +0.704] (15 folds), coverage90 +0.358 [+0.347, +0.369] (15 folds)
+  - dispersion, remask − K: -0.0690 [-0.0950, -0.0430] lower
+- `spambase_40nan`: K 0.9023, remask − single -0.0053 [-0.0077, -0.0030] better; H 0.9045, remask − single -0.0051 [-0.0076, -0.0025] better; KC 0.8996, remask − single -0.0015 [-0.0028, -0.0002] better
+  - uncertainty, K: num_rank +0.683 [+0.669, +0.698] (15 folds), coverage90 +0.377 [+0.364, +0.390] (15 folds); H: num_rank +0.666 [+0.639, +0.694] (15 folds), coverage90 +0.366 [+0.343, +0.389] (15 folds)
+  - dispersion, remask − K: -0.0625 [-0.0803, -0.0446] lower
+- `spambase_60nan`: K 0.9404, remask − single -0.0033 [-0.0048, -0.0019] better; H 0.9438, remask − single -0.0035 [-0.0055, -0.0015] better; KC 0.9380, remask − single -0.0015 [-0.0026, -0.0005] better
+  - uncertainty, K: num_rank +0.567 [+0.540, +0.594] (15 folds), coverage90 +0.283 [+0.259, +0.307] (15 folds); H: num_rank +0.568 [+0.533, +0.603] (15 folds), coverage90 +0.284 [+0.251, +0.316] (15 folds)
+  - dispersion, remask − K: -0.0362 [-0.0487, -0.0237] lower
+- `spambase_80nan`: K 0.9846, remask − single -0.0020 [-0.0029, -0.0012] better; H 0.9946, remask − single -0.0039 [-0.0059, -0.0020] better; KC 0.9786, remask − single -0.0003 [-0.0009, +0.0002] equivalent
+  - uncertainty, K: num_rank +0.404 [+0.374, +0.434] (15 folds), coverage90 +0.163 [+0.147, +0.178] (15 folds); H: num_rank +0.408 [+0.340, +0.477] (15 folds), coverage90 +0.181 [+0.150, +0.213] (15 folds)
+  - dispersion, remask − K: -0.0218 [-0.0244, -0.0192] lower
+- `credit-g_20nan`: K 0.8751, remask − single +0.0062 [-0.0075, +0.0199] none; H 0.8817, remask − single +0.0069 [-0.0037, +0.0175] none
+  - uncertainty, K: num_rank +0.205 [+0.146, +0.263] (15 folds), cat_rank +0.316 [+0.291, +0.341] (15 folds), coverage90 +0.344 [+0.296, +0.392] (15 folds); H: num_rank +0.182 [+0.139, +0.226] (15 folds), cat_rank +0.325 [+0.303, +0.347] (15 folds), coverage90 +0.323 [+0.301, +0.346] (15 folds); single pass, 1 − confidence: cat_rank +0.420 [+0.406, +0.433] (15 folds)
+  - dispersion, remask − K: -0.1612 [-0.1736, -0.1487] lower
+- `credit-g_40nan`: K 0.9208, remask − single -0.0058 [-0.0117, +0.0001] none; H 0.9295, remask − single -0.0085 [-0.0146, -0.0025] better; KC 0.9183, remask − single -0.0004 [-0.0063, +0.0056] equivalent
+  - uncertainty, K: num_rank +0.144 [+0.096, +0.191] (15 folds), cat_rank +0.293 [+0.275, +0.312] (15 folds), coverage90 +0.264 [+0.237, +0.291] (15 folds); H: num_rank +0.115 [+0.048, +0.181] (15 folds), cat_rank +0.277 [+0.248, +0.306] (15 folds), coverage90 +0.245 [+0.209, +0.282] (15 folds); single pass, 1 − confidence: cat_rank +0.423 [+0.410, +0.437] (15 folds)
+  - dispersion, remask − K: -0.1096 [-0.1144, -0.1048] lower
+- `credit-g_60nan`: K 0.9932, remask − single -0.0049 [-0.0105, +0.0007] none; H 1.0003, remask − single -0.0056 [-0.0115, +0.0003] none; KC 0.9849, remask − single -0.0044 [-0.0085, -0.0003] equivalent
+  - uncertainty, K: num_rank +0.004 [-0.061, +0.068] (15 folds), cat_rank +0.247 [+0.208, +0.286] (15 folds), coverage90 +0.146 [+0.095, +0.197] (15 folds); H: num_rank +0.039 [-0.029, +0.107] (15 folds), cat_rank +0.284 [+0.256, +0.313] (15 folds), coverage90 +0.171 [+0.118, +0.224] (15 folds); single pass, 1 − confidence: cat_rank +0.416 [+0.407, +0.425] (15 folds)
+  - dispersion, remask − K: -0.0538 [-0.0689, -0.0386] lower
+- `credit-g_80nan`: K 1.0105, remask − single -0.0001 [-0.0006, +0.0004] equivalent; H 1.0305, remask − single -0.0017 [-0.0031, -0.0002] better; KC 1.0048, remask − single +0.0006 [-0.0012, +0.0025] equivalent
+  - uncertainty, K: num_rank -0.017 [-0.068, +0.034] (15 folds), cat_rank +0.129 [+0.105, +0.152] (15 folds), coverage90 +0.016 [+0.011, +0.021] (15 folds); H: num_rank +0.005 [-0.050, +0.060] (15 folds), cat_rank +0.171 [+0.135, +0.206] (15 folds), coverage90 +0.046 [+0.017, +0.075] (15 folds); single pass, 1 − confidence: cat_rank +0.416 [+0.408, +0.425] (15 folds)
+  - dispersion, remask − K: -0.0078 [-0.0101, -0.0054] lower
+- `vehicle_20nan`: K 0.4113, remask − single +0.0137 [+0.0083, +0.0192] worse; H 0.4148, remask − single +0.0130 [+0.0080, +0.0181] worse
+  - uncertainty, K: num_rank +0.374 [+0.351, +0.398] (15 folds), coverage90 +0.590 [+0.580, +0.600] (15 folds); H: num_rank +0.362 [+0.333, +0.391] (15 folds), coverage90 +0.585 [+0.574, +0.597] (15 folds)
+  - dispersion, remask − K: -0.0539 [-0.0570, -0.0507] lower
+- `vehicle_60nan`: K 0.6398, remask − single -0.0028 [-0.0071, +0.0015] none; H 0.6586, remask − single -0.0038 [-0.0071, -0.0004] better; KC 0.6315, remask − single +0.0015 [-0.0020, +0.0050] equivalent
+  - uncertainty, K: num_rank +0.277 [+0.249, +0.304] (15 folds), coverage90 +0.444 [+0.425, +0.463] (15 folds); H: num_rank +0.232 [+0.170, +0.293] (15 folds), coverage90 +0.422 [+0.390, +0.454] (15 folds)
+  - dispersion, remask − K: -0.0434 [-0.0471, -0.0398] lower
+- `biodeg_20nan`: K 0.5898, remask − single +0.0179 [+0.0124, +0.0235] worse; H 0.5991, remask − single +0.0157 [+0.0082, +0.0233] worse
+  - uncertainty, K: num_rank +0.682 [+0.664, +0.700] (15 folds), coverage90 +0.749 [+0.738, +0.760] (15 folds); H: num_rank +0.673 [+0.655, +0.691] (15 folds), coverage90 +0.744 [+0.730, +0.759] (15 folds)
+  - dispersion, remask − K: -0.1205 [-0.1299, -0.1112] lower
+- `biodeg_60nan`: K 0.7644, remask − single -0.0070 [-0.0090, -0.0051] better; H 0.7795, remask − single -0.0081 [-0.0105, -0.0057] better; KC 0.7610, remask − single -0.0014 [-0.0038, +0.0009] equivalent
+  - uncertainty, K: num_rank +0.625 [+0.603, +0.648] (15 folds), coverage90 +0.521 [+0.508, +0.535] (15 folds); H: num_rank +0.599 [+0.566, +0.631] (15 folds), coverage90 +0.503 [+0.476, +0.529] (15 folds)
+  - dispersion, remask − K: -0.0771 [-0.0842, -0.0701] lower
+- `kc2_20nan`: K 0.5363, remask − single -0.0007 [-0.0163, +0.0149] none; H 0.5402, remask − single -0.0056 [-0.0218, +0.0106] none
+  - uncertainty, K: num_rank +0.638 [+0.593, +0.684] (15 folds), coverage90 +0.553 [+0.531, +0.575] (15 folds); H: num_rank +0.637 [+0.589, +0.684] (15 folds), coverage90 +0.559 [+0.527, +0.591] (15 folds)
+  - dispersion, remask − K: -0.0445 [-0.0809, -0.0080] lower
+- `kc2_60nan`: K 0.5529, remask − single -0.0098 [-0.0178, -0.0018] better; H 0.5699, remask − single -0.0120 [-0.0226, -0.0014] better; KC 0.5495, remask − single -0.0066 [-0.0128, -0.0003] better
+  - uncertainty, K: num_rank +0.603 [+0.571, +0.635] (15 folds), coverage90 +0.453 [+0.433, +0.473] (15 folds); H: num_rank +0.579 [+0.536, +0.622] (15 folds), coverage90 +0.422 [+0.405, +0.439] (15 folds)
+  - dispersion, remask − K: -0.0480 [-0.0617, -0.0344] lower
+- `pendigits_20nan`: K 0.3203, remask − single +0.0159 [+0.0143, +0.0176] worse; H 0.3210, remask − single +0.0160 [+0.0142, +0.0179] worse
+  - uncertainty, K: num_rank +0.393 [+0.388, +0.397] (15 folds), coverage90 +0.706 [+0.703, +0.710] (15 folds); H: num_rank +0.393 [+0.388, +0.398] (15 folds), coverage90 +0.706 [+0.702, +0.710] (15 folds)
+  - dispersion, remask − K: -0.0848 [-0.0860, -0.0837] lower
+- `letter_20nan`: K 0.4331, remask − single +0.0248 [+0.0235, +0.0262] worse; H 0.4337, remask − single +0.0248 [+0.0234, +0.0262] worse
+  - uncertainty, K: num_rank +0.276 [+0.271, +0.281] (15 folds), coverage90 +0.704 [+0.702, +0.707] (15 folds); H: num_rank +0.275 [+0.270, +0.281] (15 folds), coverage90 +0.705 [+0.702, +0.707] (15 folds)
+  - dispersion, remask − K: -0.1525 [-0.1542, -0.1507] lower
+- `electricity_20nan`: K 0.6183, remask − single +0.0375 [+0.0326, +0.0424] worse; H 0.6177, remask − single +0.0349 [+0.0282, +0.0416] worse
+  - uncertainty, K: num_rank +0.459 [+0.450, +0.468] (15 folds), cat_rank +0.166 [+0.154, +0.178] (15 folds), coverage90 +0.574 [+0.565, +0.583] (15 folds); H: num_rank +0.464 [+0.456, +0.472] (15 folds), cat_rank +0.181 [+0.167, +0.195] (15 folds), coverage90 +0.582 [+0.575, +0.589] (15 folds); single pass, 1 − confidence: cat_rank +0.311 [+0.306, +0.317] (15 folds)
+  - dispersion, remask − K: -0.1572 [-0.1764, -0.1381] lower
+
+- remask − single, K: better 6 / no difference 7 / equivalent 3 / worse 5 (fold-pair t, seed agreement)
+- remask − single, H: better 9 / no difference 5 / equivalent 2 / worse 5 (fold-pair t, seed agreement)
+- remask − single, KC: better 3 / no difference 0 / equivalent 7 / worse 2 (fold-pair t, seed agreement)
+- num_rank, K: signal on 15 of 17 variants with the kind
+- cat_rank, K: signal on 9 of 9 variants with the kind
+- num_rank, H: signal on 15 of 17 variants with the kind
+- cat_rank, H: signal on 9 of 9 variants with the kind
+- dispersion, remask − K: lower 17, higher 0, of 17
+- K against the earlier run of the same cell, largest fold difference: 0.00e+00 over 63 cells
+
+- `kr-vs-kp_20nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)
+- `kr-vs-kp_40nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)
+- `kr-vs-kp_60nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)
+- `kr-vs-kp_80nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)
+- `spambase_20nan`: K within +0.502 [+0.490, +0.514] (15); K columns +0.400 [+0.340, +0.459] (15); H within +0.496 [+0.482, +0.511] (15); H columns +0.417 [+0.367, +0.467] (15)
+- `spambase_40nan`: K within +0.487 [+0.473, +0.500] (15); K columns +0.340 [+0.267, +0.413] (15); H within +0.464 [+0.437, +0.491] (15); H columns +0.315 [+0.248, +0.381] (15)
+- `spambase_60nan`: K within +0.367 [+0.350, +0.385] (15); K columns +0.106 [+0.001, +0.211] (15); H within +0.366 [+0.340, +0.393] (15); H columns +0.113 [+0.031, +0.195] (15)
+- `spambase_80nan`: K within +0.240 [+0.214, +0.265] (15); K columns +0.176 [+0.113, +0.240] (15); H within +0.230 [+0.189, +0.271] (15); H columns +0.214 [+0.141, +0.287] (15)
+- `credit-g_20nan`: K within +0.198 [+0.150, +0.246] (15); K columns -0.114 [-0.363, +0.134] (15); H within +0.193 [+0.154, +0.232] (15); H columns -0.133 [-0.360, +0.093] (15)
+- `credit-g_40nan`: K within +0.140 [+0.098, +0.182] (15); K columns -0.117 [-0.358, +0.125] (15); H within +0.105 [+0.043, +0.167] (15); H columns -0.029 [-0.287, +0.230] (15)
+- `credit-g_60nan`: K within +0.005 [-0.042, +0.052] (15); K columns -0.436 [-0.633, -0.239] (15); H within +0.016 [-0.046, +0.079] (15); H columns -0.319 [-0.536, -0.102] (15)
+- `credit-g_80nan`: K within +0.016 [-0.023, +0.056] (15); K columns +0.079 [-0.176, +0.333] (15); H within +0.024 [-0.014, +0.061] (15); H columns +0.257 [+0.015, +0.499] (15)
+- `vehicle_20nan`: K within +0.140 [+0.110, +0.170] (15); K columns +0.699 [+0.662, +0.735] (15); H within +0.146 [+0.113, +0.179] (15); H columns +0.681 [+0.639, +0.724] (15)
+- `vehicle_60nan`: K within +0.110 [+0.097, +0.124] (15); K columns +0.798 [+0.712, +0.885] (15); H within +0.106 [+0.086, +0.125] (15); H columns +0.665 [+0.495, +0.836] (15)
+- `biodeg_20nan`: K within +0.466 [+0.450, +0.482] (15); K columns +0.274 [+0.192, +0.355] (15); H within +0.459 [+0.442, +0.476] (15); H columns +0.265 [+0.173, +0.356] (15)
+- `biodeg_60nan`: K within +0.372 [+0.359, +0.384] (15); K columns +0.111 [+0.034, +0.187] (15); H within +0.357 [+0.333, +0.381] (15); H columns +0.109 [+0.029, +0.190] (15)
+- `kc2_20nan`: K within +0.477 [+0.430, +0.525] (15); K columns +0.716 [+0.642, +0.789] (15); H within +0.476 [+0.420, +0.532] (15); H columns +0.729 [+0.674, +0.783] (15)
+- `kc2_60nan`: K within +0.415 [+0.377, +0.453] (15); K columns +0.628 [+0.489, +0.766] (15); H within +0.387 [+0.335, +0.439] (15); H columns +0.597 [+0.478, +0.715] (15)
+- `pendigits_20nan`: K within +0.343 [+0.338, +0.348] (15); K columns +0.786 [+0.755, +0.818] (15); H within +0.344 [+0.339, +0.349] (15); H columns +0.795 [+0.765, +0.825] (15)
+- `letter_20nan`: K within +0.258 [+0.254, +0.263] (15); K columns +0.668 [+0.616, +0.719] (15); H within +0.258 [+0.253, +0.262] (15); H columns +0.661 [+0.613, +0.708] (15)
+- `electricity_20nan`: K within +0.301 [+0.292, +0.310] (15); K columns -0.431 [-0.631, -0.231] (15); H within +0.303 [+0.293, +0.313] (15); H columns -0.431 [-0.635, -0.227] (15)
+Primary: within-column signal on 14 (K) and 14 (H) of 15 variants up to 60nan, ranking against the errors on none (K) -> supported

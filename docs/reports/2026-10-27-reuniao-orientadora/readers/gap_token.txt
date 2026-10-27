@@ -1,0 +1,147 @@
+=== credit-g_20nan
+  induced  G 0.8873  M 0.8906  M column-wise 0.8910  best baseline 0.9180
+  masked   G 0.8937  M 0.8975
+    G - M, induced (primary) over 15 pairs: -0.0033 [-0.0174, +0.0108]; s42 -0.0181, s7 +0.0044, s13 +0.0038 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0037 [-0.0186, +0.0113]; s42 -0.0164, s7 -0.0063, s13 +0.0116 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0038 [-0.0154, +0.0078]; s42 -0.0004, s7 -0.0011, s13 -0.0099 -> no detectable difference
+  fold time per cell: G 5.8 min, M 5.5 min
+=== credit-g_40nan
+  induced  G 0.9632  M 0.9793  M column-wise 0.9826  best baseline 0.9638
+  masked   G 0.9693  M 0.9756
+    G - M, induced (primary) over 15 pairs: -0.0161 [-0.0302, -0.0019]; s42 +0.0055, s7 -0.0391, s13 -0.0147 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0194 [-0.0360, -0.0027]; s42 +0.0082, s7 -0.0483, s13 -0.0180 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0063 [-0.0317, +0.0191]; s42 +0.0048, s7 -0.0028, s13 -0.0209 -> no detectable difference
+  fold time per cell: G 4.0 min, M 4.0 min
+=== credit-g_60nan
+  induced  G 1.0030  M 1.0119  M column-wise 1.0022  best baseline 1.0000
+  masked   G 1.0005  M 1.0264
+    G - M, induced (primary) over 15 pairs: -0.0090 [-0.0245, +0.0066]; s42 -0.0058, s7 +0.0016, s13 -0.0226 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: +0.0007 [-0.0094, +0.0109]; s42 -0.0007, s7 +0.0111, s13 -0.0082 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0259 [-0.0479, -0.0039]; s42 -0.0381, s7 -0.0237, s13 -0.0159 -> G better than M
+  fold time per cell: G 3.2 min, M 2.9 min
+=== credit-g_80nan
+  induced  G 1.0157  M 1.0314  M column-wise 1.0165  best baseline 1.0000
+  masked   G 1.0284  M 1.0327
+    G - M, induced (primary) over 15 pairs: -0.0157 [-0.0299, -0.0015]; s42 -0.0174, s7 +0.0025, s13 -0.0322 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0009 [-0.0115, +0.0098]; s42 -0.0100, s7 +0.0115, s13 -0.0041 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0043 [-0.0209, +0.0124]; s42 +0.0016, s7 -0.0010, s13 -0.0134 -> no detectable difference
+  fold time per cell: G 4.1 min, M 4.0 min
+=== kr-vs-kp_20nan
+  induced  G 0.5934  M 0.6154  M column-wise 0.6276  best baseline 0.6119
+  masked   G 0.6508  M 0.6865
+    G - M, induced (primary) over 15 pairs: -0.0220 [-0.0360, -0.0080]; s42 -0.0195, s7 -0.0341, s13 -0.0124 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0342 [-0.0439, -0.0246]; s42 -0.0323, s7 -0.0348, s13 -0.0356 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0357 [-0.0523, -0.0192]; s42 -0.0315, s7 -0.0331, s13 -0.0425 -> G better than M
+  fold time per cell: G 16.5 min, M 16.5 min
+=== kr-vs-kp_40nan
+  induced  G 0.7608  M 0.7704  M column-wise 0.7792  best baseline 0.7725
+  masked   G 0.7855  M 0.7868
+    G - M, induced (primary) over 15 pairs: -0.0096 [-0.0196, +0.0004]; s42 -0.0020, s7 -0.0150, s13 -0.0118 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0184 [-0.0305, -0.0063]; s42 -0.0035, s7 -0.0320, s13 -0.0198 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0013 [-0.0275, +0.0248]; s42 -0.0210, s7 -0.0028, s13 +0.0198 -> no detectable difference
+  fold time per cell: G 17.5 min, M 17.8 min
+=== kr-vs-kp_60nan
+  induced  G 0.8684  M 0.8942  M column-wise 0.8779  best baseline 0.9030
+  masked   G 0.8931  M 0.8985
+    G - M, induced (primary) over 15 pairs: -0.0258 [-0.0348, -0.0167]; s42 -0.0247, s7 -0.0263, s13 -0.0263 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0095 [-0.0180, -0.0009]; s42 -0.0144, s7 -0.0025, s13 -0.0114 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0054 [-0.0310, +0.0202]; s42 +0.0243, s7 -0.0268, s13 -0.0137 -> no detectable difference
+  fold time per cell: G 18.3 min, M 18.3 min
+=== kr-vs-kp_80nan
+  induced  G 1.0100  M 1.0011  M column-wise 1.0119  best baseline 1.0000
+  masked   G 1.0190  M 1.0261
+    G - M, induced (primary) over 15 pairs: +0.0088 [-0.0137, +0.0314]; s42 +0.0164, s7 +0.0265, s13 -0.0164 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0020 [-0.0185, +0.0146]; s42 -0.0013, s7 +0.0079, s13 -0.0125 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0071 [-0.0344, +0.0202]; s42 +0.0099, s7 -0.0059, s13 -0.0253 -> no detectable difference
+  fold time per cell: G 15.3 min, M 15.5 min
+=== spambase_20nan
+  induced  G 0.8504  M 0.8681  M column-wise 0.8814  best baseline 0.8664
+  masked   G 0.8660  M 0.8866
+    G - M, induced (primary) over 15 pairs: -0.0177 [-0.0281, -0.0072]; s42 -0.0140, s7 -0.0136, s13 -0.0254 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0310 [-0.0409, -0.0210]; s42 -0.0253, s7 -0.0347, s13 -0.0328 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0206 [-0.0268, -0.0144]; s42 -0.0176, s7 -0.0198, s13 -0.0244 -> G better than M
+  fold time per cell: G 32.6 min, M 32.7 min
+=== spambase_40nan
+  induced  G 0.9065  M 0.9577  M column-wise 0.9240  best baseline 0.9371
+  masked   G 0.8988  M 0.9196
+    G - M, induced (primary) over 15 pairs: -0.0512 [-0.0825, -0.0198]; s42 -0.0493, s7 -0.0682, s13 -0.0360 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0174 [-0.0231, -0.0117]; s42 -0.0209, s7 -0.0109, s13 -0.0204 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0208 [-0.0262, -0.0154]; s42 -0.0208, s7 -0.0178, s13 -0.0238 -> G better than M
+  fold time per cell: G 33.3 min, M 33.3 min
+=== spambase_60nan
+  induced  G 0.9449  M 0.9750  M column-wise 0.9478  best baseline 0.9845
+  masked   G 0.9045  M 0.9193
+    G - M, induced (primary) over 15 pairs: -0.0301 [-0.0590, -0.0012]; s42 -0.0157, s7 -0.0297, s13 -0.0450 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0029 [-0.0052, -0.0006]; s42 -0.0040, s7 -0.0027, s13 -0.0019 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0148 [-0.0260, -0.0036]; s42 -0.0179, s7 -0.0176, s13 -0.0089 -> G better than M
+  fold time per cell: G 30.9 min, M 30.8 min
+=== spambase_80nan
+  induced  G 0.9971  M 1.0266  M column-wise 0.9948  best baseline 1.0000
+  masked   G 1.0079  M 1.0030
+    G - M, induced (primary) over 15 pairs: -0.0295 [-0.0623, +0.0033]; s42 -0.0096, s7 -0.0121, s13 -0.0668 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: +0.0024 [-0.0036, +0.0083]; s42 +0.0048, s7 +0.0011, s13 +0.0011 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: +0.0049 [-0.0120, +0.0218]; s42 -0.0024, s7 +0.0039, s13 +0.0132 -> no detectable difference
+  fold time per cell: G 34.1 min, M 34.9 min
+=== vehicle_20nan
+  induced  G 0.4218  M 0.4385  M column-wise 0.4474  best baseline 0.4731
+  masked   G 0.4276  M 0.4634
+    G - M, induced (primary) over 15 pairs: -0.0167 [-0.0309, -0.0025]; s42 -0.0249, s7 -0.0136, s13 -0.0116 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0256 [-0.0370, -0.0143]; s42 -0.0326, s7 -0.0233, s13 -0.0209 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0357 [-0.0718, +0.0003]; s42 -0.0375, s7 -0.0574, s13 -0.0123 -> no detectable difference
+  fold time per cell: G 3.4 min, M 3.6 min
+=== vehicle_60nan
+  induced  G 0.6458  M 0.6693  M column-wise 0.6688  best baseline 0.7006
+  masked   G 0.6242  M 0.6370
+    G - M, induced (primary) over 15 pairs: -0.0235 [-0.0434, -0.0036]; s42 -0.0056, s7 -0.0191, s13 -0.0458 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0230 [-0.0417, -0.0042]; s42 -0.0011, s7 -0.0219, s13 -0.0459 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0128 [-0.0337, +0.0081]; s42 -0.0103, s7 -0.0233, s13 -0.0048 -> no detectable difference
+  fold time per cell: G 3.2 min, M 3.4 min
+=== biodeg_20nan
+  induced  G 0.5954  M 0.6210  M column-wise 0.6315  best baseline 0.6356
+  masked   G 0.5500  M 0.6048
+    G - M, induced (primary) over 15 pairs: -0.0256 [-0.0422, -0.0090]; s42 -0.0169, s7 -0.0133, s13 -0.0466 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0361 [-0.0571, -0.0150]; s42 -0.0336, s7 -0.0349, s13 -0.0398 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0548 [-0.0752, -0.0344]; s42 -0.0454, s7 -0.0557, s13 -0.0633 -> G better than M
+  fold time per cell: G 6.2 min, M 6.3 min
+=== biodeg_60nan
+  induced  G 0.7684  M 0.8267  M column-wise 0.7890  best baseline 0.8658
+  masked   G 0.8192  M 0.8283
+    G - M, induced (primary) over 15 pairs: -0.0583 [-0.0744, -0.0422]; s42 -0.0448, s7 -0.0626, s13 -0.0675 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0205 [-0.0281, -0.0130]; s42 -0.0139, s7 -0.0246, s13 -0.0232 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0091 [-0.0351, +0.0170]; s42 +0.0000, s7 -0.0302, s13 +0.0031 -> no detectable difference
+  fold time per cell: G 5.6 min, M 5.8 min
+=== kc2_20nan
+  induced  G 0.5775  M 0.5843  M column-wise 0.5778  best baseline 0.5665
+  masked   G 0.5575  M 0.5579
+    G - M, induced (primary) over 15 pairs: -0.0069 [-0.0306, +0.0169]; s42 +0.0078, s7 -0.0202, s13 -0.0081 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0003 [-0.0206, +0.0200]; s42 +0.0099, s7 -0.0136, s13 +0.0027 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0004 [-0.0220, +0.0213]; s42 -0.0039, s7 +0.0074, s13 -0.0046 -> no detectable difference
+  fold time per cell: G 1.9 min, M 1.8 min
+=== kc2_60nan
+  induced  G 0.6168  M 0.6833  M column-wise 0.6417  best baseline 0.7129
+  masked   G 0.5682  M 0.6004
+    G - M, induced (primary) over 15 pairs: -0.0666 [-0.1271, -0.0061]; s42 -0.0769, s7 -0.0661, s13 -0.0567 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0249 [-0.0598, +0.0100]; s42 -0.0365, s7 -0.0344, s13 -0.0038 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0322 [-0.0629, -0.0014]; s42 -0.0785, s7 -0.0079, s13 -0.0101 -> G better than M
+  fold time per cell: G 2.0 min, M 2.0 min
+=== pendigits_20nan
+  induced  G 0.3328  M 0.3343  M column-wise 0.3354  best baseline 0.3500
+  masked   G 0.3693  M 0.3720
+    G - M, induced (primary) over 15 pairs: -0.0015 [-0.0034, +0.0004]; s42 +0.0008, s7 -0.0020, s13 -0.0033 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0027 [-0.0048, -0.0006]; s42 -0.0000, s7 -0.0032, s13 -0.0047 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0027 [-0.0053, -0.0001]; s42 -0.0036, s7 -0.0000, s13 -0.0046 -> G better than M
+  fold time per cell: G 36.2 min, M 38.1 min
+=== letter_20nan
+  induced  G 0.4598  M 0.4613  M column-wise 0.4626  best baseline 0.4729
+  masked   G 0.4965  M 0.4989
+    G - M, induced (primary) over 15 pairs: -0.0014 [-0.0025, -0.0004]; s42 -0.0012, s7 -0.0012, s13 -0.0019 -> G better than M
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0027 [-0.0037, -0.0018]; s42 -0.0025, s7 -0.0026, s13 -0.0031 -> G better than column-wise
+    G - M, masked (secondary) over 15 pairs: -0.0024 [-0.0031, -0.0016]; s42 -0.0022, s7 -0.0030, s13 -0.0020 -> G better than M
+  fold time per cell: G 59.9 min, M 63.8 min
+=== electricity_20nan
+  induced  G 0.6201  M 0.6247  M column-wise 0.6220  best baseline 0.6058
+  masked   G 0.6669  M 0.6903
+    G - M, induced (primary) over 15 pairs: -0.0046 [-0.0198, +0.0106]; s42 +0.0011, s7 -0.0147, s13 -0.0003 -> no detectable difference
+    G - M column-wise, induced (secondary) over 15 pairs: -0.0019 [-0.0118, +0.0080]; s42 +0.0004, s7 -0.0042, s13 -0.0020 -> no detectable difference
+    G - M, masked (secondary) over 15 pairs: -0.0234 [-0.0418, -0.0050]; s42 -0.0069, s7 -0.0428, s13 -0.0204 -> G better than M
+  fold time per cell: G 100.7 min, M 121.1 min

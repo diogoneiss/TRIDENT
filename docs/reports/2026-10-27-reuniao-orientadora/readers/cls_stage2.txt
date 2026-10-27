@@ -1,0 +1,16 @@
+Complete seeds: [42, 7] of [42, 7, 13]
+
+## B − A, test macro-F1
+- 00nan (A's mean 0.8533): B − A +0.0033 [-0.0005, +0.0071] no verdict; tables from credit-g -0.0042 to letter +0.0099
+- 20nan (A's mean 0.7942): B − A +0.0033 [-0.0016, +0.0082] no verdict; tables from electricity -0.0037 to kc2 +0.0076
+- 40nan (A's mean 0.7337): B − A +0.0036 [-0.0044, +0.0116] no verdict; tables from letter -0.0076 to vehicle +0.0220
+- 60nan (A's mean 0.6557): B − A -0.0051 [-0.0118, +0.0017] no verdict; tables from credit-g -0.0117 to biodeg +0.0046
+- 80nan (A's mean 0.5414): B − A -0.0050 [-0.0190, +0.0091] no verdict; tables from vehicle -0.0416 to credit-g +0.0415
+
+## C − A, test macro-F1
+- 00nan (A's mean 0.8533): C − A +0.0026 [-0.0028, +0.0081] no verdict; tables from biodeg -0.0127 to letter +0.0161
+- 20nan (A's mean 0.7942): C − A -0.0042 [-0.0100, +0.0016] no verdict; tables from biodeg -0.0162 to kc2 +0.0112
+- 40nan (A's mean 0.7337): C − A +0.0012 [-0.0073, +0.0097] no verdict; tables from letter -0.0102 to vehicle +0.0104
+- 60nan (A's mean 0.6557): C − A -0.0042 [-0.0122, +0.0038] no verdict; tables from credit-g -0.0212 to biodeg +0.0243
+- 80nan (A's mean 0.5414): C − A -0.0036 [-0.0171, +0.0098] no verdict; tables from vehicle -0.0303 to credit-g +0.0270
+

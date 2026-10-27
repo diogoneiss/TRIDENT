@@ -1,0 +1,35 @@
+complete: 9 of 9; not read (incomplete by the deadline): none
+
+K - bar, fresh seeds 1001/2002/3003: better 7 / no difference 1 / worse 1 (fold-pair t, seed agreement)
+  electricity_20nan: fresh worse; earlier {'101/202/303': 'worse', '42/7/13': 'none'}
+  letter_20nan: fresh better; earlier {'101/202/303': 'better'}
+  pendigits_20nan: fresh better; earlier {'101/202/303': 'better'}
+  spambase_20nan: fresh better; earlier {'101/202/303': 'none', '42/7/13': 'better'}
+  kr-vs-kp_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  biodeg_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  credit-g_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  vehicle_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  kc2_20nan: fresh none; earlier {'101/202/303': 'none', '42/7/13': 'none'}
+Primary: K - bar holds: reversals none (fold-pair t, seed agreement)
+  changes short of a reversal: ['electricity_20nan (42/7/13: none -> worse)', 'spambase_20nan (101/202/303: none -> better)']
+
+K - strong, fresh seeds 1001/2002/3003: better 6 / no difference 3 / worse 0 (fold-pair t, seed agreement)
+  electricity_20nan: fresh none; earlier {'101/202/303': 'none', '42/7/13': 'none'}
+  letter_20nan: fresh better; earlier {'101/202/303': 'better'}
+  pendigits_20nan: fresh better; earlier {'101/202/303': 'better'}
+  spambase_20nan: fresh none; earlier {'101/202/303': 'none', '42/7/13': 'none'}
+  kr-vs-kp_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  biodeg_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  credit-g_20nan: fresh better; earlier {'101/202/303': 'none', '42/7/13': 'none'}
+  vehicle_20nan: fresh better; earlier {'101/202/303': 'better', '42/7/13': 'better'}
+  kc2_20nan: fresh none; earlier {'101/202/303': 'none', '42/7/13': 'none'}
+Secondary: K - strong: reversals none
+  changes short of a reversal: ['credit-g_20nan (101/202/303: none -> better)', 'credit-g_20nan (42/7/13: none -> better)']
+
+H - bar: better 7 / no difference 1 / worse 1 (fold-pair t, seed agreement)
+M - bar: better 7 / no difference 1 / worse 1 (fold-pair t, seed agreement)
+K - H: better 2 / no difference 6 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+K - M: better 2 / no difference 6 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+KC - K: better 3 / no difference 2 / equivalent 3 / worse 1 (fold-pair t, seed agreement)
+K - per_type: better 7 / no difference 1 / worse 1 (fold-pair t, seed agreement)
+KC better than K at 20nan (ADR 0027 keeps calibration off below 0.3): ['letter_20nan', 'pendigits_20nan', 'credit-g_20nan']

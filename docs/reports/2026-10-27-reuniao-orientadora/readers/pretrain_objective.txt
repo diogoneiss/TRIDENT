@@ -1,0 +1,64 @@
+=== credit-g_20nan
+  induced  A 0.9038 [0.8834, 0.9243] n=15  B 0.9152 [0.8962, 0.9343] n=15  C 0.9142 [0.8959, 0.9325] n=15  V 0.9036 [0.8825, 0.9247] n=15  N 0.9098 [0.8894, 0.9302] n=15  best baseline 0.9180 [0.8980, 0.9381] (hgb)
+    V - A (primary) over 15 pairs: -0.0002 [-0.0138, +0.0134]; s42 -0.0117, s7 +0.0030, s13 +0.0080 -> no detectable difference
+    V - C (secondary) over 15 pairs: -0.0106 [-0.0280, +0.0069]; s42 -0.0040, s7 -0.0013, s13 -0.0264 -> no detectable difference
+    V - B (secondary) over 15 pairs: -0.0116 [-0.0279, +0.0047]; s42 -0.0117, s7 +0.0035, s13 -0.0266 -> no detectable difference
+    N - A (primary) over 15 pairs: +0.0060 [-0.0074, +0.0193]; s42 -0.0023, s7 +0.0038, s13 +0.0163 -> no detectable difference
+    N - C (secondary) over 15 pairs: -0.0044 [-0.0167, +0.0079]; s42 +0.0054, s7 -0.0004, s13 -0.0181 -> no detectable difference
+    N - B (secondary) over 15 pairs: -0.0054 [-0.0228, +0.0119]; s42 -0.0023, s7 +0.0044, s13 -0.0183 -> no detectable difference
+  masked   A 0.9049 [0.8799, 0.9299] n=15  B 0.9203 [0.8978, 0.9429] n=15  C 0.9117 [0.8878, 0.9357] n=15  V 0.9192 [0.8963, 0.9422] n=15  N 0.9117 [0.8843, 0.9391] n=15  best baseline 0.9220 [0.9032, 0.9407] (hgb/knn10)
+    V - A (primary) over 15 pairs: +0.0143 [-0.0022, +0.0308]; s42 +0.0088, s7 +0.0116, s13 +0.0225 -> no detectable difference
+    V - C (secondary) over 15 pairs: +0.0075 [-0.0091, +0.0241]; s42 +0.0041, s7 +0.0152, s13 +0.0032 -> no detectable difference
+    V - B (secondary) over 15 pairs: -0.0011 [-0.0125, +0.0103]; s42 -0.0080, s7 +0.0015, s13 +0.0032 -> no detectable difference
+    N - A (primary) over 15 pairs: +0.0068 [-0.0084, +0.0220]; s42 -0.0021, s7 +0.0037, s13 +0.0188 -> no detectable difference
+    N - C (secondary) over 15 pairs: -0.0000 [-0.0153, +0.0152]; s42 -0.0067, s7 +0.0072, s13 -0.0005 -> no detectable difference
+    N - B (secondary) over 15 pairs: -0.0086 [-0.0186, +0.0014]; s42 -0.0189, s7 -0.0064, s13 -0.0005 -> no detectable difference
+  fold time per cell: A 6.9 min, B 2.0 min, C 4.3 min, V 3.5 min, N 6.8 min
+=== credit-g_80nan
+  induced  A 1.0404 [1.0237, 1.0570] n=15  B 1.0547 [1.0328, 1.0767] n=15  C 1.0356 [1.0247, 1.0466] n=15  V 1.0671 [1.0475, 1.0867] n=15  N 1.0257 [1.0153, 1.0362] n=15  best baseline 1.0000 [1.0000, 1.0000] (mean_mode)
+    V - A (primary) over 15 pairs: +0.0267 [+0.0057, +0.0477]; s42 +0.0343, s7 +0.0260, s13 +0.0199 -> A better than V
+    V - C (secondary) over 15 pairs: +0.0315 [+0.0127, +0.0502]; s42 +0.0199, s7 +0.0338, s13 +0.0407 -> C better than V
+    V - B (secondary) over 15 pairs: +0.0124 [-0.0146, +0.0394]; s42 +0.0036, s7 +0.0073, s13 +0.0262 -> no detectable difference
+    N - A (primary) over 15 pairs: -0.0147 [-0.0283, -0.0010]; s42 -0.0043, s7 -0.0174, s13 -0.0223 -> N better than A
+    N - C (secondary) over 15 pairs: -0.0099 [-0.0244, +0.0046]; s42 -0.0187, s7 -0.0095, s13 -0.0015 -> no detectable difference
+    N - B (secondary) over 15 pairs: -0.0290 [-0.0503, -0.0076]; s42 -0.0350, s7 -0.0360, s13 -0.0160 -> N better than B
+  masked   A 1.0167 [0.9968, 1.0366] n=15  B 1.0397 [1.0131, 1.0663] n=15  C 1.0134 [0.9978, 1.0290] n=15  V 1.0203 [0.9911, 1.0494] n=15  N 1.0246 [1.0050, 1.0442] n=15  best baseline 1.0000 [1.0000, 1.0000] (mean_mode)
+    V - A (primary) over 15 pairs: +0.0036 [-0.0274, +0.0345]; s42 +0.0111, s7 +0.0110, s13 -0.0114 -> no detectable difference
+    V - C (secondary) over 15 pairs: +0.0069 [-0.0218, +0.0356]; s42 +0.0049, s7 +0.0138, s13 +0.0020 -> no detectable difference
+    V - B (secondary) over 15 pairs: -0.0194 [-0.0491, +0.0103]; s42 -0.0260, s7 -0.0038, s13 -0.0284 -> no detectable difference
+    N - A (primary) over 15 pairs: +0.0079 [-0.0202, +0.0359]; s42 +0.0056, s7 +0.0272, s13 -0.0092 -> no detectable difference
+    N - C (secondary) over 15 pairs: +0.0112 [-0.0130, +0.0354]; s42 -0.0006, s7 +0.0301, s13 +0.0042 -> no detectable difference
+    N - B (secondary) over 15 pairs: -0.0151 [-0.0418, +0.0116]; s42 -0.0315, s7 +0.0124, s13 -0.0263 -> no detectable difference
+  fold time per cell: A 2.4 min, B 1.5 min, C 4.3 min, V 3.1 min, N 2.4 min
+=== kr-vs-kp_40nan
+  induced  A 0.7649 [0.7495, 0.7803] n=15  B 0.7840 [0.7715, 0.7965] n=15  C 0.7938 [0.7759, 0.8117] n=15  V 0.7882 [0.7753, 0.8011] n=15  N 0.7650 [0.7502, 0.7798] n=15  best baseline 0.7725 [0.7610, 0.7840] (hgb)
+    V - A (primary) over 15 pairs: +0.0233 [+0.0080, +0.0386]; s42 +0.0365, s7 +0.0211, s13 +0.0123 -> A better than V
+    V - C (secondary) over 15 pairs: -0.0056 [-0.0211, +0.0099]; s42 +0.0029, s7 -0.0063, s13 -0.0134 -> no detectable difference
+    V - B (secondary) over 15 pairs: +0.0042 [-0.0084, +0.0167]; s42 +0.0144, s7 -0.0029, s13 +0.0010 -> no detectable difference
+    N - A (primary) over 15 pairs: +0.0001 [-0.0117, +0.0118]; s42 +0.0044, s7 +0.0050, s13 -0.0093 -> no detectable difference
+    N - C (secondary) over 15 pairs: -0.0288 [-0.0456, -0.0120]; s42 -0.0292, s7 -0.0223, s13 -0.0349 -> N better than C
+    N - B (secondary) over 15 pairs: -0.0191 [-0.0298, -0.0084]; s42 -0.0177, s7 -0.0189, s13 -0.0206 -> N better than B
+  masked   A 0.7830 [0.7571, 0.8089] n=15  B 0.8091 [0.7865, 0.8317] n=15  C 0.8183 [0.7903, 0.8464] n=15  V 0.8149 [0.7915, 0.8382] n=15  N 0.7808 [0.7614, 0.8001] n=15  best baseline 0.7802 [0.7544, 0.8060] (hgb)
+    V - A (primary) over 15 pairs: +0.0319 [+0.0160, +0.0478]; s42 +0.0347, s7 +0.0204, s13 +0.0405 -> A better than V
+    V - C (secondary) over 15 pairs: -0.0035 [-0.0273, +0.0204]; s42 +0.0014, s7 -0.0131, s13 +0.0013 -> no detectable difference
+    V - B (secondary) over 15 pairs: +0.0058 [-0.0103, +0.0219]; s42 +0.0088, s7 +0.0083, s13 +0.0002 -> no detectable difference
+    N - A (primary) over 15 pairs: -0.0022 [-0.0245, +0.0201]; s42 +0.0057, s7 -0.0196, s13 +0.0072 -> no detectable difference
+    N - C (secondary) over 15 pairs: -0.0375 [-0.0708, -0.0043]; s42 -0.0276, s7 -0.0530, s13 -0.0320 -> N better than C
+    N - B (secondary) over 15 pairs: -0.0283 [-0.0543, -0.0023]; s42 -0.0202, s7 -0.0316, s13 -0.0331 -> N better than B
+  fold time per cell: A 7.9 min, B 4.1 min, C 12.8 min, V 10.2 min, N 7.8 min
+=== pendigits_20nan
+  induced  A 0.4017 [0.3961, 0.4072] n=15  B 0.3801 [0.3760, 0.3842] n=15  C 0.3353 [0.3307, 0.3399] n=15  V 0.3596 [0.3555, 0.3636] n=15  N 0.3644 [0.3605, 0.3684] n=15  best baseline 0.3500 [0.3464, 0.3536] (knn10)
+    V - A (primary) over 15 pairs: -0.0421 [-0.0446, -0.0397]; s42 -0.0424, s7 -0.0402, s13 -0.0437 -> V better than A
+    V - C (secondary) over 15 pairs: +0.0243 [+0.0205, +0.0281]; s42 +0.0217, s7 +0.0261, s13 +0.0250 -> C better than V
+    V - B (secondary) over 15 pairs: -0.0206 [-0.0236, -0.0175]; s42 -0.0160, s7 -0.0237, s13 -0.0220 -> V better than B
+    N - A (primary) over 15 pairs: -0.0373 [-0.0397, -0.0348]; s42 -0.0390, s7 -0.0356, s13 -0.0371 -> N better than A
+    N - C (secondary) over 15 pairs: +0.0291 [+0.0259, +0.0324]; s42 +0.0251, s7 +0.0307, s13 +0.0316 -> C better than N
+    N - B (secondary) over 15 pairs: -0.0157 [-0.0183, -0.0132]; s42 -0.0126, s7 -0.0191, s13 -0.0154 -> N better than B
+  masked   A 0.4343 [0.4287, 0.4399] n=15  B 0.4149 [0.4097, 0.4201] n=15  C 0.3707 [0.3659, 0.3755] n=15  V 0.3966 [0.3919, 0.4013] n=15  N 0.4053 [0.4006, 0.4100] n=15  best baseline 0.4012 [0.3962, 0.4062] (knn10)
+    V - A (primary) over 15 pairs: -0.0377 [-0.0415, -0.0339]; s42 -0.0408, s7 -0.0332, s13 -0.0392 -> V better than A
+    V - C (secondary) over 15 pairs: +0.0259 [+0.0232, +0.0286]; s42 +0.0229, s7 +0.0267, s13 +0.0281 -> C better than V
+    V - B (secondary) over 15 pairs: -0.0183 [-0.0211, -0.0156]; s42 -0.0183, s7 -0.0165, s13 -0.0201 -> V better than B
+    N - A (primary) over 15 pairs: -0.0290 [-0.0322, -0.0258]; s42 -0.0324, s7 -0.0270, s13 -0.0276 -> N better than A
+    N - C (secondary) over 15 pairs: +0.0346 [+0.0312, +0.0380]; s42 +0.0313, s7 +0.0329, s13 +0.0397 -> C better than N
+    N - B (secondary) over 15 pairs: -0.0096 [-0.0119, -0.0074]; s42 -0.0099, s7 -0.0103, s13 -0.0086 -> N better than B
+  fold time per cell: A 13.4 min, B 7.6 min, C 21.4 min, V 29.5 min, N 14.6 min

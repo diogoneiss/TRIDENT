@@ -1,0 +1,210 @@
+=== credit-g_20nan
+  induced  H 0.8817  C 0.8801  K 0.8751  KC 0.8738  best baseline 0.9138
+  checkpoint epoch by loss 91; by validation gaps 113 (fold means); mean alpha 0.867; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0016 [-0.0030, -0.0002]; s101 -0.0007, s202 -0.0021, s303 -0.0020 -> C better
+    K - H (primary) over 15 pairs: -0.0066 [-0.0177, +0.0044]; s101 -0.0113, s202 -0.0079, s303 -0.0006 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0079 [-0.0185, +0.0026]; s101 -0.0126, s202 -0.0094, s303 -0.0019 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0013 [-0.0025, -0.0001]; s101 -0.0013, s202 -0.0014, s303 -0.0012 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0063 [-0.0177, +0.0050]; s101 -0.0119, s202 -0.0073, s303 +0.0002 -> no detectable difference
+  masked K - H (secondary): +0.0038
+  fold time per cell: 6.0 min
+=== credit-g_40nan
+  induced  H 0.9734  C 0.9598  K 0.9662  KC 0.9579  best baseline 0.9645
+  checkpoint epoch by loss 45; by validation gaps 83 (fold means); mean alpha 0.843; thresholded categorical columns per fold 7.2
+    C - H (primary) over 15 pairs: -0.0136 [-0.0207, -0.0066]; s101 -0.0091, s202 -0.0108, s303 -0.0210 -> C better
+    K - H (primary) over 15 pairs: -0.0072 [-0.0222, +0.0079]; s101 -0.0060, s202 -0.0124, s303 -0.0031 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0156 [-0.0298, -0.0013]; s101 -0.0179, s202 -0.0158, s303 -0.0130 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0084 [-0.0130, -0.0038]; s101 -0.0119, s202 -0.0033, s303 -0.0099 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0019 [-0.0155, +0.0117]; s101 -0.0088, s202 -0.0050, s303 +0.0080 -> no detectable difference
+  masked K - H (secondary): -0.0024
+  fold time per cell: 4.5 min
+=== credit-g_60nan
+  induced  H 1.0003  C 0.9836  K 0.9932  KC 0.9849  best baseline 1.0000
+  checkpoint epoch by loss 58; by validation gaps 48 (fold means); mean alpha 0.672; thresholded categorical columns per fold 6.1
+    C - H (primary) over 15 pairs: -0.0167 [-0.0251, -0.0083]; s101 -0.0204, s202 -0.0186, s303 -0.0113 -> C better
+    K - H (primary) over 15 pairs: -0.0071 [-0.0273, +0.0130]; s101 -0.0225, s202 -0.0000, s303 +0.0011 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0155 [-0.0312, +0.0003]; s101 -0.0244, s202 -0.0071, s303 -0.0149 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0083 [-0.0156, -0.0011]; s101 -0.0019, s202 -0.0071, s303 -0.0160 -> KC better
+    KC - C (secondary) over 15 pairs: +0.0013 [-0.0116, +0.0142]; s101 -0.0040, s202 +0.0115, s303 -0.0036 -> no detectable difference
+  masked K - H (secondary): -0.0058
+  fold time per cell: 3.7 min
+=== credit-g_80nan
+  induced  H 1.0305  C 1.0120  K 1.0105  KC 1.0048  best baseline 1.0000
+  checkpoint epoch by loss 25; by validation gaps 12 (fold means); mean alpha 0.556; thresholded categorical columns per fold 4.3
+    C - H (primary) over 15 pairs: -0.0185 [-0.0298, -0.0072]; s101 -0.0274, s202 -0.0165, s303 -0.0116 -> C better
+    K - H (primary) over 15 pairs: -0.0200 [-0.0361, -0.0040]; s101 -0.0316, s202 -0.0088, s303 -0.0197 -> K better
+    KC - H (secondary) over 15 pairs: -0.0257 [-0.0414, -0.0100]; s101 -0.0360, s202 -0.0154, s303 -0.0256 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0056 [-0.0078, -0.0035]; s101 -0.0044, s202 -0.0066, s303 -0.0059 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0072 [-0.0143, -0.0001]; s101 -0.0086, s202 +0.0011, s303 -0.0140 -> no detectable difference
+  masked K - H (secondary): -0.0070
+  fold time per cell: 4.7 min
+=== kr-vs-kp_20nan
+  induced  H 0.5947  C 0.6024  K 0.5866  KC 0.5941  best baseline 0.6118
+  checkpoint epoch by loss 253; by validation gaps 266 (fold means); thresholded categorical columns per fold 13.5
+    C - H (primary) over 15 pairs: +0.0077 [-0.0018, +0.0172]; s101 +0.0179, s202 -0.0038, s303 +0.0089 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0081 [-0.0231, +0.0068]; s101 -0.0007, s202 -0.0164, s303 -0.0074 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0006 [-0.0166, +0.0154]; s101 +0.0143, s202 -0.0131, s303 -0.0030 -> no detectable difference
+    KC - K (secondary) over 15 pairs: +0.0076 [-0.0010, +0.0161]; s101 +0.0150, s202 +0.0033, s303 +0.0044 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0083 [-0.0214, +0.0049]; s101 -0.0036, s202 -0.0093, s303 -0.0119 -> no detectable difference
+  masked K - H (secondary): +0.0001
+  fold time per cell: 17.0 min
+=== kr-vs-kp_40nan
+  induced  H 0.7600  C 0.7509  K 0.7626  KC 0.7521  best baseline 0.7721
+  checkpoint epoch by loss 110; by validation gaps 132 (fold means); thresholded categorical columns per fold 17.6
+    C - H (primary) over 15 pairs: -0.0090 [-0.0148, -0.0032]; s101 -0.0155, s202 -0.0055, s303 -0.0062 -> C better
+    K - H (primary) over 15 pairs: +0.0027 [-0.0097, +0.0151]; s101 +0.0075, s202 -0.0091, s303 +0.0096 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0079 [-0.0220, +0.0062]; s101 -0.0070, s202 -0.0076, s303 -0.0091 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0105 [-0.0190, -0.0021]; s101 -0.0145, s202 +0.0015, s303 -0.0187 -> no detectable difference
+    KC - C (secondary) over 15 pairs: +0.0012 [-0.0120, +0.0143]; s101 +0.0085, s202 -0.0021, s303 -0.0029 -> no detectable difference
+  masked K - H (secondary): -0.0027
+  fold time per cell: 18.6 min
+=== kr-vs-kp_60nan
+  induced  H 0.8716  C 0.8590  K 0.8711  KC 0.8609  best baseline 0.9090
+  checkpoint epoch by loss 71; by validation gaps 92 (fold means); thresholded categorical columns per fold 13.7
+    C - H (primary) over 15 pairs: -0.0126 [-0.0190, -0.0062]; s101 -0.0085, s202 -0.0095, s303 -0.0197 -> C better
+    K - H (primary) over 15 pairs: -0.0005 [-0.0092, +0.0081]; s101 -0.0078, s202 +0.0032, s303 +0.0031 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0106 [-0.0179, -0.0033]; s101 -0.0143, s202 -0.0128, s303 -0.0048 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0101 [-0.0153, -0.0050]; s101 -0.0064, s202 -0.0160, s303 -0.0079 -> KC better
+    KC - C (secondary) over 15 pairs: +0.0020 [-0.0052, +0.0091]; s101 -0.0058, s202 -0.0032, s303 +0.0149 -> no detectable difference
+  masked K - H (secondary): -0.0071
+  fold time per cell: 18.9 min
+=== kr-vs-kp_80nan
+  induced  H 1.0104  C 0.9771  K 0.9815  KC 0.9733  best baseline 1.0000
+  checkpoint epoch by loss 32; by validation gaps 21 (fold means); thresholded categorical columns per fold 13.1
+    C - H (primary) over 15 pairs: -0.0333 [-0.0437, -0.0229]; s101 -0.0399, s202 -0.0249, s303 -0.0350 -> C better
+    K - H (primary) over 15 pairs: -0.0289 [-0.0453, -0.0125]; s101 -0.0447, s202 -0.0114, s303 -0.0305 -> K better
+    KC - H (secondary) over 15 pairs: -0.0371 [-0.0549, -0.0194]; s101 -0.0540, s202 -0.0161, s303 -0.0413 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0083 [-0.0132, -0.0033]; s101 -0.0093, s202 -0.0047, s303 -0.0108 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0039 [-0.0153, +0.0076]; s101 -0.0141, s202 +0.0088, s303 -0.0063 -> no detectable difference
+  masked K - H (secondary): -0.0368
+  fold time per cell: 16.5 min
+=== spambase_20nan
+  induced  H 0.8495  C 0.8548  K 0.8529  KC 0.8579  best baseline 0.8597
+  checkpoint epoch by loss 281; by validation gaps 287 (fold means); mean alpha 0.833; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: +0.0053 [+0.0018, +0.0088]; s101 +0.0059, s202 +0.0045, s303 +0.0056 -> H better
+    K - H (primary) over 15 pairs: +0.0034 [-0.0048, +0.0116]; s101 +0.0132, s202 -0.0015, s303 -0.0014 -> no detectable difference
+    KC - H (secondary) over 15 pairs: +0.0085 [-0.0011, +0.0181]; s101 +0.0174, s202 +0.0034, s303 +0.0047 -> no detectable difference
+    KC - K (secondary) over 15 pairs: +0.0050 [+0.0017, +0.0083]; s101 +0.0043, s202 +0.0048, s303 +0.0060 -> K better
+    KC - C (secondary) over 15 pairs: +0.0032 [-0.0040, +0.0104]; s101 +0.0116, s202 -0.0011, s303 -0.0009 -> no detectable difference
+  masked K - H (secondary): +0.0014
+  fold time per cell: 34.0 min
+=== spambase_40nan
+  induced  H 0.9064  C 0.9034  K 0.9068  KC 0.9024  best baseline 0.9345
+  checkpoint epoch by loss 209; by validation gaps 235 (fold means); mean alpha 0.788; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0029 [-0.0046, -0.0012]; s101 -0.0033, s202 -0.0035, s303 -0.0021 -> C better
+    K - H (primary) over 15 pairs: +0.0004 [-0.0053, +0.0061]; s101 -0.0027, s202 +0.0005, s303 +0.0033 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0039 [-0.0085, +0.0007]; s101 -0.0085, s202 -0.0053, s303 +0.0019 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0043 [-0.0086, -0.0000]; s101 -0.0058, s202 -0.0058, s303 -0.0014 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0010 [-0.0048, +0.0028]; s101 -0.0052, s202 -0.0018, s303 +0.0040 -> no detectable difference
+  masked K - H (secondary): -0.0033
+  fold time per cell: 35.7 min
+=== spambase_60nan
+  induced  H 0.9438  C 0.9410  K 0.9404  KC 0.9380  best baseline 0.9814
+  checkpoint epoch by loss 131; by validation gaps 133 (fold means); mean alpha 0.715; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0028 [-0.0053, -0.0004]; s101 -0.0009, s202 -0.0058, s303 -0.0019 -> C better
+    K - H (primary) over 15 pairs: -0.0033 [-0.0077, +0.0010]; s101 -0.0018, s202 -0.0020, s303 -0.0062 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0058 [-0.0109, -0.0007]; s101 -0.0038, s202 -0.0050, s303 -0.0085 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0024 [-0.0037, -0.0012]; s101 -0.0020, s202 -0.0030, s303 -0.0023 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0029 [-0.0080, +0.0021]; s101 -0.0029, s202 +0.0007, s303 -0.0066 -> no detectable difference
+  masked K - H (secondary): -0.0112
+  fold time per cell: 32.9 min
+=== spambase_80nan
+  induced  H 0.9946  C 0.9818  K 0.9846  KC 0.9786  best baseline 1.0000
+  checkpoint epoch by loss 92; by validation gaps 61 (fold means); mean alpha 0.510; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0128 [-0.0178, -0.0078]; s101 -0.0146, s202 -0.0114, s303 -0.0124 -> C better
+    K - H (primary) over 15 pairs: -0.0100 [-0.0159, -0.0040]; s101 -0.0166, s202 -0.0070, s303 -0.0062 -> K better
+    KC - H (secondary) over 15 pairs: -0.0160 [-0.0214, -0.0105]; s101 -0.0217, s202 -0.0144, s303 -0.0118 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0060 [-0.0075, -0.0045]; s101 -0.0050, s202 -0.0074, s303 -0.0055 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0032 [-0.0075, +0.0012]; s101 -0.0071, s202 -0.0030, s303 +0.0006 -> no detectable difference
+  masked K - H (secondary): -0.0236
+  fold time per cell: 36.6 min
+=== vehicle_20nan
+  induced  H 0.4148  C 0.4147  K 0.4113  KC 0.4110  best baseline 0.4643
+  checkpoint epoch by loss 283; by validation gaps 316 (fold means); mean alpha 0.979; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0000 [-0.0008, +0.0007]; s101 +0.0002, s202 +0.0005, s303 -0.0008 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0035 [-0.0096, +0.0027]; s101 -0.0019, s202 -0.0017, s303 -0.0068 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0038 [-0.0104, +0.0028]; s101 -0.0022, s202 -0.0015, s303 -0.0077 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0004 [-0.0011, +0.0003]; s101 -0.0003, s202 +0.0002, s303 -0.0009 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0038 [-0.0099, +0.0023]; s101 -0.0025, s202 -0.0020, s303 -0.0069 -> no detectable difference
+  masked K - H (secondary): +0.0007
+  fold time per cell: 3.8 min
+=== vehicle_60nan
+  induced  H 0.6586  C 0.6489  K 0.6398  KC 0.6315  best baseline 0.7034
+  checkpoint epoch by loss 184; by validation gaps 231 (fold means); mean alpha 0.921; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0097 [-0.0126, -0.0068]; s101 -0.0092, s202 -0.0088, s303 -0.0110 -> C better
+    K - H (primary) over 15 pairs: -0.0188 [-0.0390, +0.0015]; s101 -0.0083, s202 -0.0230, s303 -0.0251 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0271 [-0.0470, -0.0072]; s101 -0.0161, s202 -0.0321, s303 -0.0332 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0083 [-0.0104, -0.0063]; s101 -0.0078, s202 -0.0091, s303 -0.0081 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0174 [-0.0388, +0.0039]; s101 -0.0069, s202 -0.0232, s303 -0.0222 -> no detectable difference
+  masked K - H (secondary): -0.0066
+  fold time per cell: 3.3 min
+=== biodeg_20nan
+  induced  H 0.5991  C 0.5980  K 0.5898  KC 0.5918  best baseline 0.6508
+  checkpoint epoch by loss 237; by validation gaps 279 (fold means); mean alpha 0.935; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0011 [-0.0073, +0.0052]; s101 -0.0032, s202 -0.0001, s303 +0.0001 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0093 [-0.0291, +0.0106]; s101 -0.0126, s202 -0.0046, s303 -0.0106 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0072 [-0.0280, +0.0135]; s101 -0.0105, s202 -0.0001, s303 -0.0111 -> no detectable difference
+    KC - K (secondary) over 15 pairs: +0.0020 [-0.0015, +0.0055]; s101 +0.0021, s202 +0.0044, s303 -0.0005 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0062 [-0.0239, +0.0115]; s101 -0.0073, s202 -0.0001, s303 -0.0112 -> no detectable difference
+  masked K - H (secondary): -0.0085
+  fold time per cell: 8.0 min
+=== biodeg_60nan
+  induced  H 0.7795  C 0.7758  K 0.7644  KC 0.7610  best baseline 0.8622
+  checkpoint epoch by loss 206; by validation gaps 263 (fold means); mean alpha 0.843; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0038 [-0.0096, +0.0020]; s101 -0.0061, s202 -0.0088, s303 +0.0036 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0151 [-0.0368, +0.0066]; s101 -0.0064, s202 -0.0257, s303 -0.0133 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0185 [-0.0396, +0.0026]; s101 -0.0113, s202 -0.0277, s303 -0.0165 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0034 [-0.0083, +0.0016]; s101 -0.0049, s202 -0.0020, s303 -0.0032 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0147 [-0.0333, +0.0039]; s101 -0.0052, s202 -0.0189, s303 -0.0201 -> no detectable difference
+  masked K - H (secondary): -0.0170
+  fold time per cell: 6.8 min
+=== kc2_20nan
+  induced  H 0.5402  C 0.5376  K 0.5363  KC 0.5350  best baseline 0.5216
+  checkpoint epoch by loss 251; by validation gaps 269 (fold means); mean alpha 0.970; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0025 [-0.0124, +0.0074]; s101 -0.0063, s202 +0.0012, s303 -0.0025 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0038 [-0.0204, +0.0128]; s101 -0.0052, s202 +0.0019, s303 -0.0081 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0051 [-0.0256, +0.0154]; s101 -0.0081, s202 +0.0004, s303 -0.0078 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0013 [-0.0109, +0.0083]; s101 -0.0029, s202 -0.0014, s303 +0.0004 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0026 [-0.0176, +0.0124]; s101 -0.0018, s202 -0.0007, s303 -0.0053 -> no detectable difference
+  masked K - H (secondary): -0.0013
+  fold time per cell: 2.1 min
+=== kc2_60nan
+  induced  H 0.5699  C 0.5639  K 0.5529  KC 0.5495  best baseline 0.7242
+  checkpoint epoch by loss 179; by validation gaps 235 (fold means); mean alpha 0.944; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0060 [-0.0149, +0.0029]; s101 -0.0056, s202 -0.0035, s303 -0.0089 -> no detectable difference
+    K - H (primary) over 15 pairs: -0.0170 [-0.0385, +0.0045]; s101 -0.0011, s202 -0.0175, s303 -0.0323 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0204 [-0.0422, +0.0014]; s101 -0.0039, s202 -0.0198, s303 -0.0374 -> no detectable difference
+    KC - K (secondary) over 15 pairs: -0.0034 [-0.0076, +0.0007]; s101 -0.0028, s202 -0.0023, s303 -0.0051 -> no detectable difference
+    KC - C (secondary) over 15 pairs: -0.0144 [-0.0318, +0.0031]; s101 +0.0017, s202 -0.0164, s303 -0.0285 -> no detectable difference
+  masked K - H (secondary): -0.0296
+  fold time per cell: 2.8 min
+=== pendigits_20nan
+  induced  H 0.3335  C 0.3319  K 0.3331  KC 0.3315  best baseline 0.3510
+  checkpoint epoch by loss 385; by validation gaps 393 (fold means); mean alpha 0.969; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0017 [-0.0020, -0.0013]; s101 -0.0015, s202 -0.0017, s303 -0.0018 -> C better
+    K - H (primary) over 15 pairs: -0.0005 [-0.0013, +0.0004]; s101 +0.0008, s202 -0.0015, s303 -0.0008 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0021 [-0.0029, -0.0013]; s101 -0.0007, s202 -0.0031, s303 -0.0024 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0016 [-0.0019, -0.0013]; s101 -0.0016, s202 -0.0016, s303 -0.0017 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0004 [-0.0012, +0.0004]; s101 +0.0008, s202 -0.0013, s303 -0.0007 -> no detectable difference
+  masked K - H (secondary): -0.0001
+  fold time per cell: 38.1 min
+=== letter_20nan
+  induced  H 0.4595  C 0.4578  K 0.4590  KC 0.4575  best baseline 0.4722
+  checkpoint epoch by loss 388; by validation gaps 394 (fold means); mean alpha 0.958; thresholded categorical columns per fold 0.0
+    C - H (primary) over 15 pairs: -0.0017 [-0.0020, -0.0014]; s101 -0.0018, s202 -0.0017, s303 -0.0016 -> C better
+    K - H (primary) over 15 pairs: -0.0005 [-0.0016, +0.0007]; s101 -0.0004, s202 -0.0002, s303 -0.0008 -> no detectable difference
+    KC - H (secondary) over 15 pairs: -0.0020 [-0.0032, -0.0008]; s101 -0.0021, s202 -0.0016, s303 -0.0023 -> KC better
+    KC - K (secondary) over 15 pairs: -0.0015 [-0.0017, -0.0013]; s101 -0.0017, s202 -0.0014, s303 -0.0016 -> KC better
+    KC - C (secondary) over 15 pairs: -0.0003 [-0.0013, +0.0007]; s101 -0.0002, s202 +0.0001, s303 -0.0007 -> no detectable difference
+  masked K - H (secondary): -0.0001
+  fold time per cell: 58.5 min
+=== electricity_20nan
+  induced  H 0.6177  C 0.6169  K 0.6183  KC 0.6186  best baseline 0.6022
+  checkpoint epoch by loss 367; by validation gaps 329 (fold means); mean alpha 0.961; thresholded categorical columns per fold 0.5
+    C - H (primary) over 15 pairs: -0.0008 [-0.0038, +0.0023]; s101 -0.0023, s202 -0.0002, s303 +0.0002 -> no detectable difference
+    K - H (primary) over 15 pairs: +0.0006 [-0.0055, +0.0067]; s101 -0.0005, s202 +0.0030, s303 -0.0007 -> no detectable difference
+    KC - H (secondary) over 15 pairs: +0.0009 [-0.0054, +0.0072]; s101 -0.0002, s202 +0.0032, s303 -0.0002 -> no detectable difference
+    KC - K (secondary) over 15 pairs: +0.0003 [-0.0005, +0.0012]; s101 +0.0002, s202 +0.0002, s303 +0.0005 -> no detectable difference
+    KC - C (secondary) over 15 pairs: +0.0017 [-0.0028, +0.0062]; s101 +0.0021, s202 +0.0034, s303 -0.0004 -> no detectable difference
+  masked K - H (secondary): -0.0019
+  fold time per cell: 101.2 min
