@@ -2576,7 +2576,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Specific on 7:** pendigits, letter and vehicle at both rates, and biodeg_40nan.
   - **Against on 6:** kc2 and credit-g at both rates, electricity_60nan and spambase_60nan.
   - **Descriptive:** the error's ρ with the top-3 missing count is positive on all 16 (+0.02 to
-    +0.19). The spread's ρ with the row's gaps is negative on all 16 (−0.04 to −0.44).
+    +0.19). The spread's ρ with the row's gaps is negative on all 16 (−0.04 to −0.47).
 - **Conclusion:** mixed. The two outputs are separate signals.
   - The spread runs against the error along a row's missingness: the passes agree most where the
     model knows least (post-hoc reading: there are fewer observed cells to re-mask).

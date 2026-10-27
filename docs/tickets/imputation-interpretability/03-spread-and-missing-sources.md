@@ -68,7 +68,7 @@ This ticket was written and committed before the reading ran.
   - **Error rises where the map's sources are missing.** The absolute error's Spearman with the
     top-3 missing count is positive on all 16 (+0.016 to +0.186), which agrees with E78/E79's B.
   - **The spread falls where the row is missing more.** Its Spearman with the row's total gaps is
-    negative on all 16 real variants (−0.04 to −0.44) and on synthblock.
+    negative on all 16 real variants (−0.04 to −0.47) and on synthblock.
   - With the top-3 count it is about 0 or negative on 15 of 16 (biodeg_40nan +0.016).
   - So the spread moves *against* the error along this axis. Where the specific mark appears, it
     only means the top 3 lower the spread *less* than random columns do.
