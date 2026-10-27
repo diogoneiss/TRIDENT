@@ -599,6 +599,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       it is a benchmark output.
     - Deferred, each a separate study: E82, in-run validation-gap weights (about 4 h of GPU plus
       refits); a deployable masked-weight hybrid with H.
+  - **The deployable route, running from 2026-10-27 as E82**
+    ([imputation-protocol/31](tickets/imputation-protocol/31-deployable-hybrid.md)), on the user's
+    go: H + TabPFN with weights chosen on hidden observed validation cells; 30 cells at E74's
+    seeds.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

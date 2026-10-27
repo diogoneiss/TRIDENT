@@ -108,6 +108,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
 | E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
+| E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 – | in progress | pre-registered; H + TabPFN, weights from hidden observed validation cells, E74's 10 hard variants and seeds |
 
 ## Entries
 
@@ -2611,3 +2612,27 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   reads it under moderate self-masking, but not measurably at the strongest tilt (post-hoc
   candidates: a truncated observed range, fewer correlated pairs). Reading it costs accuracy
   everywhere, so ADR 0014 stands under MNAR.
+
+### E82 · Can the hybrid's weights be chosen without the complete table? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("vamos no 1
+  agora então", 2026-10-27, before 13:30 GMT-3). T39; tests ADR 0031's deployable route.
+- **Hypothesis:** per-column weights chosen on observed validation cells hidden on purpose (no
+  complete table), with H as the model side, keep the hybrid's gain.
+- **Scenarios:** E74's 10 hard variants at 1212/2323/3434, 30 cells.
+  - Training: `--decode_checkpoint loss --decode_calibration none`.
+  - The validation observed cells are dealt into 5 groups and hidden in turn; TabPFN is refitted
+    per fold.
+  - Five fills: H, TabPFN, equal, deployable (selection-cell weights) and oracle (other folds'
+    induced weights, H side).
+- **Measures and decision rule:** `impute_score`, 15 fold pairs, the 1% SESOI.
+  - **Supported** if the deployable hybrid is better than H on 8 or more of 10, worse than H on
+    none, and worse than TabPFN on 2 or fewer.
+  - **Refuted** if it is better than H on 5 or fewer, worse than H on 2 or more, or worse than
+    TabPFN on 5 or more.
+  - **Mixed** otherwise.
+  - The price of deployability (deployable − oracle, weight agreement) is secondary. The
+    comparisons with KC and E74's hybrid are descriptive.
+- **Sources:** `docs/tickets/imputation-protocol/31-deployable-hybrid.md`;
+  `scripts/experiments/deployable_hybrid.py`, `run_deployable_hybrid_queue.sh`; MLflow tag
+  `experiment=deployable-hybrid-2026-10-27`.
