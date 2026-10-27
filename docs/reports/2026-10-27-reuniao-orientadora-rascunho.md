@@ -1,7 +1,7 @@
 # Rascunho: TRIDENT como imputador — fundamentação, metodologia, resultados e direções
 
-> **Status:** rascunho para discussão, 2026-10-27, 12:58 GMT-3. Não é o artefato; é o esqueleto
-> que decide o que entra nele.
+> **Status:** rascunho para discussão, 2026-10-27 (v2, com as decisões das 13h GMT-3). Não é o
+> artefato; é o esqueleto que decide o que entra nele.
 >
 > - **Para quê:** a reunião com a orientadora, para apresentar o que foi feito e decidir direções.
 > - **Cobre:** E01–E81 e os ADRs até 0031 (`feat/imputation-task` em `8e74064`).
@@ -16,322 +16,377 @@
 > - **Números:** todos serão reconstruídos por script a partir do store, nunca copiados à mão.
 >   Os que aparecem aqui servem só para orientar a discussão.
 
+## Decisões de 2026-10-27
+
+| # | Pergunta | Decisão | Efeito no artefato |
+|---|---|---|---|
+| 1 | Público | A orientadora é coautora do TRIDENT e conhece pouco do fork. | Não explicar o TRIDENT; explicar bem **o que o fork mudou** (nova seção 2.1). |
+| 2 | Tom | Defender a RQ1 e apresentar a RQ2 (e as outras) como trabalho futuro planejado. | A RQ1 é o corpo; RQ2–RQ4 aparecem como plano, com protocolo e primeiros sinais. |
+| 3 | Seção 3 e ADRs | A trajetória em forma concisa, sem citar ADRs; os ADRs vão para o apêndice. | A seção 3 fala em decisões, não em números de ADR. |
+| 4 | Classificação | Entra. | Nova seção 5 (E70/E71). |
+| 5 | Figura de trajetória | Em aberto: explicação abaixo, na seção 3. | — |
+| 6 | Posicionamento | Entra como tabela, explicando o que cada método faz. | Seção 1.3. |
+| 7 | Decisão de posicionamento | Opções neutras, sem recomendação. | Seção 10. |
+
 ## Como ler este rascunho
 
 Cada seção traz:
 
 - **Objetivo:** o que a seção precisa convencer;
-- **Conteúdo candidato:** os experimentos (E##) e ADRs que a sustentam;
+- **Conteúdo candidato:** os experimentos (E##) que a sustentam;
 - **Figura:** a proposta e de onde vem;
 - **Decisão:** `[entra]` (proponho que entre no corpo), `[apêndice]`, `[?]` (você decide).
 
-**Formato proposto para cada experimento central (o "card"):**
+**Formato de cada experimento central (o "card"):**
 
 1. **Pergunta:** a RQ ou hipótese a que responde.
 2. **O que foi pensado:** a hipótese pré-registrada e o porquê.
 3. **Desenho:** braços, variantes, seeds e regra de decisão.
 4. **Resultado:** a figura e a contagem melhor / sem diferença / pior.
-5. **Conclusão:** o veredito e o que mudou (ADR, default, ou nada).
+5. **Conclusão:** o veredito e o que mudou no modelo (ou nada).
+
+Os números E## ficam nos cards como referência pequena. Os ADRs não aparecem no corpo; o
+apêndice traz a tabela "decisão → ADR".
 
 ---
 
-## 0. Abertura: o que quero da reunião `[entra]`
+## 0. Abertura `[entra]`
 
-- **Objetivo:** em uma tela, dizer o que já dá para afirmar e o que preciso decidir com ela.
+- **Objetivo:** em uma tela, dizer o que já foi demonstrado e qual é o plano.
 - **Conteúdo candidato:**
-  - **"O que dá para afirmar hoje"**, em 4–5 linhas, a partir do "What the ledger supports today"
-    da wiki (`claims.md`), atualizado até E81. Por exemplo:
-    - o TRIDENT vence a barra clássica na maioria das variantes;
-    - fica empatado ou à frente do TabPFN até 60nan;
-    - sua posição se mantém sob MNAR e MAR;
-    - o pré-treino quase não contribui.
-  - **As três decisões em aberto** (`thesis-tldr`):
-    1. **Posicionamento:** o TRIDENT como imputador (RQ1/RQ3) ou predição robusta a MNAR
-       (RQ2/RQ4)?
-    2. **A afirmação principal:** o par `[NULL]`/`[MASK]` por coluna. Ainda é nova? Se sustenta?
-    3. **Dados clínicos e avaliação.**
+  - **"O que o TRIDENT já demonstra como imputador"**, em 4–5 linhas:
+    - vence a barra clássica na maioria das variantes, inclusive na confirmação lida uma única
+      vez;
+    - fica empatado ou à frente do TabPFN v2 até 60% de faltantes;
+    - mantém a posição sob MNAR e MAR;
+    - preserva a dispersão dos dados melhor que o TabPFN.
+  - **"O que vem a seguir":** RQ2 (MNAR na predição), RQ3 (alvo latente) e RQ4 (o split), cada uma
+    com o protocolo já desenhado.
+  - **As três decisões a encaminhar**, como opções neutras: posicionamento, a afirmação
+    `[NULL]`/`[MASK]` e os dados clínicos (seção 10).
 - **Figura:** nenhuma; um bloco de texto.
 
-## 1. A tese: motivação e research questions `[entra]`
+## 1. A tese `[entra]`
 
-- **Objetivo:** ancorar tudo o que vem depois nas RQs, e mostrar com franqueza onde há evidência
-  e onde não há.
-- **Conteúdo candidato:**
-  - **Motivação**, curta (wiki, `thesis-goals` § Motivation):
-    - em dados clínicos, a falta é muitas vezes informativa;
-    - sob MNAR, as conclusões mudam (Le Morvan & Varoquaux 2025);
-    - o TRIDENT original só foi avaliado sob MCAR.
-  - **As RQs e hipóteses:**
-    - RQ1 / H1d (imputação) e H1, H1c (classificação);
-    - RQ2 / H2, H2b, H2.2 (`[NULL]` contra imputação + indicador);
-    - RQ3 / H3 (alvo latente contra alvo em valor);
-    - RQ4 (máscara consciente do mecanismo).
-  - **A grade de cobertura** (abaixo), a peça mais útil para uma reunião sobre direções.
+### 1.1 Motivação
 
-| RQ / hipótese | Estado da evidência | Experimentos | O que falta |
+- **Objetivo:** situar a tese.
+- **Conteúdo candidato**, curto (wiki, `thesis-goals` § Motivation):
+  - em dados clínicos, a falta é muitas vezes informativa;
+  - sob MNAR, as conclusões mudam (Le Morvan & Varoquaux 2025);
+  - o TRIDENT original só foi avaliado sob MCAR, e a sua máscara de pré-treino é do tipo MCAR.
+
+### 1.2 RQs e cobertura
+
+- **Objetivo:** mostrar que a RQ1 está respondida e que as demais têm um plano.
+- **Conteúdo candidato:** a grade abaixo. A última coluna, "plano", é o que transforma uma lacuna
+  em trabalho futuro.
+
+| RQ / hipótese | Estado | Evidência | Plano |
 |---|---|---|---|
-| **RQ1, imputação (H1d)** | muito testada: MCAR, MNAR, MAR, sorteios, seeds, confirmação | E19–E66, E72–E74 (C3–C10, C13) | margem de não-inferioridade contra imputadores deep (ReMasker, CACTI, DiffPuter, TabImpute); decisão de escopo |
-| **RQ1, classificação (H1, H1c)** | não testada | E70/E71: só o passo zero (o fork não reproduz o sweep antigo; pré-treino sem ganho detectável) | t3/t24: Table 3 refeita, ≥5 seeds |
-| **RQ2 / H2, H2b (`[NULL]` vs imputação + indicador)** | não testada | nenhuma run (C15) | protocolo C15, rascunho na wiki |
-| **RQ2.2 (o preditor usa a falta?)** | só um proxy, na imputação | E81: o decoder com `[NULL]` lê o padrão de lacunas sob MNAR moderado, não sob MCAR; custa acurácia em 11 de 11 | Shapley no preditor (protocolo C15) |
-| **RQ3 / H3 (latente vs valor)** | parcial | E25/E30 (alvo normalizado repara o original, ADR 0013); T28: E24, E49–E53 (o decode apaga o pré-treino); E71 | contraste latente × valor com encoder congelado; classificação |
-| **RQ4 (máscara por mecanismo, o split)** | parcial | E01, E32/E33 (gaps como `[MASK]`, ADR 0014); E36; E65 (máscara por propensão, refutada); E67 (`[NULL]` sozinho, refutado) | **C1, a ablação limpa do split: nunca rodou** |
+| **RQ1, imputação (H1d)** | respondida, com escopo a fixar | MCAR, MNAR, MAR, sorteios, seeds, confirmação (seções 4 e 6) | fixar a margem contra os imputadores deep |
+| **RQ1, classificação (H1, H1c)** | primeiro passo dado | E70/E71 (seção 5) | refazer a Table 3 do artigo com ≥5 seeds e orçamentos iguais (t3/t24); TabPFN na classificação (T40) |
+| **RQ2 / H2, H2b** (`[NULL]` contra imputação + indicador) | planejada | nenhuma run ainda | protocolo C15 (wiki): não-inferioridade a −0,01 de macro-F1 e +2% de log loss, com as margens já aceitas |
+| **RQ2.2** (o preditor usa a falta?) | sinal inicial | E81: um decoder com `[NULL]` lê o padrão de lacunas sob MNAR moderado e não sob MCAR | Shapley no preditor (protocolo C15) |
+| **RQ3 / H3** (latente vs valor) | parcial | o alvo normalizado repara o objetivo original; o decode apaga o pré-treino (seção 7.1) | contraste latente × valor com encoder congelado, e na classificação |
+| **RQ4** (máscara por mecanismo, o split) | parcial | qual token preenche a lacuna importa (`[MASK]` vence); a máscara por propensão e o `[NULL]` sozinho foram refutados (seção 7.4) | protocolo C1: a ablação tied vs untied |
 
-- **Ponto a deixar explícito:** a afirmação principal escolhida em 2026-10-15, o par
-  `[NULL]`/`[MASK]` por coluna (C1), não tem teste limpo.
-  - E67 é o mais próximo e foi refutado: `[NULL]` sozinho no decode custa mais à medida que a
-    inclinação do MNAR aumenta.
-  - Isso pesa diretamente na decisão 2.
-- **Figura 1:** a grade acima, como matriz colorida RQ × estado (testada / parcial / não testada),
-  com os E## clicáveis.
-- **Posicionamento contra os parentes** (MFAN, Knockout, MaskTab, ReMasker/CACTI, TabPFN): uma
-  tabela curta "o que cada um já tem". `[?]` entra no corpo, vira apêndice, ou fica só na fala?
+- **Figura 1:** a grade como matriz colorida (respondida / parcial / planejada).
+- **Como dizer o C1 sem enfraquecer a RQ1:** a ablação limpa do split ainda não rodou. Os dois
+  testes vizinhos (E67, E81) dão sinais mistos, e por isso o protocolo C1 propõe rodá-la na
+  classificação, onde o TRIDENT foi desenhado para ser usado.
+
+### 1.3 Posicionamento: os parentes e o que cada um faz `[entra]`
+
+- **Objetivo:** situar o TRIDENT e os oponentes do fork. A orientadora conhece parte deles pelo
+  artigo, mas não os que vieram depois.
+- **Conteúdo candidato** (das páginas da wiki; a versão final confere cada linha com a página da
+  referência):
+
+| Método | O que faz | Em comum com o TRIDENT | O que muda | No fork |
+|---|---|---|---|---|
+| **SAINT** (2021) | Transformer tabular com atenção entre colunas e entre linhas | um token de "faltante" aprendido por coluna | no artigo do TRIDENT, rodou só com entradas imputadas | — |
+| **MaCoDE** (AAAI 2025) | gerador estilo BERT que também imputa: prevê a faixa (quantil) de cada célula mascarada | um vetor por coluna, aprendido, para a célula faltante | o mesmo vetor serve para lacunas reais e para buracos de pré-treino (sem split); alvo em faixas, não latente | oponente externo (E48) |
+| **MFAN** (2025) | Transformer que prevê a partir de tabelas incompletas; pré-treina restaurando valores e a máscara de células apagadas | embedding de faltante por coluna, mais pré-treino e fine-tuning | as células apagadas recebem o mesmo embedding de faltante; taxa fixa de 10%; alvo em valor; só MCAR | — |
+| **Knockout** (TMLR 2025) | treina trocando entradas, ao acaso, por valores fora do suporte, para aprender p(Y \| X_obs) | separa dois tipos de "ausente" | dois valores fixos (+10 e −10), não tokens aprendidos; MLP sem pré-treino; o único ablation do split encontrado | — |
+| **MaskTab** (2026) | Transformer industrial (risco de crédito) com `[MASK]` e `[MISS]` separados e reconstrução em valor | o split `[MASK]`/`[MISS]` | tokens compartilhados entre colunas; alvo em valor; máscara do tipo MCAR | — |
+| **SMART** (NeurIPS 2024) | classificador de séries temporais de EHR com atenção ciente da falta, pré-treinado reconstruindo no espaço latente | alvo latente, `[CLS]`, falta explícita | séries temporais; usa um encoder-alvo EMA e um preditor (guardas contra colapso) | — |
+| **T-JEPA** (ICLR 2025) | JEPA para tabelas: prevê o embedding das colunas escondidas a partir das visíveis | alvo latente | dados completos (sem faltantes); precisou de um token `[REG]` para não colapsar | — |
+| **ReMasker** (ICLR 2024) | autoencoder mascarado em Transformer: re-mascara células observadas, codifica só as visíveis e reconstrói todas as colunas com MSE | aprender a imputar escondendo células observadas | sem token para a lacuna real (lacunas saem do encoder); alvo em valor; sem fine-tuning | — (citado) |
+| **CACTI** (ICML 2025) | um ReMasker que copia máscaras de padrões reais de falta e usa embeddings dos nomes das colunas | idem | as máscaras seguem a falta real (relaciona-se à RQ4); usa o contexto dos nomes das colunas | — (citado) |
+| **TabPFN v2** (Nature 2025) | Transformer pré-treinado em ~100M tabelas sintéticas que prevê em uma passada, usando as linhas de treino como contexto | — | sem treino na tabela-alvo; limite de 10.000 linhas; prior só MCAR; no fork, imputa coluna por coluna, sem tuning | tier forte, offline (E55) |
+| **not-MIWAE** (ICLR 2021) | VAE com pesos de importância que modela explicitamente a falta, p(m \| x) | — | modela o mecanismo MNAR de forma explícita | oponente MNAR (E72/E73) |
+
+- **Fecho da seção:** depois de MaCoDE e MFAN, o token de faltante por coluna não é mais
+  exclusivo. O que continua distinto é a combinação:
+  - `[NULL]` por coluna separado de `[MASK]` por coluna;
+  - alvo latente em tabelas estáticas;
+  - taxa de máscara adaptada à falta.
+
+  Nenhum dos três foi ablado ainda (seção 10).
+- **Decisão:** `[?]` 11 linhas é bastante. Proponho manter no corpo os que rodaram no fork mais
+  MFAN e Knockout, e o resto no apêndice.
 
 ## 2. Metodologia `[entra]`
 
 - **Objetivo:** que a orientadora consiga avaliar a força de cada resultado sem ler os ADRs.
-- **2.1 O modelo e a tarefa** (ADR 0004, 0011, 0013, 0014):
-  - **Embedder:** o TabularEmbedder, com `[NULL]` e `[MASK]` por coluna.
-  - **Pré-treino:** `embedding_normalized`.
-  - **Decode:**
-    - heads por coluna, 450 épocas, batched (ADR 0012);
-    - as lacunas mostradas como `[MASK]`;
-    - encoder maior nas tabelas grandes a 20nan (ADR 0018).
-  - **Figura 2:** diagrama do pipeline (pré-treino → decode → leitura K/KC/H), em SVG feito à
-    mão.
-- **2.2 Dados e variantes:**
-  - **Desenvolvimento:** 9 tabelas OpenML (kr-vs-kp, spambase, credit-g, vehicle, biodeg, kc2,
-    pendigits, letter, electricity) e 21 variantes `<tabela>_<taxa>nan`.
-  - **Confirmação:** as 15 variantes não usadas no desenvolvimento (E44), lidas uma única vez.
-  - **Seeds:** os conjuntos 101/202/303 (primário), 42/7/13, 404/505/606, 1001/2002/3003 e
-    707/808/909.
-- **2.3 Mecanismos:**
-  - **MCAR** induzido;
-  - **MNAR:** a família dependente do valor (E45/E46), com o ajuste de inclinação no biodeg;
-  - **MAR:** 30% de colunas motoras sempre observadas, contra controles MCAR pareados
-    (E63/E64).
-- **2.4 O que é medido** (ADR 0007, 0008, 0025):
-  - **`impute_score`:** menor é melhor; 1.0 é o preenchimento por média/moda.
-  - **Onde:** nas células induzidas, as mesmas para todos os métodos.
-  - **Painel secundário:** MAE, Wasserstein e dispersão.
-- **2.5 Baselines** (ADR 0016, 0017, 0021, 0022, 0028):
-  - **Barra fraca:** mean/mode, kNN 5/10, HGB, LightGBM.
-  - **Tier forte:** missForest, condexp, SoftImpute, ICE, e o TabPFN v2 como membro offline.
-  - **Externos:** MaCoDE, not-MIWAE.
-  - **Orçamento de tuning:** igual para todos, só na validação.
-- **2.6 Regra de leitura e disciplina** (ADR 0020):
-  - **O teste:** t pareado por fold, com concordância entre seeds.
-  - **Equivalência:** ±1%.
-  - **Disciplina:**
-    - pré-registro antes da primeira célula;
-    - desenvolvimento separado da confirmação;
-    - sem parada opcional.
-  - **Por que importa:** é o que dá peso a um "refutado".
-- **2.7 As leituras K / KC / H** (ADR 0015, 0024, 0027):
-  - **K:** o checkpoint escolhido pelas lacunas de validação. É um oráculo, pois usa a verdade
-    delas.
-  - **KC:** o K calibrado, a saída default a partir de 30–40% de faltantes.
-  - **H:** o checkpoint da loss, a leitura implantável.
-  - **Ressalva a deixar visível:** as afirmações que precisam transferir (MNAR, implantação) são
-    lidas no H.
-- **Figura 3** `[?]`: esquema folds × seeds × sorteio, mostrando o que cada intervalo cobre.
-  - O E62 mostrou que o sorteio MCAR move um contraste tanto quanto o intervalo.
-  - Talvez caiba numa frase em vez de uma figura.
-- **Decisão:** `[?]` a metodologia fica toda no corpo, ou só 2.1, 2.4 e 2.7 no corpo e o resto
-  num quadro recolhível?
 
-## 3. Como chegamos no default: a trajetória de design `[?]`
+### 2.1 O que o fork mudou em relação ao TRIDENT do artigo `[entra]`
 
-- **Objetivo:** mostrar que o default atual não é tuning cego. Cada peça entrou por um experimento
-  pré-registrado, e várias ideias foram refutadas.
-- **Conteúdo candidato** (uma linha por decisão: hipótese → resultado → ADR):
+O artigo é classificação: pré-treino latente seguido de fine-tuning de um classificador. O fork
+mantém o caminho de classificação intacto por padrão e acrescenta:
 
-| Decisão | Experimento | Resultado | ADR |
-|---|---|---|---|
-| A busca Optuna não é a alavanca | E02–E18, E21, E39 | busca reduzida e completa não batem os defaults; re-tune nunca bate | 0005, 0019 |
-| Objetivo de busca nas lacunas induzidas | E22/E23 | o vencedor por máscara fica em 40º de 40 pelo induzido | 0008 |
-| Pré-treino normalizado + decode 450 + cosine | E24–E26, E30 | melhor em 9 de 21, pior em nenhuma | 0011, 0013 |
-| Lacunas mostradas como `[MASK]` no decode | E32, E33 | 11/21 e 13/21 melhores, nenhuma pior | 0014 |
-| Checkpoint pelas lacunas de validação (K) | E34, E35 | 6 melhores, 0 piores | 0015 |
-| Encoder maior só nas tabelas grandes | E37, E38, E59 | ajuda nas grandes, atrapalha nas pequenas, nada a 80nan | 0018 |
-| Calibração (KC) a partir de 40nan | E40, E47 | 6 de 6 melhores; a versão implantável ganha ≤0,4% | 0027 |
-| Leitura implantável (H) | E43 | — | 0024 |
-| Refutadas | E36, E50, E65, E67 | `[MASK]` no pré-treino, alavancas contra o washout, máscara por propensão, `[NULL]` sozinho | — |
+| No artigo | No fork | Por quê |
+|---|---|---|
+| fine-tuning de um classificador | **uma tarefa de imputação:** no lugar do classificador entra uma etapa de *decode*, com uma cabeça por coluna (cross-entropy para as categóricas, MSE ponderado para as numéricas) | para responder a RQ1 |
+| objetivo latente: regredir a saída do encoder nas células `[MASK]` contra o embedding de entrada destacado | **`embedding_normalized`:** alvo com layer norm e um preditor de duas camadas | o objetivo original terminava 4–8× pior que uma constante por coluna no próprio objetivo |
+| — | **no decode, as lacunas reais entram como `[MASK]`** (e não como `[NULL]`) | melhor em 11 e 13 de 21 variantes, pior em nenhuma |
+| época final | **checkpoint e calibração escolhidos nas lacunas de validação** (leitura K/KC), com H como leitura implantável | ganho em variantes de alta falta |
+| — | **encoder maior nas tabelas grandes**, a 20nan | ajuda nas grandes, atrapalha nas pequenas |
+| avaliação sob MCAR, contra classificadores | **protocolo de imputação:** células induzidas, MCAR/MNAR/MAR, dois tiers de baselines, pré-registro, desenvolvimento separado da confirmação | para dar peso aos vereditos |
 
-- **Figura 4:** uma "escada" de adoções, com a contagem melhor / sem dif. / pior de cada passo
-  contra o anterior, em barras empilhadas.
-  - É honesta porque cada passo tem sua própria contagem pré-registrada.
-  - Uma curva única de `impute_score` ao longo dos passos misturaria conjuntos de seeds
-    diferentes. Só valeria com novas runs de todos os passos nas mesmas seeds.
-- **Decisão:** `[?]` corpo ou apêndice? Para direções, proponho o corpo, curto: a tabela e a
-  figura, sem cards.
+- **Figura 2:** diagrama do pipeline (pré-treino → decode → leitura K/KC/H), com o que é novo no
+  fork destacado em cor.
 
-## 4. Resultado principal: RQ1 sob MCAR `[entra]`
+### 2.2 Dados e variantes
+
+- **Desenvolvimento:** 9 tabelas OpenML do artigo (kr-vs-kp, spambase, credit-g, vehicle, biodeg,
+  kc2, pendigits, letter, electricity) e 21 variantes `<tabela>_<taxa>nan`.
+- **Confirmação:** as 15 variantes não usadas no desenvolvimento, lidas uma única vez (E44).
+- **Seeds:** cinco conjuntos de seeds; 101/202/303 é o primário.
+
+### 2.3 Mecanismos
+
+- **MCAR** induzido;
+- **MNAR:** a família dependente do valor, com um ajuste de inclinação no biodeg;
+- **MAR:** 30% de colunas motoras sempre observadas decidem as lacunas, comparadas a controles
+  MCAR pareados.
+
+### 2.4 O que é medido
+
+- **`impute_score`:** menor é melhor; 1.0 é o preenchimento por média/moda.
+- **Onde:** nas células induzidas, as mesmas para todos os métodos.
+- **Painel secundário:** MAE, Wasserstein e dispersão.
+
+### 2.5 Baselines
+
+- **Barra fraca:** mean/mode, kNN 5/10, HGB e LightGBM.
+- **Tier forte:** missForest, condexp, SoftImpute, ICE e o TabPFN v2.
+- **Externos:** MaCoDE e not-MIWAE.
+- **Orçamento de tuning:** igual para todos, só na validação.
+
+### 2.6 Regra de leitura e disciplina
+
+- **O teste:** t pareado por fold, com concordância entre seeds.
+- **Equivalência:** ±1%.
+- **Disciplina:**
+  - pré-registro antes da primeira célula;
+  - sem parada opcional;
+  - confirmação lida uma única vez.
+- **Por que importa:** é o que dá peso a um "refutado".
+
+### 2.7 As leituras K / KC / H
+
+- **K** é um oráculo: escolhe a época com a verdade das lacunas de validação.
+- **KC:** o K calibrado, a saída default a partir de 40% de faltantes.
+- **H:** o checkpoint da loss, a leitura implantável.
+- **Ressalva visível:** o que precisa transferir (MNAR, implantação) é lido no H.
+
+**Decisão:** `[?]` proponho 2.1 inteira no corpo, com 2.2–2.7 em quadros curtos.
+
+## 3. Como chegamos no default `[entra]`, conciso e sem ADRs
+
+- **Objetivo:** mostrar que o default não é tuning cego. Cada peça entrou por um teste
+  pré-registrado, e várias ideias foram descartadas.
+- **Conteúdo:** uma linha do tempo de 6 a 8 passos, cada um com uma frase. Por exemplo:
+  1. **Busca de hiperparâmetros:** não bateu os defaults; a alavanca estava no método, não nos
+     hiperparâmetros.
+  2. **Objetivo latente normalizado + decode longo:** melhor em 9 de 21 variantes, pior em
+     nenhuma.
+  3. **Lacunas mostradas como `[MASK]` no decode:** melhor em 11 e depois 13 de 21, pior em
+     nenhuma.
+  4. **Checkpoint escolhido pelas lacunas de validação:** 6 variantes melhores, nenhuma pior.
+  5. **Encoder maior:** só nas tabelas grandes.
+  6. **Calibração:** a partir de 40nan.
+- **Descartadas** (uma linha): `[MASK]` também no pré-treino, alavancas contra o washout, máscaras
+  por propensão e `[NULL]` sozinho no decode.
+- **Os ADRs** de cada passo vão para o apêndice, na tabela "decisão → ADR → experimento".
+
+### Figura 4: a pergunta 5, explicada
+
+Cada passo acima foi decidido num experimento próprio: o default antigo contra o default novo, nas
+21 variantes, com um conjunto de seeds. O resultado de cada um é uma **contagem de variantes**, por
+exemplo "13 melhores, 8 sem diferença, 0 piores". Há duas formas de desenhar a trajetória:
+
+- **(A) Uma barra por passo, com a contagem daquele passo.** Não exige runs novas.
+  - **Limite:** cada barra compara o passo com o anterior, e em seeds diferentes. Ela mostra que
+    cada mudança ajudou, mas não quanto o modelo melhorou no total desde o primeiro decoder.
+- **(B) Uma curva de `impute_score` ao longo dos passos.** Rodar todas as configurações
+  intermediárias (o primeiro decoder, depois +objetivo normalizado, +lacunas como `[MASK]`,
+  +checkpoint K, +calibração) **nas mesmas seeds e variantes**.
+  - **Ganho:** responde "quanto melhorou do primeiro decoder até hoje", com os passos somáveis.
+  - **Custo:** runs novas, cerca de 5 configurações × 21 variantes × 3 seeds × 5 folds.
+- **(B') Só as pontas:** o primeiro decoder contra o default de hoje, nas mesmas seeds. É uma
+  configuração nova em vez de cinco, e dá o "quanto no total" sem a decomposição por passo.
+
+Recomendo **(A) + (B')**: as barras mostram o porquê de cada passo, e um único número mostra o
+ganho total. Meço o custo de (B') no store antes de propor a run.
+
+## 4. RQ1, imputação sob MCAR `[entra]`
 
 - **Objetivo:** onde o TRIDENT está contra cada nível de oponente, com franqueza sobre o TabPFN.
-- **Conteúdo candidato** (cards):
-  - **4.1 Contra a barra e o tier forte sem TabPFN:**
+- **Cards:**
+  - **4.1 Contra a barra e o tier forte clássico:**
     - no desenvolvimento, K − forte é 13 / 7 / 1;
     - na confirmação, 12 / 1 / 2;
-    - o resultado se mantém com seeds novas (E51) e sorteios novos (E62).
+    - o resultado se mantém com seeds novas e sorteios novos.
   - **4.2 Contra o TabPFN:**
-    - misto, por tabela e taxa (E55, E57, E58);
-    - o TRIDENT lidera em spambase, letter, pendigits a 20–60nan, biodeg abaixo de 80nan e kc2
-      a 60–80nan;
+    - misto, por tabela e taxa;
+    - o TRIDENT lidera em spambase, letter, pendigits a 20–60nan, biodeg abaixo de 80nan e kc2 a
+      60–80nan;
     - o TabPFN lidera a 80nan e em kr-vs-kp e credit-g a partir de 40nan.
-  - **4.3 Confirmação (E44):** lida uma única vez; KC − TabPFN é 6 / 4 / 1 equivalente / 4, e
-    todas as derrotas são a 80nan.
-  - **4.4 Distribuição (E56):** a dispersão do TRIDENT fica mais perto da verdade em 14 de 15; as
+  - **4.3 Confirmação:** lida uma única vez; KC − TabPFN é 6 / 4 / 1 equivalente / 4, e todas as
+    derrotas são a 80nan.
+  - **4.4 Distribuição:** a dispersão do TRIDENT fica mais perto da verdade em 14 de 15; as
     vitórias do TabPFN a 80nan vêm com preenchimentos mais encolhidos.
-  - **4.5 MaCoDE (E48):** 20 de 21 e 14 de 15. É um oponente fraco (sem tuning).
-    `[apêndice?]`
+  - **4.5 MaCoDE:** 20 de 21 e 14 de 15. É um oponente sem tuning. `[apêndice?]`
 - **Figura 5 (a principal):** heatmap tabela × taxa, com uma célula por variante.
-  - **Cor:** a chamada de K − TabPFN, ou de KC − TabPFN.
-  - **Rótulo:** a diferença.
-  - **Uma segunda camada:** K − barra.
+  - **Cor:** a chamada de K − TabPFN.
+  - **Segunda camada:** K − barra.
   - **Conjuntos:** desenvolvimento e confirmação lado a lado.
-  - **Fonte:** o script da tabela da tese (`confirmation_report.py` e os leitores de E55/E57),
-    numa passada só.
+  - **Fonte:** o script da tabela da tese, numa passada só.
 - **Figura 6:** as contagens por conjunto de seeds, reaproveitadas do artefato de 10-23.
 
-## 5. Robustez: seeds, sorteios e mecanismos `[entra]`
+## 5. RQ1, classificação: o primeiro passo `[entra]`
+
+- **Objetivo:** mostrar que a segunda metade da RQ1 começou e o que o primeiro passo achou. Deve
+  ser apresentado com cuidado, porque toca num resultado do artigo.
+- **Cards:**
+  - **E70, reprodutibilidade:**
+    - **Pergunta:** o código atual, no servidor, reproduz o sweep de classificação antigo?
+    - **Resultado:** não. As diferenças chegam a 0,03–0,09 por fold, nos dois sentidos, e as
+      médias se movem pouco (−0,006 e +0,012).
+    - **Consequência:** o sweep antigo passa a ser só referência descritiva, e o braço A foi
+      rodado de novo.
+  - **E71, o que o pré-treino compra na classificação:**
+    - **Desenho:** 45 variantes, 3 folds, 2 seeds completas, com e sem pré-treino.
+    - **Resultado:** nenhuma diferença detectável em nenhum nível (de −0,005 a +0,004 de
+      macro-F1). Os +1,7 pontos da Table 4 do artigo ficam fora dos intervalos de 0 a 60nan.
+- **Ressalvas a dizer junto:**
+  - são os defaults do fork, com 3 folds e 2 seeds, e não o protocolo do artigo;
+  - é a mesma conclusão que o E24 teve na imputação;
+  - motiva o refazer da Table 3/4 com ≥5 seeds (t3) e o TabPFN como baseline de classificação
+    (T40).
+- **Figura 7:** B − A por nível de falta, com intervalos; uma linha em +1,7 como a referência do
+  artigo.
+
+## 6. Robustez: seeds, sorteios e mecanismos `[entra]`
 
 - **Objetivo:** a posição da seção 4 não é artefato de uma seed, de um sorteio ou do MCAR.
 - **Conteúdo candidato:**
-  - **5.1 Seeds e sorteios** (E51, E58, E62): nenhuma inversão.
+  - **6.1 Seeds e sorteios:** nenhuma inversão.
     - **Ressalva:** o sorteio move um contraste tanto quanto o intervalo, logo os intervalos
       valem para um sorteio fixo.
-  - **5.2 MNAR** (E45, E46, E58; C8, C9):
+  - **6.2 MNAR:**
     - a vantagem sobre a barra se mantém em 7 de 7 pares;
-    - o TabPFN não ganha terreno (1 / 9 / 0);
+    - o TabPFN não ganha terreno em relação ao MCAR;
     - o desvio com sinal do TRIDENT é o que menos muda entre 10 métodos, em 9 de 10 pares.
-  - **5.3 MAR** (E63, E64, E65, E68):
-    - o "perde terreno" do smoke foi refutado pela família (pior só em biodeg_60nan);
-    - a barra ganha a 60nan nas tabelas numéricas pequenas;
-    - a máscara por propensão foi refutada.
-  - **5.4 Um imputador que modela o mecanismo** (E72, E73, not-MIWAE): misto.
+  - **6.3 MAR:**
+    - a família de seis tabelas refutou o "perde terreno" do smoke (pior só em biodeg_60nan);
+    - a barra ganha a 60nan nas tabelas numéricas pequenas.
+  - **6.4 Um imputador que modela o mecanismo (not-MIWAE):** misto.
     - Com o preenchimento pela média, o termo do mecanismo encolhe o viés mais que o TRIDENT.
-    - É contraponto direto ao H1d sob MNAR. `[?]` aqui ou na seção 6?
-- **Figura 7:** o ajuste de inclinação do MNAR no biodeg, com H − barra e o desvio com sinal por
-  inclinação; uma linha por método, o TRIDENT destacado.
-- **Figura 8:** um forest plot de MAR menos controle (E64), 12 linhas com intervalos, para
-  H − forte e H − barra.
+    - Aponta para a RQ4.
+- **Figura 8:** o ajuste de inclinação do MNAR no biodeg, com o desvio com sinal por método; o
+  TRIDENT destacado.
+- **Figura 9:** um forest plot de MAR menos controle, 12 linhas com intervalos.
 
-## 6. Por que o modelo se comporta assim `[entra]`
+## 7. Por que o modelo se comporta assim `[entra]`
 
-- **Objetivo:** os diagnósticos que viram direção de pesquisa.
-- **6.1 O pré-treino é apagado pelo decode** (T28: E24, E49–E53; E71 na classificação):
-  - o pré-treino é real (não colapsa; probes lineares ganham em pendigits e kr-vs-kp);
-  - mas o decode de 450 épocas reconstrói, a partir do aleatório, um encoder tão bom quanto.
+- **7.1 O decode apaga o pré-treino** (E24, E49–E53; ligar ao E71):
+  - a representação pré-treinada é real (não colapsa; probes lineares ganham);
+  - mas o decode longo reconstrói, a partir do aleatório, um encoder tão bom quanto.
   - **Relevância:** RQ3 e o risco do Mazrouei 2026.
-  - **Figura 9:** as curvas de decode, pré-treinado contra aleatório (E49), e o encoder congelado
-    contra o aleatório (E52).
-- **6.2 Onde perde para o TabPFN, e o que não resolveu:**
+  - **Figura 10:** as curvas de decode, pré-treinado contra aleatório.
+- **7.2 Onde perde para o TabPFN, e o que não resolveu:**
   - 80nan e as tabelas categóricas;
-  - nem capacidade (E59), nem ponderação por coluna (E61, déficit uniforme), nem as alavancas
-    contra o washout (E50);
-  - electricity tem mecanismo conhecido: `date` como chave (E54).
-- **6.3 Complementaridade e o híbrido** (E60, E66, E69, E74; ADR 0031 aceito hoje):
+  - nem capacidade, nem ponderação por coluna (o déficit é uniforme), nem as alavancas contra o
+    washout;
+  - electricity tem mecanismo conhecido: `date` como chave.
+- **7.3 Complementaridade e o híbrido:**
   - os erros se complementam onde os dois estão próximos;
   - o híbrido por coluna KC + TabPFN nunca é pior que o default;
   - **status:** opt-in, offline, como medida de viabilidade.
-- **6.4 O que sabemos sobre `[NULL]`/`[MASK]`** (E01, E32/E33, E36, E67, E81):
-  - **Já se sabe:** qual token preenche a lacuna importa no imputador (C2: `[MASK]` vence);
-    `[MASK]` no pré-treino não muda nada.
-  - **Contra:** `[NULL]` sozinho custa mais sob MNAR íngreme (E67); o decoder `[NULL]` lê o padrão
-    de lacunas, mas perde acurácia (E81).
-  - **O que não se sabe:** se o par vale a pena (C1).
-  - **Por que importa:** é a ponte para a decisão 2; proponho fechar a seção com essa pergunta.
+- **7.4 O que se sabe sobre `[NULL]`/`[MASK]`:**
+  - qual token preenche a lacuna importa no imputador (`[MASK]` vence);
+  - `[MASK]` no pré-treino não muda nada;
+  - `[NULL]` sozinho custa mais sob MNAR íngreme;
+  - o decoder `[NULL]` lê o padrão de lacunas, mas perde acurácia.
+  - **Por que importa:** é a ponte para o trabalho futuro da RQ4 e do C1.
 
-## 7. Saídas novas: incerteza e interpretabilidade `[?]`
+## 8. Saídas novas: incerteza e interpretabilidade `[?]`
 
-- **Objetivo:** mostrar capacidades que um imputador clássico não dá.
-- **Conteúdo candidato:**
-  - **Spread de re-masking** (E75–E77, E80; ADR 0030):
-    - ordena os erros dentro de uma coluna até 60nan (replicado em 14 de 15);
-    - não estreita intervalos com a mesma cobertura (E77, refutado);
-    - cai quando as lacunas da linha crescem, embora o erro suba (E80).
-  - **Mapa de oclusão** (E78, E79): "de quais colunas o decoder preenche cada coluna", fiel em
-    9 de 9 a 40nan e em 7 de 9 a 60nan; AUROC 0,979 no sintético.
-- **Figura 10:** o mapa de oclusão de uma tabela como heatmap coluna × coluna; o sintético, com a
-  verdade conhecida, é o mais didático.
-- **Decisão:** `[?]` corpo, curto, ou apêndice? Ligam-se à RQ2.2 e à proposta clínica
-  (interpretabilidade), mas não respondem uma RQ diretamente.
+- **Spread de re-masking:**
+  - ordena os erros dentro de uma coluna até 60nan;
+  - não estreita intervalos com a mesma cobertura;
+  - cai quando as lacunas da linha crescem, embora o erro suba.
+- **Mapa de oclusão:** de quais colunas o decoder preenche cada coluna. É fiel em 9 de 9 a 40nan e
+  em 7 de 9 a 60nan, com AUROC 0,979 no sintético.
+- **Figura 11:** o mapa de oclusão do sintético, com a verdade conhecida.
+- **Decisão:** `[?]` corpo, curto, ou apêndice? Ligam-se à RQ2.2 e ao uso clínico.
 
-## 8. Limites que a tese declara `[entra]`
+## 9. Limites `[entra]`
 
-Vem da seção 4 do relatório consolidado, atualizada:
-
-- os benchmarks são OpenML, com mecanismos injetados e nenhum dado clínico (C17);
+- os benchmarks são OpenML, com mecanismos injetados e nenhum dado clínico;
 - K e KC são oráculos;
 - 80nan e as tabelas categóricas ficam com o TabPFN;
-- o pré-treino é apagado;
-- a classificação não foi testada;
+- o pré-treino é apagado pelo decode;
+- a classificação tem só o passo zero;
 - vários resultados se apoiam num só conjunto de seeds ou num só sorteio.
 
-## 9. Direções e decisões para a reunião `[entra]`
+## 10. Trabalho futuro e decisões `[entra]`, com opções neutras
 
-- **Objetivo:** sair da reunião com as três decisões encaminhadas.
-- **Conteúdo candidato:**
-  - **Decisão 1, posicionamento:**
-    - **A favor da RQ1:** a evidência está madura.
-    - **Contra:**
-      - Le Morvan & Varoquaux 2025 (retornos decrescentes da imputação para a predição);
-      - a RQ2 está vazia e é onde a motivação clínica mora.
-    - **Opções a mostrar:**
-      - (a) RQ1 como capítulo principal e RQ2 como estudo menor;
-      - (b) virar para a RQ2 com o protocolo C15;
-      - (c) as duas, cada uma com menos profundidade (a inclinação de 10-15).
-  - **Decisão 2, afirmação principal:**
-    - rodar o protocolo C1 (a ablação tied vs untied) na classificação, onde o TRIDENT foi
-      desenhado para ser usado;
-    - ou rebaixar o split a componente e trocar a afirmação principal: por exemplo, por "um
-      imputador com incerteza e mapa de fontes", ou por "robustez a MNAR".
-  - **Decisão 3, dados clínicos:**
-    - PhysioNet 2012/2019 (acesso aberto) para uma primeira célula com falta natural;
-    - o desafio de avaliar sem a verdade dos valores faltantes (Digitale 2025: preencher e
-      apagar de novo sob um mecanismo conhecido).
-  - **Pendências concretas:**
-    - T27 (passo zero da classificação, estágios 0 e 2 feitos);
-    - T40 (TabPFN na classificação);
-    - T32 (o encoder maior a 40–60nan);
-    - a proposta de calibração;
-    - os protocolos C1 e C15 da wiki.
-  - **Riscos a levantar antes da banca:** Mazrouei 2026 (o pré-treino ajuda pouco em tabelas
-    com falta nativa) e o resultado próprio do T28.
-- **Figura 11** `[?]`: um mapa das direções, uma árvore "decisão → próximo experimento → custo
-  estimado".
+- **Trabalho futuro, por RQ**, cada item com o protocolo e o custo estimado:
+  - **RQ1, classificação:** t3 (Table 3 com ≥5 seeds) e T40 (TabPFN).
+  - **RQ2 / RQ2.2:** protocolo C15.
+  - **RQ3:** contraste latente × valor com encoder congelado.
+  - **RQ4 / C1:** protocolo C1.
+  - **Dados clínicos:** PhysioNet 2012/2019, de acesso aberto.
+- **Decisão 1, posicionamento**, sem ordem de preferência:
+  - **(a)** RQ1 como capítulo principal, e RQ2 como estudo menor;
+  - **(b)** RQ2 como contribuição principal, com a RQ1 como base;
+  - **(c)** as duas, cada uma com menos profundidade.
+  - **Para cada opção:** o que já está pronto, o que falta, e o argumento contra (por exemplo, Le
+    Morvan & Varoquaux 2025 contra a "imputação como contribuição").
+- **Decisão 2, a afirmação principal:**
+  - **(a)** manter o split e rodar o C1;
+  - **(b)** rebaixar o split a componente e centrar a afirmação em outra coisa, como robustez a
+    MNAR, ou um imputador com incerteza e mapa de fontes.
+- **Decisão 3, dados clínicos:** qual base e qual clínico, e como avaliar sem a verdade dos valores
+  faltantes (Digitale 2025).
+- **Riscos para a banca:** Mazrouei 2026 e o resultado próprio do E71, que contesta a Table 4.
+- **Figura 12** `[?]`: uma árvore "decisão → próximo experimento → custo".
 
-## Apêndice candidato `[apêndice]`
+## Apêndice `[apêndice]`
 
-- glossário: `Nnan`, `impute_score`, K/KC/H, a barra, o tier forte, melhor / sem dif. / pior;
-- a lista de ADRs, com uma linha cada;
-- as linhas de resumo dos leitores (`results_digest.py`), como no artefato de 10-23;
-- a lista completa E01–E81, com o veredito de cada um.
+- **Decisão → ADR → experimento:** a tabela que sai da seção 3.
+- **Glossário:** `Nnan`, `impute_score`, K/KC/H, a barra, o tier forte, melhor / sem dif. / pior.
+- **Os parentes restantes** da seção 1.3.
+- **As linhas de resumo dos leitores** (`results_digest.py`).
+- **A lista E01–E81**, com o veredito de cada um.
 
-## Formato do artefato final (proposta)
+## Formato do artefato final
 
 - **Página:** HTML em português, com os identificadores em inglês e um índice lateral, na mesma
   família visual dos artefatos anteriores.
-- **Experimentos:** cada experimento central como card (pergunta → hipótese → resultado →
-  conclusão).
-- **Figuras:**
-  - geradas por um script que lê o store e os leitores numa passada só;
-  - em SVG inline, para funcionarem em tema claro e escuro.
-- **Tamanho estimado:** com as seções 3 e 7 no corpo, cerca de 25–30 min de leitura; sem elas,
-  cerca de 15.
+- **Experimentos:** os experimentos centrais como cards.
+- **Figuras:** geradas por um script que lê o store numa passada só, em SVG inline, para claro e
+  escuro.
 
-## Perguntas para você
+## Ainda em aberto
 
-1. **Público e tempo:** quanto a orientadora já conhece do TRIDENT, do MNAR e do fork? Quanto dura
-   a reunião? Isso decide a profundidade da seção 2.
-2. **Tom:** o artefato deve *defender* a RQ1 ou *expor o vazio* da RQ2 e do C1 para provocar a
-   discussão? Proponho a segunda opção, com a RQ1 como base sólida.
-3. **Seções 3 e 7:** corpo ou apêndice?
-4. **Classificação** (E70/E71): entra como "o primeiro passo dado", ou fica de fora até a T27
-   avançar?
-5. **A figura de trajetória:** contagens por passo (sem runs novas), ou vale a pena rodar todos os
-   passos nas mesmas seeds para ter uma curva única de `impute_score`?
-6. **Literatura:** quanto de posicionamento contra os parentes? Uma tabela no corpo, ou só a fala?
-7. **Opções da decisão 1:** quer que eu proponha uma recomendação, ou que só apresente as opções
-   neutras?
+1. **Figura 4:** A, B, B', ou A + B' (recomendado)?
+2. **Seção 1.3:** todas as 11 linhas no corpo, ou só as que rodaram no fork mais MFAN e Knockout?
+3. **Seção 8:** corpo ou apêndice?
+4. **Seção 5:** apresentar o E71 como está, ou suavizar o contraste com a Table 4 até haver ≥5
+   seeds? O resultado é seu, e a orientadora é coautora do artigo.
