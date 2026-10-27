@@ -657,8 +657,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - letter is out (26 classes; v2 allows 10).
   - **Done 2026-10-27 by E83:** TabPFN ahead at every level, by about 2 points of macro-F1.
     - TRIDENT leads only on credit-g and electricity, through its class-weighted loss.
-    - The decision stays the user's: step zero's bar or a separate tier. A fair macro-F1 arm
-      should class-balance TabPFN.
+    - **Decided 2026-10-27, 20:16 GMT-3: a separate strong tier, as in imputation**
+      ([ADR 0032](adr/0032-tabpfn-as-a-separate-strong-tier-for-classification.md), accepted).
+      H1c's bar stays the best GBDT. Whether to add a class-balanced TabPFN arm is decided with
+      step zero's design.
 
 ### Process
 
