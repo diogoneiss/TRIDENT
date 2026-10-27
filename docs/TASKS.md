@@ -547,6 +547,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Running from 2026-10-26 as E78**
     ([imputation-interpretability/01](tickets/imputation-interpretability/01-occlusion-map.md)),
     30 cells, no `src/` change.
+  - **Done 2026-10-27 by E78: supported.** Faithful on 9 of 9 real tables at 40nan (kc2 weakest,
+    D +0.036). The synthetic blocks are recovered (AUROC 0.979), including pairs with Pearson ≈ 0.
   - **E79 pre-registered 2026-10-26**
     ([imputation-interpretability/02](tickets/imputation-interpretability/02-occlusion-map-60nan.md)):
     the same design at 60nan, run after E78 on the user's overnight GPU time (no cell after 07:00

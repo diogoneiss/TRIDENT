@@ -104,7 +104,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 – 2026-10-26 | supported | within-column signal on 14 of 15 up to 60nan under K and H, none against (credit-g_60nan the exception); categorical: single-pass confidence beats the vote share 9/9; K reproduced the thesis-table runs exactly |
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
-| E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – | in progress | pre-registered; B (faithfulness, 9 real tables) primary, C (truth, synthetic blocks) gate |
+| E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – 2026-10-27 | supported | faithful on 9 of 9 real tables at 40nan (D +0.04 to +0.41); synthetic blocks recovered, AUROC 0.979 (|Spearman| 0.847) |
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 – | in progress | pre-registered; E78's rule on the same ten tables at 60nan |
 
 ## Entries
@@ -2485,7 +2485,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E78 · Which columns does the decoder fill each column from? An occlusion map (2026-10-26)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim, vamos!",
+- **Status:** done, supported (2026-10-27, 03:14 GMT-3). Pre-registered before the first cell, on the user's go ("sim, vamos!",
   2026-10-26, before 22:45 GMT-3). T38. No `src/` change; the model (K) is read in place after each
   fold, with the random states restored. A smoke run outside the study reproduced K to 0.0.
 - **Hypothesis:** hiding one column's observed cells as `[MASK]` and measuring the change in each
@@ -2511,6 +2511,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/01-occlusion-map.md`;
   `scripts/experiments/occlusion_map.py`, `run_occlusion_queue.sh`; MLflow tag
   `experiment=occlusion-map-2026-10-26`.
+- **Results:**
+  - 30 of 30 cells; K reproduced the earlier runs to 0.0 on 27.
+  - **B:** faithful on 9 of 9.
+    - D (top 3) is +0.21 to +0.41 on pendigits, letter, electricity, vehicle, biodeg and kr-vs-kp.
+    - It is +0.07 to +0.08 on spambase and credit-g, and +0.036 [+0.015, +0.058] on kc2.
+  - **C:** AUROC 0.979 [0.972, 0.987], K 0.724 against `mean_mode` 1.0. Pairs with Pearson ≈ 0
+    are found (a2 ← a4, a1). The same reading from |Spearman| gives 0.847.
+  - **Descriptive:** seed stability 0.87–0.997 (kc2 0.80); attention agrees with occlusion
+    0.75–0.95 (kc2 0.60).
+- **Conclusion:** supported. At 40nan under MCAR, the occlusion map is faithful to K and recovers
+  known nonlinear structure. It is reported descriptively, with no default changed. E79 tests it at
+  60nan.
 
 ### E79 · Does the occlusion map hold at 60nan? (2026-10-27)
 
