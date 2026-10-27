@@ -2,7 +2,8 @@
 
 - **Status:** **accepted on 2026-10-26, 22:30 GMT-3** by the user ("ok, aceito"). Proposed 2026-10-25. Amended the same day with E77 (refuted: no
   better intervals) before any decision. Updated 2026-10-26 with E76 (supported: the
-  within-column reading replicates, pre-registered). The user asked for the proposal
+  within-column reading replicates, pre-registered). Amended 2026-10-27 with E80's limit, on the
+  user's decision ("sim, o adr 30 deve registrar isso"). The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
   ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
 - **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
@@ -100,5 +101,17 @@
   - It was tested under MCAR only: E75 on the 15 confirmation variants (707/808/909), E76 on the 21
     development variants (101/202/303). credit-g_60nan shows no signal.
   - The MAR and MNAR families are untested.
+  - **It runs the wrong way along a row's missingness** (E80,
+    [imputation-interpretability/03](../tickets/imputation-interpretability/03-spread-and-missing-sources.md)).
+    - The spread *falls* as the cell's row has more gaps: Spearman −0.04 to −0.47 on all 16 real
+      variants at 40 and 60nan.
+    - The error *rises* when the cell's top sources (E78's occlusion map) are missing: +0.02 to
+      +0.19 on all 16.
+    - So a cell whose informative columns are all missing can show a low spread and a large error.
+      The passes agree most where the model knows least. A likely cause, not tested: with fewer
+      observed cells, the passes have less to hide and vary.
+    - **How to use it:** read the spread as a rank *within a column, among rows with similar
+      missingness*. A report that flags cells by spread also flags rows whose top sources are
+      missing, from E78's map, since the spread does not.
 - **Follow-ups, each its own pre-registered study if the user wants it:**
   - the MNAR family, where an honest signal should grow with the mechanism's tilt.
