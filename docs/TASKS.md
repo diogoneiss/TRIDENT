@@ -553,6 +553,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-interpretability/02](tickets/imputation-interpretability/02-occlusion-map-60nan.md)):
     the same design at 60nan, run after E78 on the user's overnight GPU time (no cell after 07:00
     GMT-3).
+  - **Done 2026-10-27 by E79: supported, at the bar.** Faithful on 7 of 9 at 60nan, with kc2 and
+    credit-g inconclusive and none against. Synthetic AUROC 0.914; effects shrink with
+    missingness. T38's A + B + C are done. E (spread vs missing top sources) and F (MNAR) are open
+    and wait for the user.
   - **Next, if it holds, each its own ticket:**
     - E: does the spread grow when a cell's top sources are missing in its row?
     - F: reliance on the gap pattern under MNAR.

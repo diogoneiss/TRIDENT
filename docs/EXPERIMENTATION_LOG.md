@@ -105,7 +105,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 – 2026-10-26 | supported | within-column signal on 14 of 15 up to 60nan under K and H, none against (credit-g_60nan the exception); categorical: single-pass confidence beats the vote share 9/9; K reproduced the thesis-table runs exactly |
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
 | E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – 2026-10-27 | supported | faithful on 9 of 9 real tables at 40nan (D +0.04 to +0.41); synthetic blocks recovered, AUROC 0.979 (|Spearman| 0.847) |
-| E79 | Does the occlusion map hold at 60nan? | 2026-10-27 – | in progress | pre-registered; E78's rule on the same ten tables at 60nan |
+| E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
 
 ## Entries
 
@@ -2526,7 +2526,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E79 · Does the occlusion map hold at 60nan? (2026-10-27)
 
-- **Status:** in progress. Pre-registered before its first cell and before any E78 result was read,
+- **Status:** done, supported at the bar (2026-10-27, 07:00 GMT-3). Pre-registered before its first cell and before any E78 result was read,
   on the user's go to use the GPU until 07:30 (2026-10-26, before 23:22 GMT-3). T38.
 - **Hypothesis:** E78's map stays faithful, and recovers the synthetic blocks, at 60nan, where a
   target has fewer observed sources a row.
@@ -2541,3 +2541,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/02-occlusion-map-60nan.md`;
   `occlusion_map.py --study e79`, `run_occlusion_queue.sh` (`STUDY=e79`); MLflow tag
   `experiment=occlusion-map-60nan-2026-10-27`.
+- **Results:**
+  - 30 of 30 cells by 06:57 GMT-3; K reproduced to 0.0 on 27.
+  - **B:** faithful on 7 of 9, with D (top 3) +0.04 to +0.24. kc2 (+0.012) and credit-g (+0.019)
+    are inconclusive; none is against.
+  - **C:** AUROC 0.914 [0.901, 0.926], against 0.864 from |Spearman|.
+  - Every D is smaller than at 40nan: by 29–43% on pendigits, letter, electricity, vehicle and
+    biodeg, and by 67–74% on kc2, kr-vs-kp and credit-g.
+- **Conclusion:** supported, exactly at the bar. With E78, the map is faithful at 40 and 60nan
+  under MCAR. At 60nan it is not shown on kc2 and credit-g, and the effect shrinks with
+  missingness. No default changed.
