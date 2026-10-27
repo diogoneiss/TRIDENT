@@ -3810,6 +3810,16 @@
   ],
   "default_refresh": [
    "Primary: K - bar holds: reversals none (fold-pair t, seed agreement)"
+  ],
+  "hybrid_e82": [
+   "Primary: the deployable hybrid is better than H on 10 of 10, worse on none, and worse than TabPFN on 5 (['vehicle_80nan', 'biodeg_80nan', 'kr-vs-kp_60nan', 'kr-vs-kp_80nan', 'credit-g_60nan']) -> refuted (fold-pair t, seed agreement)"
+  ],
+  "tabpfn_cls_e83": [
+   "- 0nan: TabPFN − TRIDENT macro-F1 +0.0212 [+0.0136, +0.0288] seeds +0.0178, +0.0246, 48 fold pairs -> TabPFN ahead",
+   "- 20nan: TabPFN − TRIDENT macro-F1 +0.0186 [+0.0108, +0.0264] seeds +0.0160, +0.0212, 48 fold pairs -> TabPFN ahead",
+   "- 40nan: TabPFN − TRIDENT macro-F1 +0.0170 [+0.0018, +0.0322] seeds +0.0072, +0.0268, 48 fold pairs -> TabPFN ahead",
+   "- 60nan: TabPFN − TRIDENT macro-F1 +0.0240 [+0.0055, +0.0426] seeds +0.0268, +0.0213, 48 fold pairs -> TabPFN ahead",
+   "- 80nan: TabPFN − TRIDENT macro-F1 +0.0236 [+0.0064, +0.0408] seeds +0.0260, +0.0212, 48 fold pairs -> TabPFN ahead"
   ]
  },
  "trajectory": {

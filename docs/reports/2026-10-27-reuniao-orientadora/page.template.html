@@ -177,7 +177,7 @@ html { scroll-behavior: smooth; }
   <p class="lede">O que o fork fez com o TRIDENT desde setembro: transformá-lo num imputador, medir esse imputador contra baselines clássicos e contra o TabPFN v2 sob MCAR, MNAR e MAR, e entender por que ele se comporta como se comporta. Cada resultado está ligado à pergunta da tese que responde.</p>
   <div class="prov">
     <span>Gerado em <b id="built">__BUILT__</b></span>
-    <span>Experimentos <b>E01–E81</b></span>
+    <span>Experimentos <b>E01–E83</b></span>
     <span>Código <b class="mono">feat/imputation-task</b></span>
     <span>Números de <b class="mono">scripts/experiments/meeting_figures.py</b></span>
   </div>
@@ -395,6 +395,15 @@ html { scroll-behavior: smooth; }
       <dt>Conclusão</dt><dd><span class="verdict mixed">Nenhuma diferença detectável em nenhum nível.</span> O ganho de 1,7 pontos fica fora dos intervalos de 0 a 60nan. Mas são os defaults do fork, com 3 folds e 2 seeds, não o protocolo do artigo.</dd>
     </dl>
   </div>
+  <div class="card">
+    <header><h3>TabPFN v2 como baseline de classificação</h3><span class="tag">E83 · ADR 0032</span></header>
+    <dl class="steps">
+      <dt>Pergunta</dt><dd>Um modelo de fundação, sem ajuste, nos mesmos folds do E71: onde fica o TRIDENT de classificação?</dd>
+      <dt>Desenho</dt><dd>O classificador do TabPFN v2, sem busca (8 estimadores, contexto de até 10.000 linhas), nos folds de 3 do E71, seeds 42 e 7, pareado fold a fold com o braço A. 8 tabelas × 0–80nan; letter fica de fora (26 classes, o v2 aceita 10).</dd>
+      <dt>Resultado</dt><dd>TabPFN − TRIDENT em macro-F1: +0,021, +0,019, +0,017, +0,024 e +0,024 de 0 a 80nan, com as duas seeds concordando em todos os níveis. O TRIDENT só vence em credit-g (a partir de 20nan) e electricity (a partir de 60nan). Ali, numa leitura <i>post hoc</i>, o TabPFN prevê quase só a classe majoritária, e a perda ponderada por classe do TRIDENT troca acurácia por macro-F1.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict bad">O TabPFN sem ajuste está à frente por cerca de 2 pontos.</span> Decisão (ADR 0032): ele entra como <b>tier forte separado</b>, como na imputação; a H1c continua contra o melhor GBDT. Um braço do TabPFN balanceado por classe fica para o desenho do passo zero.</dd>
+    </dl>
+  </div>
   <div class="note"><b>Trabalho futuro, T41.</b> Replicar o ganho da Table 4 com os parâmetros do artigo (40/40 épocas, hiperparâmetros por dataset, split 80/10/10) e, em separado, com os do sweep antigo a 10 folds e ≥5 seeds. Para isso faltam os hiperparâmetros por dataset do artigo e o commit que representa "o código do artigo"; nenhum dos dois está no repositório.</div>
 </section>
 
@@ -445,10 +454,11 @@ html { scroll-behavior: smooth; }
     </ul>
   </div>
   <div class="card">
-    <header><h3>7.3 · Erros complementares e um híbrido</h3><span class="tag">E60 · E66 · E69 · E74</span></header>
+    <header><h3>7.3 · Erros complementares e um híbrido</h3><span class="tag">E60 · E66 · E69 · E74 · E82</span></header>
     <ul class="points">
       <li><b>A média simples</b> dos preenchimentos numéricos do TRIDENT e do TabPFN vence os dois em 10 de 15 variantes de confirmação; num segundo conjunto de tabelas e seeds, em 3 de 9.</li>
-      <li><b>Um híbrido por coluna</b> (peso escolhido nos outros folds) nunca é pior que o default, mas não bateu a regra pré-registrada (7 de 10, a regra pedia 8); boa parte do ganho é do próprio TabPFN. Ficou como saída opcional, offline, de benchmark.</li>
+      <li><b>Um híbrido por coluna</b> (peso escolhido nos outros folds) nunca é pior que o default, mas não bateu a regra pré-registrada (7 de 10, a regra pedia 8); boa parte do ganho é do próprio TabPFN. Ficou como saída opcional, offline, de benchmark (ADR 0031): os pesos usam a tabela completa, como o KC.</li>
+      <li><b>A versão implantável</b> (E82): H, que não lê a tabela completa, com os pesos escolhidos em células observadas da validação escondidas de propósito. Melhor que o H em 10 de 10 e que o KC em 7 de 10, sem perder para ele; pior que o TabPFN em 5 e que os pesos "oráculo" em 6. A perda vem da escolha dos pesos (colunas com poucas células e colunas categóricas), não do H. Ordem nas 10 variantes difíceis: TabPFN ≳ híbrido implantável &gt; KC &gt; H.</li>
     </ul>
   </div>
   <div class="card">
@@ -505,10 +515,12 @@ html { scroll-behavior: smooth; }
     <table class="wide">
       <thead><tr><th>Frente</th><th>O que é</th><th>Estado</th></tr></thead>
       <tbody>
-        <tr><td>RQ1 · classificação</td><td>T41 (Table 4 com os parâmetros do artigo), t3/t24 (Table 3 com ≥5 seeds e orçamentos iguais), T40 (TabPFN v2 como baseline de classificação)</td><td>T41 e T40 registradas; precisam dos hiperparâmetros do artigo e das decisões do passo zero</td></tr>
+        <tr><td>RQ1 · classificação</td><td>T41 (Table 4 com os parâmetros do artigo), t3/t24 (Table 3 com ≥5 seeds e orçamentos iguais), T40 (TabPFN v2 como baseline de classificação)</td><td>T40 feito (E83, ADR 0032: tier forte separado); T41 precisa dos hiperparâmetros do artigo; o passo zero espera as 8 decisões da ADR 0029</td></tr>
         <tr><td>RQ2 / RQ2.2</td><td>Protocolo C15: <code>[NULL]</code> por coluna contra missForest + indicador no mesmo encoder, sob uma família MNAR controlada; contraste direto e Shapley por remoção de token</td><td>Rascunho na wiki; margens aceitas</td></tr>
         <tr><td>RQ3</td><td>Latente × valor num 2 × 2 (alvo × onde a loss incide), com o encoder congelado para escapar do washout</td><td>Desenhado</td></tr>
         <tr><td>RQ4 / C1</td><td>A ablação tied vs untied do split, na classificação</td><td>Protocolo C1 na wiki</td></tr>
+        <tr><td>Em execução (27–28/10)</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>Pré-registrados; rodando na GPU</td></tr>
+        <tr><td>Híbrido implantável</td><td>Escolha de pesos mais robusta: um peso por tabela, ou encolher em direção ao 50/50 em colunas com poucas células</td><td>Candidato após o E82</td></tr>
         <tr><td>Dados clínicos</td><td>PhysioNet 2012/2019 (acesso aberto) para uma primeira célula com falta natural</td><td>Decisão em aberto</td></tr>
       </tbody>
     </table>
@@ -552,8 +564,9 @@ html { scroll-behavior: smooth; }
         <tr><td>Saída calibrada a partir de 40nan (KC)</td><td class="num">0027</td><td>E40, E47</td></tr>
         <tr><td>TabPFN no tier forte, offline</td><td class="num">0028</td><td>E55</td></tr>
         <tr><td>Busca de classificação na validação (proposto)</td><td class="num">0029</td><td>E70, E71</td></tr>
-        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80</td></tr>
-        <tr><td>Híbrido KC + TabPFN, opt-in e offline</td><td class="num">0031</td><td>E69, E74</td></tr>
+        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80 (limite do E80 registrado)</td></tr>
+        <tr><td>Híbrido KC + TabPFN, opt-in e offline; a versão implantável não chega ao TabPFN</td><td class="num">0031</td><td>E69, E74, E82</td></tr>
+        <tr><td>TabPFN v2 como tier forte separado na classificação</td><td class="num">0032</td><td>E83</td></tr>
       </tbody>
     </table>
   </div>
@@ -562,7 +575,7 @@ html { scroll-behavior: smooth; }
 </section>
 
 <footer>
-  <span>As figuras e as contagens marcadas na página vêm de <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados. As demais contagens no texto (por exemplo E56, E60, E66, E70, E74) citam o log de experimentos e os Outcomes dos tickets.</span>
+  <span>As figuras e as contagens marcadas na página vêm de <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados. As demais contagens no texto (por exemplo E56, E60, E66, E70, E74, E82, E83) citam o log de experimentos e os Outcomes dos tickets.</span>
   <span>Rascunho e decisões de conteúdo: <code>docs/reports/2026-10-27-reuniao-orientadora-rascunho.md</code>.</span>
 </footer>
 </main>
@@ -893,7 +906,7 @@ html { scroll-behavior: smooth; }
   // ---------- raw ----------
   (function () {
     const raw = document.getElementById("raw");
-    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan" };
+    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)" };
     for (const k in names) {
       const d = document.createElement("details"); d.className = "raw";
       const lines = D.primary[k] || [];
