@@ -593,6 +593,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       A deployed run has no complete table, so it needs weights from observed cells: the masked
       population, or the validation rows' own fills.
     - That route is untested and may need its own pre-registered study.
+  - **Proposed as [ADR 0031](adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md) on
+    2026-10-27, 12:44 GMT-3; waits on the user.**
+    - It is offline, in E74's exact shape. Its weights read the same information class as KC, so
+      it is a benchmark output.
+    - Deferred, each a separate study: E82, in-run validation-gap weights (about 4 h of GPU plus
+      refits); a deployable masked-weight hybrid with H.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
