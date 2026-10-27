@@ -109,6 +109,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
+| E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 – | in progress | pre-registered; 8 tables × 5 levels × seeds 42/7, paired with E71 arm A; letter out (26 classes) |
 
 ## Entries
 
@@ -2648,3 +2649,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** refuted. Weights chosen on the validation split's observed cells beat H
   everywhere and KC on 7, without the complete table. They fall short of TabPFN where a column
   has few selection cells or is categorical. ADR 0031 stays a benchmark output.
+
+### E83 · TabPFN v2's classifier against TRIDENT's classification, on E71's folds (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the first fit, on the user's go ("vamos para o
+  T40", 2026-10-27, before 19:40 GMT-3). T40.
+- **Hypothesis:** none directional; a first strong-baseline reading for classification.
+- **Scenarios:** TabPFN v2's classifier, untuned (E55's settings), on E71's 3-fold `build_folds`
+  at seeds 42 and 7. That is 8 tables × 5 MCAR levels, 80 pairs.
+  - Context: the training split, capped at 10,000 rows.
+  - letter is out, since v2 allows 10 classes.
+- **Measures and decision rule:** per level, TabPFN − TRIDENT (E71 arm A) test macro-F1, fold-paired
+  and pooled over tables (48 pairs), with the verdict rule and a SESOI of 0.01. It is descriptive.
+  It informs T40's choice of step zero's bar or a separate tier.
+- **Sources:** `docs/tickets/classification-step-zero/03-tabpfn-classifier.md`;
+  `scripts/experiments/tabpfn_classification.py`.

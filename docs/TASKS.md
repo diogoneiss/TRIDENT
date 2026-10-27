@@ -650,6 +650,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     is the same question ADR 0028 settled for imputation, so it belongs with ADR 0029's decisions or
     in an ADR of its own.
   - **When:** after step zero's decisions (ADR 0029's 8), in GPU gaps.
+  - **Started 2026-10-27 as E83** ([classification-step-zero/03](tickets/classification-step-zero/03-tabpfn-classifier.md)),
+    on the user's go, ahead of step zero:
+    - untuned TabPFN v2 on E71's 3-fold folds (seeds 42/7, 8 tables × 5 levels), paired with E71's
+      TRIDENT arm A;
+    - letter is out (26 classes; v2 allows 10).
 
 ### Process
 
