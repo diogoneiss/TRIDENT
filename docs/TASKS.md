@@ -479,7 +479,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **ADR 0030 proposed 2026-10-25** on the user's request ("Podemos propor essa ADR"): the numerical spread as an opt-in per-cell ranking signal up to 60nan (a post-hoc within-column check holds on 9 of 9 there), categorical uncertainty from the single pass's confidence, the fill unchanged. Awaits the user's decision.
   - **E77 done 2026-10-25, refuted** ([imputation-protocol/30](tickets/imputation-protocol/30-remask-conformal.md)): a cross-fitted spread interval is wider than a per-column constant one on 15 of 15 at the same 90% coverage; ADR 0030 stays a rank (amended).
   - **Running from 2026-10-25 as E76** ([imputation-protocol/29](tickets/imputation-protocol/29-remask-development.md)): the within-column reading, pre-registered, on the 21 development variants at 101/202/303.
-  - **Done 2026-10-26 by E76: supported.** Within-column signal on 14 of 15 development variants up to 60nan (K and H), none against; ADR 0030 updated, awaiting the user's decision.
+  - **Done 2026-10-26 by E76: supported.** Within-column signal on 14 of 15 development variants up to 60nan (K and H), none against; ADR 0030 updated.
+  - **ADR 0030 accepted by the user (2026-10-26, 22:30 GMT-3, "ok, aceito").** The numerical spread under `--score_remask` (off by default) is the opt-in uncertainty output, a rank up to 60nan; no default changes. T36 closed.
 
 - **T37 · Per-column weights for the K + TabPFN blend** (proposed 2026-10-22, about 23:59
   GMT-3, from the wiki's claims ledger, `projects/trident/claims`, P2; accepted by the user; see

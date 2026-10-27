@@ -614,11 +614,13 @@ def build_training_parser() -> argparse.ArgumentParser:
         "--score_remask",
         action="store_true",
         help=(
-            "Also fill the induced test cells from 20 passes that each hide a fresh draw of the "
-            "row's observed cells too, averaged (numbers) or voted (categories), with each cell's "
-            "spread in the ledger. As impute/induced/remask/*, remask_calibrated/* under ADR 0027, "
-            "and <criterion>_checkpoint_remask/* with --score_checkpoints. A diagnostic (T36, "
-            "E75). Requires --task imputation."
+            "The opt-in uncertainty output (ADR 0030): fill the induced test cells from 20 passes "
+            "that each also hide a fresh draw of the row's observed cells, and write each cell's "
+            "spread to the ledger. A numerical cell's spread ranks its likely error (up to 60%% "
+            "missing); it is not an interval. The fill stays the run's headline; the averaged "
+            "fills, impute/induced/remask/* (remask_calibrated/* under ADR 0027, "
+            "<criterion>_checkpoint_remask/* with --score_checkpoints), are diagnostics. Requires "
+            "--task imputation."
         ),
     )
     parser.add_argument("--use_optuna", action="store_true")

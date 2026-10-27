@@ -1,6 +1,6 @@
-# ADR 0030: An opt-in per-cell uncertainty signal from re-masking passes (proposed)
+# ADR 0030: An opt-in per-cell uncertainty signal from re-masking passes
 
-- **Status:** proposed, 2026-10-25. For the user's decision. Amended the same day with E77 (refuted: no
+- **Status:** **accepted on 2026-10-26, 22:30 GMT-3** by the user ("ok, aceito"). Proposed 2026-10-25. Amended the same day with E77 (refuted: no
   better intervals) before any decision. Updated 2026-10-26 with E76 (supported: the
   within-column reading replicates, pre-registered). The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
@@ -52,7 +52,7 @@
   - Its 80nan gains are shrinkage. Dispersion was lower on 15 of 15, and once calibrated it was
     worse than KC on 8.
 
-## Decision (proposed)
+## Decision
 
 1. **The uncertainty signal is opt-in, through `--score_remask`.** It stays off by default.
    - A run that asks for it carries `spread` on its ledger's `induced_remask` rows, at the run's
