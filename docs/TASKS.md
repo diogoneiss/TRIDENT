@@ -557,6 +557,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     credit-g inconclusive and none against. Synthetic AUROC 0.914; effects shrink with
     missingness. T38's A + B + C are done. E (spread vs missing top sources) and F (MNAR) are open
     and wait for the user.
+  - **E and F started 2026-10-27 on the user's go** ("otimo, quero fazer E e F agora, vá"):
+    - E80 ([03](tickets/imputation-interpretability/03-spread-and-missing-sources.md)), offline;
+    - E81 ([04](tickets/imputation-interpretability/04-gap-reliance.md)), 66 cells with a
+      `decode_gap_token null` arm, since the default cannot be asked the question.
   - **Next, if it holds, each its own ticket:**
     - E: does the spread grow when a cell's top sources are missing in its row?
     - F: reliance on the gap pattern under MNAR.

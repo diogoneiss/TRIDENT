@@ -106,6 +106,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
 | E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – 2026-10-27 | supported | faithful on 9 of 9 real tables at 40nan (D +0.04 to +0.41); synthetic blocks recovered, AUROC 0.979 (|Spearman| 0.847) |
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
+| E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 – | in progress | pre-registered; offline on E78/E79, top-3 vs random-3 missing |
+| E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 – | in progress | pre-registered; `decode_gap_token null` arm, [NULL]→[MASK] swap, biodeg tilt dial + 3 pairs |
 
 ## Entries
 
@@ -2551,3 +2553,41 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** supported, exactly at the bar. With E78, the map is faithful at 40 and 60nan
   under MCAR. At 60nan it is not shown on kc2 and credit-g, and the effect shrinks with
   missingness. No default changed.
+
+### E80 · Does the spread grow when a cell's top sources are missing? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the reading, on the user's go ("otimo, quero fazer
+  E e F agora, vá", 2026-10-27, before 08:29 GMT-3). Offline on E78/E79's cells. T38.
+  - Disclosure: E78/E79's maps had been read; no spread measure had been computed.
+- **Hypothesis:** a numerical cell's re-masking spread (ADR 0030) is higher when its top 3 sources
+  (the validation map's) are missing in its row, beyond the row missing more.
+- **Scenarios:** the 16 real variants with numerical gaps at 40nan and 60nan (kr-vs-kp out), 15
+  folds each, K.
+- **Measures and decision rule:** within-column Spearman(spread, top-3 missing count) minus the same
+  for 3 random sources (20 draws), averaged over targets.
+  - A variant is specific if the 95% interval lies above 0 with every seed above 0, and against if
+    the interval lies below 0.
+  - **Supported** if specific on 12 or more of 16 and against on none; **refuted** if specific on
+    6 or fewer; **mixed** otherwise.
+  - The total-gap and error correlations, and synthblock with the true blocks, are descriptive.
+- **Sources:** `docs/tickets/imputation-interpretability/03-spread-and-missing-sources.md`;
+  `scripts/experiments/occlusion_spread.py`.
+
+### E81 · Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the first cell, on the same go. T38.
+- **Hypothesis:** under the default (`DECODE_GAP_TOKEN mask`) the question cannot be asked: a gap
+  and a hidden cell are one token. A decoder trained with `--decode_gap_token null` reads `[NULL]`
+  at a correlated column as "that column was large" under self-masking MNAR, and not under MCAR.
+- **Scenarios:**
+  - biodeg at 60nan, at MCAR and at probit slopes 0.25, 0.5, 1.0 and 2.0;
+  - vehicle, kc2 and spambase probit_60nan with their MCAR twins;
+  - arms null and mask; seeds 101/202/303; 66 cells.
+- **Measures and decision rule:** S, the signed fill shift when a correlated gap's `[NULL]`
+  (|ρ| ≥ 0.2) is swapped for `[MASK]`, aligned with sign(ρ), on arm null.
+  - **Supported** if S at slope 2.0 lies above +0.01 with every seed above 0 and S at MCAR does not
+    lie above +0.01; **refuted** if S at slope 2.0 does not lie above 0; **mixed** otherwise.
+  - The dial shape, the pairs and the accuracy of null − mask (K, KC) are descriptive.
+- **Sources:** `docs/tickets/imputation-interpretability/04-gap-reliance.md`;
+  `scripts/experiments/gap_reliance.py`, `run_gap_reliance_queue.sh`; MLflow tag
+  `experiment=gap-reliance-2026-10-27`.
