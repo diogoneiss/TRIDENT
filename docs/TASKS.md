@@ -561,6 +561,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - E80 ([03](tickets/imputation-interpretability/03-spread-and-missing-sources.md)), offline;
     - E81 ([04](tickets/imputation-interpretability/04-gap-reliance.md)), 66 cells with a
       `decode_gap_token null` arm, since the default cannot be asked the question.
+  - **Done 2026-10-27 by E80: mixed.** Specific on 7 of 16 and against on 6. The spread falls as a
+    row's gaps grow, while error rises with missing top sources. That is a limit on ADR 0030 for the
+    user to decide whether to record.
   - **Next, if it holds, each its own ticket:**
     - E: does the spread grow when a cell's top sources are missing in its row?
     - F: reliance on the gap pattern under MNAR.

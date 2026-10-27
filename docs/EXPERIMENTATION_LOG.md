@@ -106,7 +106,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
 | E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – 2026-10-27 | supported | faithful on 9 of 9 real tables at 40nan (D +0.04 to +0.41); synthetic blocks recovered, AUROC 0.979 (|Spearman| 0.847) |
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
-| E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 – | in progress | pre-registered; offline on E78/E79, top-3 vs random-3 missing |
+| E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 – | in progress | pre-registered; `decode_gap_token null` arm, [NULL]→[MASK] swap, biodeg tilt dial + 3 pairs |
 
 ## Entries
@@ -2556,7 +2556,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E80 · Does the spread grow when a cell's top sources are missing? (2026-10-27)
 
-- **Status:** in progress. Pre-registered before the reading, on the user's go ("otimo, quero fazer
+- **Status:** done, mixed (2026-10-27, 08:33 GMT-3). Pre-registered before the reading, on the user's go ("otimo, quero fazer
   E e F agora, vá", 2026-10-27, before 08:29 GMT-3). Offline on E78/E79's cells. T38.
   - Disclosure: E78/E79's maps had been read; no spread measure had been computed.
 - **Hypothesis:** a numerical cell's re-masking spread (ADR 0030) is higher when its top 3 sources
@@ -2572,6 +2572,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - The total-gap and error correlations, and synthblock with the true blocks, are descriptive.
 - **Sources:** `docs/tickets/imputation-interpretability/03-spread-and-missing-sources.md`;
   `scripts/experiments/occlusion_spread.py`.
+- **Results:**
+  - **Specific on 7:** pendigits, letter and vehicle at both rates, and biodeg_40nan.
+  - **Against on 6:** kc2 and credit-g at both rates, electricity_60nan and spambase_60nan.
+  - **Descriptive:** the error's ρ with the top-3 missing count is positive on all 16 (+0.02 to
+    +0.19). The spread's ρ with the row's gaps is negative on all 16 (−0.04 to −0.44).
+- **Conclusion:** mixed. The two outputs are separate signals.
+  - The spread runs against the error along a row's missingness: the passes agree most where the
+    model knows least (post-hoc reading: there are fewer observed cells to re-mask).
+  - This is a limit on ADR 0030, for the user to record or not.
 
 ### E81 · Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? (2026-10-27)
 
