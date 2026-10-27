@@ -655,6 +655,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - untuned TabPFN v2 on E71's 3-fold folds (seeds 42/7, 8 tables × 5 levels), paired with E71's
       TRIDENT arm A;
     - letter is out (26 classes; v2 allows 10).
+  - **Done 2026-10-27 by E83:** TabPFN ahead at every level, by about 2 points of macro-F1.
+    - TRIDENT leads only on credit-g and electricity, through its class-weighted loss.
+    - The decision stays the user's: step zero's bar or a separate tier. A fair macro-F1 arm
+      should class-balance TabPFN.
 
 ### Process
 

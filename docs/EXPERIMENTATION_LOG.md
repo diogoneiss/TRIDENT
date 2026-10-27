@@ -109,7 +109,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
-| E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 – | in progress | pre-registered; 8 tables × 5 levels × seeds 42/7, paired with E71 arm A; letter out (26 classes) |
+| E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
 
 ## Entries
 
@@ -2652,7 +2652,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E83 · TabPFN v2's classifier against TRIDENT's classification, on E71's folds (2026-10-27)
 
-- **Status:** in progress. Pre-registered before the first fit, on the user's go ("vamos para o
+- **Status:** done (2026-10-27, 20:05 GMT-3). Pre-registered before the first fit, on the user's go ("vamos para o
   T40", 2026-10-27, before 19:40 GMT-3). T40.
 - **Hypothesis:** none directional; a first strong-baseline reading for classification.
 - **Scenarios:** TabPFN v2's classifier, untuned (E55's settings), on E71's 3-fold `build_folds`
@@ -2664,3 +2664,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   It informs T40's choice of step zero's bar or a separate tier.
 - **Sources:** `docs/tickets/classification-step-zero/03-tabpfn-classifier.md`;
   `scripts/experiments/tabpfn_classification.py`.
+- **Results:**
+  - 80 of 80.
+  - **TabPFN − TRIDENT macro-F1:** +0.021, +0.019, +0.017, +0.024 and +0.024 at 0–80nan, "TabPFN
+    ahead" at every level with both seeds agreeing.
+  - **TRIDENT leads** on credit-g from 20nan and electricity from 60nan. Post hoc, there TabPFN
+    predicts the majority class (credit-g accuracy 0.70 at 60–80nan), and TRIDENT's class-weighted
+    loss trades accuracy for macro-F1.
+- **Conclusion:** untuned TabPFN v2 is the stronger classifier on 8 of 9 tables. It qualifies as
+  T40's strong baseline; where it joins is the user's call. A fair macro-F1 comparison should
+  class-balance TabPFN too (step zero's design).
