@@ -73,7 +73,7 @@ This ticket was written and committed before the study's first fit.
 
   - Every level reads "TabPFN ahead", by about 2 points of macro-F1.
 - **By table (descriptive):**
-  - TabPFN leads on vehicle (+0.07 to +0.12), spambase, biodeg and kc2 at every level.
+  - TabPFN leads on vehicle (+0.04 to +0.12), spambase, biodeg and kc2 at every level.
   - TRIDENT leads on credit-g from 20nan (+0.02 to +0.10) and on electricity from 60nan (+0.015,
     +0.030).
   - pendigits ties at 80nan.
