@@ -65,6 +65,11 @@ E78's, unchanged, through `occlusion_map.py --study e79 --tally`:
   - D (top 3) falls by 29–43% on pendigits, letter, electricity, vehicle and biodeg. It falls by
     51% on spambase and by 67–74% on kc2, kr-vs-kp and credit-g.
   - kc2, the weakest at 40nan, and credit-g, already small there, fall to inconclusive.
+  - **A second explanation, not tested here:** B ranks the sources on the validation split, and
+    kc2 (522 rows) and credit-g (1,000) are the two smallest tables. At 60nan, each pair of kc2's
+    validation map rests on about a dozen cells, near the 10-cell floor. A noisy ranking lowers D
+    whatever the model does. So "not shown" may reflect the test's resolution on small tables as
+    much as the model.
   - Seed stability stays 0.75–0.995; attention against occlusion stays 0.69–0.96.
 - **What it leads to:** E78 and E79 are both supported, so the map's faithfulness holds over 40 and
   60nan, MCAR, by the rule fixed before either ran.
