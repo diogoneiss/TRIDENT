@@ -156,6 +156,8 @@ html { scroll-behavior: smooth; }
     <li class="sub"><a href="#parentes">Os parentes</a></li>
     <li><a href="#metodo">2. Metodologia</a></li>
     <li class="sub"><a href="#fork">O que o fork mudou</a></li>
+    <li class="sub"><a href="#score">O impute_score</a></li>
+    <li class="sub"><a href="#mecanismos">MCAR, MNAR e MAR</a></li>
     <li><a href="#trajetoria">3. Como chegamos no default</a></li>
     <li><a href="#rq1">4. RQ1: imputação</a></li>
     <li><a href="#cls">5. RQ1: classificação</a></li>
@@ -283,9 +285,8 @@ html { scroll-behavior: smooth; }
       <li><b>Confirmação:</b> as 15 variantes que nenhuma decisão usou, lidas uma única vez (E44).</li>
       <li><b>Seeds:</b> cinco conjuntos de três, cada um com 5 folds; 101/202/303 é o primário.</li></ul></div>
     <div class="card"><h4>Mecanismos</h4><ul class="points">
-      <li><b>MCAR</b> induzido sobre a tabela completa.</li>
-      <li><b>MNAR:</b> probit dependente do próprio valor em biodeg, kc2, vehicle e spambase, com um ajuste de inclinação (0,25 a 2,0) no biodeg.</li>
-      <li><b>MAR:</b> 30% das colunas, sempre observadas, decidem as lacunas das outras; cada variante tem um controle MCAR com as mesmas contagens.</li></ul></div>
+      <li><b>MCAR</b>, <b>MNAR</b> e <b>MAR</b> são todos gerados a partir da tabela completa, com o mesmo número de lacunas por coluna; detalhes em <a href="#mecanismos">Como a falta é gerada</a>.</li>
+      <li>Por isso a verdade de cada lacuna é conhecida, e as três famílias são comparáveis célula a célula.</li></ul></div>
     <div class="card"><h4>Baselines</h4><ul class="points">
       <li><b>Barra fraca:</b> o melhor entre média/moda, kNN 5 e 10, HGB e LightGBM.</li>
       <li><b>Tier forte:</b> missForest, condexp, SoftImpute, ICE, e o TabPFN v2 como membro offline.</li>
@@ -294,6 +295,44 @@ html { scroll-behavior: smooth; }
       <li><b>Veredito:</b> t pareado por fold, com concordância das três seeds; equivalência a ±1%.</li>
       <li><b>Pré-registro</b> antes da primeira célula, com a regra de decisão; sem parada opcional.</li>
       <li>É o que dá peso a um "refutado": várias ideias foram descartadas assim (seção 3).</li></ul></div>
+  </div>
+
+  <h3 id="score">Como o erro é medido: o <code>impute_score</code></h3>
+  <div class="card">
+    <dl class="steps">
+      <dt>Quais células</dt><dd>As <b>lacunas induzidas</b> do fold de teste: células que estão faltando na variante <code>_60nan</code>, por exemplo, mas observadas na tabela completa <code>_00nan</code>, alinhada linha a linha. O modelo as recebe como <code>[MASK]</code> e nunca vê a tabela completa no treino. É a população principal de todos os resultados. Uma segunda população, as <b>células auto-mascaradas</b> (20% das células observadas, escondidas por um sorteio fixo por fold), existe em toda variante e serve para buscas e diagnósticos.</dd>
+      <dt>Erro numérico</dt><dd>RMSE entre o valor imputado e o verdadeiro, juntando todas as células numéricas pontuadas, no espaço escalado em que o modelo trabalha (<code>rmse_num_z</code>).</dd>
+      <dt>Erro categórico</dt><dd>A fração de categorias erradas, juntando todas as células categóricas pontuadas (1 − acurácia).</dd>
+      <dt>Referência</dt><dd>O mesmo erro do <b>preenchimento ingênuo</b>: a média de cada coluna numérica e a moda de cada categórica, aprendidas só no fold de treino e aplicadas nas mesmas células.</dd>
+      <dt>Combinação</dt><dd>Cada razão é ponderada pela fração de células daquele tipo:
+        <div class="tablewrap" style="margin-top:8px"><pre style="margin:0;padding:12px 14px;font-family:var(--font-data);font-size:13px;color:var(--ink)">impute_score = (n_num / n) × RMSE_modelo / RMSE_média
+             + (n_cat / n) × erro_modelo / erro_moda</pre></div>
+        Numa tabela só numérica, é a razão de RMSE; numa só categórica (kr-vs-kp), a razão de erros. Uma coluna constante, em que a média não erra, é tratada sem dividir por zero.</dd>
+      <dt>Como ler</dt><dd><b>1,0</b> é empatar com a média/moda; <b>0,75</b> é deixar 75% do erro da média/moda; menor é melhor. Os baselines são pontuados nas mesmas células com a mesma fórmula, então "K − barra = −0,04" quer dizer que o TRIDENT deixa 4 pontos percentuais a menos do erro ingênuo que o melhor baseline da barra.</dd>
+      <dt>Por fold e seed</dt><dd>Cada fold dá um <code>impute_score</code>; uma variante tem 5 folds × 3 seeds. Os contrastes (K − barra, K − TabPFN) são pareados por fold, e o veredito exige que o intervalo exclua zero e que as três seeds concordem no sinal.</dd>
+    </dl>
+  </div>
+
+  <h3 id="mecanismos">Como a falta é gerada</h3>
+  <p>Todas as variantes partem da tabela completa e escondem, em cada coluna de atributos, o mesmo número de células: <code>round(n × taxa)</code>. Só muda <b>quais</b> células são escolhidas. O rótulo nunca é tocado, e as células observadas são idênticas às da tabela completa.</p>
+  <div class="grid2">
+    <div class="card"><h4>MCAR</h4><ul class="points">
+      <li>Em cada coluna, <code>round(n × taxa)</code> linhas sorteadas uniformemente, sem reposição.</li>
+      <li>Taxas de 20, 40, 60 e 80%; um sorteio fixo por variante (o E62 testou sorteios novos).</li></ul></div>
+    <div class="card"><h4>MNAR: depende do próprio valor</h4><ul class="points">
+      <li>Em cada coluna, a mesma contagem, mas sorteada com peso <code>Φ(inclinação × z)</code>, em que <code>z</code> é o próprio valor padronizado na tabela completa: <b>valores altos somem mais</b> (auto-mascaramento).</li>
+      <li>Inclinação padrão 0,5; no biodeg_60nan, um ajuste de 0,25 a 2,0.</li>
+      <li>Só tabelas numéricas (biodeg, kc2, vehicle a 20 e 60nan; spambase a 60nan): uma categoria não tem ordem para inclinar.</li>
+      <li>Com contagem fixa, o sorteio ponderado não é exatamente um mecanismo probit; os tickets registram isso.</li></ul></div>
+    <div class="card"><h4>MAR: depende de outras colunas</h4><ul class="points">
+      <li><b>Motoras:</b> 30% das colunas de atributos, sorteadas, nunca perdem células.</li>
+      <li><b>As outras colunas:</b> cada uma tem um escore <code>s</code>, combinação aleatória das motoras (pesos normais), padronizado; a contagem é sorteada com peso <code>sigmoid(1,5 × s)</code>. Motoras categóricas entram como o indicador da moda.</li>
+      <li>Num <code>_60nan</code>, 60% de cada coluna não motora somem, cerca de 42% de todas as células.</li>
+      <li><b>Controle:</b> as mesmas colunas e contagens, sorteadas uniformemente. O efeito do MAR é sempre lido como MAR menos controle.</li>
+      <li>Uma checagem garante que o escore das linhas escondidas difere do das observadas no MAR, e não no controle.</li></ul></div>
+    <div class="card"><h4>Quanto inclina</h4>
+      <div class="chart" id="fig-mech"></div>
+      <p class="src">Peso relativo de uma célula ser escolhida em função do valor padronizado (MNAR, por inclinação) ou do escore das motoras (MAR). Curvas das fórmulas acima, não de dados.</p></div>
   </div>
 </section>
 
@@ -584,6 +623,30 @@ html { scroll-behavior: smooth; }
     arrow(660, 690, 95);
     box(690, 40, 180, 110, "Leituras", ["K: época pelas lacunas val.", "KC: K calibrado (≥40nan)", "H: checkpoint da loss"], true);
     el("text", { x: 10, y: 180, class: "t-muted" }, s, "Artigo: pré-treino latente → fine-tuning do classificador. Fork: o mesmo encoder, com decode no lugar do classificador.");
+  })();
+
+  // ---------- mechanism curves (from the generators' formulas) ----------
+  (function () {
+    const erf = (x) => { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; };
+    const Phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
+    const sig = (x) => 1 / (1 + Math.exp(-x));
+    const curves = [
+      ["MNAR 0,25", (z) => Phi(0.25 * z), "var(--axis)", 1.5],
+      ["MNAR 0,5", (z) => Phi(0.5 * z), "var(--model)", 2.5],
+      ["MNAR 2,0", (z) => Phi(2.0 * z), "var(--seq-4)", 1.5],
+      ["MAR 1,5", (z) => sig(1.5 * z), "var(--s2)", 2.5],
+    ];
+    const w = 360, h = 210, m = { l: 34, r: 74, t: 12, b: 30 };
+    const s = svg("fig-mech", w, h, "Peso de seleção por valor padronizado");
+    const X = (z) => m.l + (z + 3) / 6 * (w - m.l - m.r), Y = (p) => m.t + (1 - p) * (h - m.t - m.b);
+    [0, 0.5, 1].forEach((p) => { el("line", { x1: m.l, x2: w - m.r, y1: Y(p), y2: Y(p), stroke: "var(--grid)" }, s); el("text", { x: m.l - 6, y: Y(p) + 4, "text-anchor": "end", class: "t-data" }, s, fmtp(p, 1)); });
+    [-3, -2, -1, 0, 1, 2, 3].forEach((z) => el("text", { x: X(z), y: h - m.b + 16, "text-anchor": "middle", class: "t-data" }, s, String(z)));
+    el("text", { x: (m.l + w - m.r) / 2, y: h - 2, "text-anchor": "middle", class: "t-muted" }, s, "z (valor) ou s (escore das motoras)");
+    curves.forEach(([lab, f, col, sw], i) => {
+      const pts = []; for (let z = -3; z <= 3.0001; z += 0.1) pts.push(`${pts.length ? "L" : "M"}${X(z)},${Y(f(z))}`);
+      el("path", { d: pts.join(" "), fill: "none", stroke: col, "stroke-width": sw }, s);
+      el("text", { x: w - m.r + 6, y: Y(f(3)) + 4 + [8, -2, -12, 4][i], class: "t-ink" }, s, lab);
+    });
   })();
 
   // ---------- trajectory ----------
