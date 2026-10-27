@@ -535,6 +535,22 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     TabPFN on 2 by ≤0.005 (kr-vs-kp). E69's three numerical 80nan wins replicate; TabPFN alone beats
     KC on 8. Whether to propose an opt-in hybrid output is the user's call.
 
+- **T38 · Interpretability: which columns does the decoder fill each column from?** (proposed
+  2026-10-26 on the user's ask, "gostaria de trabalhar com interpretabilidade"; accepted the same
+  evening, "sim, vamos!", studies A + B + C).
+  - **The gap:** ADR 0030 says how sure a fill is; nothing says from what it was filled.
+  - **What it is:** an occlusion map. Each source column's observed cells are hidden as `[MASK]`,
+    the token the decode stage trains on, and the change in each gap's fill is measured. It is
+    tested for faithfulness by deletion on 9 real tables at 40nan (B, primary). It is tested for
+    truth on a synthetic table with known blocks (C, gate). Attention is set beside it,
+    descriptively.
+  - **Running from 2026-10-26 as E78**
+    ([imputation-interpretability/01](tickets/imputation-interpretability/01-occlusion-map.md)),
+    30 cells, no `src/` change.
+  - **Next, if it holds, each its own ticket:**
+    - E: does the spread grow when a cell's top sources are missing in its row?
+    - F: reliance on the gap pattern under MNAR.
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if

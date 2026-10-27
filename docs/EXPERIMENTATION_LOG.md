@@ -104,6 +104,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E75 | A test-time re-masking ensemble: averaged passes and their spread | 2026-10-24 – 2026-10-25 | mixed (accuracy); spread meets the uncertainty bar | remask − single better 4 / worse 4 (K), 6 / 4 (H), worse on pendigits and letter 40/60nan; gains at 80nan are shrinkage (dispersion lower 15/15; calibrated worse than KC on 8); numerical spread ranks errors on 12/15 under K and H, coverage90 0.17–0.66 |
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 – 2026-10-26 | supported | within-column signal on 14 of 15 up to 60nan under K and H, none against (credit-g_60nan the exception); categorical: single-pass confidence beats the vote share 9/9; K reproduced the thesis-table runs exactly |
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
+| E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – | in progress | pre-registered; B (faithfulness, 9 real tables) primary, C (truth, synthetic blocks) gate |
 
 ## Entries
 
@@ -2451,6 +2452,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   fewer under K or any against; mixed otherwise. E75's other measures descriptive.
 - **Sources:** `docs/tickets/imputation-protocol/29-remask-development.md`;
   `scripts/experiments/remask_ensemble.py --study e76`, `run_remask_queue.sh` (`STUDY=e76`).
+- **Results:** 63 of 63. Within-column `num_rank` signals on 14 of 15 up to 60nan (K and H), none
+  against; ρ 0.11–0.50; credit-g_60nan +0.005. At 80nan, spambase signals, credit-g does not. Vote
+  share signals on 9 of 9 categorical variants, below the single pass's confidence on all 9.
+  Remask − single better 6 / worse 5 (K; all losses at 20nan); dispersion lower 17 of 17.
+- **Conclusion:** supported. ADR 0030's scope (a numerical rank up to 60nan) replicates on other
+  tables and seeds, pre-registered.
 
 ### E77 · Does the re-masking spread make intervals narrower at the same coverage? (2026-10-25)
 
@@ -2474,9 +2481,32 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   the floor.
 - **Conclusion:** refuted. The spread ranks errors within a column but too weakly to adapt an
   interval; ADR 0030 stays a rank.
-- **Results:** 63 of 63. Within-column `num_rank` signals on 14 of 15 up to 60nan (K and H), none
-  against; ρ 0.11–0.50; credit-g_60nan +0.005. At 80nan, spambase signals, credit-g does not. Vote
-  share signals on 9 of 9 categorical variants, below the single pass's confidence on all 9.
-  Remask − single better 6 / worse 5 (K; all losses at 20nan); dispersion lower 17 of 17.
-- **Conclusion:** supported. ADR 0030's scope (a numerical rank up to 60nan) replicates on other
-  tables and seeds, pre-registered.
+
+### E78 · Which columns does the decoder fill each column from? An occlusion map (2026-10-26)
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go ("sim, vamos!",
+  2026-10-26, before 22:45 GMT-3). T38. No `src/` change; the model (K) is read in place after each
+  fold, with the random states restored. A smoke run outside the study reproduced K to 0.0.
+- **Hypothesis:** hiding one column's observed cells as `[MASK]` and measuring the change in each
+  gap's fill gives a column-dependency map. The map is faithful to the decoder: hiding a target's
+  top sources hurts more than hiding random ones. On a table with known structure, it recovers that
+  structure.
+- **Scenarios:** today's default with `--score_remask`, 40nan, 30 cells:
+  - `synthblock_40nan` (three independent nonlinear blocks of four columns plus three noise
+    columns; `datasets/generate_synthblock.py`) at 707/808/909;
+  - E44's six tables at 707/808/909;
+  - kr-vs-kp, spambase and credit-g at 101/202/303.
+- **Measures and decision rule:**
+  - **B, primary:** sources are ranked on the validation gaps. On test, D is
+    (top-3 hidden error − random-3 hidden error, 20 draws) / unhidden error, averaged over targets.
+    A variant is faithful if D's 95% interval over 15 folds lies above the 1% SESOI with every seed
+    above 0, and not faithful if it lies below. **Supported** if faithful on 7 or more of 9 and not
+    faithful on none; **refuted** if faithful on 4 or fewer; **mixed** otherwise.
+  - **C, gate:** the AUROC with which the test map separates in-block sources, averaged over the 12
+    block columns. It recovers the blocks if the interval lies above 0.8 with every seed above 0.8.
+    It is inconclusive (floor) if K is not below `mean_mode` on synthblock.
+  - **Descriptive:** the map's top sources; its seed stability; its agreement with |Spearman|;
+    attention against occlusion; D with the top 1; K against the earlier runs.
+- **Sources:** `docs/tickets/imputation-interpretability/01-occlusion-map.md`;
+  `scripts/experiments/occlusion_map.py`, `run_occlusion_queue.sh`; MLflow tag
+  `experiment=occlusion-map-2026-10-26`.
