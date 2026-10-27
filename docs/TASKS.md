@@ -547,6 +547,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Running from 2026-10-26 as E78**
     ([imputation-interpretability/01](tickets/imputation-interpretability/01-occlusion-map.md)),
     30 cells, no `src/` change.
+  - **E79 pre-registered 2026-10-26**
+    ([imputation-interpretability/02](tickets/imputation-interpretability/02-occlusion-map-60nan.md)):
+    the same design at 60nan, run after E78 on the user's overnight GPU time (no cell after 07:00
+    GMT-3).
   - **Next, if it holds, each its own ticket:**
     - E: does the spread grow when a cell's top sources are missing in its row?
     - F: reliance on the gap pattern under MNAR.

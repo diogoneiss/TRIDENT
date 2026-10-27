@@ -4,6 +4,9 @@ synthetic table and for faithfulness on nine real ones (imputation-interpretabil
     uv run --python 3.11 python -B scripts/experiments/occlusion_map.py train <variant> <seed> [--no-mlflow]
     uv run --python 3.11 python -B scripts/experiments/occlusion_map.py --todo <n>
     uv run --python 3.11 python -B scripts/experiments/occlusion_map.py --tally
+    uv run --python 3.11 python -B scripts/experiments/occlusion_map.py --study e79 <any of the above>
+
+``--study e79`` runs and reads E79 (imputation-interpretability/02): the same design at 60nan.
 
 ``train`` runs one cell of today's default imputation configuration, five folds, with
 ``--score_remask`` (its spread kept for a later study, not read here), MLflow tag
@@ -64,6 +67,18 @@ MIN_CELLS = 10
 SESOI = 0.01
 AUROC_BAR = 0.8
 BLOCKS = {"a": ("a1", "a2", "a3", "a4"), "b": ("b1", "b2", "b3", "b4"), "c": ("c1", "c2", "c3", "c4")}
+
+
+def _use_sixty() -> None:
+    """E79's cells: the ten tables at 60nan, each at the seed set whose earlier runs K is checked against."""
+    global EXPERIMENT, STATE, SEEDS, REAL
+    EXPERIMENT, STATE = "occlusion-map-60nan-2026-10-27", Path("/scratch2/diogoneiss/trident-2026-10-27-occlusion-60")
+    SEEDS = {
+        "synthblock_60nan": CONFIRMATION,
+        **{f"{table}_60nan": CONFIRMATION for table in ("pendigits", "letter", "electricity")},
+        **{f"{table}_60nan": DEVELOPMENT for table in ("vehicle", "biodeg", "kc2", "kr-vs-kp", "spambase", "credit-g")},
+    }
+    REAL = [variant for variant in SEEDS if not variant.startswith("synthblock")]
 
 
 # --- reading the model in place -------------------------------------------------------------------
@@ -413,6 +428,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:2] == ["--study", "e79"]:
+        _use_sixty()
+        argv = argv[2:]
     if argv[:1] == ["train"]:
         train(argv[1], int(argv[2]), "--no-mlflow" in argv)
     elif argv[:1] == ["--todo"]:

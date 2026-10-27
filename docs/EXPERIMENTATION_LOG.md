@@ -105,6 +105,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E76 | Does the re-masking spread rank cells on the development variants? | 2026-10-25 – 2026-10-26 | supported | within-column signal on 14 of 15 up to 60nan under K and H, none against (credit-g_60nan the exception); categorical: single-pass confidence beats the vote share 9/9; K reproduced the thesis-table runs exactly |
 | E77 | Does the re-masking spread make intervals narrower at the same coverage? | 2026-10-25 | refuted | spread interval wider than a per-column constant one on 15 of 15 (K) at the same 90% coverage; +9% to +144% at 40nan; the spread ranks but cannot adapt a width |
 | E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – | in progress | pre-registered; B (faithfulness, 9 real tables) primary, C (truth, synthetic blocks) gate |
+| E79 | Does the occlusion map hold at 60nan? | 2026-10-27 – | in progress | pre-registered; E78's rule on the same ten tables at 60nan |
 
 ## Entries
 
@@ -2510,3 +2511,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/01-occlusion-map.md`;
   `scripts/experiments/occlusion_map.py`, `run_occlusion_queue.sh`; MLflow tag
   `experiment=occlusion-map-2026-10-26`.
+
+### E79 · Does the occlusion map hold at 60nan? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before its first cell and before any E78 result was read,
+  on the user's go to use the GPU until 07:30 (2026-10-26, before 23:22 GMT-3). T38.
+- **Hypothesis:** E78's map stays faithful, and recovers the synthetic blocks, at 60nan, where a
+  target has fewer observed sources a row.
+- **Scenarios:** E78's ten tables at 60nan, 30 cells:
+  - `synthblock_60nan`, pendigits, letter and electricity at 707/808/909;
+  - vehicle, biodeg, kc2, kr-vs-kp, spambase and credit-g at 101/202/303.
+  - Each queue starts when E78's queue of the same number ends. No cell starts after 2026-10-27,
+    07:00 GMT-3; the reading waits for all 30.
+- **Measures and decision rule:** E78's, unchanged. B is primary: supported if faithful on 7 or more
+  of 9 and not faithful on none; refuted if faithful on 4 or fewer. C, the AUROC above 0.8, is the
+  gate.
+- **Sources:** `docs/tickets/imputation-interpretability/02-occlusion-map-60nan.md`;
+  `occlusion_map.py --study e79`, `run_occlusion_queue.sh` (`STUDY=e79`); MLflow tag
+  `experiment=occlusion-map-60nan-2026-10-27`.
