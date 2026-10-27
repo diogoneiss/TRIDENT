@@ -1,7 +1,8 @@
 # ADR 0030: An opt-in per-cell uncertainty signal from re-masking passes (proposed)
 
 - **Status:** proposed, 2026-10-25. For the user's decision. Amended the same day with E77 (refuted: no
-  better intervals) before any decision. The user asked for the proposal
+  better intervals) before any decision. Updated 2026-10-26 with E76 (supported: the
+  within-column reading replicates, pre-registered). The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
   ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
 - **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
@@ -33,6 +34,13 @@
   - **Columns:** they carry the rest. On electricity the column-level relation is negative.
 - **It is a ranking, not an interval.** At a nominal 90% (fill ± 1.645 spreads), coverage is
   17–66%. The spread is too narrow, more so as missingness grows.
+- **E76 replicated the within-column reading, pre-registered**
+  ([29](../tickets/imputation-protocol/29-remask-development.md), supported).
+  - It ran on the 21 development variants at 101/202/303.
+  - It found a signal on 14 of 15 variants up to 60nan, under K and under H, and none against.
+    The exception is credit-g_60nan.
+  - At 80nan, spambase signals and credit-g does not.
+  - On categorical gaps, the single pass's confidence again beats the vote share, on 9 of 9.
 - **It does not beat a constant width (E77, [30](../tickets/imputation-protocol/30-remask-conformal.md),
   refuted).** Scaled to 90% coverage with cross-fitting, the spread interval is wider than a
   per-column constant one on 15 of 15 variants. At 40nan it is 9–144% wider. The ranking is real but
@@ -89,9 +97,8 @@
 - **What it cannot claim:** a better interval. E77 found a constant per-column width narrower at the
   same coverage, so the signal's use is to flag cells (which fills to check first), not to size them.
 - **Limits that travel with the claim:**
-  - It was tested on one seed set and the 15 confirmation variants, under MCAR only.
-  - kr-vs-kp and credit-g, the categorical-heavy tables, and the MAR and MNAR families are untested.
-  - The cell-level reading is post-hoc.
+  - It was tested under MCAR only: E75 on the 15 confirmation variants (707/808/909), E76 on the 21
+    development variants (101/202/303). credit-g_60nan shows no signal.
+  - The MAR and MNAR families are untested.
 - **Follow-ups, each its own pre-registered study if the user wants it:**
-  - a replication on the development variants (101/202/303);
   - the MNAR family, where an honest signal should grow with the mechanism's tilt.
