@@ -186,7 +186,7 @@ html { scroll-behavior: smooth; }
   <h2>O que já está demonstrado, e o que vem depois</h2>
   <ol class="statement">
     <li><p><b>O TRIDENT, com uma etapa de decode por coluna, é um imputador competitivo.</b> Contra o tier forte clássico (missForest, condexp, SoftImpute, ICE), K é melhor / sem diferença / pior em <span data-t="tabpfn.development.tallies.K − strong_live"></span> variantes no desenvolvimento e <span data-t="tabpfn.confirmation.tallies.K − strong_live"></span> na confirmação, lida uma única vez.</p></li>
-    <li><p><b>Contra o TabPFN v2, o oponente mais forte, o resultado depende da tabela e da taxa.</b> O TRIDENT lidera em spambase, letter, pendigits até 60nan, biodeg abaixo de 80nan e kc2; o TabPFN lidera a 80nan e nas tabelas categóricas (kr-vs-kp, credit-g) a partir de 40nan. A saída default (KC) contra o TabPFN na confirmação: <span data-t="tabpfn.e57_confirmation.tallies.KC − tabpfn"></span>.</p></li>
+    <li><p><b>Contra o TabPFN v2, o oponente mais forte, o resultado depende da tabela e da taxa.</b> O TRIDENT lidera em spambase em todas as taxas, letter a 20–60nan, pendigits a 40–60nan, biodeg abaixo de 80nan e kc2 a 60–80nan; o TabPFN lidera a 80nan e nas tabelas categóricas (kr-vs-kp, credit-g) a partir de 40nan. A saída default (KC) contra o TabPFN na confirmação: <span data-t="tabpfn.e57_confirmation.tallies.KC − tabpfn"></span>.</p></li>
     <li><p><b>A posição se mantém fora do MCAR.</b> Sob falta dependente do valor (MNAR), a vantagem sobre a barra se mantém e o TabPFN não ganha terreno; sob MAR, a posição contra o tier forte cai só em 1 de 12 variantes.</p></li>
     <li><p><b>O pré-treino quase não contribui</b>, na imputação e (primeiro sinal) na classificação. A etapa de decode reconstrói, a partir de um encoder aleatório, um encoder tão bom quanto o pré-treinado.</p></li>
     <li><p><b>O que vem a seguir:</b> a RQ2 (o token <code>[NULL]</code> contra imputação + indicador sob falta informativa), a RQ3 (alvo latente contra alvo em valor) e o teste do split <code>[NULL]</code>/<code>[MASK]</code>, cada um com protocolo desenhado (seção 10).</p></li>
@@ -372,7 +372,7 @@ html { scroll-behavior: smooth; }
       <dt>Pergunta</dt><dd>A vantagem sobre a barra sobrevive quando a chance de faltar depende do próprio valor? Sob MNAR todo imputador que aprende das células observadas é enviesado; o TRIDENT se enviesa menos?</dd>
       <dt>Desenho</dt><dd>Probit dependente do valor em biodeg, kc2 e vehicle a 20 e 60nan e em spambase a 60nan, mais um ajuste de inclinação no biodeg_60nan; cada variante contra seu controle MCAR; leitura H.</dd>
       <dt>Resultado</dt><dd><figure><div class="chart" id="fig-bias"></div><figcaption><b>Quanto o viés com sinal muda do MCAR para o MNAR</b> (preenchimento − verdade, unidades padronizadas, média das colunas numéricas), no ajuste de inclinação do biodeg_60nan. Mais perto de zero é melhor. TRIDENT em azul; os outros nove métodos em cinza.</figcaption></figure></dd>
-      <dt>Conclusão</dt><dd><span class="verdict good">Sustentado.</span> A vantagem sobre a barra se mantém em todos os pares novos, e o TabPFN não ganha terreno do MCAR para o MNAR. O deslocamento do viés do TRIDENT é o menor de 10 métodos em 9 de 10 pares. Um imputador que modela o mecanismo (not-MIWAE) encolhe o viés em relação ao seu gêmeo sem o termo de mecanismo, mas só onde o VAE imputa bem (vehicle, biodeg na inclinação padrão); nas outras tabelas os dois VAEs imputam perto da média.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict good">Sustentado.</span> A vantagem sobre a barra se mantém em todos os pares novos, e o TabPFN não ganha terreno do MCAR para o MNAR. O deslocamento do viés do TRIDENT é o menor de 10 métodos em <span id="bias-rank"></span> pares MNAR. Um imputador que modela o mecanismo (not-MIWAE) encolhe o viés em relação ao seu gêmeo sem o termo de mecanismo, mas só onde o VAE imputa bem (vehicle, biodeg na inclinação padrão); nas outras tabelas os dois VAEs imputam perto da média.</dd>
     </dl>
   </div>
   <div class="card">
@@ -440,7 +440,7 @@ html { scroll-behavior: smooth; }
     <header><h3>Spread de re-mascaramento: um sinal de incerteza por célula</h3><span class="tag">E75 · E76 · E77 · E80</span></header>
     <ul class="points">
       <li><b>O que é:</b> repetir a imputação com diferentes células observadas re-mascaradas e medir a dispersão dos preenchimentos.</li>
-      <li><b>Ordena erros:</b> dentro de uma coluna, o spread separa células de erro maior de menor em 14 de 15 variantes até 60nan (E76, replicado).</li>
+      <li><b>Ordena erros:</b> dentro de uma coluna, o spread separa células de erro maior de menor em <span id="remask-e76"></span> variantes até 60nan (E76, replicado).</li>
       <li><b>Não faz intervalos melhores:</b> intervalos adaptados pelo spread não ficam mais estreitos com a mesma cobertura (E77, refutado).</li>
       <li><b>Limite:</b> o spread cai quando a linha tem mais lacunas, embora o erro suba (E80). É um sinal de ordenação, não de calibração.</li>
     </ul>
@@ -523,7 +523,7 @@ html { scroll-behavior: smooth; }
 </section>
 
 <footer>
-  <span>Fonte: <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados, sem edição manual.</span>
+  <span>As figuras e as contagens marcadas na página vêm de <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados. As demais contagens no texto (por exemplo E56, E60, E66, E70, E74) citam o log de experimentos e os Outcomes dos tickets.</span>
   <span>Rascunho e decisões de conteúdo: <code>docs/reports/2026-10-27-reuniao-orientadora-rascunho.md</code>.</span>
 </footer>
 </main>
@@ -762,6 +762,11 @@ html { scroll-behavior: smooth; }
       if (isM || mm === "mean_mode") el("text", { x: last[0] + 8, y: last[1] + 4, class: isM ? "t-ink" : "t-muted", "font-weight": isM ? 600 : 400 }, s, isM ? "TRIDENT" : "média/moda");
     });
     el("text", { x: 12, y: 14, class: "t-muted" }, s, "Δ viés, MNAR − MCAR");
+    const pairs = Object.keys(D.mnar_bias);
+    const first = pairs.filter((p) => { const r = D.mnar_bias[p]; const mm = Math.abs(r.model.d); return Object.keys(r).every((k) => Math.abs(r[k].d) >= mm); }).length;
+    document.getElementById("bias-rank").textContent = `${first} de ${pairs.length}`;
+    const e76 = ((D.primary.remask_e76 || [])[0] || "").match(/on (\d+) \(K\) and \d+ \(H\) of (\d+)/);
+    document.getElementById("remask-e76").textContent = e76 ? `${e76[1]} de ${e76[2]}` : "—";
   })();
 
   // ---------- MAR forest ----------

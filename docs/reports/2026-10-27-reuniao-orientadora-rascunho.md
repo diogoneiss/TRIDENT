@@ -1,7 +1,7 @@
 # Rascunho: TRIDENT como imputador — fundamentação, metodologia, resultados e direções
 
-> **Status:** rascunho para discussão, 2026-10-27 (v2, com as decisões das 13h GMT-3). Não é o
-> artefato; é o esqueleto que decide o que entra nele.
+> **Status:** rascunho para discussão, 2026-10-27 (v4). Não é o artefato; é o esqueleto que decidiu o
+> que entra nele. O artefato está publicado (link no fim).
 >
 > - **Para quê:** a reunião com a orientadora, para apresentar o que foi feito e decidir direções.
 > - **Cobre:** E01–E81 e os ADRs até 0031 (`feat/imputation-task` em `8e74064`).
@@ -405,10 +405,15 @@ o quanto o modelo melhorou no total, e a contagem mostra o veredito de cada pass
 
 ## Ainda em aberto
 
-1. **Seção 1.3:** todas as 11 linhas no corpo, ou só as que rodaram no fork mais MFAN e Knockout?
-2. **Seção 8:** corpo ou apêndice?
-
-Resolvido em 2026-10-27:
+Nada. Resolvido em 2026-10-27:
 
 - **Figura 4:** a curva vem do store (seção 3).
 - **E71:** entra como está, com a T41 como trabalho futuro de replicação.
+- **Seção 1.3:** as 11 linhas no corpo.
+- **Seção 8:** no corpo.
+
+**Artefato publicado:** https://claude.ai/artifact/47T9yMLRK6FybHtt5UNeDw.
+
+- **Página:** `docs/reports/2026-10-27-reuniao-orientadora.html`, gerada por
+  `scripts/experiments/meeting_figures.py`.
+- **Dados:** a saída dos leitores fica em `docs/reports/2026-10-27-reuniao-orientadora/`.
