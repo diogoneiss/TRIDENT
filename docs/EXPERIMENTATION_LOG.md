@@ -108,7 +108,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
 | E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
-| E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 – | in progress | pre-registered; H + TabPFN, weights from hidden observed validation cells, E74's 10 hard variants and seeds |
+| E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 
 ## Entries
 
@@ -2615,7 +2615,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E82 · Can the hybrid's weights be chosen without the complete table? (2026-10-27)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go ("vamos no 1
+- **Status:** done, refuted (2026-10-27, 18:42 GMT-3). Pre-registered before the first cell, on the user's go ("vamos no 1
   agora então", 2026-10-27, before 13:30 GMT-3). T39; tests ADR 0031's deployable route.
 - **Hypothesis:** per-column weights chosen on observed validation cells hidden on purpose (no
   complete table), with H as the model side, keep the hybrid's gain.
@@ -2636,3 +2636,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/31-deployable-hybrid.md`;
   `scripts/experiments/deployable_hybrid.py`, `run_deployable_hybrid_queue.sh`; MLflow tag
   `experiment=deployable-hybrid-2026-10-27`.
+- **Results:**
+  - 30 of 30.
+  - **Against H:** better on 10 and worse on none.
+  - **Against TabPFN:** worse on 5 (vehicle_80, biodeg_80, kr-vs-kp_60/80, credit-g_60) and better
+    on 2 (electricity).
+  - **Against the oracle:** worse on 6. The deployable and oracle weights agree on 27–62%.
+  - **Against KC (descriptive):** better on 7, worse on none.
+  - **Post hoc:** the oracle H hybrid is at TabPFN's level (worse on 2 only), so the loss is the
+    selection.
+- **Conclusion:** refuted. Weights chosen on the validation split's observed cells beat H
+  everywhere and KC on 7, without the complete table. They fall short of TabPFN where a column
+  has few selection cells or is categorical. ADR 0031 stays a benchmark output.

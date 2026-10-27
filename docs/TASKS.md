@@ -603,6 +603,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-protocol/31](tickets/imputation-protocol/31-deployable-hybrid.md)), on the user's
     go: H + TabPFN with weights chosen on hidden observed validation cells; 30 cells at E74's
     seeds.
+  - **Done 2026-10-27 by E82: refuted.** Better than H on 10 of 10 and than KC on 7 (never worse),
+    with no complete table. It is worse than TabPFN on 5 and than the oracle weights on 6.
+    - The selection is the loss: thin cells (vehicle, biodeg at 80nan) and categorical picks
+      (kr-vs-kp, credit-g).
+    - Candidates for the user: more selection cells, or fewer weights (one per table, or shrinkage
+      toward the equal blend).
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
