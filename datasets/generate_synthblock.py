@@ -3,7 +3,8 @@
     uv run --python 3.11 python datasets/generate_synthblock.py
 
 Writes ``processed_datasets/synthblock/synthblock_00nan.csv``, ``synthblock_40nan.csv``,
-``synthblock_60nan.csv`` (E79) and ``categorical_columns/synthblock.txt``. 3,000 rows; three blocks of four columns, each block driven
+``synthblock_60nan.csv`` (E79), ``synthblock_20nan.csv`` and ``synthblock_80nan.csv`` (E85) and
+``categorical_columns/synthblock.txt``. 3,000 rows; three blocks of four columns, each block driven
 by its own standard-normal latent ``z``, and three columns of pure noise:
 
 - block a: ``a1 = z + e``, ``a2 = z**2 - 1 + e`` (Pearson ~0 with a1), ``a3 = sin(2z) + e``,
@@ -16,8 +17,8 @@ by its own standard-normal latent ``z``, and three columns of pure noise:
 
 ``e`` is fresh N(0, 0.3^2) noise per column. Blocks are independent of each other and of the noise,
 so a column's informative sources are exactly the other three of its block. ``class`` is a fair coin,
-independent of everything, because the pipeline needs a label to stratify folds on. The 40nan and
-60nan variants are ``generate_splits.inject_nans`` with seed ``42 + pp``, the shipped MCAR mechanism. The data
+independent of everything, because the pipeline needs a label to stratify folds on. Each pp-nan
+variant is ``generate_splits.inject_nans`` with seed ``42 + pp``, the shipped MCAR mechanism. The data
 directory is gitignored, so this script is the record; a rerun rewrites identical files.
 """
 
@@ -71,7 +72,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     complete = complete_table()
     complete.to_csv(out / f"{BASE}_00nan.csv", index=False)
-    for pp in (40, 60):
+    for pp in (20, 40, 60, 80):
         gapped = inject_nans(complete, pp / 100, TARGET_COLUMN, seed=RANDOM_SEED + pp)
         assert gapped is not None
         gapped.to_csv(out / f"{BASE}_{pp}nan.csv", index=False)

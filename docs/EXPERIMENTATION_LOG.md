@@ -110,6 +110,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
+| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | in progress | pre-registered; within-column num_rank on 12 shifted variants at 60nan, K and H |
+| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | in progress | pre-registered; E78's rule per rate, 60 cells, after E84 |
 
 ## Entries
 
@@ -2674,3 +2676,39 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** untuned TabPFN v2 is the stronger classifier on 8 of 9 tables. It qualifies as
   T40's strong baseline; where it joins is the user's call. A fair macro-F1 comparison should
   class-balance TabPFN too (step zero's design).
+
+### E84 · Does the re-masking spread still rank errors under MNAR and MAR? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-27,
+  before 20:40 GMT-3). ADR 0030's follow-up.
+- **Hypothesis:** the spread's within-column ranking of errors (E76) holds under self-masking MNAR
+  and MAR.
+- **Scenarios:**
+  - **12 shifted variants at 60nan:** biodeg probit at slopes 0.25/0.5/1/2; vehicle, kc2 and
+    spambase probit; `marf` for biodeg, kc2, vehicle, spambase and credit-g.
+  - **Controls:** E79's MCAR twins, and the `marfctl` controls run here.
+  - Seeds 101/202/303; 51 new cells with `--score_checkpoints --score_remask`.
+- **Measures and decision rule:** within-column `num_rank`, a signal where the 95% interval over 15
+  folds lies above 0 with seed agreement.
+  - **Supported** with a signal on 10 or more of 12 under K and H and none against under K.
+  - **Refuted** with 7 or fewer under K or any against.
+  - **Mixed** otherwise.
+  - Shifted minus control is descriptive.
+- **Sources:** `docs/tickets/imputation-protocol/32-spread-mechanisms.md`;
+  `scripts/experiments/spread_mechanisms.py`, `run_spread_mechanisms_queue.sh`; MLflow tag
+  `experiment=spread-mechanisms-2026-10-27`.
+
+### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
+
+- **Status:** in progress. Pre-registered before the first cell, on the same go. T38.
+- **Hypothesis:** E78's map stays faithful, and recovers the synthetic blocks, at 20nan and 80nan.
+- **Scenarios:** the ten tables at 20nan (real tables at 101/202/303) and at 80nan (E44's six at
+  707/808/909; kr-vs-kp, spambase and credit-g at 101/202/303); synthblock at 707/808/909; 60
+  cells. Each queue starts when E84's same-numbered queue ends.
+- **Measures and decision rule:** E78's, applied to each rate separately. B is primary:
+  **supported** if faithful on 7 or more of 9 and not faithful on none; **refuted** if faithful on
+  4 or fewer. C, the AUROC above 0.8, is the gate. Thin support at 80nan reads inconclusive, as
+  fixed in the ticket.
+- **Sources:** `docs/tickets/imputation-interpretability/05-occlusion-map-grid.md`;
+  `occlusion_map.py --study e85`, `run_occlusion_queue.sh` (`STUDY=e85`); MLflow tag
+  `experiment=occlusion-map-grid-2026-10-27`.

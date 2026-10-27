@@ -7,6 +7,8 @@ synthetic table and for faithfulness on nine real ones (imputation-interpretabil
     uv run --python 3.11 python -B scripts/experiments/occlusion_map.py --study e79 <any of the above>
 
 ``--study e79`` runs and reads E79 (imputation-interpretability/02): the same design at 60nan.
+``--study e85`` runs and reads E85 (imputation-interpretability/05): the same design at 20nan and 80nan,
+with the rule applied to each rate on its own.
 
 ``train`` runs one cell of today's default imputation configuration, five folds, with
 ``--score_remask`` (its spread kept for a later study, not read here), MLflow tag
@@ -67,6 +69,20 @@ MIN_CELLS = 10
 SESOI = 0.01
 AUROC_BAR = 0.8
 BLOCKS = {"a": ("a1", "a2", "a3", "a4"), "b": ("b1", "b2", "b3", "b4"), "c": ("c1", "c2", "c3", "c4")}
+
+
+def _use_grid() -> None:
+    """E85's cells: the ten tables at 20nan and 80nan, each at the seed set its earlier runs used."""
+    global EXPERIMENT, STATE, SEEDS, REAL
+    EXPERIMENT, STATE = "occlusion-map-grid-2026-10-27", Path("/scratch2/diogoneiss/trident-2026-10-27-occlusion-grid")
+    confirmation = ("pendigits", "letter", "electricity", "vehicle", "biodeg", "kc2")
+    SEEDS = {
+        "synthblock_20nan": CONFIRMATION, "synthblock_80nan": CONFIRMATION,
+        **{f"{table}_20nan": DEVELOPMENT for table in (*confirmation, "kr-vs-kp", "spambase", "credit-g")},
+        **{f"{table}_80nan": CONFIRMATION for table in confirmation},
+        **{f"{table}_80nan": DEVELOPMENT for table in ("kr-vs-kp", "spambase", "credit-g")},
+    }
+    REAL = [variant for variant in SEEDS if not variant.startswith("synthblock")]
 
 
 def _use_sixty() -> None:
@@ -362,7 +378,7 @@ def tally() -> None:
     runs = common.parents(EXPERIMENT)
     faithful: dict[str, str] = {}
     reproduced: list[float] = []
-    truth_call = "incomplete"
+    truth_calls: dict[str, str] = {}
     for variant, seeds in SEEDS.items():
         found = [runs.get((variant, seed)) for seed in seeds]
         if any(not f for f in found):
@@ -386,6 +402,7 @@ def tally() -> None:
             k_score = float(np.mean([common.model(t, f[0], "K").mean() for t, f in zip(frames, found) if f]))
             naive = float(np.mean([t["impute/induced/baseline/mean_mode/impute_score"].mean() for t in frames]))
             truth_call = "inconclusive (floor: K not below mean_mode)" if k_score >= naive else _call(v, AUROC_BAR)
+            truth_calls[variant] = truth_call
             linear = common.verdict([np.array([_truth(_with_correlation(t, c), "correlation") for t, c in zip(tests[seed], correlation[seed])]) for seed in seeds])
             print(f"  - truth (C): AUROC {v.mean:.3f} [{v.low:.3f}, {v.high:.3f}] seeds {', '.join(f'{s:.3f}' for s in v.seeds)}; "
                   f"K {k_score:.4f} against mean_mode {naive:.4f} -> recovers the blocks: {truth_call}")
@@ -411,25 +428,36 @@ def tally() -> None:
     print()
     if reproduced:
         print(f"- K against the earlier run of the same cell, largest fold difference: {max(reproduced):.2e} over {len(reproduced)} cells")
-    print(f"- truth (C, gate): {truth_call}")
-    if len(faithful) < len(REAL):
-        print(f"\nPrimary: incomplete ({len(faithful)} of {len(REAL)})")
-        return
-    yes = [v for v, c in faithful.items() if c == "yes"]
-    no = [v for v, c in faithful.items() if c == "no"]
-    if len(yes) >= 7 and not no:
-        reading = "supported"
-    elif len(yes) <= 4:
-        reading = "refuted"
-    else:
-        reading = "mixed"
-    print(f"\nPrimary (B): faithful on {len(yes)} of {len(REAL)}, not faithful on {no or 'none'} -> {reading} ({common.RULE}, SESOI {SESOI})")
+    rates = sorted({v.split("_")[-1] for v in REAL})
+    for rate in rates:
+        synthetic = [v for v in truth_calls if v.endswith(rate)]
+        call = truth_calls[synthetic[0]] if synthetic else "incomplete"
+        print(f"- truth (C, gate){'' if len(rates) == 1 else f' at {rate}'}: {call}")
+    for rate in rates:
+        real = [v for v in REAL if v.endswith(rate)]
+        marks = {v: faithful[v] for v in real if v in faithful}
+        label = "" if len(rates) == 1 else f" at {rate}"
+        if len(marks) < len(real):
+            print(f"\nPrimary{label}: incomplete ({len(marks)} of {len(real)})")
+            continue
+        yes = [v for v, c in marks.items() if c == "yes"]
+        no = [v for v, c in marks.items() if c == "no"]
+        if len(yes) >= 7 and not no:
+            reading = "supported"
+        elif len(yes) <= 4:
+            reading = "refuted"
+        else:
+            reading = "mixed"
+        print(f"\nPrimary (B){label}: faithful on {len(yes)} of {len(real)}, not faithful on {no or 'none'} -> {reading} ({common.RULE}, SESOI {SESOI})")
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:2] == ["--study", "e79"]:
         _use_sixty()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e85"]:
+        _use_grid()
         argv = argv[2:]
     if argv[:1] == ["train"]:
         train(argv[1], int(argv[2]), "--no-mlflow" in argv)

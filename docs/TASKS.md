@@ -570,6 +570,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       at MCAR. It shows only +0.005 at slope 2.0, the rule's point.
     - It is less accurate than the default on 11 of 11, so ADR 0014 stands.
     - T38's studies A–F are all done.
+  - **E85 pre-registered 2026-10-27**
+    ([imputation-interpretability/05](tickets/imputation-interpretability/05-occlusion-map-grid.md)):
+    E78's design at 20nan and 80nan, 60 cells, run after E84.
   - **Follow-ups E and F:** run as E80 and E81, below.
 
 - **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
