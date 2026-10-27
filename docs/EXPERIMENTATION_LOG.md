@@ -107,7 +107,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E78 | Which columns does the decoder fill each column from? An occlusion map | 2026-10-26 – 2026-10-27 | supported | faithful on 9 of 9 real tables at 40nan (D +0.04 to +0.41); synthetic blocks recovered, AUROC 0.979 (|Spearman| 0.847) |
 | E79 | Does the occlusion map hold at 60nan? | 2026-10-27 | supported (at the bar) | faithful on 7 of 9 at 60nan (kc2, credit-g inconclusive), none against; synthetic AUROC 0.914; every D 29–74% smaller than at 40nan |
 | E80 | Does the spread grow when a cell's top sources are missing? | 2026-10-27 | mixed | specific on 7 of 16, against on 6; the spread falls as a row's gaps grow (16 of 16) while error rises with missing top sources (16 of 16) |
-| E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 – | in progress | pre-registered; `decode_gap_token null` arm, [NULL]→[MASK] swap, biodeg tilt dial + 3 pairs |
+| E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 
 ## Entries
 
@@ -2584,7 +2584,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E81 · Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? (2026-10-27)
 
-- **Status:** in progress. Pre-registered before the first cell, on the same go. T38.
+- **Status:** done, mixed (2026-10-27, 12:29 GMT-3). Pre-registered before the first cell, on the same go. T38.
 - **Hypothesis:** under the default (`DECODE_GAP_TOKEN mask`) the question cannot be asked: a gap
   and a hidden cell are one token. A decoder trained with `--decode_gap_token null` reads `[NULL]`
   at a correlated column as "that column was large" under self-masking MNAR, and not under MCAR.
@@ -2600,3 +2600,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/04-gap-reliance.md`;
   `scripts/experiments/gap_reliance.py`, `run_gap_reliance_queue.sh`; MLflow tag
   `experiment=gap-reliance-2026-10-27`.
+- **Results:**
+  - 66 of 66; mask-arm K reproduced E79 to 0.0 on 12.
+  - **S at slope 2.0:** +0.0049 [+0.0015, +0.0083], not above the SESOI. At MCAR: −0.0022.
+  - **The dial:** −0.002, +0.020, +0.035, +0.070, +0.005: rising to slope 1.0, then collapsing.
+  - **The pairs:** above under MNAR on vehicle and kc2, and on neither MCAR twin; spambase below on
+    both.
+  - **Accuracy:** null worse than mask on 11 of 11, under K and KC.
+- **Conclusion:** mixed. The default cannot read the gap pattern by construction. A null decoder
+  reads it under moderate self-masking, but not measurably at the strongest tilt (post-hoc
+  candidates: a truncated observed range, fewer correlated pairs). Reading it costs accuracy
+  everywhere, so ADR 0014 stands under MNAR.

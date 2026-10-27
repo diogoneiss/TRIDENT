@@ -564,9 +564,13 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Done 2026-10-27 by E80: mixed.** Specific on 7 of 16 and against on 6. The spread falls as a
     row's gaps grow, while error rises with missing top sources. That is a limit on ADR 0030 for the
     user to decide whether to record.
-  - **Next, if it holds, each its own ticket:**
-    - E: does the spread grow when a cell's top sources are missing in its row?
-    - F: reliance on the gap pattern under MNAR.
+  - **Done 2026-10-27 by E81: mixed.**
+    - The default cannot read the gap pattern by construction.
+    - A `decode_gap_token null` decoder reads it at tilts 0.25–1.0 and on vehicle/kc2 MNAR, and not
+      at MCAR. It shows only +0.005 at slope 2.0, the rule's point.
+    - It is less accurate than the default on 11 of 11, so ADR 0014 stands.
+    - T38's studies A–F are all done.
+  - **Follow-ups E and F:** run as E80 and E81, below.
 
 - **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
   2026-10-27: "Gosto da ideia de propor uma ADR, deixe isso como tarefa futura mesmo").
