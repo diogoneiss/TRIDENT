@@ -24,7 +24,8 @@
 | 2 | Tom | Defender a RQ1 e apresentar a RQ2 (e as outras) como trabalho futuro planejado. | A RQ1 é o corpo; RQ2–RQ4 aparecem como plano, com protocolo e primeiros sinais. |
 | 3 | Seção 3 e ADRs | A trajetória em forma concisa, sem citar ADRs; os ADRs vão para o apêndice. | A seção 3 fala em decisões, não em números de ADR. |
 | 4 | Classificação | Entra. | Nova seção 5 (E70/E71). |
-| 5 | Figura de trajetória | Em aberto: explicação abaixo, na seção 3. | — |
+| 5 | Figura de trajetória | Recuperar do store: os passos existem nas mesmas seeds (42/7/13). | Uma curva de `impute_score` sem runs novas (seção 3). |
+| 4b | E71 | Fica como está; replicação com os parâmetros antigos e mais folds como tarefa futura. | T41 em `docs/TASKS.md`; seção 5. |
 | 6 | Posicionamento | Entra como tabela, explicando o que cada método faz. | Seção 1.3. |
 | 7 | Decisão de posicionamento | Opções neutras, sem recomendação. | Seção 10. |
 
@@ -212,25 +213,39 @@ mantém o caminho de classificação intacto por padrão e acrescenta:
   por propensão e `[NULL]` sozinho no decode.
 - **Os ADRs** de cada passo vão para o apêndice, na tabela "decisão → ADR → experimento".
 
-### Figura 4: a pergunta 5, explicada
+### Figura 4: a trajetória vem do store, sem runs novas
 
-Cada passo acima foi decidido num experimento próprio: o default antigo contra o default novo, nas
-21 variantes, com um conjunto de seeds. O resultado de cada um é uma **contagem de variantes**, por
-exemplo "13 melhores, 8 sem diferença, 0 piores". Há duas formas de desenhar a trajetória:
+Verificado no store em 2026-10-27, num script read-only de agregação.
 
-- **(A) Uma barra por passo, com a contagem daquele passo.** Não exige runs novas.
-  - **Limite:** cada barra compara o passo com o anterior, e em seeds diferentes. Ela mostra que
-    cada mudança ajudou, mas não quanto o modelo melhorou no total desde o primeiro decoder.
-- **(B) Uma curva de `impute_score` ao longo dos passos.** Rodar todas as configurações
-  intermediárias (o primeiro decoder, depois +objetivo normalizado, +lacunas como `[MASK]`,
-  +checkpoint K, +calibração) **nas mesmas seeds e variantes**.
-  - **Ganho:** responde "quanto melhorou do primeiro decoder até hoje", com os passos somáveis.
-  - **Custo:** runs novas, cerca de 5 configurações × 21 variantes × 3 seeds × 5 folds.
-- **(B') Só as pontas:** o primeiro decoder contra o default de hoje, nas mesmas seeds. É uma
-  configuração nova em vez de cinco, e dá o "quanto no total" sem a decomposição por passo.
+- **O conjunto de seeds:** os passos 1 a 3 rodaram todos no conjunto 42/7/13 (E24–E26, E30, E32),
+  nas 21 variantes de desenvolvimento.
+- **K e KC não precisam de runs próprias.** Cada run loga métricas por leitura:
+  - H em `impute_score`;
+  - K em `induced_checkpoint/impute_score`;
+  - KC em `induced_checkpoint_calibrated/impute_score`.
 
-Recomendo **(A) + (B')**: as barras mostram o porquê de cada passo, e um único número mostra o
-ganho total. Meço o custo de (B') no store antes de propor a run.
+  Por isso K e KC saem das mesmas runs do passo 3.
+- **A curva fica:** primeiro decoder → + alvo normalizado e decode 450 → + lacunas como `[MASK]` →
+  + checkpoint K → + calibração KC, com as 21 variantes nas mesmas três seeds.
+- **Leitura preliminar** (média simples de `impute_score`, não é número para o artefato):
+  0,792 → 0,776 → 0,754 → 0,745 → 0,742.
+
+**Ressalvas a resolver no script final:**
+
+- **Variantes com arquivo promovido:** cinco variantes (kr-vs-kp_20/40nan, spambase_20/40nan,
+  credit-g_40nan) tinham arquivos de hiperparâmetros promovidos em parte desse período. É preciso
+  conferir se todos os passos usaram a mesma configuração nelas.
+- **Calibração:** a curva calibra em todas as taxas, mas o default só calibra a partir de 40nan. O
+  último passo deve seguir a regra do default.
+- **Encoder maior:** não tem runs em 42/7/13 nas tabelas grandes. Ou fica fora da curva, ou entra
+  como um ponto à parte em 101/202/303.
+- **Runs duplicadas:** uma mesma configuração aparece em mais de um experimento. É preciso fixar a
+  regra (média, ou a run do experimento que decidiu o passo).
+- **Versão do código:** muda entre os passos (por exemplo, as cabeças batched). Ver se isso move
+  números.
+
+**Desenho:** a curva, com a contagem pré-registrada de cada passo anotada no ponto. A curva mostra
+o quanto o modelo melhorou no total, e a contagem mostra o veredito de cada passo.
 
 ## 4. RQ1, imputação sob MCAR `[entra]`
 
@@ -275,8 +290,13 @@ ganho total. Meço o custo de (B') no store antes de propor a run.
 - **Ressalvas a dizer junto:**
   - são os defaults do fork, com 3 folds e 2 seeds, e não o protocolo do artigo;
   - é a mesma conclusão que o E24 teve na imputação;
-  - motiva o refazer da Table 3/4 com ≥5 seeds (t3) e o TabPFN como baseline de classificação
-    (T40).
+  - o E71 já usou os parâmetros do sweep antigo (300/150 épocas, `cosine_legacy`), mas não o
+    protocolo do artigo (40/40 épocas, hiperparâmetros por dataset, split 80/10/10).
+- **Trabalho futuro, a T41 (registrada em `docs/TASKS.md`):** replicar o ganho da Table 4 com os
+  parâmetros do artigo e com mais folds (10) e ≥5 seeds, em dois braços lidos separadamente.
+  - **O que pedir à orientadora:** os hiperparâmetros por dataset do artigo e o commit que
+    representa "o código do artigo". Eles não estão no repositório.
+- **Relacionadas:** t3 (a Table 3 com ≥5 seeds) e T40 (o TabPFN como baseline de classificação).
 - **Figura 7:** B − A por nível de falta, com intervalos; uma linha em +1,7 como a referência do
   artigo.
 
@@ -385,8 +405,10 @@ ganho total. Meço o custo de (B') no store antes de propor a run.
 
 ## Ainda em aberto
 
-1. **Figura 4:** A, B, B', ou A + B' (recomendado)?
-2. **Seção 1.3:** todas as 11 linhas no corpo, ou só as que rodaram no fork mais MFAN e Knockout?
-3. **Seção 8:** corpo ou apêndice?
-4. **Seção 5:** apresentar o E71 como está, ou suavizar o contraste com a Table 4 até haver ≥5
-   seeds? O resultado é seu, e a orientadora é coautora do artigo.
+1. **Seção 1.3:** todas as 11 linhas no corpo, ou só as que rodaram no fork mais MFAN e Knockout?
+2. **Seção 8:** corpo ou apêndice?
+
+Resolvido em 2026-10-27:
+
+- **Figura 4:** a curva vem do store (seção 3).
+- **E71:** entra como está, com a T41 como trabalho futuro de replicação.

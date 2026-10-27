@@ -641,6 +641,39 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     in an ADR of its own.
   - **When:** after step zero's decisions (ADR 0029's 8), in GPU gaps.
 
+- **T41 · Replicate the paper's pre-training gain on classification, with the old parameters and
+  more folds** (future; the user, 2026-10-27: "deixe uma tarefa futura para repetir a execução
+  usando os parametros antigos e mais folds, tentando replicar o que existia antes").
+  - **Why:** E71 found no detectable gain from pre-training on classification (B − A −0.005 to
+    +0.004 macro-F1, no verdict at any level), while the paper's Table 4 reports about +1.7 points.
+    - E71 ran 3 folds and two complete seeds (42, 7; seed 13 stopped at 89 of 135 cells).
+    - It ran the fork's old sweep configuration (EPOCHS_PRE 300, EPOCH_FINE 150, `cosine_legacy`,
+      untuned), not the paper's protocol.
+    - So it does not yet say whether the paper's gain fails to replicate or only fails to appear
+      under other settings.
+  - **What it would be:** arms A (with pre-training) and B (`EPOCHS_PRE 0`), paired by fold and
+    seed, under two parameter sets read separately:
+    - **the paper's:** the upstream 40/40 epochs, the paper's per-dataset hyperparameters and its
+      80/10/10 split, as close to Table 4 as the code allows;
+    - **the old sweep's**, as in E71, with more folds (`--cv_folds 10`, as step zero plans) and at
+      least five seeds.
+  - **To settle in the ticket:**
+    - **Hyperparameters:** where the paper's per-dataset values live. No tuned configuration file
+      is tracked in this repository, so they must be asked of the paper's authors; the advisor is
+      one of them.
+    - **Split:** whether the paper's single split is rebuilt as is, or replaced by repeated
+      80/10/10 splits, so that the result has an interval.
+    - **Code version:** which commit stands for "the paper's code". E70 found that HEAD on
+      gorgona8 does not reproduce the old sweep fold by fold (differences up to 0.076 macro-F1), so
+      a replication may need the upstream commit.
+    - **The decision rule:** pre-registered before the first cell. For example, the gain counts as
+      replicated if the 95% interval of the paired B − A excludes zero in the paper's direction at
+      the rates Table 4 reports.
+  - **Related:** T27 (step zero, which owns the classification arms and folds), T40 (TabPFN for
+    classification), and the wiki's t3 (the Table 3 rerun with five or more seeds).
+  - **When:** after the advisor meeting of 2026-10-27, once the paper's hyperparameters are in
+    hand; in GPU gaps.
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
