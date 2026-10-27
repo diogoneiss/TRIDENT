@@ -599,6 +599,16 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       it is a benchmark output.
     - Deferred, each a separate study: E82, in-run validation-gap weights (about 4 h of GPU plus
       refits); a deployable masked-weight hybrid with H.
+  - **The deployable route, running from 2026-10-27 as E82**
+    ([imputation-protocol/31](tickets/imputation-protocol/31-deployable-hybrid.md)), on the user's
+    go: H + TabPFN with weights chosen on hidden observed validation cells; 30 cells at E74's
+    seeds.
+  - **Done 2026-10-27 by E82: refuted.** Better than H on 10 of 10 and than KC on 7 (never worse),
+    with no complete table. It is worse than TabPFN on 5 and than the oracle weights on 6.
+    - The selection is the loss: thin cells (vehicle, biodeg at 80nan) and categorical picks
+      (kr-vs-kp, credit-g).
+    - Candidates for the user: more selection cells, or fewer weights (one per table, or shrinkage
+      toward the equal blend).
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
@@ -640,6 +650,17 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     is the same question ADR 0028 settled for imputation, so it belongs with ADR 0029's decisions or
     in an ADR of its own.
   - **When:** after step zero's decisions (ADR 0029's 8), in GPU gaps.
+  - **Started 2026-10-27 as E83** ([classification-step-zero/03](tickets/classification-step-zero/03-tabpfn-classifier.md)),
+    on the user's go, ahead of step zero:
+    - untuned TabPFN v2 on E71's 3-fold folds (seeds 42/7, 8 tables × 5 levels), paired with E71's
+      TRIDENT arm A;
+    - letter is out (26 classes; v2 allows 10).
+  - **Done 2026-10-27 by E83:** TabPFN ahead at every level, by about 2 points of macro-F1.
+    - TRIDENT leads only on credit-g and electricity, through its class-weighted loss.
+    - **Decided 2026-10-27, 20:16 GMT-3: a separate strong tier, as in imputation**
+      ([ADR 0032](adr/0032-tabpfn-as-a-separate-strong-tier-for-classification.md), accepted).
+      H1c's bar stays the best GBDT. Whether to add a class-balanced TabPFN arm is decided with
+      step zero's design.
 
 - **T41 · Replicate the paper's pre-training gain on classification, with the old parameters and
   more folds** (future; the user, 2026-10-27: "deixe uma tarefa futura para repetir a execução
