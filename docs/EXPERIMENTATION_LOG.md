@@ -2697,7 +2697,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/32-spread-mechanisms.md`;
   `scripts/experiments/spread_mechanisms.py`, `run_spread_mechanisms_queue.sh`; MLflow tag
   `experiment=spread-mechanisms-2026-10-27`.
-- **Amendment (2026-10-27, 20:50 GMT-3, before any reading):** the study was cut so it ends before a
+- **Amendment (2026-10-27, 20:44 GMT-3, before any reading):** the study was cut so it ends before a
   store migration at about 23:00.
   - **Scope:** 8 shifted variants (MNAR: biodeg at slopes 0.5 and 2.0, vehicle, kc2; MAR: biodeg,
     kc2, vehicle, credit-g), 36 cells.
@@ -2720,6 +2720,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/05-occlusion-map-grid.md`;
   `occlusion_map.py --study e85`, `run_occlusion_queue.sh` (`STUDY=e85`); MLflow tag
   `experiment=occlusion-map-grid-2026-10-27`.
-- **Amendment (2026-10-27, 20:50 GMT-3):** not run tonight. Its chained waiters were stopped before
+- **Amendment (2026-10-27, 20:44 GMT-3):** not run tonight. Its chained waiters were stopped before
   any cell started, for the user's store migration. It stays pre-registered and waits for the
   user's go.

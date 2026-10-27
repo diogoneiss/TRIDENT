@@ -45,7 +45,7 @@ E78's, unchanged, **applied to each rate separately** (`occlusion_map.py --study
 - The claim gains its 20nan and 80nan entries as each rate reads.
 - No default changes.
 
-## Amendment (2026-10-27, 20:50 GMT-3): deferred before any cell
+## Amendment (2026-10-27, 20:44 GMT-3): deferred before any cell
 
 - The user asked for only part of E84 and a database migration at about 23:00.
 - The chained waiters were stopped; no E85 cell started.

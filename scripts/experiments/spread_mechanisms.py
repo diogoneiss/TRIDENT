@@ -37,7 +37,7 @@ MNAR = {"biodeg_probit0p25_60nan": "biodeg_60nan", "biodeg_probit_60nan": "biode
         "biodeg_probit1p0_60nan": "biodeg_60nan", "biodeg_probit2p0_60nan": "biodeg_60nan",
         "vehicle_probit_60nan": "vehicle_60nan", "kc2_probit_60nan": "kc2_60nan", "spambase_probit_60nan": "spambase_60nan"}
 MAR = {f"{table}_marf_60nan": f"{table}_marfctl_60nan" for table in ("biodeg", "kc2", "vehicle", "spambase", "credit-g")}
-# Amendment (2026-10-27, 20:50 GMT-3, before any reading): cut to 8 shifted variants so the study
+# Amendment (2026-10-27, 20:44 GMT-3, before any reading): cut to 8 shifted variants so the study
 # ends before the store migration at 23:00; spambase and biodeg's slopes 0.25 and 1.0 are left out.
 MNAR = {v: MNAR[v] for v in ("biodeg_probit_60nan", "biodeg_probit2p0_60nan", "vehicle_probit_60nan", "kc2_probit_60nan")}
 MAR = {v: c for v, c in MAR.items() if not v.startswith("spambase")}

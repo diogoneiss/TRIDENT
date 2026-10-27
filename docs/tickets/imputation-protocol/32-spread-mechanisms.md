@@ -58,7 +58,7 @@ This ticket was written and committed before the study's first cell.
 - One MAR draw.
 - Self-masking MNAR only; the slope dial is on biodeg alone.
 
-## Amendment (2026-10-27, 20:50 GMT-3, before any reading): cut to end before a store migration
+## Amendment (2026-10-27, 20:44 GMT-3, before any reading): cut to end before a store migration
 
 - **Why:** the user needs the GPU and the store quiet by about 23:00 for a database migration ("na
   verdade rode apenas parte do 1, nao tudo, para acabar por volta de 23h. vamos fazer uma migração de
