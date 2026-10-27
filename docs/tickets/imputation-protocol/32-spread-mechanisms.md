@@ -57,3 +57,26 @@ This ticket was written and committed before the study's first cell.
 - 60nan only.
 - One MAR draw.
 - Self-masking MNAR only; the slope dial is on biodeg alone.
+
+## Amendment (2026-10-27, 20:50 GMT-3, before any reading): cut to end before a store migration
+
+- **Why:** the user needs the GPU and the store quiet by about 23:00 for a database migration ("na
+  verdade rode apenas parte do 1, nao tudo, para acabar por volta de 23h. vamos fazer uma migração de
+  banco"). No result had been read, and no cell had finished.
+- **The scope is now 8 shifted variants:**
+  - MNAR: biodeg at slopes 0.5 and 2.0, vehicle and kc2;
+  - MAR: biodeg, kc2, vehicle and credit-g, each with its `marfctl` control.
+  - spambase (probit and MAR) and biodeg's slopes 0.25 and 1.0 are out.
+  - That is 36 cells.
+- **The four spambase cells already running** (`marf` at 101/202/303, `marfctl` at 101) are let
+  finish, so the store holds no interrupted run before the migration. They are outside the scope
+  and are not read.
+- **The rule, scaled to 8:**
+  - **supported:** a signal on 7 or more under K and under H, with none against under K;
+  - **refuted:** a signal on 4 or fewer under K, or any against;
+  - **mixed:** otherwise.
+- **Running:** the queues were stopped between cells (`STOP`). They relaunch when the spambase cells
+  end, with a clock-only deadline: no cell starts after 22:45 GMT-3. Cells not started by then run
+  after the migration on the user's go, and the reading waits for all 36.
+- **E85 is not run tonight.** Its chained waiters were stopped before any of its cells started. It
+  stays pre-registered and waits for the user.

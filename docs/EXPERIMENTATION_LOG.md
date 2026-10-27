@@ -111,7 +111,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
 | E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | in progress | pre-registered; within-column num_rank on 12 shifted variants at 60nan, K and H |
-| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | in progress | pre-registered; E78's rule per rate, 60 cells, after E84 |
+| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | pre-registered, deferred | E78's rule per rate, 60 cells; deferred before any cell for the store migration |
 
 ## Entries
 
@@ -2697,6 +2697,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-protocol/32-spread-mechanisms.md`;
   `scripts/experiments/spread_mechanisms.py`, `run_spread_mechanisms_queue.sh`; MLflow tag
   `experiment=spread-mechanisms-2026-10-27`.
+- **Amendment (2026-10-27, 20:50 GMT-3, before any reading):** the study was cut so it ends before a
+  store migration at about 23:00.
+  - **Scope:** 8 shifted variants (MNAR: biodeg at slopes 0.5 and 2.0, vehicle, kc2; MAR: biodeg,
+    kc2, vehicle, credit-g), 36 cells.
+  - **The rule, scaled:** supported with a signal on 7 or more of 8 under K and H and none against;
+    refuted with 4 or fewer or any against.
+  - **Running:** four spambase cells already running are let finish, unread. No cell starts after
+    22:45 GMT-3.
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
 
@@ -2712,3 +2720,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** `docs/tickets/imputation-interpretability/05-occlusion-map-grid.md`;
   `occlusion_map.py --study e85`, `run_occlusion_queue.sh` (`STUDY=e85`); MLflow tag
   `experiment=occlusion-map-grid-2026-10-27`.
+- **Amendment (2026-10-27, 20:50 GMT-3):** not run tonight. Its chained waiters were stopped before
+  any cell started, for the user's store migration. It stays pre-registered and waits for the
+  user's go.
