@@ -568,6 +568,28 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - E: does the spread grow when a cell's top sources are missing in its row?
     - F: reliance on the gap pattern under MNAR.
 
+- **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
+  2026-10-27: "Gosto da ideia de propor uma ADR, deixe isso como tarefa futura mesmo").
+  - **From E69 and E74**
+    ([imputation-protocol/24](tickets/imputation-protocol/24-blend-weights.md),
+    [27](tickets/imputation-protocol/27-hybrid-output.md)).
+    - Per column, a weight in {0, 0.25, 0.5, 0.75, 1} on the model's numerical fill, or a pick of
+      either model's category, chosen on the other four folds.
+    - E74 was mixed. It was better than KC on 7 of 10 hard variants, where the rule needed 8. It was
+      worse than TabPFN on 2 (kr-vs-kp 40/60nan, ≤0.005), and beat both on 3 (electricity,
+      vehicle and biodeg at 80nan).
+  - **The proposal must state:**
+    - E74's pre-registered rule was not met;
+    - TabPFN alone beat KC on 8 of those 10, so most of the hybrid's gain there is TabPFN's own. Its
+      own gain shows on the three numerical 80nan variants.
+  - **Shape:** opt-in and off by default. TabPFN stays an offline optional extra (ADR 0028), so the
+    flag needs the `tabpfn` extra and one TabPFN refit per column a fold.
+  - **Open, to settle before or inside the ADR:**
+    - E69/E74 chose the weights on the other folds' *induced* cells, which need the complete table.
+      A deployed run has no complete table, so it needs weights from observed cells: the masked
+      population, or the validation rows' own fills.
+    - That route is untested and may need its own pre-registered study.
+
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
@@ -585,6 +607,29 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     `EPOCHS_PRE=0` arm, with `--cv_folds 10`.
 
   In GPU gaps only, after T21–T25; D21 is decided after E44.
+
+- **T40 · TabPFN v2 as a strong baseline for classification** (future; the user, 2026-10-27: "usar
+  o tabpfn como baseline forte para classificação também").
+  - **The gap:**
+    - Step zero (T27; [plan](plans/2026-10-23-classification-step-zero.md); ADR 0029 proposed) has
+      a GBDT bar with native NaN (LightGBM and HistGradientBoosting) and impute-then-learn arms.
+    - It has no foundation-model classifier.
+    - On imputation, TabPFN v2 is the strongest rival (E55, E57; ADR 0028's strong tier).
+  - **What it would be:** TabPFN v2's classifier, untuned, as TabPFN is used, on step zero's own
+    folds (`--cv_folds 10`) and rates.
+    - It reads NaN natively, so it joins the GBDT family with no imputation step.
+    - An impute-then-learn arm, with TRIDENT's or TabPFN's own fills before the classifier, is
+      optional and decided in the ticket.
+  - **Reuse:** the `tabpfn` extra pinned to 9.2.0 and v2's checkpoints, as in
+    `src/training/tabpfn_baseline.py`.
+  - **To check in the ticket, against TabPFN v2's documentation:**
+    - its class and row limits: letter has 26 classes, and electricity has more rows than the
+      context the imputer already caps (`CONTEXT_ROWS`);
+    - how a table past them is handled: a context subsample, or a many-class wrapper.
+  - **Decision needed:** whether it joins step zero's bar or stands as a separate strong tier. That
+    is the same question ADR 0028 settled for imputation, so it belongs with ADR 0029's decisions or
+    in an ADR of its own.
+  - **When:** after step zero's decisions (ADR 0029's 8), in GPU gaps.
 
 ### Process
 
