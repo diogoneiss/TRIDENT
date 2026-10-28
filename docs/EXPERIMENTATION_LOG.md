@@ -113,6 +113,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – 2026-10-28 | supported (full scope) | signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt; 11 cells under torch 2.11.0 |
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – 2026-10-28 | 20nan supported, 80nan refuted | 20nan: faithful on 8 of 9 (kc2 inconclusive), synthetic AUROC 0.994; 80nan: faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; the map holds from 20 to 60nan |
 | E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
+| E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
+| E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | in progress | |
 
 ## Entries
 
@@ -2804,3 +2806,40 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `scripts/experiments/cross_machine.py`, `run_cross_machine_queue.sh`; state in
   `/scratch2/diogoneiss/trident-2026-10-28-cross-machine/` and medusa1's
   `/scratch/diogoneiss/trident-2026-10-28-cross-machine/`.
+
+### E87 · Does pre-training help classification with ten folds and five seeds? (2026-10-28)
+
+- **Status:** in progress
+- **Hypothesis:** the paper's Table 4 pre-training gain (about +1.7 macro-F1 points) shows once the
+  power is there. E71 found none with three folds and two seeds. This is T41's old-sweep half.
+- **Scenarios:** E71's arms A (the old sweep's hyperparameters, `cosine_legacy`) and B
+  (`EPOCHS_PRE 0`).
+  - 9 tables × 5 levels × seeds 42/7/13/101/202, `--cv_folds 10`: 450 cells.
+  - All on medusa1, eight queues; about 16–24 h.
+- **Measures and decision rule:** per level, B − A on test macro-F1, pooled over the tables with
+  one array per seed (450 fold pairs), the project's rule with SESOI 0.01.
+  - **Supported** if A is higher at 3 or more of the 5 levels and B at none.
+  - **Refuted** if A is higher at 1 level or none.
+  - **Mixed** otherwise.
+  - Read only with every cell done.
+- **Sources:** [classification-step-zero/04](tickets/classification-step-zero/04-tenfold-pretraining.md);
+  `scripts/experiments/cls_tenfold.py`, `run_cls_tenfold_queue.sh`; MLflow
+  `experiment=cls-tenfold-2026-10-28`.
+
+### E88 · Does the occlusion map hold under MNAR and MAR? (2026-10-28)
+
+- **Status:** in progress
+- **Hypothesis:** the map, faithful from 20 to 60nan under MCAR (E78, E79, E85), stays faithful on
+  E84's 12 MNAR and MAR variants at 60nan.
+- **Scenarios:** 7 MNAR (biodeg at four slopes; vehicle, kc2 and spambase) and 5 MAR (`marf`)
+  variants × seeds 101/202/303: 36 cells.
+  - Today's default, read in place as E78.
+  - No synthetic table, since C is MCAR-only.
+  - All on gorgona8, four queues; about 3–4 h.
+- **Measures and decision rule:** B, D on top 3, per variant over 15 folds (SESOI 0.01).
+  - **Supported** if faithful on 10 or more of 12 and not faithful on none.
+  - **Refuted** if faithful on 5 or fewer.
+  - **Mixed** otherwise.
+  - Descriptive: D against the MCAR twins (E79).
+- **Sources:** [imputation-interpretability/06](tickets/imputation-interpretability/06-occlusion-map-mechanisms.md);
+  `occlusion_map.py --study e88`; MLflow `experiment=occlusion-mechanisms-2026-10-28`.

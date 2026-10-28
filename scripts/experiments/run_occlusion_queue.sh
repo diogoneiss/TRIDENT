@@ -3,15 +3,18 @@
 # (cells from occlusion_map.py --todo <n>), from the checkout root:
 #   setsid nohup bash scripts/experiments/run_occlusion_queue.sh <n> > /dev/null 2>&1 &
 # Finished cells are skipped, so relaunching resumes. Stop between cells: touch $S/STOP.
-# STUDY=e79 runs E79 (imputation-interpretability/02), STUDY=e85 E85 (05), each in its own state directory; DEADLINE (epoch
+# STUDY=e79 runs E79 (imputation-interpretability/02), STUDY=e85 E85 (05), STUDY=e88 E88 (06), each in its own state directory; DEADLINE (epoch
 # seconds) starts no cell after that time.
 set -u
 N=$1
 export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
+# A shell started by ssh or setsid has not read ~/.bashrc: log through the leader's server (ADR 0033).
+export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://127.0.0.1:47731}
 STUDY=${STUDY:-e78}
 DEADLINE=${DEADLINE:-0}
 if [ "$STUDY" = e79 ]; then S=/scratch2/diogoneiss/trident-2026-10-27-occlusion-60; ARGS="--study e79"
 elif [ "$STUDY" = e85 ]; then S=/scratch2/diogoneiss/trident-2026-10-27-occlusion-grid; ARGS="--study e85"
+elif [ "$STUDY" = e88 ]; then S=/scratch2/diogoneiss/trident-2026-10-28-occlusion-mechanisms; ARGS="--study e88"
 else S=/scratch2/diogoneiss/trident-2026-10-26-occlusion; ARGS=""; fi
 P=$S/progress.log
 mkdir -p $S/logs

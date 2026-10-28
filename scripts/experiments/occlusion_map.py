@@ -9,6 +9,8 @@ synthetic table and for faithfulness on nine real ones (imputation-interpretabil
 ``--study e79`` runs and reads E79 (imputation-interpretability/02): the same design at 60nan.
 ``--study e85`` runs and reads E85 (imputation-interpretability/05): the same design at 20nan and 80nan,
 with the rule applied to each rate on its own.
+``--study e88`` runs and reads E88 (imputation-interpretability/06): E84's 12 MNAR and MAR variants at
+60nan, with no synthetic table (C is MCAR-only by construction).
 
 ``train`` runs one cell of today's default imputation configuration, five folds, with
 ``--score_remask`` (its spread kept for a later study, not read here), MLflow tag
@@ -68,6 +70,10 @@ RANDOM_DRAWS = 20
 MIN_CELLS = 10
 SESOI = 0.01
 AUROC_BAR = 0.8
+# The primary call: supported at SUPPORT_AT or more faithful (and none not faithful), refuted at REFUTE_AT or fewer.
+SUPPORT_AT, REFUTE_AT = 7, 4
+# E88 reads K against E84's run of the same cell; the others against the cell's development or confirmation run.
+REFERENCE: str | None = None
 BLOCKS = {"a": ("a1", "a2", "a3", "a4"), "b": ("b1", "b2", "b3", "b4"), "c": ("c1", "c2", "c3", "c4")}
 
 
@@ -95,6 +101,17 @@ def _use_sixty() -> None:
         **{f"{table}_60nan": DEVELOPMENT for table in ("vehicle", "biodeg", "kc2", "kr-vs-kp", "spambase", "credit-g")},
     }
     REAL = [variant for variant in SEEDS if not variant.startswith("synthblock")]
+
+
+def _use_mechanisms() -> None:
+    """E88's cells: E84's 12 shifted variants at 60nan, at E84's seeds; 10 and 5 of 12 scale E79's 7 and 4 of 9."""
+    global EXPERIMENT, STATE, SEEDS, REAL, SUPPORT_AT, REFUTE_AT, REFERENCE
+    from scripts.experiments.spread_mechanisms import SHIFTED
+
+    EXPERIMENT, STATE = "occlusion-mechanisms-2026-10-28", Path("/scratch2/diogoneiss/trident-2026-10-28-occlusion-mechanisms")
+    SEEDS = {variant: DEVELOPMENT for variant in SHIFTED}
+    REAL = list(SEEDS)
+    SUPPORT_AT, REFUTE_AT, REFERENCE = 10, 5, "spread-mechanisms-2026-10-27"
 
 
 # --- reading the model in place -------------------------------------------------------------------
@@ -426,8 +443,11 @@ def tally() -> None:
             tops.append(f"{target} <- " + ", ".join(f"{s} {e:.3f}" for s, e in zip(best["source"], best["effect"])))
         print("  - top sources: " + "; ".join(tops[:12]) + (" ..." if len(tops) > 12 else ""))
         for seed, f in zip(seeds, found):
-            source = common.development_source(variant, "101/202/303") if seeds == DEVELOPMENT else None
-            reference = (common.parents(source.experiment, source.arm) if source else common.parents("confirmation-2026-10-17")).get((variant, seed))
+            if REFERENCE:
+                reference = common.parents(REFERENCE).get((variant, seed))
+            else:
+                source = common.development_source(variant, "101/202/303") if seeds == DEVELOPMENT else None
+                reference = (common.parents(source.experiment, source.arm) if source else common.parents("confirmation-2026-10-17")).get((variant, seed))
             if f and reference:
                 old = common.model(common.fold_table(reference[0]), reference[0], "K")
                 new = common.model(common.fold_table(f[0]), f[0], "K")
@@ -436,7 +456,7 @@ def tally() -> None:
     if reproduced:
         print(f"- K against the earlier run of the same cell, largest fold difference: {max(reproduced):.2e} over {len(reproduced)} cells")
     rates = sorted({v.split("_")[-1] for v in REAL})
-    for rate in rates:
+    for rate in rates if any(v.startswith("synthblock") for v in SEEDS) else ():
         synthetic = [v for v in truth_calls if v.endswith(rate)]
         call = truth_calls[synthetic[0]] if synthetic else "incomplete"
         print(f"- truth (C, gate){'' if len(rates) == 1 else f' at {rate}'}: {call}")
@@ -449,9 +469,9 @@ def tally() -> None:
             continue
         yes = [v for v, c in marks.items() if c == "yes"]
         no = [v for v, c in marks.items() if c == "no"]
-        if len(yes) >= 7 and not no:
+        if len(yes) >= SUPPORT_AT and not no:
             reading = "supported"
-        elif len(yes) <= 4:
+        elif len(yes) <= REFUTE_AT:
             reading = "refuted"
         else:
             reading = "mixed"
@@ -465,6 +485,9 @@ if __name__ == "__main__":
         argv = argv[2:]
     elif argv[:2] == ["--study", "e85"]:
         _use_grid()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e88"]:
+        _use_mechanisms()
         argv = argv[2:]
     if argv[:1] == ["train"]:
         train(argv[1], int(argv[2]), "--no-mlflow" in argv)

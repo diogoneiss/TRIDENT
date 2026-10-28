@@ -579,6 +579,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - 20nan has 10 of 30 cells and no verdict; its remaining 20 cells wait for the user.
   - **E85 done 2026-10-28:** 20nan supported (8 of 9) and 80nan refuted (4 of 9). The map's claim
     is "20 to 60nan".
+  - **E88, running from 2026-10-28**
+    ([imputation-interpretability/06](tickets/imputation-interpretability/06-occlusion-map-mechanisms.md)),
+    on the user's go: the map on E84's 12 MNAR and MAR variants at 60nan, on gorgona8.
   - **Follow-ups E and F:** run as E80 and E81, below.
 
 - **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
@@ -703,6 +706,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     classification), and the wiki's t3 (the Table 3 rerun with five or more seeds).
   - **When:** after the advisor meeting of 2026-10-27, once the paper's hyperparameters are in
     hand; in GPU gaps.
+  - **The old-sweep half, running from 2026-10-28 as E87**
+    ([classification-step-zero/04](tickets/classification-step-zero/04-tenfold-pretraining.md)),
+    on the user's go ("aprovo! rode os 2 em paralelo"): arms A and B, 9 tables × 5 levels, ten
+    folds, five seeds, on medusa1.
 
 - **T42 · Can one study's cells run on both servers?** (the user's go, 2026-10-28: "vamos testar o
   0!").
