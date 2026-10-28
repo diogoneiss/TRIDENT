@@ -7,8 +7,22 @@ the same evening that settled each decision below. Numbered 0033 by the user, si
 taken by the TabPFN ADR. Decisions 1 and 9 were replaced the same evening, before any
 implementation, when medusa1's `/scratch2` turned out to belong to root (below): the first
 version linked each machine's path to the other's; this one gives every artifact root one
-prefix both machines resolve, accepted by the user ("de acordo com vc"). Not implemented: no
-script, no link, no cron entry exists yet, and the store has not been migrated.
+prefix both machines resolve, accepted by the user ("de acordo com vc").
+
+Preparation done on 2026-10-27, after the experiments ended (the user stopped the MLflow UI):
+- 23:15 GMT-3: backup `sync/backups/2026-10-27T2315-pre-0033-migration.db` (backup API,
+  `quick_check` ok, 17998 runs, 13 experiments), brought up to the store's state at 23:27 by
+  `sqlite3_rsync` once nothing held the store.
+- 23:25 GMT-3: the link `/scratch/diogoneiss/TRIDENT -> /scratch2/diogoneiss/TRIDENT`.
+- 23:30 GMT-3: the migration of decision 1 on gorgona8's store, under `sync/store.lock` and in
+  one transaction: 13 experiment roots and 17998 run roots rewritten, none left outside the
+  canonical prefix, `integrity_check` ok (114 s). MLflow then listed a run's artifacts through
+  the new root.
+- The user's git credentials copied to medusa1 (`~/.git-credentials`, mode 600); GitHub's API
+  accepted them from there.
+
+Not implemented: no `leadership.py`, no cron entry, no `_MLFLOW_SERVER_ARTIFACT_ROOT` exported,
+no checkout on medusa1; `sync_remote.py` still translates the old prefix (decision 9).
 
 The peer is **medusa1** (hostname `medusa`, Ubuntu 24.04.4, two RTX 5090), checked over ssh
 from gorgona8 on 2026-10-27 around 20:25 GMT-3:
@@ -95,6 +109,16 @@ Facts verified while deciding (2026-10-27, against gorgona8's store, 15.5 GB, ML
   3.14's `--help`). An experiment created through such a server gets
   `mlflow-artifacts:/<id>` as its root, the scheme ADR 0009 rejected and its translation
   refuses.
+- **Some roots have no scheme.** In the store backed up on 2026-10-27 at 23:15 GMT-3 (17998
+  runs), 11 experiments and 17980 runs carry `file:///scratch2/diogoneiss/TRIDENT/mlruns/`,
+  but two experiments and 18 runs carry the bare path `/scratch2/diogoneiss/TRIDENT/mlruns/`:
+  `Default` (0), recreated on 2026-10-26 at 18:09 GMT-3, and `TRIDENT/synthblock` (12),
+  created by `scripts/experiments/occlusion_map.py` on 2026-10-27 at 02:13 GMT-3, with its 18
+  runs. ADR 0009's translation finds these under neither prefix, so a Windows pull of this
+  store refuses. The migration of decision 1 rewrites both forms to the canonical `file://`
+  prefix. Rolled back in a transaction on the backup, it rewrote 13 experiments and 17998
+  runs, left no root outside the canonical prefix and no `/scratch2/diogoneiss/TRIDENT/mlruns/`
+  in any column.
 - **A read-only open of a WAL store leaves an empty `-wal` and a `-shm`** when it is the last
   connection (ADR 0010, seen again on the replica on 2026-10-27 and cleaned by
   `store_replica.py sync`).
@@ -130,7 +154,8 @@ Rejected on the way:
    translation between the servers, and no link on medusa1.
    - **Migration, once:** while nothing holds gorgona8's store, after a checked backup
      (decision 7), `experiments.artifact_location` and `runs.artifact_uri` have their prefix
-     swapped from `/scratch2/diogoneiss/TRIDENT/mlruns/` to the canonical one, with the
+     swapped to the canonical one from `file:///scratch2/diogoneiss/TRIDENT/mlruns/` and from
+     the bare `/scratch2/diogoneiss/TRIDENT/mlruns/` (Context), with the
      checks of ADR 0009 decision 4: `substr`, not `LIKE`; a root under neither prefix stops
      it; no old prefix left in any text column; `integrity_check` returns `ok`. On gorgona8
      both prefixes resolve to the same files, so nothing reading the store breaks, before or
