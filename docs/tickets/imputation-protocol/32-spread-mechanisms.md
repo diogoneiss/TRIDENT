@@ -83,7 +83,7 @@ This ticket was written and committed before the study's first cell.
 
 ## Outcome (2026-10-27, 22:34 GMT-3): partial, not complete
 
-**Status changed at 22:42 GMT-3, on the user's instruction** ("não quero que vc marque ele
+**Status changed at 22:56 GMT-3, on the user's instruction** ("não quero que vc marque ele
 completo a menos que a evidência mostrada seja inegável").
 - The amended rule reads supported on the 8 variants that ran, below.
 - The study as pre-registered (12 shifted variants) did not run in full: spambase MNAR and MAR, and
@@ -91,8 +91,8 @@ completo a menos que a evidência mostrada seja inegável").
 - So the study stays open, and ADR 0030 is not amended from it.
 - **To complete it:** the remaining cells, after the migration, on the user's go.
   - spambase's `marf` at 101/202/303 and `marfctl` at 101 already ran, unread.
-  - Still to run: spambase `marfctl` at 202/303, spambase probit, and biodeg probit 0.25 and 1.0
-    (14 cells).
+  - Still to run: spambase `marfctl` at 202/303 (2), spambase probit (3), and biodeg probit 0.25
+    and 1.0 (6), 11 cells. spambase's MCAR twin is E79's.
   - Then the original 12-variant rule is read.
 
 

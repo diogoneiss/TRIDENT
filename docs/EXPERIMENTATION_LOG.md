@@ -2679,7 +2679,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E84 · Does the re-masking spread still rank errors under MNAR and MAR? (2026-10-27)
 
-- **Status:** partial, not complete (2026-10-27, 22:42 GMT-3, on the user's instruction). The amended 8 variants read supported at 22:34 GMT-3; 4 of the 12 pre-registered variants did not run. Pre-registered before the first cell, on the user's go (2026-10-27,
+- **Status:** partial, not complete (2026-10-27, 22:56 GMT-3, on the user's instruction). The amended 8 variants read supported at 22:34 GMT-3; 4 of the 12 pre-registered variants did not run. Pre-registered before the first cell, on the user's go (2026-10-27,
   before 20:40 GMT-3). ADR 0030's follow-up.
 - **Hypothesis:** the spread's within-column ranking of errors (E76) holds under self-masking MNAR
   and MAR.
@@ -2713,7 +2713,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - On the 8 variants that ran, the ranking holds under MAR and self-masking MNAR at 60nan
     (biodeg, kc2, vehicle and credit-g).
   - The pre-registered study had 12 variants. spambase (MNAR and MAR) and biodeg's slopes 0.25 and
-    1.0 did not run, so the study carries no verdict on its own scope.
+    1.0 did not run, so the study carries no verdict on its own scope; 11 cells remain.
   - ADR 0030 is not amended from it.
   - The user's instruction (2026-10-27): a study is not marked complete unless the evidence is
     undeniable.
