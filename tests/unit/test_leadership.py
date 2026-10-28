@@ -232,3 +232,11 @@ def test_a_follower_that_never_copied_has_nothing_to_fork(pair: tuple[Path, Path
     peer.answers = False
     follow(follower, peer, services, T0 + PROMOTE_AFTER)
     assert load_role(follower)["role"] == "follower" and load_role(follower).get("fork_base") is None  # type: ignore[index,union-attr]
+
+
+def test_a_switchover_cut_short_after_the_yield_resumes_at_the_same_epoch(pair: tuple[Path, Path, LocalPeer, FakeServices]) -> None:
+    leader, follower, peer, services = pair
+    follow(follower, peer, services, T0 + 60)
+    peer.yield_leadership(2)
+    switchover(follower, peer, services, T0 + 120)
+    assert (load_role(follower)["role"], load_role(follower)["epoch"]) == ("leader", 2)  # type: ignore[index]

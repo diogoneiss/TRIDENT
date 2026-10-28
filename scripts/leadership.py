@@ -412,16 +412,19 @@ def yield_leadership(root: Path, services: Services, epoch: int, now: float) -> 
     role = load_role(root)
     if role is None or role["role"] != "leader" or epoch != role["epoch"] + 1:
         raise StoreError(f"cannot yield at epoch {epoch}: role is {role}")
-    services.stop_server()
-    with store_lock(root):
-        try:
-            refuse_if_busy(root / STORE_NAME)
-        except StoreError:
-            services.start_server()
-            raise
-        set_writable(root, False)
-    role.update(role="follower", epoch=epoch, last_contact=now, last_copy_try=now)
-    save_role(root, role)
+    with tick_lock(root) as mine:  # else a tick restarts the server it is stopping
+        if not mine:
+            raise StoreError("a tick is running here; try again in a minute")
+        services.stop_server()
+        with store_lock(root):
+            try:
+                refuse_if_busy(root / STORE_NAME)
+            except StoreError:
+                services.start_server()
+                raise
+            set_writable(root, False)
+        role.update(role="follower", epoch=epoch, last_contact=now, last_copy_try=now)
+        save_role(root, role)
     log(root, "yielded", now, epoch=epoch)
 
 
@@ -433,10 +436,14 @@ def switchover(root: Path, peer: Peer, services: Services, now: float) -> None:
     answers, peer_role = peer.read_role()
     if not answers or not peer_role:
         raise StoreError(f"{peer.alias} does not answer; a switchover needs both sides (see `promote`)")
-    epoch = max(role["epoch"], peer_role["epoch"]) + 1
-    if not (peer_role["role"] == "follower" and peer_role["epoch"] == epoch - 1 and role["epoch"] < epoch - 1):
-        peer.yield_leadership(epoch)  # skipped only when a cut-short switchover already got this far
-    with tick_lock(root):
+    # A switchover cut short after the leader yielded finds it a follower one epoch ahead.
+    resumed = peer_role["role"] == "follower" and peer_role["epoch"] > role["epoch"]
+    epoch = peer_role["epoch"] if resumed else max(role["epoch"], peer_role["epoch"]) + 1
+    if not resumed:
+        peer.yield_leadership(epoch)
+    with tick_lock(root) as mine:
+        if not mine:
+            raise StoreError("a tick is running here; run switchover again in a minute")
         replicate(root, role, peer, now)
         with store_lock(root):
             set_writable(root, True)
