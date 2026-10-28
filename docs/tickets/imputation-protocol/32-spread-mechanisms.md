@@ -130,3 +130,27 @@ The reader's printout (`spread_mechanisms.py --tally`), unedited:
 
 Primary: signal on 8 (K) and 8 (H) of 8, against under K on none -> supported (fold-pair t, seed agreement)
 ```
+
+## Second amendment (2026-10-28, 00:30 GMT-3): the full scope is restored, on torch 2.11.0
+
+- **The user's go:** "voce pode voltar ao que tinha planejado antes: o resto do 1, 2 e 4 em
+  paralelo. vá" (2026-10-28, before 00:30 GMT-3). This came after the partial status. The user
+  had seen the 8-variant reading.
+  - Completing the pre-registered scope is a return to the plan, not a choice that depends on a
+    result.
+  - The reading is the **original 12-variant rule** (signal on 10 or more under K and H, none
+    against). The 8-variant reading above stays as it was written.
+- **The 11 remaining cells:** spambase `marfctl` at 202/303, spambase probit at 101/202/303, and
+  biodeg probit 0.25 and 1.0 at 101/202/303.
+  - They run under **torch 2.11.0+cu128**, which the ADR 0033 preparation installed on 2026-10-27
+    at about 23:30 GMT-3 (commits 579e524, 2362d57).
+  - The first 40 cells, and E79's MCAR twins, ran under torch 2.5.1+cu121. The new torch draws
+    other numbers from the same seed.
+- **What this does to the reading:**
+  - The primary verdict is per variant, over its own 15 folds. Every variant's three seeds ran
+    under one torch, except spambase `marfctl` (101 under 2.5.1; 202 and 303 under 2.11.0).
+  - That control enters only the descriptive shifted-minus-control line, which the Outcome will
+    flag.
+  - The torch of every run is in its `torch_version` tag.
+- **Deadline, by the clock only:** no cell starts after 2026-10-28, 08:30 GMT-3. The user stops
+  experiments after 09:00 for the migration.

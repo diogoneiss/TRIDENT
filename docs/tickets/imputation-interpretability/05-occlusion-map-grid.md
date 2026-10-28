@@ -50,3 +50,19 @@ E78's, unchanged, **applied to each rate separately** (`occlusion_map.py --study
 - The user asked for only part of E84 and a database migration at about 23:00.
 - The chained waiters were stopped; no E85 cell started.
 - The design and the rule are unchanged, and the study waits for the user's go.
+
+## Second amendment (2026-10-28, 00:30 GMT-3): running, 80nan first, on torch 2.11.0, deadline 08:30
+
+- **The user's go:** "voce pode voltar ao que tinha planejado antes: o resto do 1, 2 e 4 em
+  paralelo. vá" (2026-10-28, before 00:30 GMT-3).
+- **Torch:** every E85 cell runs under torch 2.11.0+cu128 (installed by the ADR 0033 preparation,
+  2026-10-27). E78 and E79 ran under 2.5.1.
+  - The study is consistent within itself.
+  - The descriptive "K against the earlier run of the same cell" line will no longer read 0.0,
+    because of the torch change; that is not a fault of the in-place reading.
+- **Order and deadline, fixed now and by the clock only:**
+  - Each queue deals its 80nan cells first, then its 20nan cells (`occlusion_map.todo`; E78 and
+    E79's single-rate dealing is unchanged).
+  - No cell starts after 2026-10-28, 08:30 GMT-3, since the user stops experiments after 09:00.
+- **If a rate does not complete:** it stays **partial, not complete**, and gets no verdict. Its
+  cells finish later on the user's go, and its rule is read only then.

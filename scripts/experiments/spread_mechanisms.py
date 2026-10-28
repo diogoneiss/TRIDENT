@@ -37,10 +37,8 @@ MNAR = {"biodeg_probit0p25_60nan": "biodeg_60nan", "biodeg_probit_60nan": "biode
         "biodeg_probit1p0_60nan": "biodeg_60nan", "biodeg_probit2p0_60nan": "biodeg_60nan",
         "vehicle_probit_60nan": "vehicle_60nan", "kc2_probit_60nan": "kc2_60nan", "spambase_probit_60nan": "spambase_60nan"}
 MAR = {f"{table}_marf_60nan": f"{table}_marfctl_60nan" for table in ("biodeg", "kc2", "vehicle", "spambase", "credit-g")}
-# Amendment (2026-10-27, 20:44 GMT-3, before any reading): cut to 8 shifted variants so the study
-# ends before the store migration at 23:00; spambase and biodeg's slopes 0.25 and 1.0 are left out.
-MNAR = {v: MNAR[v] for v in ("biodeg_probit_60nan", "biodeg_probit2p0_60nan", "vehicle_probit_60nan", "kc2_probit_60nan")}
-MAR = {v: c for v, c in MAR.items() if not v.startswith("spambase")}
+# The 20:44 cut (8 variants) is undone on the user's go (00:30 GMT-3): the remaining cells
+# run under torch 2.11.0, the first 40 ran under 2.5.1 (imputation-protocol/32, second amendment).
 SHIFTED = [*MNAR, *MAR]
 TRAINED = [*MNAR, *MAR, *MAR.values()]
 ROWS = {"spambase": 4601, "biodeg": 1055, "credit-g": 1000, "vehicle": 846, "kc2": 522}
@@ -138,9 +136,9 @@ def tally() -> None:
     k_signal = [v for v, m in marks["K"].items() if m == "signal"]
     h_signal = [v for v, m in marks["H"].items() if m == "signal"]
     against = [v for v, m in marks["K"].items() if m == "against"]
-    if len(k_signal) >= 7 and len(h_signal) >= 7 and not against:
+    if len(k_signal) >= 10 and len(h_signal) >= 10 and not against:
         reading = "supported"
-    elif len(k_signal) <= 4 or against:
+    elif len(k_signal) <= 7 or against:
         reading = "refuted"
     else:
         reading = "mixed"

@@ -304,15 +304,22 @@ def train(variant: str, seed: int, no_mlflow: bool) -> None:
     print("CELL_DONE", json.dumps({k: v for k, v in metrics.items() if k.startswith("impute/induced/") and k.endswith("/impute_score") and "/baseline/" not in k}), flush=True)
 
 
+# E85's amendment (2026-10-28): the 80nan cells are dealt first, then the 20nan ones, so one rate can
+# finish before the 08:30 deadline; a single-rate study (E78, E79) deals exactly as before.
+RATE_ORDER = ("80nan", "60nan", "40nan", "20nan")
+
+
 def todo(which: int) -> None:
     done = common.parents(EXPERIMENT)
-    work = sorted(((ROWS[v.split("_")[0]], v, s) for v, seeds in SEEDS.items() for s in seeds), key=lambda w: (-w[0], w[1], w[2]))
     loads = [0.0] * QUEUES
-    for cost, variant, seed in work:
-        target = loads.index(min(loads))
-        loads[target] += cost
-        if target == which - 1 and (variant, seed) not in done:
-            print(variant, seed)
+    for rate in RATE_ORDER:
+        work = sorted(((ROWS[v.split("_")[0]], v, s) for v, seeds in SEEDS.items() if v.endswith(rate) for s in seeds),
+                      key=lambda w: (-w[0], w[1], w[2]))
+        for cost, variant, seed in work:
+            target = loads.index(min(loads))
+            loads[target] += cost
+            if target == which - 1 and (variant, seed) not in done:
+                print(variant, seed)
 
 
 # --- the reading fixed in the ticket ---------------------------------------------------------------

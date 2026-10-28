@@ -110,8 +110,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
-| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | partial, not complete | the amended 8 of 12 variants all signal under K and H; spambase and biodeg's slopes 0.25 and 1.0 not run; no verdict on the pre-registered scope |
-| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | pre-registered, deferred | E78's rule per rate, 60 cells; deferred before any cell for the store migration |
+| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | partial, completing | the amended 8 of 12 variants all signal under K and H; spambase and biodeg's slopes 0.25 and 1.0 not run; no verdict on the pre-registered scope |
+| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | in progress | E78's rule per rate, 60 cells, torch 2.11.0, 80nan first, no cell after 08:30 on 10-28 |
 
 ## Entries
 
@@ -2717,6 +2717,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - ADR 0030 is not amended from it.
   - The user's instruction (2026-10-27): a study is not marked complete unless the evidence is
     undeniable.
+- **Second amendment (2026-10-28, 00:30 GMT-3):** the full 12-variant scope is restored on the user's go, and the
+  original rule will be read. The 11 remaining cells run under torch 2.11.0 (the first 40 ran
+  under 2.5.1); no cell starts after 08:30 GMT-3 on 2026-10-28.
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
 
@@ -2735,3 +2738,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment (2026-10-27, 20:44 GMT-3):** not run tonight. Its chained waiters were stopped before
   any cell started, for the user's store migration. It stays pre-registered and waits for the
   user's go.
+- **Second amendment (2026-10-28, 00:30 GMT-3):** running on the user's go, under torch 2.11.0, with each queue's
+  80nan cells first and no cell after 08:30 GMT-3 on 2026-10-28. A rate that does not finish stays
+  partial, with no verdict.
