@@ -4,10 +4,11 @@ This report gathers E44–E83 into one statement for the thesis. It was rebuilt 
 E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
 new analysis.
 
-- **Open studies are left out of the statement:**
-  - E84 (the spread under MNAR and MAR) is partial and completing.
-  - E85 (the occlusion map at 20/80nan) is running.
-  - Neither carries a verdict yet.
+- **E84** (the spread under MNAR and MAR) completed on 2026-10-28 after this rebuild: supported
+  on 12 of 12 under K and H
+  ([imputation-protocol/32](../tickets/imputation-protocol/32-spread-mechanisms.md)). The
+  statement's line 9 still reads MCAR only, until the user decides ADR 0030's extension.
+- **E85** (the occlusion map at 20/80nan) is running and carries no verdict yet.
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
     runs each reader unchanged.
@@ -231,7 +232,8 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 - **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
   exception on two draws. The bar gains at 60nan on the small numerical tables.
 - **The spread (ADR 0030)** is a rank within a column, not an interval (E77). It falls along a row's
-  missingness (E80). Under MAR and MNAR it is not yet established, since E84 is partial.
+  missingness (E80). Under one MAR draw and self-masking MNAR at 60nan it ranks too (E84, 12 of 12), weakening as the
+  tilt grows; ADR 0030 is not yet extended.
 - **The occlusion map** is read on K only, under MCAR, at 40 and 60nan. It is not shown on kc2 and
   credit-g at 60nan, and its effects shrink with missingness.
 - **The hybrid's deployable form** does not reach TabPFN on the small and categorical tables (E82).
@@ -240,8 +242,7 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 
 ## 5. Open
 
-- **E84 (partial) and E85 (running).** Both are read only when complete, and are not in this
-  statement.
+- **E84 done (supported); ADR 0030's extension to MAR/MNAR is the user's decision. E85 running.**
 - **T27's classification step zero:** ADR 0029 and its eight decisions, deferred by the user on
   2026-10-27. T41: the paper's Table 4 with its parameters.
 - **The hybrid's selection:** one weight per table, or shrinkage toward the equal blend, which is
