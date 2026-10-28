@@ -75,4 +75,67 @@ uv run --python 3.11 python -B scripts/experiments/cross_machine.py --tally
 
 ## Outcome
 
-(open)
+**Done 2026-10-28, 15:55 GMT-3.** The cells ran 15:23–15:54 GMT-3, and all 26 finished on each
+machine with none failed. medusa1 shared its GPUs with another user's job.
+
+The tally, unedited (`cross_machine.py --tally`):
+
+```
+## imputation: medusa − gorgona8 on impute/induced/impute_score (relative)
+- credit-g_20nan s101: -0.0046, +0.0147, -0.0073, +0.0562, +0.0230
+- credit-g_20nan s202: -0.0258, +0.0494, +0.0212, +0.0265, +0.0120
+- credit-g_20nan s303: +0.0131, -0.0019, -0.0025, +0.0365, -0.0038
+- kc2_60nan s101: +0.0178, -0.0331, -0.0131, +0.0106, -0.0186
+- kc2_60nan s202: -0.0129, -0.1596, +0.0261, -0.0683, +0.0379
+- kc2_60nan s303: -0.0198, +0.0856, +0.0315, +0.1440, +0.0003
+- vehicle_40nan s101: +0.0007, -0.0133, -0.0326, +0.1641, +0.0673
+- vehicle_40nan s202: -0.0298, -0.0096, -0.0131, +0.0230, +0.0846
+- vehicle_40nan s303: +0.0078, +0.0023, +0.0016, -0.0032, -0.0215
+- biodeg_40nan s101: +0.0480, -0.0470, -0.0168, +0.0056, -0.0444
+- biodeg_40nan s202: +0.0266, -0.0136, +0.0077, +0.0030, +0.0002
+- biodeg_40nan s303: +0.0227, -0.0051, -0.0102, -0.0307, -0.0556
+- largest |difference| per metric: impute/induced/impute_score 0.1641; impute/masked/impute_score 0.3337; impute/induced/baseline/hgb/impute_score 0.0000; impute/induced/baseline/knn5/impute_score 0.0007
+- pooled +0.0059 [-0.0061, +0.0178], seeds +0.0089, -0.0007, +0.0096, 60 fold pairs -> none (SESOI 0.01; fold-pair t, seed agreement)
+
+## classification: medusa − gorgona8 on f1_macro
+- vehicle_40nan s42: -0.0056, +0.0244, +0.0170
+- vehicle_40nan s7: +0.0185, +0.0059, +0.0247
+- vehicle_40nan s13: +0.0258, +0.0455, +0.0410
+- kc2_40nan s42: -0.0062, -0.0742, +0.0168
+- kc2_40nan s7: +0.0167, +0.0481, +0.0019
+- kc2_40nan s13: -0.0199, -0.0731, -0.0109
+- credit-g_20nan s42: +0.0314, -0.0055, -0.0532
+- credit-g_20nan s7: -0.0615, -0.0271, +0.0071
+- credit-g_20nan s13: +0.0038, -0.0185, +0.0024
+- biodeg_60nan s42: +0.0477, +0.0253, +0.0195
+- biodeg_60nan s7: +0.0095, +0.0046, +0.0343
+- biodeg_60nan s13: +0.0202, +0.0080, -0.0026
+- largest |difference| per metric: f1_macro 0.0742; accuracy 0.0808
+- pooled +0.0039 [-0.0066, +0.0145], seeds +0.0031, +0.0069, +0.0018, 36 fold pairs -> none (SESOI 0.01; fold-pair t, seed agreement)
+
+## run to run, same machine
+- gorgona8 imputation credit-g_20nan s101: largest |difference| 0.00e+00
+- medusa imputation credit-g_20nan s101: largest |difference| 0.00e+00
+- gorgona8 classification vehicle_40nan s42: largest |difference| 0.00e+00
+- medusa classification vehicle_40nan s42: largest |difference| 0.00e+00
+```
+
+- **Primary: no verdict on either task.**
+  - Imputation: +0.59% [−0.61%, +1.78%]. Classification: +0.0039 [−0.0066, +0.0145].
+  - Neither interval excludes zero, and neither lies inside the SESOI.
+- **The pre-registered tie-break: each study runs whole on one machine.** It compares the largest
+  per-fold |difference| with the seed spread.
+  - Imputation: 0.164 relative, against E12's 0.007–0.014.
+  - Classification: 0.074 macro-F1, against E70's 0.0002–0.009.
+  - Both lie far outside.
+- **Descriptive:**
+  - Each machine is deterministic: both duplicates are bit-identical on both machines.
+  - The CPU baselines agree (hgb 0, knn5 at most 0.0007). So the data and folds are the same, and
+    the differences come from GPU training alone.
+  - The machine acts like another random draw of the same seed. The mean shift is small and
+    unproven, but one fold can move by as much as a seed change moves it.
+- **What follows:**
+  - A study keeps every cell on one machine.
+  - Two studies can run in parallel, one on each machine.
+  - Splitting one study by seed would need a new pre-registered check with more pairs, one that
+    shows equivalence. That is the user's call.

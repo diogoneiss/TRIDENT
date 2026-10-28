@@ -704,6 +704,15 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **When:** after the advisor meeting of 2026-10-27, once the paper's hyperparameters are in
     hand; in GPU gaps.
 
+- **T42 · Can one study's cells run on both servers?** (the user's go, 2026-10-28: "vamos testar o
+  0!").
+  - **Done 2026-10-28 by E86** ([cross-machine/01](tickets/cross-machine/01-gorgona8-medusa1.md)):
+    no verdict.
+    - Both machines are deterministic, but they differ from each other fold by fold, by up to
+      0.164 (imputation, relative) and 0.074 (classification macro-F1).
+    - So each study runs whole on one machine. Two studies can run in parallel, one per machine.
+  - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.

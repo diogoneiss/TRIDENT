@@ -112,7 +112,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
 | E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – 2026-10-28 | supported (full scope) | signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt; 11 cells under torch 2.11.0 |
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – 2026-10-28 | 20nan supported, 80nan refuted | 20nan: faithful on 8 of 9 (kc2 inconclusive), synthetic AUROC 0.994; 80nan: faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; the map holds from 20 to 60nan |
-| E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | in progress | |
+| E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
 
 ## Entries
 
@@ -2769,7 +2769,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E86 · Do gorgona8 and medusa1 give the same fold scores for the same cell? (2026-10-28)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** the machine (RTX 3090 Ti against RTX 5090, same commit, torch 2.11.0+cu128 and
   packages) adds no systematic shift to a cell's fold scores. Bit identity is not expected across
   GPU architectures; the question is a zero-mean difference within the SESOI. If it holds, later
@@ -2789,6 +2789,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     |difference| against the seed spread (E12's 0.007–0.014; E70's 0.0002–0.009).
   - Descriptive: the duplicates, the masked score, and the knn5 and hgb baselines (hgb's last
     digits differ between machines by design).
+- **Results (2026-10-28, 15:55 GMT-3):** no verdict on either task.
+  - Imputation: medusa − gorgona8 +0.59% [−0.61%, +1.78%] over 60 fold pairs.
+    Classification: +0.0039 [−0.0066, +0.0145] over 36.
+  - The largest per-fold |difference| is 0.164 (imputation) and 0.074 (classification), far
+    outside the seed spread.
+  - Both machines are bit-identical run to run, and the CPU baselines agree (hgb 0, knn5
+    ≤0.0007).
+- **Conclusion:** by the pre-registered tie-break, each study runs whole on one machine. The
+  machine acts like another random draw of the same seed, so two studies can run in parallel,
+  one per machine, but one study is not split across them. Splitting by seed would need a larger
+  check that shows equivalence; the user decides.
 - **Sources:** [cross-machine/01](tickets/cross-machine/01-gorgona8-medusa1.md);
   `scripts/experiments/cross_machine.py`, `run_cross_machine_queue.sh`; state in
   `/scratch2/diogoneiss/trident-2026-10-28-cross-machine/` and medusa1's
