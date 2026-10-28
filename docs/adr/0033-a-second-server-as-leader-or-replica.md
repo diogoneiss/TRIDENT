@@ -21,8 +21,17 @@ Preparation done on 2026-10-27, after the experiments ended (the user stopped th
 - The user's git credentials copied to medusa1 (`~/.git-credentials`, mode 600); GitHub's API
   accepted them from there.
 
-Not implemented: no `leadership.py`, no cron entry, no `_MLFLOW_SERVER_ARTIFACT_ROOT` exported,
-no checkout on medusa1; `sync_remote.py` still translates the old prefix (decision 9).
+- 2026-10-28: `_MLFLOW_SERVER_ARTIFACT_ROOT` exported on both machines; medusa1 has its checkout
+  (torch 2.11.0+cu128, commit `579e524`), `sqlite3_rsync`, and `MLFLOW_TRACKING_URI` pointing at
+  its tunnel. Interim, until `leadership.py`: `scripts/leader_keepalive.sh` (gorgona8, cron)
+  keeps the MLflow server up; `scripts/follower_sync.sh` (medusa1, cron) keeps the tunnel on
+  port 15000 and sends `mlruns/`, `results/` and `metrics/` to gorgona8 (decisions 3 and 5). A
+  run logged from medusa1 landed in gorgona8's store with the canonical root and its artifact
+  arrived (00:38 GMT-3; the run and its experiment `_adr0033_smoke` were deleted after).
+
+Not implemented: `leadership.py` (replica on medusa1, roles, epochs, switchover, fork,
+reconciliation, root guard). The Windows `config.json` was edited to the canonical prefix by
+hand instead of decision 9.
 
 The peer is **medusa1** (hostname `medusa`, Ubuntu 24.04.4, two RTX 5090), checked over ssh
 from gorgona8 on 2026-10-27 around 20:25 GMT-3:
