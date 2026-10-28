@@ -156,3 +156,15 @@ Primary at 20nan: incomplete (2 of 9)
 
 Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_80nan', 'spambase_80nan', 'credit-g_80nan'] -> refuted (fold-pair t, seed agreement, SESOI 0.01)
 ```
+
+## Third amendment (2026-10-28, 10:00 GMT-3): the 20nan rate's remaining 20 cells run
+
+- **The user's go:** "Rodar as 20 execuções que faltam do E85 a 20nan, cerca de 4h de GPU. vá"
+  (2026-10-28, before 10:00 GMT-3).
+- **The cells:** biodeg, kc2, vehicle, kr-vs-kp and credit-g at 101/202/303; letter and spambase at
+  303; synthblock_20nan at 707/808/909. They run under the same torch 2.11.0 as the 10 already done.
+  No deadline.
+- **The environment:** `_MLFLOW_SERVER_ARTIFACT_ROOT` is passed as ADR 0033 exports it. Tonight's
+  80 runs already carry the canonical root.
+- **The 80nan Outcome stands.** The 20nan rule is read once all 30 cells have run; the 10
+  descriptive lines above do not change it.
