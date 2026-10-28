@@ -90,17 +90,15 @@ def train_pretrainer(
 
     print("\n=== Starting Pre-Training (new masks each epoch) ===")
     # The clean reconstruction targets never change, so they are encoded once per fold.
-    original_train = model.embedder.encode(train_frame, device)
-    original_validation = model.embedder.encode(validation_frame, device)
+    original_train = embedder.encode(train_frame, device)
+    original_validation = embedder.encode(validation_frame, device)
     # Fresh masks every epoch, drawn exactly as preprocess_table draws them but applied to
     # tensors encoded once per fold, so no epoch goes back through pandas.
-    train_masker = EpochMasker(model.embedder, train_frame, device)
-    validation_masker = EpochMasker(model.embedder, validation_frame, device)
+    train_masker = EpochMasker(embedder, train_frame, device)
+    validation_masker = EpochMasker(embedder, validation_frame, device)
     # What the model sees at a row's real gap (``PRETRAIN_GAP_TOKEN``): the [NULL] it stores,
     # or [MASK] as the decode stage shows it since ADR 0014. Applied to the corrupted inputs
     # only; the targets and the loss positions do not move, and nothing is drawn.
-    embedder = model.embedder
-    assert isinstance(embedder, TabularEmbedder)
     shown = embedder.gaps_as_mask if hyperparameters.pretrain_gap_token == "mask" else _as_is
 
     for epoch in tqdm(range(hyperparameters.pretraining_epochs), desc="Pre train epochs"):

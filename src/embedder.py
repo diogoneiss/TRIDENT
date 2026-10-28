@@ -1,5 +1,6 @@
 import re
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import torch
@@ -122,6 +123,8 @@ class TabularEmbedder(nn.Module):
       - Numerical columns: MLP + special embeddings for [MASK] and [NULL]
       - [CLS] token + Positional Embedding
     """
+    _lookup_offsets: torch.Tensor  # registered as a buffer in __init__
+
     def __init__(self, df, categorical_columns, numerical_columns,
                  dimensao=4, hidden_dim=32, batched_lookup=False):
         super().__init__()
@@ -331,7 +334,7 @@ class TabularEmbedder(nn.Module):
         if self.categorical_keys and self.batched_lookup:
             # (n_categorical, batch) ids shifted to each column's rows, read in one gather:
             # (batch, n_categorical, d), as the per-column stack below gives it.
-            table = torch.cat([self.embedding_layers[key].weight for key in self.categorical_keys])
+            table = torch.cat([cast(nn.Embedding, self.embedding_layers[key]).weight for key in self.categorical_keys])
             ids = torch.stack(list(encoded.cat_indices)) + self._lookup_offsets[:, None]
             token_groups.append(nn.functional.embedding(ids.t(), table))
         elif self.categorical_keys:
@@ -353,8 +356,9 @@ class TabularEmbedder(nn.Module):
         # batched operation, so a table with C numerical columns costs a constant number
         # of kernel launches instead of 2 * C of them.
         if self.numerical_keys:
-            first = [self.mlp_layers[key][0] for key in self.numerical_keys]
-            second = [self.mlp_layers[key][2] for key in self.numerical_keys]
+            mlps = [cast(nn.Sequential, self.mlp_layers[key]) for key in self.numerical_keys]
+            first = [cast(nn.Linear, mlp[0]) for mlp in mlps]
+            second = [cast(nn.Linear, mlp[2]) for mlp in mlps]
             first_weight = torch.stack([layer.weight for layer in first]).squeeze(-1)
             first_bias = torch.stack([layer.bias for layer in first])
             second_weight = torch.stack([layer.weight for layer in second])

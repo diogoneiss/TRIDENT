@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import cast
 
 import torch
 import torch.nn as nn
@@ -135,6 +136,12 @@ class TridentDecoder(nn.Module):
     The excluded ids are looked up through the column's encoder, never assumed: classes
     are sorted, so the special tokens land at different positions in every column.
     """
+
+    # Registered as buffers in __init__.
+    _class_index: torch.Tensor
+    _class_valid: torch.Tensor
+    _vocabulary_start: torch.Tensor
+    _local_of_all: torch.Tensor
 
     def __init__(
         self,
@@ -302,7 +309,7 @@ class TridentDecoder(nn.Module):
         rows, columns = mask[:, :n_categorical].nonzero(as_tuple=True)
         categorical_cells = int(rows.numel())
         if categorical_cells:
-            heads = [self.categorical_heads[key] for key in self.embedder.categorical_keys]
+            heads = [cast(nn.Linear, self.categorical_heads[key]) for key in self.embedder.categorical_keys]
             weight = torch.cat([head.weight for head in heads])  # (all classes, d)
             bias = torch.cat([head.bias for head in heads])
             slots = self._class_index[columns]  # (cells, widest)
@@ -314,8 +321,9 @@ class TridentDecoder(nn.Module):
         rows, columns = mask[:, n_categorical:].nonzero(as_tuple=True)
         numerical_cells = int(rows.numel())
         if numerical_cells:
-            first = [self.numerical_heads[key][0] for key in self.embedder.numerical_keys]
-            second = [self.numerical_heads[key][2] for key in self.embedder.numerical_keys]
+            mlps = [cast(nn.Sequential, self.numerical_heads[key]) for key in self.embedder.numerical_keys]
+            first = [cast(nn.Linear, mlp[0]) for mlp in mlps]
+            second = [cast(nn.Linear, mlp[2]) for mlp in mlps]
             first_weight = torch.stack([layer.weight for layer in first])  # (C, hidden, d)
             first_bias = torch.stack([layer.bias for layer in first])  # (C, hidden)
             second_weight = torch.stack([layer.weight for layer in second]).squeeze(1)  # (C, hidden)
