@@ -5,6 +5,7 @@ installed MLflow writes, and they are read back through ``MlflowClient``, the wa
 analysis reads them.
 """
 
+import json
 import os
 import shutil
 import sqlite3
@@ -625,3 +626,18 @@ def test_an_empty_wal_left_by_a_reader_does_not_stop_a_pull(workspace: Workspace
     pull(workspace, apply=True)
 
     assert client_for(local / "mlflow.db").get_run(run_id).info.run_id == run_id
+
+
+def test_a_server_that_follows_another_takes_pulls_but_refuses_a_push(workspace: Workspace) -> None:
+    local, server = workspace.root, server_root(workspace)
+    make_store(server / "mlflow.db", SERVER_PREFIX)
+    (server / "sync").mkdir(exist_ok=True)
+    (server / "sync" / "role.json").write_text(json.dumps({"role": "follower", "epoch": 2, "peer": "medusa1"}))
+    said: list[str] = []
+    following = Workspace(local, workspace.config, workspace.transport, say=said.append)
+
+    pull(following, apply=True)
+
+    assert any("follower of medusa1" in line for line in said)
+    with pytest.raises(StoreError, match="medusa1, which leads"):
+        push(following, apply=True)

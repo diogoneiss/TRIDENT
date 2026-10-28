@@ -52,8 +52,13 @@ Preparation done on 2026-10-27, after the experiments ended (the user stopped th
   2, gorgona8 follows with its store at mode 444 and its tunnel on 47731. The first
   replication (14:06) moved the 16.4 GB store in about 2.5 minutes; outputs replaced no file.
 
-Not implemented: `reconcile` (decision 8's merge and undo), so after a promotion the old
-leader stays `deposed`. The Windows `config.json` was edited to the canonical prefix by
+- 2026-10-28: `reconcile` (decision 8) in `scripts/store_merge.py`, driven by
+  `leadership.py reconcile [--apply | --undo <stamp>]`, and decision 9 in `sync_remote.py`.
+  The ADR is implemented in full, with two narrowings: the incoming store is one file,
+  `sync/incoming.db`, refreshed incrementally by `sqlite3_rsync` (a dry run fetches it too);
+  and Windows keeps its configured host instead of following the leader (decision 9, below).
+  On gorgona8's store (18425 runs, hard disk), planning a merge takes about four minutes,
+  and runs once for the dry run, once before the backups and once for the merge. The Windows `config.json` was edited to the canonical prefix by
 hand instead of decision 9.
 
 The peer is **medusa1** (hostname `medusa`, Ubuntu 24.04.4, two RTX 5090), checked over ssh
@@ -324,8 +329,10 @@ Rejected on the way:
      new leader overwrites its store.
 
 9. **Windows (amends ADR 0009).**
-   - `sync_remote.py` reads the current leader from the server's `role.json` instead of the
-     host fixed by `init`.
+   - `sync_remote.py` reads the server's `role.json`. A pull from a follower goes on and says
+     the store is the leader's as of its last copy; a push to a follower is refused, since
+     the next copy would overwrite it. *As built:* Windows does not switch hosts by itself;
+     it reaches the leader only through a host its ssh config knows.
    - Decision 4's translation takes the canonical prefix of decision 1 as the server's,
      whichever machine leads. It is set apart from the remote root used for transfers, which
      stays each machine's physical checkout (`/scratch2/diogoneiss/TRIDENT` on gorgona8,
@@ -377,6 +384,9 @@ python3 scripts/leadership.py init --role follower --peer gorgona8 --peer-root /
 python3 scripts/leadership.py status
 python3 scripts/leadership.py switchover         # on the follower; planned swap, both sides answer
 python3 scripts/leadership.py promote            # on the follower; refused while the leader answers
+python3 scripts/leadership.py reconcile          # on the new leader, once the old one is deposed and read-only: dry run
+python3 scripts/leadership.py reconcile --apply  # backups, merge, the old leader rejoins as follower
+python3 scripts/leadership.py reconcile --undo <stamp>   # the stamp is in sync/leadership.log
 ```
 
 Cron on each machine, with that machine's checkout:

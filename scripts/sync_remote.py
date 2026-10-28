@@ -429,6 +429,12 @@ def remote_command(argv: list[str]) -> dict[str, object]:
         return _remote_step(args, root)
 
 
+def server_role(root: Path) -> dict[str, object] | None:
+    """The server's ``sync/role.json`` when it is one of a pair of servers (ADR 0033)."""
+    path = root / SYNC_DIR / "role.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
 def _remote_step(args: argparse.Namespace, root: Path) -> dict[str, object]:
     store = root / STORE_NAME
     (root / SYNC_DIR).mkdir(parents=True, exist_ok=True)
@@ -438,6 +444,7 @@ def _remote_step(args: argparse.Namespace, root: Path) -> dict[str, object]:
             "holders": held_open_by(store),
             "dirs": [name for name in OUTPUT_DIRS if (root / name).is_dir()],
             "branches": branch_tips(root),
+            "role": server_role(root),
         }
     if args.command == "snapshot":
         if store.is_symlink() and not store.exists():
@@ -449,13 +456,13 @@ def _remote_step(args: argparse.Namespace, root: Path) -> dict[str, object]:
         holders = held_open_by(store)
         if holders and args.while_busy:
             taken = copy_replica(root, root / OUTGOING_FILE)
-            return {"store_sha256": None, "replica_taken": taken, "holders": holders, "dirs": dirs}
+            return {"store_sha256": None, "replica_taken": taken, "holders": holders, "dirs": dirs, "role": server_role(root)}
         if holders:
             raise StoreError(
                 f"{store} is open by {', '.join(holders)}; wait for it, or pull a copy of its "
                 "replica with --while-busy"
             )
-        return {"store_sha256": snapshot_store(store, root / OUTGOING_FILE), "dirs": dirs}
+        return {"store_sha256": snapshot_store(store, root / OUTGOING_FILE), "dirs": dirs, "role": server_role(root)}
     if args.command == "discard":
         outgoing = root / OUTGOING_FILE
         found = outgoing.exists()
@@ -688,6 +695,13 @@ def push(workspace: Workspace, *, apply: bool) -> None:
         )
     refuse_if_busy(workspace.root / STORE_NAME)
     server = transport.remote("prepare", "--root", config.remote_root)
+    role = server.get("role")
+    if isinstance(role, dict) and role.get("role") != "leader":
+        # Its store is overwritten by the leader's every ten minutes (ADR 0033, decision 9).
+        raise StoreError(
+            f"the server is a {role.get('role')} of {role.get('peer')}, which leads: a store pushed "
+            "here would be overwritten. Push to the leader, or make this server lead first"
+        )
     if _names(server["holders"]):
         raise StoreError(f"the server's store is open by {', '.join(_names(server['holders']))}")
     refuse_if_server_has_commits(workspace.root, _branches(server["branches"]))
@@ -738,6 +752,12 @@ def pull(workspace: Workspace, *, apply: bool, while_busy: bool = False) -> None
     busy = ["--while-busy"] if while_busy else []
     snapshot = transport.remote("snapshot", "--root", config.remote_root, *busy)
     remote_digest = _text(snapshot["store_sha256"])
+    role = snapshot.get("role")
+    if isinstance(role, dict) and role.get("role") != "leader":
+        workspace.say(
+            f"[{mode}] the server is a {role.get('role')} of {role.get('peer')}: its store is the "
+            "leader's as of its last copy, at most ten minutes old (ADR 0033)"
+        )
     replica_taken = _text(snapshot.get("replica_taken"))
     if replica_taken:
         workspace.say(

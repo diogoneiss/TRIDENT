@@ -64,8 +64,9 @@ class LocalPeer(Peer):
     def exchange_outputs(self, root: Path, backup: str) -> None:
         pass
 
-    def yield_leadership(self, epoch: int) -> None:
-        leadership.yield_leadership(self.path, FakeServices(self.path), epoch, T0)
+    def remote(self, *args: str) -> None:
+        if leadership.main(["--root", str(self.path), *args]) != 0:
+            raise StoreError(f"peer refused {args}")
 
 
 class FakeServices(Services):
@@ -237,6 +238,91 @@ def test_a_follower_that_never_copied_has_nothing_to_fork(pair: tuple[Path, Path
 def test_a_switchover_cut_short_after_the_yield_resumes_at_the_same_epoch(pair: tuple[Path, Path, LocalPeer, FakeServices]) -> None:
     leader, follower, peer, services = pair
     follow(follower, peer, services, T0 + 60)
-    peer.yield_leadership(2)
+    peer.remote("yield", "--epoch", "2")
     switchover(follower, peer, services, T0 + 120)
     assert (load_role(follower)["role"], load_role(follower)["epoch"]) == ("leader", 2)  # type: ignore[index]
+
+
+def client_for(root: Path) -> MlflowClient:
+    return MlflowClient(tracking_uri=f"sqlite:///{(root / 'mlflow.db').as_posix()}")
+
+
+def tags_of(root: Path, run: str) -> dict[str, str]:
+    return dict(client_for(root).get_run(run).data.tags)
+
+
+def test_reconcile_merges_the_old_leaders_runs_and_undo_reverts_it(pair: tuple[Path, Path, LocalPeer, FakeServices]) -> None:
+    from mlflow.entities import Dataset, DatasetInput
+
+    leader, follower, peer, services = pair
+    old, new = client_for(leader), client_for(follower)
+    found = old.get_experiment_by_name("TRIDENT/credit-g")
+    assert found is not None
+    experiment = found.experiment_id
+    shared = Dataset(name="credit-g", digest="d1", source_type="local", source="data.csv")
+    finished, tagged, clashing = (old.create_run(experiment).info.run_id for _ in range(3))
+    old.log_metric(finished, "loss", 1.0, step=0)
+    old.log_inputs(finished, datasets=[DatasetInput(dataset=shared)])
+    follow(follower, peer, services, T0 + 60)
+    peer.answers = False
+    follow(follower, peer, services, T0 + 60 + PROMOTE_AFTER)  # promoted: fork base taken
+    assert load_role(follower)["fork_base"]  # type: ignore[index]
+    # The split: both sides go on writing.
+    old.log_metric(finished, "loss", 0.5, step=1)
+    old.set_terminated(finished)
+    old.set_tag(tagged, "verdict", "theirs")
+    old.set_tag(clashing, "verdict", "theirs")
+    new.set_tag(clashing, "verdict", "ours")
+    their_run = old.create_run(experiment).info.run_id
+    old.log_inputs(their_run, datasets=[DatasetInput(dataset=shared)])
+    their_experiment = old.create_experiment("TRIDENT/theirs-only")
+    their_other = old.create_run(their_experiment).info.run_id
+    our_run = new.create_run(experiment).info.run_id
+    new.log_inputs(our_run, datasets=[DatasetInput(dataset=shared)])
+    before = run_ids(follower / "mlflow.db")
+    # They meet: the old leader is deposed, then read-only.
+    peer.answers = True
+    for minute in (1, 2):
+        tick(leader, T0 + 2 * PROMOTE_AFTER + 60 * minute, lambda _: LocalPeer(follower), lambda _: FakeServices(leader))
+    assert load_role(leader)["role"] == "deposed"  # type: ignore[index]
+
+    leadership.reconcile(follower, peer, T0 + 3 * PROMOTE_AFTER, apply=False)
+    assert run_ids(follower / "mlflow.db") == before  # a dry run writes nothing
+    leadership.reconcile(follower, peer, T0 + 3 * PROMOTE_AFTER, apply=True)
+
+    merged = run_ids(follower / "mlflow.db")
+    assert {their_run, their_other, our_run} <= merged
+    assert new.get_run(finished).info.status == "FINISHED"
+    assert [m.value for m in new.get_metric_history(finished, "loss")] == [1.0, 0.5]
+    assert new.get_run(finished).data.metrics["loss"] == 0.5
+    assert tags_of(follower, tagged)["verdict"] == "theirs"
+    assert tags_of(follower, clashing)["verdict"] == "ours"  # the higher epoch wins
+    assert new.get_experiment(their_experiment).name == "TRIDENT/theirs-only"
+    connection = sqlite3.connect(follower / "mlflow.db")
+    assert connection.execute("SELECT count(*) FROM datasets WHERE name = 'credit-g'").fetchone()[0] == 1
+    assert connection.execute("SELECT count(DISTINCT source_id) FROM inputs").fetchone()[0] == 1
+    connection.close()
+    assert "reconcile_conflict" in events(follower) and "reconcile_done" in events(follower)
+    assert load_role(follower)["fork_base"] is None  # type: ignore[index]
+    assert (load_role(leader)["role"], load_role(leader)["epoch"]) == ("follower", 2)  # type: ignore[index]
+
+    stamp = next(json.loads(line)["merge"] for line in (follower / "sync/leadership.log").read_text().splitlines() if "reconcile_done" in line)
+    assert leadership.main(["--root", str(follower), "reconcile", "--undo", stamp]) == 0
+    assert run_ids(follower / "mlflow.db") == before
+    assert new.get_run(finished).info.status == "RUNNING" and new.get_run(finished).data.metrics["loss"] == 1.0
+    assert "verdict" not in tags_of(follower, tagged) and new.get_experiment_by_name("TRIDENT/theirs-only") is None
+
+
+def test_reconcile_refuses_an_experiment_name_both_sides_created(pair: tuple[Path, Path, LocalPeer, FakeServices]) -> None:
+    leader, follower, peer, services = pair
+    follow(follower, peer, services, T0 + 60)
+    peer.answers = False
+    follow(follower, peer, services, T0 + 60 + PROMOTE_AFTER)
+    client_for(leader).create_experiment("TRIDENT/both")
+    client_for(follower).create_experiment("TRIDENT/both")
+    peer.answers = True
+    for minute in (1, 2):
+        tick(leader, T0 + 2 * PROMOTE_AFTER + 60 * minute, lambda _: LocalPeer(follower), lambda _: FakeServices(leader))
+    with pytest.raises(StoreError, match="clashes"):
+        leadership.reconcile(follower, peer, T0 + 3 * PROMOTE_AFTER, apply=True)
+    assert load_role(follower)["fork_base"]  # type: ignore[index]

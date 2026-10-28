@@ -24,6 +24,7 @@ On gorgona8, `mlflow.db` in the checkout is a link to `/var/tmp/diogoneiss/TRIDE
 - Windows runs its own copy of `sync_remote.py` on the server: it must `git pull` this change before its first sync, or a push would replace the link with a file on the hard disk.
 - If `sync` refuses with "not a link", the store is back on the hard disk: read ADR 0010 before running `adopt`.
 - The SSD store shares `/` with the system: check `df -h /` before writing anything large there.
+- When gorgona8 follows medusa1 ([ADR 0033](docs/adr/0033-a-second-server-as-leader-or-replica.md)), this store is a mode-444 copy of the leader's, at most 10 minutes old: query it for analysis, but write only through `MLFLOW_TRACKING_URI` (the leader's server, through the tunnel on port 47731).
 
 ## Experimentation log
 

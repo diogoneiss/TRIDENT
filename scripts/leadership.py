@@ -23,8 +23,12 @@ Cron entry (``crontab -e``), the same on both machines but for the checkout's pa
 
     * * * * * cd /scratch2/diogoneiss/TRIDENT && python3 scripts/leadership.py tick >> sync/leadership.cron.log 2>&1
 
-``reconcile`` (decision 8) is not written yet: after a promotion, the old leader stays
-``deposed`` until it is.
+After a promotion the old leader is ``deposed`` when it meets the new one, and read-only
+once its trainings end. Then, on the new leader (``scripts/store_merge.py`` has the rules):
+
+    python3 scripts/leadership.py reconcile             # dry run: what would be merged or refused
+    python3 scripts/leadership.py reconcile --apply     # backups, merge, the old leader follows
+    python3 scripts/leadership.py reconcile --undo <stamp>
 """
 
 from __future__ import annotations
@@ -45,6 +49,7 @@ from typing import Any, Callable, Iterator
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from scripts import store_merge  # noqa: E402
 from scripts.store_replica import copy_store, find_rsync, quick_check  # noqa: E402
 from scripts.sync_remote import (  # noqa: E402
     ARTIFACT_ROOT_COLUMNS,
@@ -63,6 +68,7 @@ LOG_FILE = f"{SYNC_DIR}/leadership.log"
 TICK_LOCK = f"{SYNC_DIR}/leadership.lock"
 SERVER_LOG = f"{SYNC_DIR}/mlflow_server.log"
 BACKUP_DIR = f"{SYNC_DIR}/backups"
+INCOMING_FILE = f"{SYNC_DIR}/incoming.db"
 PORT = 47731  # unusual on purpose: 5000 is the default of many tools
 CANONICAL_ROOT = "file:///scratch/diogoneiss/TRIDENT/mlruns/"
 COPY_EVERY = 10 * 60
@@ -147,13 +153,14 @@ class Peer:
             if result.returncode not in (0, 24):  # 24: a file vanished while being sent
                 raise SyncError(f"rsync of the outputs failed: {result.stderr.strip()}")
 
-    def yield_leadership(self, epoch: int) -> None:
+    def remote(self, *args: str) -> None:
+        """Run a step of this script in the peer's checkout: yield, backup, rejoin."""
         result = subprocess.run(
-            [*SSH, self.alias, f"cd {self.root} && python3 scripts/leadership.py yield --epoch {epoch}"],
+            [*SSH, self.alias, f"cd {self.root} && python3 scripts/leadership.py {' '.join(args)}"],
             capture_output=True, text=True,
         )
         if result.returncode != 0:
-            raise StoreError(f"{self.alias} did not yield: {(result.stdout + result.stderr).strip()}")
+            raise StoreError(f"{self.alias} refused `{' '.join(args)}`: {(result.stdout + result.stderr).strip()}")
 
 
 class Services:
@@ -440,7 +447,7 @@ def switchover(root: Path, peer: Peer, services: Services, now: float) -> None:
     resumed = peer_role["role"] == "follower" and peer_role["epoch"] > role["epoch"]
     epoch = peer_role["epoch"] if resumed else max(role["epoch"], peer_role["epoch"]) + 1
     if not resumed:
-        peer.yield_leadership(epoch)
+        peer.remote("yield", "--epoch", str(epoch))
     with tick_lock(root) as mine:
         if not mine:
             raise StoreError("a tick is running here; run switchover again in a minute")
@@ -451,6 +458,60 @@ def switchover(root: Path, peer: Peer, services: Services, now: float) -> None:
         save_role(root, role)
     services.start_server()
     log(root, "switchover", now, epoch=epoch, previous_leader=peer.alias)
+
+
+def reconcile(root: Path, peer: Peer, now: float, apply: bool) -> None:
+    """Merge the deposed old leader's store into this one, then make it a follower (decision 8)."""
+    role = load_role(root)
+    if role is None or role["role"] != "leader" or not role.get("fork_base"):
+        raise StoreError("reconcile runs on a leader with an open fork (a fork base in role.json)")
+    answers, peer_role = peer.read_role()
+    if not answers or not peer_role:
+        raise StoreError(f"{peer.alias} does not answer")
+    if peer_role["role"] != "deposed" or not peer_role.get("read_only"):
+        raise StoreError(f"{peer.alias} is {peer_role['role']}, not a read-only deposed leader; its trainings may still write")
+    incoming = root / INCOMING_FILE
+    peer.pull_store(incoming)  # incremental after the first time
+    stamp = datetime.fromtimestamp(now, timezone.utc).strftime("%Y-%m-%dT%H%M%S")
+
+    def say(event: str, **fields: Any) -> None:
+        log(root, event, now, merge=stamp, **fields)
+
+    base = Path(role["fork_base"])
+    if not apply:
+        found = store_merge.merge(live_store(root), base, incoming, None, say)
+        say("reconcile_dry_run", **{k: len(v) for k, v in vars(found).items()})
+        return
+    store_merge.merge(live_store(root), base, incoming, None, lambda *_, **__: None)  # refusals before 30 GB of backups
+    checked_backup(root, "pre-reconcile", now)
+    peer.remote("backup", "--kind", "pre-reconcile")
+    peer.exchange_outputs(root, f"{BACKUP_DIR}/{stamp}-outputs")
+    journal = root / SYNC_DIR / f"reconcile-{stamp}.undo.jsonl"
+    found = store_merge.merge(live_store(root), base, incoming, journal, say)
+    say("reconcile_done", journal=str(journal), **{k: len(v) for k, v in vars(found).items()})
+    base.unlink(missing_ok=True)
+    incoming.unlink(missing_ok=True)
+    role.update(fork_base=None, fork_since=None, peer_odd_logged=False)
+    save_role(root, role)
+    peer.remote("rejoin", "--epoch", str(role["epoch"]))
+
+
+def undo_reconcile(root: Path, stamp: str, now: float) -> None:
+    journal = root / SYNC_DIR / f"reconcile-{stamp}.undo.jsonl"
+    if not journal.exists():
+        raise StoreError(f"no journal {journal}")
+    count = store_merge.undo(live_store(root), journal, lambda event, **f: log(root, event, now, merge=stamp, **f))
+    log(root, "reconcile_undo_done", now, merge=stamp, entries=count)
+
+
+def rejoin(root: Path, epoch: int, now: float) -> None:
+    """The old leader's last step: follow the leader that merged it, which overwrites this store."""
+    role = load_role(root)
+    if role is None or role["role"] != "deposed" or epoch < role["epoch"]:
+        raise StoreError(f"cannot rejoin at epoch {epoch}: role is {role}")
+    role.update(role="follower", epoch=epoch, last_contact=now, last_copy_try=0, fork_base=None, fork_since=None, peer_odd_logged=False)
+    save_role(root, role)
+    log(root, "rejoined", now, epoch=epoch)
 
 
 def status(root: Path, now: float) -> None:
@@ -464,7 +525,7 @@ def status(root: Path, now: float) -> None:
     if role.get("fork_since"):
         print(f"fork open for {(now - role['fork_since']) / 3600:.1f} h, base {role['fork_base']}")
     if role["role"] == "deposed":
-        print("deposed: waiting for `reconcile` (not written yet), which merges this store into the leader's")
+        print("deposed: waiting for `reconcile` on the leader, which merges this store into its own")
     backups = root / BACKUP_DIR
     if backups.is_dir():
         used = sum(path.stat().st_size for path in backups.rglob("*") if path.is_file())
@@ -499,8 +560,15 @@ def main(argv: list[str] | None = None) -> int:
     commands.add_parser("tick", help="cron, every minute")
     commands.add_parser("switchover", help="on the follower: swap roles with a leader that answers")
     commands.add_parser("promote", help="on the follower: lead without the leader, which must not answer")
+    reconcile_command = commands.add_parser("reconcile", help="on the new leader: merge the deposed old leader's store")
+    reconcile_command.add_argument("--apply", action="store_true", help="without it, a dry run")
+    reconcile_command.add_argument("--undo", metavar="STAMP", help="revert the merge of that stamp, from its journal")
     yield_command = commands.add_parser("yield", help="internal: the leader's half of a switchover")
     yield_command.add_argument("--epoch", type=int, required=True)
+    backup_command = commands.add_parser("backup", help="internal: a checked backup of this store")
+    backup_command.add_argument("--kind", required=True)
+    rejoin_command = commands.add_parser("rejoin", help="internal: the old leader follows after reconcile")
+    rejoin_command.add_argument("--epoch", type=int, required=True)
     args = parser.parse_args(argv)
     root = (args.root or Path(__file__).resolve().parents[1]).absolute()
     now = time.time()
@@ -526,6 +594,15 @@ def main(argv: list[str] | None = None) -> int:
                 switchover(root, peer_for(role), services_for(role), now)
             elif args.command == "yield":
                 yield_leadership(root, services_for(role), args.epoch, now)
+            elif args.command == "reconcile":
+                if args.undo:
+                    undo_reconcile(root, args.undo, now)
+                else:
+                    reconcile(root, peer_for(role), now, args.apply)
+            elif args.command == "backup":
+                checked_backup(root, args.kind, now)
+            elif args.command == "rejoin":
+                rejoin(root, args.epoch, now)
             else:
                 promote(root, role, peer_for(role), services_for(role), now, "manual")
                 save_role(root, role)
