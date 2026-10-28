@@ -154,3 +154,58 @@ Primary: signal on 8 (K) and 8 (H) of 8, against under K on none -> supported (f
   - The torch of every run is in its `torch_version` tag.
 - **Deadline, by the clock only:** no cell starts after 2026-10-28, 08:30 GMT-3. The user stops
   experiments after 09:00 for the migration.
+
+## Outcome on the full scope (2026-10-28, 01:42 GMT-3): supported
+
+- **Ran:** all 51 cells of the pre-registered scope, none failed.
+  - 40 ran under torch 2.5.1 (2026-10-27, 20:35–22:33 GMT-3).
+  - 11 ran under torch 2.11.0 (2026-10-28, 00:30–01:40 GMT-3).
+  - **Which variants ran under 2.11.0:** biodeg at slopes 0.25 and 1.0, spambase probit, and seeds
+    202/303 of spambase's `marfctl` control. Every other variant's three seeds ran under 2.5.1.
+- **Primary, the original 12-variant rule: supported.** A signal on 12 of 12 under K and 12 of 12
+  under H, with none against. The rule needed 10.
+  - Every one of the 24 intervals lies above 0 with seed agreement. The lowest lower bound is
+    +0.084 (vehicle MNAR, K); under H it is +0.087.
+- **Why it is now marked complete** (the user's instruction of 2026-10-27, "não quero que vc marque
+  ele completo a menos que a evidência mostrada seja inegável"):
+  - the pre-registered scope ran in full;
+  - the original rule, not the amended one, is met with a margin of 2 variants under each readout;
+  - no interval comes near 0.
+- **What travels with it:**
+  - **The 8-variant reading was seen before the scope was restored.** The decision to complete was
+    the user's and returned to the plan.
+  - **Two torch versions:** the primary verdict is within each variant, and each variant's seeds
+    share one torch. The only variant that mixes them is spambase's `marfctl` control, which
+    enters only the descriptive line below.
+- **Shifted minus control (descriptive):**
+  - **On biodeg the ranking weakens steadily with the MNAR tilt:** −0.023, −0.049, −0.077 and
+    −0.111 at slopes 0.25, 0.5, 1.0 and 2.0. The first interval reaches 0.
+  - **Weaker** on spambase MNAR (−0.045) and on kc2 MAR under K (−0.092).
+  - **Stronger** on kc2 MNAR (+0.103) and vehicle MAR (+0.040).
+  - **No difference** elsewhere. spambase MAR minus its mixed-torch control is −0.009, with an
+    interval spanning 0.
+- **What it leads to, as fixed:** ADR 0030's limits line can be amended, on the user's decision,
+  to "tested under MCAR, one MAR draw and self-masking MNAR, at 60nan". The note that the ranking
+  weakens as the self-masking tilt grows goes with it.
+
+The reader's printout on the full scope (`spread_mechanisms.py --tally`), unedited:
+
+```text
+- `biodeg_probit0p25_60nan`: K num_rank +0.348 [+0.327, +0.369] -> signal; minus biodeg_60nan -0.023 [-0.051, +0.004]; H num_rank +0.332 [+0.309, +0.354] -> signal
+- `biodeg_probit_60nan`: K num_rank +0.322 [+0.290, +0.355] -> signal; minus biodeg_60nan -0.049 [-0.082, -0.017]; H num_rank +0.295 [+0.256, +0.334] -> signal
+- `biodeg_probit1p0_60nan`: K num_rank +0.294 [+0.275, +0.314] -> signal; minus biodeg_60nan -0.077 [-0.094, -0.060]; H num_rank +0.304 [+0.289, +0.318] -> signal
+- `biodeg_probit2p0_60nan`: K num_rank +0.260 [+0.242, +0.279] -> signal; minus biodeg_60nan -0.111 [-0.132, -0.091]; H num_rank +0.239 [+0.209, +0.269] -> signal
+- `vehicle_probit_60nan`: K num_rank +0.101 [+0.084, +0.118] -> signal; minus vehicle_60nan -0.010 [-0.028, +0.009]; H num_rank +0.110 [+0.087, +0.134] -> signal
+- `kc2_probit_60nan`: K num_rank +0.518 [+0.473, +0.563] -> signal; minus kc2_60nan +0.103 [+0.057, +0.149]; H num_rank +0.467 [+0.431, +0.503] -> signal
+- `spambase_probit_60nan`: K num_rank +0.322 [+0.304, +0.341] -> signal; minus spambase_60nan -0.045 [-0.073, -0.017]; H num_rank +0.287 [+0.245, +0.329] -> signal
+- `biodeg_marf_60nan`: K num_rank +0.425 [+0.411, +0.439] -> signal; minus biodeg_marfctl_60nan -0.013 [-0.028, +0.002]; H num_rank +0.413 [+0.399, +0.426] -> signal; minus biodeg_marfctl_60nan -0.021 [-0.042, +0.000]
+- `kc2_marf_60nan`: K num_rank +0.378 [+0.321, +0.434] -> signal; minus kc2_marfctl_60nan -0.092 [-0.151, -0.034]; H num_rank +0.414 [+0.376, +0.452] -> signal; minus kc2_marfctl_60nan -0.022 [-0.071, +0.027]
+- `vehicle_marf_60nan`: K num_rank +0.143 [+0.121, +0.164] -> signal; minus vehicle_marfctl_60nan +0.040 [+0.010, +0.069]; H num_rank +0.134 [+0.114, +0.155] -> signal; minus vehicle_marfctl_60nan +0.037 [+0.005, +0.068]
+- `spambase_marf_60nan`: K num_rank +0.446 [+0.429, +0.463] -> signal; minus spambase_marfctl_60nan -0.009 [-0.028, +0.011]; H num_rank +0.443 [+0.426, +0.459] -> signal; minus spambase_marfctl_60nan -0.014 [-0.039, +0.011]
+- `credit-g_marf_60nan`: K num_rank +0.180 [+0.123, +0.237] -> signal; minus credit-g_marfctl_60nan +0.026 [-0.051, +0.104]; H num_rank +0.195 [+0.140, +0.250] -> signal; minus credit-g_marfctl_60nan +0.008 [-0.078, +0.095]
+
+- K: signal on 12 of 12, against on none
+- H: signal on 12 of 12, against on none
+
+Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported (fold-pair t, seed agreement)
+```

@@ -110,7 +110,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
-| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | partial, completing | the amended 8 of 12 variants all signal under K and H; spambase and biodeg's slopes 0.25 and 1.0 not run; no verdict on the pre-registered scope |
+| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – 2026-10-28 | supported (full scope) | signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt; 11 cells under torch 2.11.0 |
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | in progress | E78's rule per rate, 60 cells, torch 2.11.0, 80nan first, no cell after 08:30 on 10-28 |
 
 ## Entries
@@ -2679,7 +2679,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E84 · Does the re-masking spread still rank errors under MNAR and MAR? (2026-10-27)
 
-- **Status:** partial, not complete (2026-10-27, 22:56 GMT-3, on the user's instruction). The amended 8 variants read supported at 22:34 GMT-3; 4 of the 12 pre-registered variants did not run. Pre-registered before the first cell, on the user's go (2026-10-27,
+- **Status:** done, supported on the full pre-registered scope (2026-10-28, 01:42 GMT-3); it was partial from 2026-10-27, 22:56 GMT-3, until its remaining cells ran. The amended 8 variants read supported at 22:34 GMT-3; 4 of the 12 pre-registered variants did not run. Pre-registered before the first cell, on the user's go (2026-10-27,
   before 20:40 GMT-3). ADR 0030's follow-up.
 - **Hypothesis:** the spread's within-column ranking of errors (E76) holds under self-masking MNAR
   and MAR.
@@ -2709,7 +2709,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - The within-column `num_rank` signals on 8 of 8 under K and H, ρ +0.10 to +0.52; none against.
   - **Against the control:** weaker on biodeg MNAR (−0.05 at slope 0.5, −0.11 at 2.0) and kc2 MAR
     (K); stronger on kc2 MNAR and vehicle MAR.
-- **Conclusion:** not complete.
+- **Conclusion at the partial stage (2026-10-27, 22:56 GMT-3, superseded below):** not complete.
   - On the 8 variants that ran, the ranking holds under MAR and self-masking MNAR at 60nan
     (biodeg, kc2, vehicle and credit-g).
   - The pre-registered study had 12 variants. spambase (MNAR and MAR) and biodeg's slopes 0.25 and
@@ -2720,6 +2720,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Second amendment (2026-10-28, 00:30 GMT-3):** the full 12-variant scope is restored on the user's go, and the
   original rule will be read. The 11 remaining cells run under torch 2.11.0 (the first 40 ran
   under 2.5.1); no cell starts after 08:30 GMT-3 on 2026-10-28.
+- **Results on the full scope:** 51 of 51 cells.
+  - A signal on 12 of 12 under K and 12 of 12 under H, with none against; ρ +0.10 to +0.52 and
+    the lowest lower bound +0.084.
+  - **On biodeg the ranking weakens with the tilt:** shifted minus MCAR is −0.023, −0.049, −0.077
+    and −0.111 at slopes 0.25 to 2.0.
+  - **Conclusion:** supported. The spread's within-column ranking holds under one MAR draw and
+    self-masking MNAR at 60nan on five tables, weakening as the tilt grows. Extending ADR 0030 is
+    the user's decision.
+
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
 
