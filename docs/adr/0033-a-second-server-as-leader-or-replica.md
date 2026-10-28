@@ -48,6 +48,10 @@ Preparation done on 2026-10-27, after the experiments ended (the user stopped th
   request, against a bad rsync. Both `.bashrc`s export `MLFLOW_TRACKING_URI` only when
   `sync/role.json` says `follower`.
 
+- 2026-10-28 14:34 GMT-3: after E85 ended, `switchover` on medusa1: medusa1 leads at epoch
+  2, gorgona8 follows with its store at mode 444 and its tunnel on 47731. The first
+  replication (14:06) moved the 16.4 GB store in about 2.5 minutes; outputs replaced no file.
+
 Not implemented: `reconcile` (decision 8's merge and undo), so after a promotion the old
 leader stays `deposed`. The Windows `config.json` was edited to the canonical prefix by
 hand instead of decision 9.
