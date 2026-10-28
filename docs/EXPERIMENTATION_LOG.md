@@ -110,7 +110,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E81 | Does a decoder that can tell a real gap from its own masks read the gap pattern under MNAR? | 2026-10-27 | mixed | null arm reads the pattern at slopes 0.25–1.0 (S +0.02 to +0.07) and on vehicle/kc2 MNAR, not at MCAR, but only +0.005 at slope 2.0; less accurate than mask on 11 of 11 |
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
-| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – | in progress | pre-registered; within-column num_rank on 12 shifted variants at 60nan, K and H |
+| E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 | supported | signal on 8 of 8 shifted variants (amended scope) under K and H, none against; weaker on biodeg as the MNAR tilt grows |
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | pre-registered, deferred | E78's rule per rate, 60 cells; deferred before any cell for the store migration |
 
 ## Entries
@@ -2679,7 +2679,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E84 · Does the re-masking spread still rank errors under MNAR and MAR? (2026-10-27)
 
-- **Status:** in progress. Pre-registered before the first cell, on the user's go (2026-10-27,
+- **Status:** done, supported (2026-10-27, 22:34 GMT-3). Pre-registered before the first cell, on the user's go (2026-10-27,
   before 20:40 GMT-3). ADR 0030's follow-up.
 - **Hypothesis:** the spread's within-column ranking of errors (E76) holds under self-masking MNAR
   and MAR.
@@ -2705,6 +2705,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     refuted with 4 or fewer or any against.
   - **Running:** four spambase cells already running are let finish, unread. No cell starts after
     22:45 GMT-3.
+- **Results:** 36 of 36 in scope.
+  - The within-column `num_rank` signals on 8 of 8 under K and H, ρ +0.10 to +0.52; none against.
+  - **Against the control:** weaker on biodeg MNAR (−0.05 at slope 0.5, −0.11 at 2.0) and kc2 MAR
+    (K); stronger on kc2 MNAR and vehicle MAR.
+- **Conclusion:** supported. The spread's ranking holds under MAR and self-masking MNAR at 60nan on
+  biodeg, kc2, vehicle and credit-g. Extending ADR 0030's scope is the user's decision.
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
 

@@ -80,3 +80,41 @@ This ticket was written and committed before the study's first cell.
   after the migration on the user's go, and the reading waits for all 36.
 - **E85 is not run tonight.** Its chained waiters were stopped before any of its cells started. It
   stays pre-registered and waits for the user.
+
+## Outcome (2026-10-27, 22:34 GMT-3): supported
+
+- **Ran:** the amended scope's 36 cells, from 21:22 to 22:33 GMT-3, none failed. The four
+  spambase cells let finish (20:35–21:21) are outside the scope and were not read.
+- **Primary: supported.** The within-column `num_rank` signals on 8 of 8 shifted variants under K
+  and on 8 of 8 under H, with none against.
+  - **MNAR:** biodeg at slopes 0.5 and 2.0 (+0.32, +0.26), vehicle (+0.10), kc2 (+0.52).
+  - **MAR:** biodeg (+0.43), kc2 (+0.38), vehicle (+0.14), credit-g (+0.18).
+- **Shifted minus control (descriptive):**
+  - **Weaker** on biodeg under MNAR (−0.05 at slope 0.5, −0.11 at slope 2.0, growing with the
+    tilt) and on kc2 under MAR (−0.09 under K; no difference under H).
+  - **Stronger** on kc2 under MNAR (+0.10) and on vehicle under MAR (+0.04).
+  - **No difference** on vehicle under MNAR and on biodeg and credit-g under MAR.
+- **What it leads to, as fixed:** ADR 0030's scope can extend to MAR (one draw) and self-masking
+  MNAR at 60nan, on these four tables.
+  - Amending the ADR's limits line is the user's decision.
+  - The descriptive part travels with it: on biodeg the ranking weakens as the self-masking
+    tilt grows.
+- **Not covered, as amended:** spambase, biodeg's slopes 0.25 and 1.0, and other rates.
+
+The reader's printout (`spread_mechanisms.py --tally`), unedited:
+
+```text
+- `biodeg_probit_60nan`: K num_rank +0.322 [+0.290, +0.355] -> signal; minus biodeg_60nan -0.049 [-0.082, -0.017]; H num_rank +0.295 [+0.256, +0.334] -> signal
+- `biodeg_probit2p0_60nan`: K num_rank +0.260 [+0.242, +0.279] -> signal; minus biodeg_60nan -0.111 [-0.132, -0.091]; H num_rank +0.239 [+0.209, +0.269] -> signal
+- `vehicle_probit_60nan`: K num_rank +0.101 [+0.084, +0.118] -> signal; minus vehicle_60nan -0.010 [-0.028, +0.009]; H num_rank +0.110 [+0.087, +0.134] -> signal
+- `kc2_probit_60nan`: K num_rank +0.518 [+0.473, +0.563] -> signal; minus kc2_60nan +0.103 [+0.057, +0.149]; H num_rank +0.467 [+0.431, +0.503] -> signal
+- `biodeg_marf_60nan`: K num_rank +0.425 [+0.411, +0.439] -> signal; minus biodeg_marfctl_60nan -0.013 [-0.028, +0.002]; H num_rank +0.413 [+0.399, +0.426] -> signal; minus biodeg_marfctl_60nan -0.021 [-0.042, +0.000]
+- `kc2_marf_60nan`: K num_rank +0.378 [+0.321, +0.434] -> signal; minus kc2_marfctl_60nan -0.092 [-0.151, -0.034]; H num_rank +0.414 [+0.376, +0.452] -> signal; minus kc2_marfctl_60nan -0.022 [-0.071, +0.027]
+- `vehicle_marf_60nan`: K num_rank +0.143 [+0.121, +0.164] -> signal; minus vehicle_marfctl_60nan +0.040 [+0.010, +0.069]; H num_rank +0.134 [+0.114, +0.155] -> signal; minus vehicle_marfctl_60nan +0.037 [+0.005, +0.068]
+- `credit-g_marf_60nan`: K num_rank +0.180 [+0.123, +0.237] -> signal; minus credit-g_marfctl_60nan +0.026 [-0.051, +0.104]; H num_rank +0.195 [+0.140, +0.250] -> signal; minus credit-g_marfctl_60nan +0.008 [-0.078, +0.095]
+
+- K: signal on 8 of 8, against on none
+- H: signal on 8 of 8, against on none
+
+Primary: signal on 8 (K) and 8 (H) of 8, against under K on none -> supported (fold-pair t, seed agreement)
+```
