@@ -111,7 +111,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E82 | Can the hybrid's weights be chosen without the complete table? | 2026-10-27 | refuted | better than H on 10/10 and than KC on 7/10 (never worse), but worse than TabPFN on 5 and than the oracle weights on 6; the loss is the selection (small and categorical tables) |
 | E83 | TabPFN v2's classifier against TRIDENT's classification, on E71's folds | 2026-10-27 | done | TabPFN ahead at every level by +0.017 to +0.024 macro-F1; TRIDENT leads only on credit-g and electricity, through its class-weighted loss (post hoc) |
 | E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – 2026-10-28 | supported (full scope) | signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt; 11 cells under torch 2.11.0 |
-| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – | partial: 80nan refuted, 20nan not complete | 80nan (complete): faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; synthetic AUROC 0.853 (|Spearman| 0.878); 20nan 10 of 30 cells, no verdict |
+| E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – 2026-10-28 | 20nan supported, 80nan refuted | 20nan: faithful on 8 of 9 (kc2 inconclusive), synthetic AUROC 0.994; 80nan: faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; the map holds from 20 to 60nan |
 
 ## Entries
 
@@ -2732,7 +2732,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
 
-- **Status:** partial, not complete (2026-10-28, 09:14 GMT-3): the 80nan rate is complete and refuted, and the 20nan rate has 10 of 30 cells and no verdict. Pre-registered before the first cell, on the same go. T38.
+- **Status:** done (2026-10-28, 11:47 GMT-3): 20nan supported, 80nan refuted; all 60 cells ran. It was partial from 09:14 GMT-3, with 20nan at 10 of 30. Pre-registered before the first cell, on the same go. T38.
 - **Hypothesis:** E78's map stays faithful, and recovers the synthetic blocks, at 20nan and 80nan.
 - **Scenarios:** the ten tables at 20nan (real tables at 101/202/303) and at 80nan (E44's six at
   707/808/909; kr-vs-kp, spambase and credit-g at 101/202/303); synthblock at 707/808/909; 60
@@ -2759,3 +2759,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   pendigits, letter, electricity and vehicle. The 20nan rate waits for its remaining 20 cells on the user's go.
 - **Third amendment (2026-10-28, 10:00 GMT-3):** the 20nan rate's remaining 20 cells run on the
   user's go, under torch 2.11.0, with no deadline. The 20nan rule is read when all 30 have run.
+- **Results on all 60 cells:**
+  - **20nan: supported.** Faithful on 8 of 9 (kc2 inconclusive), none against; synthetic AUROC
+    0.994.
+  - **80nan: refuted,** as above.
+  - **Faithful of 9 by rate:** 8, 9, 7 and 4 at 20, 40, 60 and 80nan (E85, E78, E79, E85).
+- **Conclusion:** the occlusion map is faithful from 20 to 60nan (MCAR, K) and not at 80nan.

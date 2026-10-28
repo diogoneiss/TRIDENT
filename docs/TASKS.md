@@ -577,6 +577,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - 80nan is complete and refuted: faithful on 4 of 9, failing on the small tables and spambase.
       The map's claim is "up to 60nan".
     - 20nan has 10 of 30 cells and no verdict; its remaining 20 cells wait for the user.
+  - **E85 done 2026-10-28:** 20nan supported (8 of 9) and 80nan refuted (4 of 9). The map's claim
+    is "20 to 60nan".
   - **Follow-ups E and F:** run as E80 and E81, below.
 
 - **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
