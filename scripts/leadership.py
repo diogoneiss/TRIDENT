@@ -103,9 +103,10 @@ def live_store(root: Path) -> Path:
 
 
 def set_writable(root: Path, writable: bool) -> None:
-    store = live_store(root)
-    if store.exists():
-        store.chmod(0o644 if writable else 0o444)
+    # A reader of the 444 store creates -wal and -shm with the store's mode, so they toggle too.
+    for path in (live_store(root), *(Path(f"{live_store(root)}{s}") for s in ("-wal", "-shm"))):
+        if path.exists():
+            path.chmod(0o644 if writable else 0o444)
 
 
 class Peer:

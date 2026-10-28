@@ -110,6 +110,9 @@ def events(root: Path) -> list[str]:
 def pair(tmp_path: Path) -> tuple[Path, Path, LocalPeer, FakeServices]:
     leader, follower = tmp_path / "leader", tmp_path / "follower"
     store_with_run(leader)
+    connection = sqlite3.connect(leader / "mlflow.db")
+    connection.execute("PRAGMA journal_mode=WAL").fetchone()  # as gorgona8's store
+    connection.close()
     follower.mkdir()
     init(leader, "leader", "follower", str(follower), 47999, T0)
     init(follower, "follower", "leader", str(leader), 47999, T0)
@@ -134,6 +137,10 @@ def test_the_follower_pulls_the_store_and_keeps_it_read_only(pair: tuple[Path, P
         connection = sqlite3.connect(follower / "mlflow.db")
         connection.execute("DELETE FROM runs")
         connection.commit()
+    reader = sqlite3.connect(f"{(follower / 'mlflow.db').as_uri()}?mode=rw", uri=True)
+    reader.execute("PRAGMA quick_check").fetchone()
+    reader.close()
+    assert stat.S_IMODE((follower / "mlflow.db-shm").stat().st_mode) == 0o444  # a reader leaves these behind
     added = store_with_run(leader)
     follow(follower, peer, services, T0 + 120)  # within ten minutes: no copy
     assert added not in run_ids(follower / "mlflow.db")
