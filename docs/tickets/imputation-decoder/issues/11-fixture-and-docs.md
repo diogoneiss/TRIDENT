@@ -175,3 +175,20 @@ pattern, and bring the documentation in line with ADR 0004.
   `gorgona8:/scratch2/diogoneiss/bench/diagnostico/`: `gpu_fingerprint.py` for versions,
   dropout masks and matmul hashes, `regcheck_ab.py` for the table above, and
   `RESULTADO_GPU.md`.
+
+- 2026-10-28, the credit-g fixture regenerated for torch 2.11.0+cu128.
+
+  **What changed.** The lock moved from torch 2.5.1+cu121 to 2.11.0+cu128 (commit `579e524`),
+  for the RTX 5090 (`sm_120`) on medusa1 ([ADR 0033](../../../adr/0033-a-second-server-as-leader-or-replica.md)).
+  On the CPU the new torch draws other numbers from the same seed, and fold 1's masked
+  `impute_score` moved from 1.221 to 1.345, over the 0.01 tolerance. The vehicle fixture
+  still passes unedited.
+
+  **Not a quality change.** Before the upgrade, both torches ran the default configuration
+  on gorgona8 (3 seeds x 5 folds per cell, MLflow off). On `credit-g_20nan`, induced
+  `impute_score` moved by -0.0003 (seed standard deviation 0.009) and masked by +0.0061
+  (0.018). On `vehicle_00nan`, accuracy moved by -0.0044 (0.007). Every sklearn baseline
+  came out identical. Logs: `gorgona8:/scratch2/diogoneiss/trident-2026-10-27-torch-cmp/`.
+
+  **Regenerated** with the block above, on gorgona8's CPU: three runs agree to 2.6e-9, and
+  `tolerance` stays at 0.01. Both integration regressions pass.
