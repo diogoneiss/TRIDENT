@@ -1,3 +1,6 @@
+import socket
+import sys
+
 import torch
 
 from src.training.environment import runtime_environment_tags
@@ -5,6 +8,8 @@ from src.training.environment import runtime_environment_tags
 
 def test_cpu_environment_tags_keep_every_key(monkeypatch) -> None:
     monkeypatch.setattr(torch, "__version__", "2.5.1+cpu")
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(socket, "gethostname", lambda: "gorgona8")
     monkeypatch.setattr(torch.version, "cuda", None)
     monkeypatch.setattr(
         torch.cuda, "get_device_name", lambda device: (_ for _ in ()).throw(AssertionError)
@@ -15,11 +20,13 @@ def test_cpu_environment_tags_keep_every_key(monkeypatch) -> None:
         "gpu_name": "none",
         "torch_version": "2.5.1+cpu",
         "cuda_version": "none",
+        "host": "gorgona8",
     }
 
 
 def test_cuda_environment_tags_record_the_gpu(monkeypatch) -> None:
     monkeypatch.setattr(torch, "__version__", "2.5.1+cu121")
+    monkeypatch.setattr(sys, "platform", "win32")
     monkeypatch.setattr(torch.version, "cuda", "12.1")
     monkeypatch.setattr(torch.cuda, "get_device_name", lambda device: "Test GPU")
 
@@ -28,4 +35,5 @@ def test_cuda_environment_tags_record_the_gpu(monkeypatch) -> None:
         "gpu_name": "Test GPU",
         "torch_version": "2.5.1+cu121",
         "cuda_version": "12.1",
+        "host": "windows",
     }

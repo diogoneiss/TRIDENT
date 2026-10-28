@@ -50,6 +50,12 @@ LR_SCHEDULER_BACKFILLED_TAG = "lr_scheduler_backfilled"
 TASK_TAG = "task"
 TASK_BACKFILLED_TAG = "task_backfilled"
 IS_OPTUNA_TAG = "is_optuna"
+
+# The machine a run trained on (ADR 0034): "windows" on Windows, the hostname elsewhere.
+# Runs recorded before it are backfilled from gpu_name by ``scripts/backfill_host_tag.py``
+# and marked with HOST_BACKFILLED_TAG.
+HOST_TAG = "host"
+HOST_BACKFILLED_TAG = "host_backfilled"
 # Which search-space profile a study sampled (ADR 0005). Sparse: only Optuna runs carry
 # it, and the dense is_optuna tag already gates any filter on it, so no backfill.
 SEARCH_SPACE_TAG = "search_space"
