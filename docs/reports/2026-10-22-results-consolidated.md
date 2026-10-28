@@ -1,9 +1,13 @@
-# What the imputation studies support, as of 2026-10-23 (consolidated)
+# What the imputation studies support, as of 2026-10-28 (consolidated)
 
-This report gathers E44–E66 into one statement for the thesis. It was built 2026-10-23,
-07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3, before E64–E66. It adds no new
-analysis.
+This report gathers E44–E83 into one statement for the thesis. It was rebuilt 2026-10-28, 00:39 GMT-3 to add
+E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
+new analysis.
 
+- **Open studies are left out of the statement:**
+  - E84 (the spread under MNAR and MAR) is partial and completing.
+  - E85 (the occlusion map at 20/80nan) is running.
+  - Neither carries a verdict yet.
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
     runs each reader unchanged.
@@ -22,7 +26,7 @@ analysis.
   - the **strong tier** is missForest, conditional expectation, SoftImpute and ICE, with TabPFN v2
     as an offline member (ADR 0028).
 
-## The statement, in eight lines
+## The statement, in twelve lines
 
 1. **TRIDENT beats the bar on most variants and seed sets,** and that holds across fresh seeds
    (E51) and fresh MCAR draws (E62).
@@ -56,6 +60,29 @@ analysis.
 8. **Pre-training adds little because the decode stage washes the encoder out (E49–E53).** The
    pre-trained representation is real: frozen, it beats a random encoder on pendigits and
    kr-vs-kp, and it does not collapse. But decoding rebuilds an encoder as good from random.
+9. **The decoder gives a per-cell uncertainty rank, opt-in (ADR 0030; E75–E77, E80).**
+   - The re-masking spread ranks numerical errors within a column up to 60nan: 14 of 15
+     development variants, replicated (E76).
+   - It does not make better intervals than a constant width (E77).
+   - It runs the wrong way along a row's missingness (E80): it falls as the row has more gaps,
+     while the error rises.
+10. **The decoder's column dependencies can be read, and they are faithful (E78, E79).**
+    - Hiding each source column as `[MASK]` gives a map.
+    - Hiding a target's top 3 sources hurts more than hiding 3 random ones on 9 of 9 tables at
+      40nan, and on 7 of 9 at 60nan (kc2 and credit-g inconclusive).
+    - On a synthetic table with known blocks the map recovers them: AUROC 0.979 and 0.914, against
+      0.847 from |Spearman|.
+11. **A per-column hedge with TabPFN helps, but most of its gain is TabPFN's own (ADR 0031; E69,
+    E74, E82).**
+    - The KC + TabPFN hybrid is never worse than KC on the 10 hard variants (E74, mixed).
+    - Its deployable form, with weights chosen without the complete table, beats H on 10 of 10
+      and KC on 7, and trails TabPFN on 5 (E82, refuted).
+    - On those variants the order is TabPFN ≳ deployable hybrid > KC > H.
+12. **On classification, untuned TabPFN v2 leads TRIDENT under the fork's defaults (E83; ADR
+    0032).**
+    - The lead is +0.017 to +0.024 macro-F1 at every level.
+    - Pre-training buys no detectable gain there (E71).
+    - TabPFN is a separate strong tier; H1c's bar stays the best GBDT.
 
 ## 1. Against the baselines
 
@@ -140,6 +167,49 @@ analysis.
   - The bigger encoder costs about 2× the training time.
   - It does not move pendigits_80nan's gap to TabPFN (+0.0121 → +0.0104, still worse).
 
+## 3b. Since 2026-10-23: E67–E83
+
+Each line cites the study's ticket; the readers' summary lines are in the appendix.
+
+- **Mechanisms and imputers:**
+  - **`[NULL]` alone in the decode stage** costs more as the MNAR tilt steepens (E67, refuted;
+    [imputation-protocol/22](../tickets/imputation-protocol/22-null-gaps.md)).
+  - **The tuned bar on the MAR folds:** the model is never behind it on E64's family; worse on 3
+    of 12, better on 2 (E68, mixed; [23](../tickets/imputation-protocol/23-mar-tuned-bar.md)).
+  - **not-MIWAE,** which models the mechanism, shrinks the MNAR bias against its own twin on 3 of
+    10, but its fills fail on biodeg and spambase (E72, mixed; E73;
+    [25](../tickets/imputation-protocol/25-not-miwae.md),
+    [26](../tickets/imputation-protocol/26-notmiwae-fill.md)).
+- **The hybrid with TabPFN:**
+  - E69 (cross-fitted per-column weights, mixed; [24](../tickets/imputation-protocol/24-blend-weights.md));
+  - E74 (over KC, fresh seeds: better than KC on 7 of 10, mixed;
+    [27](../tickets/imputation-protocol/27-hybrid-output.md));
+  - ADR 0031: opt-in, offline, a benchmark output;
+  - E82 (deployable: refuted against TabPFN; [31](../tickets/imputation-protocol/31-deployable-hybrid.md)).
+- **Uncertainty:**
+  - E75 (the averaged fill is not an output; the spread ranks errors 12 of 15;
+    [28](../tickets/imputation-protocol/28-remask-ensemble.md));
+  - E76 (supported, within columns; [29](../tickets/imputation-protocol/29-remask-development.md));
+  - E77 (refuted as intervals; [30](../tickets/imputation-protocol/30-remask-conformal.md));
+  - ADR 0030, amended with E80's limit.
+- **Interpretability (T38):**
+  - E78 (supported at 40nan;
+    [imputation-interpretability/01](../tickets/imputation-interpretability/01-occlusion-map.md));
+  - E79 (supported at the bar at 60nan; [02](../tickets/imputation-interpretability/02-occlusion-map-60nan.md));
+  - E80 (mixed; [03](../tickets/imputation-interpretability/03-spread-and-missing-sources.md));
+  - E81 (mixed; [04](../tickets/imputation-interpretability/04-gap-reliance.md)).
+  - **E81's structural finding:** under the default (`DECODE_GAP_TOKEN mask`, ADR 0014) a real gap
+    and a hidden cell are one token, so the default cannot read the gap pattern.
+  - A decoder that can read it (`--decode_gap_token null`) does so under moderate self-masking,
+    and is less accurate on 11 of 11.
+- **Classification (T27, T40):**
+  - E70: the old sweep does not reproduce fold by fold;
+  - E71: no pre-training gain detected
+    ([classification-step-zero/02](../tickets/classification-step-zero/02-no-pretraining.md));
+  - E83: TabPFN v2 ahead ([03](../tickets/classification-step-zero/03-tabpfn-classifier.md));
+  - ADR 0032: TabPFN is a separate strong tier.
+  - Step zero itself waits on ADR 0029's eight decisions.
+
 ## 4. Limits the thesis states
 
 - **electricity:** the boosters lead because they look values up by `date`, a 933-level key.
@@ -160,22 +230,24 @@ analysis.
   complementarity (E60, E66) holds on two, narrower on the second. Every per-variant interval is conditional on the MCAR draw (E62).
 - **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
   exception on two draws. The bar gains at 60nan on the small numerical tables.
+- **The spread (ADR 0030)** is a rank within a column, not an interval (E77). It falls along a row's
+  missingness (E80). Under MAR and MNAR it is not yet established, since E84 is partial.
+- **The occlusion map** is read on K only, under MCAR, at 40 and 60nan. It is not shown on kc2 and
+  credit-g at 60nan, and its effects shrink with missingness.
+- **The hybrid's deployable form** does not reach TabPFN on the small and categorical tables (E82).
+- **Torch:** every run up to 2026-10-27 used torch 2.5.1. From 2026-10-28 runs use 2.11.0 (ADR 0033's
+  preparation), which draws other numbers from the same seed. Studies that span the change say so.
 
 ## 5. Open
 
-- **T27's classification step zero:** a native-NaN GBDT bar, impute-plus-indicator arms and a
-  no-pre-training arm. It needs code and an ADR first.
-- **T32:** the bigger encoder at 40–60nan, about 4% at 2× the training time, kept for later by
-  the user.
-- **T10's evaluation-mask half;** T08, T09, T11, T14 and T15 in the backlog.
-- **T37, per-column weights for the K + TabPFN blend** (accepted by the user on 2026-10-23), so a
-  dominant method keeps its lead (after E66). Blending categorical cells would need both methods'
-  class probabilities.
-- **T33–T36,** accepted by the user on 2026-10-22 and 2026-10-23: a clean `[NULL]`/`[MASK]` decode
-  ablation, the tuned bar on the MAR folds, an MNAR-aware imputer, and a test-time re-masking
-  ensemble.
-- **The decode-mask tag backfill:** done 2026-10-23, 06:36–06:53 GMT-3, on the user's go and after
-  a store backup. It stamped `uniform` on 2,967 runs (ticket 20).
+- **E84 (partial) and E85 (running).** Both are read only when complete, and are not in this
+  statement.
+- **T27's classification step zero:** ADR 0029 and its eight decisions, deferred by the user on
+  2026-10-27. T41: the paper's Table 4 with its parameters.
+- **The hybrid's selection:** one weight per table, or shrinkage toward the equal blend, which is
+  offline on E82's files; a claim needs fresh seeds.
+- **T32:** the bigger encoder at 40–60nan, kept for later by the user.
+- **The backlog:** T10's evaluation-mask half, T08, T09, T11, T14 and T15.
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)
 
@@ -454,4 +526,184 @@ Primary, FN − FR on K: a usable pre-trained representation (FN better) on ['pe
 ## Setting A
 Primary: N collapsing: no (0 of 3); value information under N: present (2 of 3)
 ## Drift across today's decode stage (seed 101, fold 1)
+```
+
+### E67: the gaps as [NULL] in the decode stage, alone (imputation-protocol/22)
+
+```text
+## `biodeg_probit0p25_60nan` against `biodeg_60nan`
+## `biodeg_probit_60nan` against `biodeg_60nan`
+## `biodeg_probit1p0_60nan` against `biodeg_60nan`
+## `biodeg_probit2p0_60nan` against `biodeg_60nan`
+## `spambase_probit_60nan` against `spambase_60nan`
+## `biodeg_probit_20nan` against `biodeg_20nan`
+## `kc2_probit_20nan` against `kc2_20nan`
+## `vehicle_probit_20nan` against `vehicle_20nan`
+## The dial (biodeg at 60nan), (N − G on H), MNAR minus MCAR by slope
+- (N − G on H), MNAR minus MCAR: better 1 / no difference 5 / worse 2 (fold-pair t, seed agreement)
+- (N − G on K), MNAR minus MCAR: better 1 / no difference 4 / worse 3 (fold-pair t, seed agreement)
+Primary, (N − G on H), MNAR minus MCAR: better on ['biodeg_probit0p25_60nan'], worse on ['biodeg_probit1p0_60nan', 'biodeg_probit2p0_60nan'] -> refuted (fold-pair t, seed agreement)
+```
+
+### E68: the tuned bar on the MAR folds (imputation-protocol/23)
+
+```text
+## `biodeg_20nan`
+  - (H − tuned bar) MAR minus control: +0.0110 [-0.0228, +0.0448] none
+  - (K − tuned bar) MAR minus control: +0.0198 [-0.0176, +0.0571] none
+## `biodeg_60nan`
+  - (H − tuned bar) MAR minus control: +0.0365 [+0.0137, +0.0593] worse
+  - (K − tuned bar) MAR minus control: +0.0285 [+0.0091, +0.0479] worse
+## `kc2_20nan`
+  - (H − tuned bar) MAR minus control: -0.1268 [-0.2491, -0.0045] better
+  - (K − tuned bar) MAR minus control: -0.1739 [-0.2895, -0.0583] better
+## `kc2_60nan`
+  - (H − tuned bar) MAR minus control: +0.0431 [+0.0012, +0.0851] worse
+  - (K − tuned bar) MAR minus control: +0.0426 [-0.0026, +0.0878] none
+## `vehicle_20nan`
+  - (H − tuned bar) MAR minus control: +0.0176 [-0.0181, +0.0533] none
+  - (K − tuned bar) MAR minus control: +0.0213 [-0.0179, +0.0605] none
+## `vehicle_60nan`
+  - (H − tuned bar) MAR minus control: +0.0259 [+0.0062, +0.0455] worse
+  - (K − tuned bar) MAR minus control: +0.0243 [+0.0062, +0.0424] worse
+## `kr-vs-kp_20nan`
+  - (H − tuned bar) MAR minus control: -0.0053 [-0.0298, +0.0193] none
+  - (K − tuned bar) MAR minus control: -0.0205 [-0.0430, +0.0021] none
+## `kr-vs-kp_60nan`
+  - (H − tuned bar) MAR minus control: +0.0103 [-0.0020, +0.0227] none
+  - (K − tuned bar) MAR minus control: +0.0082 [-0.0087, +0.0251] none
+## `spambase_20nan`
+  - (H − tuned bar) MAR minus control: -0.0065 [-0.0191, +0.0061] none
+  - (K − tuned bar) MAR minus control: -0.0003 [-0.0139, +0.0132] none
+## `spambase_60nan`
+  - (H − tuned bar) MAR minus control: -0.0101 [-0.0194, -0.0008] better
+  - (K − tuned bar) MAR minus control: -0.0087 [-0.0164, -0.0010] better
+## `credit-g_20nan`
+  - (H − tuned bar) MAR minus control: +0.0039 [-0.0225, +0.0303] none
+  - (K − tuned bar) MAR minus control: -0.0091 [-0.0318, +0.0136] none
+## `credit-g_60nan`
+  - (H − tuned bar) MAR minus control: -0.0093 [-0.0243, +0.0058] none
+  - (K − tuned bar) MAR minus control: -0.0133 [-0.0265, -0.0001] better
+- (H − tuned bar) MAR minus control: better 2 / no difference 7 / worse 3 (fold-pair t, seed agreement)
+- (K − tuned bar) MAR minus control: better 3 / no difference 7 / worse 2 (fold-pair t, seed agreement)
+## `biodeg_60nan`
+  - (H − tuned bar) MAR minus control: +0.0085 [-0.0185, +0.0354] none
+  - (K − tuned bar) MAR minus control: +0.0042 [-0.0162, +0.0245] none
+## `kc2_60nan`
+  - (H − tuned bar) MAR minus control: -0.0691 [-0.1349, -0.0034] better
+  - (K − tuned bar) MAR minus control: -0.0326 [-0.0850, +0.0198] none
+## `vehicle_60nan`
+  - (H − tuned bar) MAR minus control: -0.0002 [-0.0156, +0.0152] none
+  - (K − tuned bar) MAR minus control: +0.0023 [-0.0154, +0.0200] none
+## `kr-vs-kp_60nan`
+  - (H − tuned bar) MAR minus control: +0.0083 [-0.0021, +0.0186] none
+  - (K − tuned bar) MAR minus control: +0.0065 [-0.0049, +0.0179] none
+- (H − tuned bar) MAR minus control: better 1 / no difference 3 / worse 0 (fold-pair t, seed agreement)
+- (K − tuned bar) MAR minus control: better 0 / no difference 4 / worse 0 (fold-pair t, seed agreement)
+Primary, E64's (H − tuned bar) MAR minus control: worse on ['biodeg_60nan', 'kc2_60nan', 'vehicle_60nan'], better on ['kc2_20nan', 'spambase_60nan'] -> mixed (fold-pair t, seed agreement)
+```
+
+### E69: per-column weights for the K + TabPFN blend (imputation-protocol/24)
+
+```text
+Primary, weighted − TabPFN on the 10 hard variants: better on ['electricity_80nan', 'vehicle_80nan', 'biodeg_80nan'], worse on ['kr-vs-kp_60nan'] -> mixed (fold-pair t, seed agreement)
+```
+
+### E71: classification, what pre-training buys (classification-step-zero/02)
+
+```text
+## B − A, test macro-F1
+## C − A, test macro-F1
+```
+
+### E72: not-MIWAE under MNAR (imputation-protocol/25)
+
+```text
+## `biodeg_probit_60nan` against `biodeg_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.0014 [-0.1177, +0.1149] none
+## `kc2_probit_60nan` against `kc2_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: +0.0038 [-0.0120, +0.0195] none
+## `vehicle_probit_60nan` against `vehicle_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.0727 [-0.0837, -0.0618] better
+## `spambase_probit_60nan` against `spambase_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: +0.0258 [-0.0519, +0.1035] none
+## `biodeg_probit_20nan` against `biodeg_20nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: +0.0207 [-0.2803, +0.3218] none
+## `kc2_probit_20nan` against `kc2_20nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: +0.0077 [-0.0118, +0.0271] none
+## `vehicle_probit_20nan` against `vehicle_20nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.0201 [-0.0355, -0.0047] better
+## `biodeg_probit0p25_60nan` against `biodeg_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.0337 [-0.1005, +0.0332] none
+## `biodeg_probit1p0_60nan` against `biodeg_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.0446 [-0.1851, +0.0959] none
+## `biodeg_probit2p0_60nan` against `biodeg_60nan`
+  - (notmiwae − miwae on abs_bias), MNAR minus MCAR: -0.1714 [-0.2668, -0.0760] better
+Primary, (notmiwae − miwae on abs_bias), MNAR minus MCAR: better on ['vehicle_probit_60nan', 'vehicle_probit_20nan', 'biodeg_probit2p0_60nan'], worse on none -> mixed (fold-pair t, seed agreement)
+```
+
+### E74: the KC + TabPFN hybrid as an output (imputation-protocol/27)
+
+```text
+Primary: the hybrid is better than KC on 7 of 10 and worse than TabPFN on 2 (['kr-vs-kp_40nan', 'kr-vs-kp_60nan']) -> mixed (fold-pair t, seed agreement)
+```
+
+### E75: a test-time re-masking ensemble (imputation-protocol/28)
+
+```text
+Primary: remask better than the single pass on 4 (K) and 6 (H) of 15, worse on ['pendigits_40nan', 'pendigits_60nan', 'letter_40nan', 'letter_60nan'] (K) and ['pendigits_40nan', 'pendigits_60nan', 'letter_40nan', 'letter_60nan'] (H) -> mixed (fold-pair t, seed agreement)
+```
+
+### E76: the spread on the development variants (imputation-protocol/29)
+
+```text
+Primary: within-column signal on 14 (K) and 14 (H) of 15 variants up to 60nan, ranking against the errors on none (K) -> supported
+```
+
+### E77: intervals from the spread (imputation-protocol/30)
+
+```text
+Primary: the spread interval is narrower than the constant one at the same target on 0 of 15 (K), wider on ['pendigits_40nan', 'pendigits_60nan', 'pendigits_80nan', 'letter_40nan', 'letter_60nan', 'letter_80nan', 'electricity_40nan', 'electricity_60nan', 'electricity_80nan', 'vehicle_40nan', 'vehicle_80nan', 'biodeg_40nan', 'biodeg_80nan', 'kc2_40nan', 'kc2_80nan'] -> refuted (fold-pair t, seed agreement)
+```
+
+### E78: the occlusion map at 40nan (imputation-interpretability/01)
+
+```text
+  - descriptive: |Spearman| on the training split, same AUROC (numerical pairs only): 0.847 [0.831, 0.863]
+Primary (B): faithful on 9 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)
+```
+
+### E79: the occlusion map at 60nan (imputation-interpretability/02)
+
+```text
+  - descriptive: |Spearman| on the training split, same AUROC (numerical pairs only): 0.864 [0.849, 0.880]
+Primary (B): faithful on 7 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)
+```
+
+### E80: the spread and missing top sources (imputation-interpretability/03)
+
+```text
+Primary: specific on 7 of 16, against on ['kc2_40nan', 'credit-g_40nan', 'electricity_60nan', 'kc2_60nan', 'spambase_60nan', 'credit-g_60nan'] -> mixed (fold-pair t, seed agreement)
+```
+
+### E81: gap-pattern reliance under MNAR (imputation-interpretability/04)
+
+```text
+Primary: S at slope 2.0 +0.0049 [+0.0015, +0.0083], at MCAR -0.0022 [-0.0031, -0.0012] -> mixed (SESOI 0.01)
+```
+
+### E82: the deployable hybrid (imputation-protocol/31)
+
+```text
+Primary: the deployable hybrid is better than H on 10 of 10, worse on none, and worse than TabPFN on 5 (['vehicle_80nan', 'biodeg_80nan', 'kr-vs-kp_60nan', 'kr-vs-kp_80nan', 'credit-g_60nan']) -> refuted (fold-pair t, seed agreement)
+```
+
+### E83: TabPFN v2's classifier (classification-step-zero/03)
+
+```text
+- 0nan: TabPFN − TRIDENT macro-F1 +0.0212 [+0.0136, +0.0288] seeds +0.0178, +0.0246, 48 fold pairs -> TabPFN ahead
+- 20nan: TabPFN − TRIDENT macro-F1 +0.0186 [+0.0108, +0.0264] seeds +0.0160, +0.0212, 48 fold pairs -> TabPFN ahead
+- 40nan: TabPFN − TRIDENT macro-F1 +0.0170 [+0.0018, +0.0322] seeds +0.0072, +0.0268, 48 fold pairs -> TabPFN ahead
+- 60nan: TabPFN − TRIDENT macro-F1 +0.0240 [+0.0055, +0.0426] seeds +0.0268, +0.0213, 48 fold pairs -> TabPFN ahead
+- 80nan: TabPFN − TRIDENT macro-F1 +0.0236 [+0.0064, +0.0408] seeds +0.0260, +0.0212, 48 fold pairs -> TabPFN ahead
 ```

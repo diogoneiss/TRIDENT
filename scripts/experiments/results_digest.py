@@ -19,7 +19,7 @@ if not (ROOT / "train.py").exists():
     sys.exit(f"run from the TRIDENT checkout root, not {ROOT}")
 
 E = "scripts/experiments"
-SUMMARY = re.compile(r"^(##|Primary|- \(|- P − G|  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
+SUMMARY = re.compile(r"^(##|Primary|- \(|- P − G|- \d+nan: |  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
 # (label, ticket, command)
 READERS: list[tuple[str, str, list[str]]] = [
     ("E55/E57: confirmation set against TabPFN and the strong tier", "imputation-protocol/10, 12",
@@ -41,6 +41,24 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E52: a frozen pre-trained encoder against a random one", "imputation-pretraining/10",
      [f"{E}/frozen_encoder_report.py", "--tally"]),
     ("E53: collapse and probes", "imputation-pretraining/11", [f"{E}/collapse_probes_report.py"]),
+    # Added 2026-10-28 for the report's E67-E83 update.
+    ("E67: the gaps as [NULL] in the decode stage, alone", "imputation-protocol/22", [f"{E}/null_gaps_report.py", "--tally"]),
+    ("E68: the tuned bar on the MAR folds", "imputation-protocol/23", [f"{E}/mar_tuned_bar_report.py", "--tally"]),
+    ("E69: per-column weights for the K + TabPFN blend", "imputation-protocol/24",
+     [f"{E}/blend_weights.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-23-blend-weights"]),
+    ("E71: classification, what pre-training buys", "classification-step-zero/02",
+     [f"{E}/cls_stage2_run.py", "--tally", "/scratch2/diogoneiss/trident-2026-10-24-cls-stage2"]),
+    ("E72: not-MIWAE under MNAR", "imputation-protocol/25", [f"{E}/vae_mnar_report.py", "--tally"]),
+    ("E74: the KC + TabPFN hybrid as an output", "imputation-protocol/27", [f"{E}/hybrid_blend.py", "--tally"]),
+    ("E75: a test-time re-masking ensemble", "imputation-protocol/28", [f"{E}/remask_ensemble.py", "--tally"]),
+    ("E76: the spread on the development variants", "imputation-protocol/29", [f"{E}/remask_ensemble.py", "--study", "e76", "--tally"]),
+    ("E77: intervals from the spread", "imputation-protocol/30", [f"{E}/remask_ensemble.py", "--conformal"]),
+    ("E78: the occlusion map at 40nan", "imputation-interpretability/01", [f"{E}/occlusion_map.py", "--tally"]),
+    ("E79: the occlusion map at 60nan", "imputation-interpretability/02", [f"{E}/occlusion_map.py", "--study", "e79", "--tally"]),
+    ("E80: the spread and missing top sources", "imputation-interpretability/03", [f"{E}/occlusion_spread.py"]),
+    ("E81: gap-pattern reliance under MNAR", "imputation-interpretability/04", [f"{E}/gap_reliance.py", "--tally"]),
+    ("E82: the deployable hybrid", "imputation-protocol/31", [f"{E}/deployable_hybrid.py", "--tally"]),
+    ("E83: TabPFN v2's classifier", "classification-step-zero/03", [f"{E}/tabpfn_classification.py", "--tally"]),
 ]
 
 
