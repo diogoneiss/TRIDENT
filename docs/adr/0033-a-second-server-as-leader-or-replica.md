@@ -29,8 +29,27 @@ Preparation done on 2026-10-27, after the experiments ended (the user stopped th
   run logged from medusa1 landed in gorgona8's store with the canonical root and its artifact
   arrived (00:38 GMT-3; the run and its experiment `_adr0033_smoke` were deleted after).
 
-Not implemented: `leadership.py` (replica on medusa1, roles, epochs, switchover, fork,
-reconciliation, root guard). The Windows `config.json` was edited to the canonical prefix by
+- 2026-10-28: `scripts/leadership.py` replaces the interim scripts (removed) with `init`,
+  `status`, `tick`, `switchover` and `promote`: decisions 1 (guard), 2, 3, 4, 5, 6, the
+  backups of decision 7 that a fork takes, and the demotion of decision 8. One cron line,
+  `tick` every minute, is the same on both machines: it reads `sync/role.json`, so a
+  switchover or a promotion never touches cron. Server and tunnel share port 47731, so
+  `MLFLOW_TRACKING_URI=http://127.0.0.1:47731` reaches the leader from either side. Checked
+  on the way: a mode-444 WAL store is read (it leaves an empty `-wal` and a `-shm` in the
+  writable directory), refuses writes with "attempt to write a readonly database", and
+  serves as `sqlite3_rsync`'s origin; `sqlite3_rsync --exe .local/bin/sqlite3_rsync
+  gorgona8:<path>` pulls from medusa1.
+
+- 2026-10-28: the user chose medusa1 as the first leader. It has no store, so the pair starts
+  as written (gorgona8 leader, medusa1 follower), the first `tick` copies the store over,
+  and a `switchover` on medusa1 makes it leader at epoch 2, once nothing holds gorgona8's
+  store (E85's trainings). Before `init`, gorgona8's store, `mlruns/`, `results/` and
+  `metrics/` were backed up to `sync/backups/2026-10-28-pre-leadership/`, at the user's
+  request, against a bad rsync. Both `.bashrc`s export `MLFLOW_TRACKING_URI` only when
+  `sync/role.json` says `follower`.
+
+Not implemented: `reconcile` (decision 8's merge and undo), so after a promotion the old
+leader stays `deposed`. The Windows `config.json` was edited to the canonical prefix by
 hand instead of decision 9.
 
 The peer is **medusa1** (hostname `medusa`, Ubuntu 24.04.4, two RTX 5090), checked over ssh
@@ -346,16 +365,18 @@ Rejected on the way:
 
 ## How to use
 
-Planned interface, not yet implemented:
-
 ```bash
-ln -s /scratch2/diogoneiss/TRIDENT /scratch/diogoneiss/TRIDENT   # on gorgona8, once
-export _MLFLOW_SERVER_ARTIFACT_ROOT=file:///scratch/diogoneiss/TRIDENT/mlruns   # both machines
-python3 scripts/leadership.py migrate-roots      # once, gorgona8, nothing holding the store; --apply
-python3 scripts/leadership.py init --peer <alias> --peer-root <path> --role leader|follower
+ln -s /scratch2/diogoneiss/TRIDENT /scratch/diogoneiss/TRIDENT   # on gorgona8, once (done)
+export _MLFLOW_SERVER_ARTIFACT_ROOT=file:///scratch/diogoneiss/TRIDENT/mlruns   # both machines (done)
+python3 scripts/leadership.py init --role leader --peer medusa1 --peer-root /scratch/diogoneiss/TRIDENT     # gorgona8
+python3 scripts/leadership.py init --role follower --peer gorgona8 --peer-root /scratch2/diogoneiss/TRIDENT # medusa1
 python3 scripts/leadership.py status
-python3 scripts/leadership.py replicate          # from cron, every ten minutes
-python3 scripts/leadership.py switchover         # planned swap, both sides reachable
-python3 scripts/leadership.py promote            # refused while the leader answers
-python3 scripts/leadership.py reconcile          # dry run; --apply merges; --undo <ts> reverts
+python3 scripts/leadership.py switchover         # on the follower; planned swap, both sides answer
+python3 scripts/leadership.py promote            # on the follower; refused while the leader answers
+```
+
+Cron on each machine, with that machine's checkout:
+
+```
+* * * * * cd <checkout> && python3 scripts/leadership.py tick >> sync/leadership.cron.log 2>&1
 ```
