@@ -2755,5 +2755,5 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     D +0.03 to +0.08). Not faithful on biodeg, kc2, spambase and credit-g; kr-vs-kp inconclusive.
   - **C at 80nan:** AUROC 0.853, above the bar, but below |Spearman|'s 0.878.
   - **20nan:** 10 of 30 cells, not read.
-- **Conclusion:** the map's faithfulness holds up to 60nan (E78, E79) and fails at 80nan beyond the
-  four largest numerical tables. The 20nan rate waits for its remaining 20 cells on the user's go.
+- **Conclusion:** the map's faithfulness holds up to 60nan (E78, E79). At 80nan it holds only on
+  pendigits, letter, electricity and vehicle. The 20nan rate waits for its remaining 20 cells on the user's go.

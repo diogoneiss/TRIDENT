@@ -76,7 +76,8 @@ E78's, unchanged, **applied to each rate separately** (`occlusion_map.py --study
     and spambase at 2 of 3 seeds; the rest and synthblock_20nan not started.
 - **80nan, complete: refuted** by the rule fixed for each rate.
   - **Faithful on 4 of 9:** pendigits, letter, electricity and vehicle. D (top 3) is +0.028 to
-    +0.084, a quarter to a third of the 40nan values.
+    +0.084. That is a quarter to a third of the 40nan values on pendigits, letter and electricity,
+    and about a fourteenth on vehicle.
   - **Not faithful on 4:** biodeg (−0.002), kc2 (−0.011), spambase (−0.021) and credit-g (−0.004).
     Each interval lies below the 1% SESOI, and on spambase and credit-g below 0.
   - **Inconclusive:** kr-vs-kp (+0.008).
@@ -92,7 +93,8 @@ E78's, unchanged, **applied to each rate separately** (`occlusion_map.py --study
   torch change (2.5.1 → 2.11.0), as the second amendment foresaw, and not a check of the in-place
   reading.
 - **What it leads to:** the map's faithfulness has a scope. It holds at 40nan (E78, 9 of 9) and at
-  60nan (E79, 7 of 9), and not at 80nan, where it holds only on the four largest numerical tables.
+  60nan (E79, 7 of 9), and not at 80nan, where it holds only on pendigits, letter, electricity
+  and vehicle.
   - A report states the claim as "up to 60nan".
   - No default changes.
 
