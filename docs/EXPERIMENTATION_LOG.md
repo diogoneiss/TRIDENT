@@ -2757,3 +2757,5 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **20nan:** 10 of 30 cells, not read.
 - **Conclusion:** the map's faithfulness holds up to 60nan (E78, E79). At 80nan it holds only on
   pendigits, letter, electricity and vehicle. The 20nan rate waits for its remaining 20 cells on the user's go.
+- **Third amendment (2026-10-28, 10:00 GMT-3):** the 20nan rate's remaining 20 cells run on the
+  user's go, under torch 2.11.0, with no deadline. The 20nan rule is read when all 30 have run.
