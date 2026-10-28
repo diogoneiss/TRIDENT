@@ -81,7 +81,20 @@ This ticket was written and committed before the study's first cell.
 - **E85 is not run tonight.** Its chained waiters were stopped before any of its cells started. It
   stays pre-registered and waits for the user.
 
-## Outcome (2026-10-27, 22:34 GMT-3): supported
+## Outcome (2026-10-27, 22:34 GMT-3): partial, not complete
+
+**Status changed at 22:42 GMT-3, on the user's instruction** ("não quero que vc marque ele
+completo a menos que a evidência mostrada seja inegável").
+- The amended rule reads supported on the 8 variants that ran, below.
+- The study as pre-registered (12 shifted variants) did not run in full: spambase MNAR and MAR, and
+  biodeg's slopes 0.25 and 1.0, are missing.
+- So the study stays open, and ADR 0030 is not amended from it.
+- **To complete it:** the remaining cells, after the migration, on the user's go.
+  - spambase's `marf` at 101/202/303 and `marfctl` at 101 already ran, unread.
+  - Still to run: spambase `marfctl` at 202/303, spambase probit, and biodeg probit 0.25 and 1.0
+    (14 cells).
+  - Then the original 12-variant rule is read.
+
 
 - **Ran:** the amended scope's 36 cells, from 21:22 to 22:33 GMT-3, none failed. The four
   spambase cells let finish (20:35–21:21) are outside the scope and were not read.
@@ -94,9 +107,8 @@ This ticket was written and committed before the study's first cell.
     tilt) and on kc2 under MAR (−0.09 under K; no difference under H).
   - **Stronger** on kc2 under MNAR (+0.10) and on vehicle under MAR (+0.04).
   - **No difference** on vehicle under MNAR and on biodeg and credit-g under MAR.
-- **What it leads to, as fixed:** ADR 0030's scope can extend to MAR (one draw) and self-masking
-  MNAR at 60nan, on these four tables.
-  - Amending the ADR's limits line is the user's decision.
+- **What it would lead to once complete:** ADR 0030's scope extended to MAR and self-masking MNAR,
+  for the user's decision. Not before.
   - The descriptive part travels with it: on biodeg the ranking weakens as the self-masking
     tilt grows.
 - **Not covered, as amended:** spambase, biodeg's slopes 0.25 and 1.0, and other rates.
