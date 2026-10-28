@@ -279,6 +279,10 @@ def test_reconcile_merges_the_old_leaders_runs_and_undo_reverts_it(pair: tuple[P
     their_other = old.create_run(their_experiment).info.run_id
     our_run = new.create_run(experiment).info.run_id
     new.log_inputs(our_run, datasets=[DatasetInput(dataset=shared)])
+    # A dataset first logged on both sides during the split: two uuids for one key.
+    split = Dataset(name="credit-g-split", digest="d2", source_type="local", source="split.csv")
+    old.log_inputs(their_run, datasets=[DatasetInput(dataset=split)])
+    new.log_inputs(our_run, datasets=[DatasetInput(dataset=split)])
     before = run_ids(follower / "mlflow.db")
     # They meet: the old leader is deposed, then read-only.
     peer.answers = True
@@ -299,8 +303,10 @@ def test_reconcile_merges_the_old_leaders_runs_and_undo_reverts_it(pair: tuple[P
     assert tags_of(follower, clashing)["verdict"] == "ours"  # the higher epoch wins
     assert new.get_experiment(their_experiment).name == "TRIDENT/theirs-only"
     connection = sqlite3.connect(follower / "mlflow.db")
-    assert connection.execute("SELECT count(*) FROM datasets WHERE name = 'credit-g'").fetchone()[0] == 1
-    assert connection.execute("SELECT count(DISTINCT source_id) FROM inputs").fetchone()[0] == 1
+    for name in ("credit-g", "credit-g-split"):
+        assert connection.execute("SELECT count(*) FROM datasets WHERE name = ?", (name,)).fetchone()[0] == 1
+    assert connection.execute("SELECT count(DISTINCT source_id) FROM inputs").fetchone()[0] == 2
+    assert connection.execute("SELECT count(*) FROM inputs WHERE source_id NOT IN (SELECT dataset_uuid FROM datasets)").fetchone()[0] == 0
     connection.close()
     assert "reconcile_conflict" in events(follower) and "reconcile_done" in events(follower)
     assert load_role(follower)["fork_base"] is None  # type: ignore[index]

@@ -387,6 +387,7 @@ python3 scripts/leadership.py promote            # on the follower; refused whil
 python3 scripts/leadership.py reconcile          # on the new leader, once the old one is deposed and read-only: dry run
 python3 scripts/leadership.py reconcile --apply  # backups, merge, the old leader rejoins as follower
 python3 scripts/leadership.py reconcile --undo <stamp>   # the stamp is in sync/leadership.log
+python3 scripts/leadership.py rejoin --epoch <n> # on the old leader, only if reconcile could not reach it at the end
 ```
 
 Cron on each machine, with that machine's checkout:

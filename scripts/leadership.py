@@ -482,17 +482,22 @@ def reconcile(root: Path, peer: Peer, now: float, apply: bool) -> None:
         found = store_merge.merge(live_store(root), base, incoming, None, say)
         say("reconcile_dry_run", **{k: len(v) for k, v in vars(found).items()})
         return
-    store_merge.merge(live_store(root), base, incoming, None, lambda *_, **__: None)  # refusals before 30 GB of backups
-    checked_backup(root, "pre-reconcile", now)
-    peer.remote("backup", "--kind", "pre-reconcile")
-    peer.exchange_outputs(root, f"{BACKUP_DIR}/{stamp}-outputs")
-    journal = root / SYNC_DIR / f"reconcile-{stamp}.undo.jsonl"
-    found = store_merge.merge(live_store(root), base, incoming, journal, say)
-    say("reconcile_done", journal=str(journal), **{k: len(v) for k, v in vars(found).items()})
-    base.unlink(missing_ok=True)
-    incoming.unlink(missing_ok=True)
-    role.update(fork_base=None, fork_since=None, peer_odd_logged=False)
-    save_role(root, role)
+    # The ticks skip meanwhile (the server stays up); else one would save its stale role.json over ours.
+    with tick_lock(root) as mine:
+        if not mine:
+            raise StoreError("a tick is running here; run reconcile again in a minute")
+        store_merge.merge(live_store(root), base, incoming, None, lambda *_, **__: None)  # refusals before 30 GB of backups
+        checked_backup(root, "pre-reconcile", now)
+        peer.remote("backup", "--kind", "pre-reconcile")
+        peer.exchange_outputs(root, f"{BACKUP_DIR}/{stamp}-outputs")
+        journal = root / SYNC_DIR / f"reconcile-{stamp}.undo.jsonl"
+        found = store_merge.merge(live_store(root), base, incoming, journal, say)
+        say("reconcile_done", journal=str(journal), **{k: len(v) for k, v in vars(found).items()})
+        base.unlink(missing_ok=True)
+        incoming.unlink(missing_ok=True)
+        role.update(fork_base=None, fork_since=None, peer_odd_logged=False)
+        save_role(root, role)
+    # If this fails, run `leadership.py rejoin --epoch <n>` on the old leader by hand.
     peer.remote("rejoin", "--epoch", str(role["epoch"]))
 
 
@@ -604,8 +609,12 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "rejoin":
                 rejoin(root, args.epoch, now)
             else:
-                promote(root, role, peer_for(role), services_for(role), now, "manual")
-                save_role(root, role)
+                with tick_lock(root) as mine:
+                    if not mine:
+                        raise StoreError("a tick is running here; run promote again in a minute")
+                    role = load_role(root) or role
+                    promote(root, role, peer_for(role), services_for(role), now, "manual")
+                    save_role(root, role)
     except StoreError as error:
         log(root, "refused", now, command=args.command, reason=str(error))
         return EXIT_REFUSED
