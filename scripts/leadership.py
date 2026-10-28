@@ -181,7 +181,7 @@ class Services:
         env.setdefault("_MLFLOW_SERVER_ARTIFACT_ROOT", CANONICAL_ROOT.rstrip("/"))
         with open(self.root / SERVER_LOG, "a") as out:
             subprocess.Popen(
-                ["./start_mlflow.sh", str(self.port)], cwd=self.root, env=env,
+                ["bash", "start_mlflow.sh", str(self.port)], cwd=self.root, env=env,
                 stdin=subprocess.DEVNULL, stdout=out, stderr=out, start_new_session=True,
             )
 
