@@ -191,7 +191,7 @@ Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_
 
   - The map is faithful from 20 to 60nan and fails at 80nan beyond pendigits, letter,
     electricity and vehicle.
-  - kc2 is the weakest table at every rate.
+  - kc2 is the weakest table from 20 to 60nan; at 80nan spambase reads lower.
 - **K against the earlier runs:** 0.035 at most, over 54 cells, from the torch change.
 - **What it leads to:** the thesis states the map's faithfulness as "20 to 60nan, MCAR, K". No
   default changes.
