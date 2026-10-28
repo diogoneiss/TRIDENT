@@ -114,7 +114,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – 2026-10-28 | 20nan supported, 80nan refuted | 20nan: faithful on 8 of 9 (kc2 inconclusive), synthetic AUROC 0.994; 80nan: faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; the map holds from 20 to 60nan |
 | E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
 | E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
-| E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | in progress | |
+| E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
 
 ## Entries
 
@@ -2828,7 +2828,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E88 · Does the occlusion map hold under MNAR and MAR? (2026-10-28)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** the map, faithful from 20 to 60nan under MCAR (E78, E79, E85), stays faithful on
   E84's 12 MNAR and MAR variants at 60nan.
 - **Scenarios:** 7 MNAR (biodeg at four slopes; vehicle, kc2 and spambase) and 5 MAR (`marf`)
@@ -2841,5 +2841,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Refuted** if faithful on 5 or fewer.
   - **Mixed** otherwise.
   - Descriptive: D against the MCAR twins (E79).
+- **Results (19:48 GMT-3):** faithful on 11 of 12, not faithful on none (kc2_probit inconclusive)
+  → supported.
+  - Against the MCAR twins: self-masking weakens D on biodeg as the slope grows (−0.029 to −0.094),
+    and MAR strengthens it on biodeg, vehicle and kc2 (+0.086 to +0.194).
+- **Conclusion:** the occlusion map is faithful at 60nan under MNAR and MAR as well as MCAR. Its
+  claim is "20–60nan MCAR, and 60nan MNAR/MAR, at K"; the 80nan limit stands.
 - **Sources:** [imputation-interpretability/06](tickets/imputation-interpretability/06-occlusion-map-mechanisms.md);
   `occlusion_map.py --study e88`; MLflow `experiment=occlusion-mechanisms-2026-10-28`.

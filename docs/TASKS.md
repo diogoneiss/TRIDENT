@@ -582,6 +582,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E88, running from 2026-10-28**
     ([imputation-interpretability/06](tickets/imputation-interpretability/06-occlusion-map-mechanisms.md)),
     on the user's go: the map on E84's 12 MNAR and MAR variants at 60nan, on gorgona8.
+  - **E88 done 2026-10-28: supported** (faithful on 11 of 12, kc2_probit inconclusive). The map's
+    claim is "20 to 60nan under MCAR, and 60nan under MNAR and MAR".
   - **Follow-ups E and F:** run as E80 and E81, below.
 
 - **T39 · Propose an opt-in hybrid output: KC + TabPFN per column, as an ADR** (future; the user,
