@@ -25,7 +25,7 @@ Preparation done on 2026-10-27, after the experiments ended (the user stopped th
   (torch 2.11.0+cu128, commit `579e524`), `sqlite3_rsync`, and `MLFLOW_TRACKING_URI` pointing at
   its tunnel. Interim, until `leadership.py`: `scripts/leader_keepalive.sh` (gorgona8, cron)
   keeps the MLflow server up; `scripts/follower_sync.sh` (medusa1, cron) keeps the tunnel on
-  port 15000 and sends `mlruns/`, `results/` and `metrics/` to gorgona8 (decisions 3 and 5). A
+  port 47731 and sends `mlruns/`, `results/` and `metrics/` to gorgona8 (decisions 3 and 5). A
   run logged from medusa1 landed in gorgona8's store with the canonical root and its artifact
   arrived (00:38 GMT-3; the run and its experiment `_adr0033_smoke` were deleted after).
 
