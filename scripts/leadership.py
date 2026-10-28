@@ -332,6 +332,8 @@ def follower_tick(root: Path, role: dict[str, Any], peer: Peer, services: Servic
     elif answers and peer_role and not role.get("peer_odd_logged"):
         log(root, "peer_not_leading", now, peer_role=peer_role.get("role"), peer_epoch=peer_role.get("epoch"))
         role["peer_odd_logged"] = True
+    if not live_store(root).exists():
+        return  # never copied yet: nothing to fork from or to promote
     silent = now - (role.get("last_contact") or role["initialized_at"])
     if silent >= FORK_BASE_AFTER and not role.get("fork_base"):
         log(root, "peer_unreachable", now, answers_ssh=answers, silent_seconds=int(silent))

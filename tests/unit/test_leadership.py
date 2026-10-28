@@ -218,3 +218,10 @@ def test_the_guard_moves_roots_under_the_physical_path_to_the_canonical_prefix(t
     connection.close()
     assert roots and all(r.startswith(CANONICAL_ROOT) for r in roots)
     assert role.get("foreign_roots", 0) == 0 and os.path.exists(root / "sync/leadership.log")
+
+
+def test_a_follower_that_never_copied_has_nothing_to_fork(pair: tuple[Path, Path, LocalPeer, FakeServices]) -> None:
+    leader, follower, peer, services = pair
+    peer.answers = False
+    follow(follower, peer, services, T0 + PROMOTE_AFTER)
+    assert load_role(follower)["role"] == "follower" and load_role(follower).get("fork_base") is None  # type: ignore[index,union-attr]
