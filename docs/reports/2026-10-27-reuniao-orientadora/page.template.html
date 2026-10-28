@@ -177,7 +177,7 @@ html { scroll-behavior: smooth; }
   <p class="lede">O que o fork fez com o TRIDENT desde setembro: transformá-lo num imputador, medir esse imputador contra baselines clássicos e contra o TabPFN v2 sob MCAR, MNAR e MAR, e entender por que ele se comporta como se comporta. Cada resultado está ligado à pergunta da tese que responde.</p>
   <div class="prov">
     <span>Gerado em <b id="built">__BUILT__</b></span>
-    <span>Experimentos <b>E01–E83</b></span>
+    <span>Experimentos <b>E01–E85</b></span>
     <span>Código <b class="mono">feat/imputation-task</b></span>
     <span>Números de <b class="mono">scripts/experiments/meeting_figures.py</b></span>
   </div>
@@ -478,18 +478,19 @@ html { scroll-behavior: smooth; }
   <h2>Incerteza por célula e mapa de fontes</h2>
   <div class="rq"><span class="pill partial">RQ2.2 · uso clínico</span> Capacidades que um imputador clássico não dá.</div>
   <div class="card">
-    <header><h3>Mapa de oclusão: de quais colunas cada coluna é preenchida</h3><span class="tag">E78 · E79</span></header>
+    <header><h3>Mapa de oclusão: de quais colunas cada coluna é preenchida</h3><span class="tag">E78 · E79 · E85</span></header>
     <dl class="steps">
       <dt>Desenho</dt><dd>Para cada coluna-alvo, esconder como <code>[MASK]</code> cada coluna-fonte observada e medir quanto o preenchimento muda. Verdade conhecida numa tabela sintética de três blocos de 4 colunas correlacionadas mais 3 de ruído; fidelidade em nove tabelas reais (esconder as 3 fontes de maior efeito deve piorar o erro mais que esconder 3 ao acaso).</dd>
       <dt>Resultado</dt><dd><figure><div class="chart" id="fig-occl"></div><figcaption><b>Mapa da tabela sintética</b> (linha = alvo, coluna = fonte; média de 5 folds × 3 seeds, split de teste). Os blocos aparecem sem que o modelo saiba deles.</figcaption></figure></dd>
-      <dt>Conclusão</dt><dd><span class="verdict good">Sustentado:</span> <span id="occl-e78"></span>; a 60nan, <span id="occl-e79"></span>.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict good">Sustentado de 20 a 60nan:</span> a 20nan, <span id="occl-e85-20"></span>; <span id="occl-e78"></span>; a 60nan, <span id="occl-e79"></span>. <span class="verdict bad">A 80nan, refutado:</span> <span id="occl-e85-80"></span>, só em pendigits, letter, electricity e vehicle. Na tabela sintética os blocos são recuperados nos quatro níveis (AUROC 0,99 a 0,85), mas a 80nan a correlação de Spearman já chega lá sem o modelo.</dd>
     </dl>
   </div>
   <div class="card">
-    <header><h3>Spread de re-mascaramento: um sinal de incerteza por célula</h3><span class="tag">E75 · E76 · E77 · E80</span></header>
+    <header><h3>Spread de re-mascaramento: um sinal de incerteza por célula</h3><span class="tag">E75 · E76 · E77 · E80 · E84</span></header>
     <ul class="points">
       <li><b>O que é:</b> repetir a imputação com diferentes células observadas re-mascaradas e medir a dispersão dos preenchimentos.</li>
       <li><b>Ordena erros:</b> dentro de uma coluna, o spread separa células de erro maior de menor em <span id="remask-e76"></span> variantes até 60nan (E76, replicado).</li>
+      <li><b>Sob MNAR e MAR (E84):</b> ordena os erros em <span id="spread-e84"></span> variantes a 60nan (MNAR por auto-mascaramento e um sorteio MAR), no K e no H. No biodeg a ordenação enfraquece conforme a inclinação do MNAR cresce. A extensão da ADR 0030 espera decisão.</li>
       <li><b>Não faz intervalos melhores:</b> intervalos adaptados pelo spread não ficam mais estreitos com a mesma cobertura (E77, refutado).</li>
       <li><b>Limite:</b> o spread cai quando a linha tem mais lacunas, embora o erro suba (E80). É um sinal de ordenação, não de calibração.</li>
     </ul>
@@ -504,6 +505,8 @@ html { scroll-behavior: smooth; }
     <li><b>K e KC são leituras de benchmark:</b> usam a verdade das lacunas de validação. H, a implantável, lê um pouco mais fraco.</li>
     <li><b>80nan e tabelas categóricas</b> ficam com o TabPFN, sem alavanca encontrada.</li>
     <li><b>Pré-treino</b> apagado pelo decode; na classificação, só o primeiro passo.</li>
+    <li><b>Mapa de oclusão:</b> fiel de 20 a 60nan, sob MCAR, lido no K; a 80nan não se sustenta nas tabelas pequenas.</li>
+    <li><b>Torch:</b> as runs até 27/10 usaram o torch 2.5.1; a partir de 28/10, o 2.11.0 (preparação da ADR 0033), que sorteia outros números com a mesma seed. O E84 e o E85 registram isso.</li>
     <li><b>Um sorteio, um conjunto de seeds:</b> todo intervalo por variante vale para um sorteio MCAR fixo; algumas leituras (por coluna, híbrido) se apoiam num só conjunto de seeds.</li>
   </ul>
 </section>
@@ -519,7 +522,7 @@ html { scroll-behavior: smooth; }
         <tr><td>RQ2 / RQ2.2</td><td>Protocolo C15: <code>[NULL]</code> por coluna contra missForest + indicador no mesmo encoder, sob uma família MNAR controlada; contraste direto e Shapley por remoção de token</td><td>Rascunho na wiki; margens aceitas</td></tr>
         <tr><td>RQ3</td><td>Latente × valor num 2 × 2 (alvo × onde a loss incide), com o encoder congelado para escapar do washout</td><td>Desenhado</td></tr>
         <tr><td>RQ4 / C1</td><td>A ablação tied vs untied do split, na classificação</td><td>Protocolo C1 na wiki</td></tr>
-        <tr><td>Em execução (27–28/10)</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>Pré-registrados; rodando na GPU</td></tr>
+        <tr><td>Concluídos 27–28/10</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>E84 sustentado (estender a ADR 0030 é decisão); E85: 20nan sustentado, 80nan refutado</td></tr>
         <tr><td>Híbrido implantável</td><td>Escolha de pesos mais robusta: um peso por tabela, ou encolher em direção ao 50/50 em colunas com poucas células</td><td>Candidato após o E82</td></tr>
         <tr><td>Dados clínicos</td><td>PhysioNet 2012/2019 (acesso aberto) para uma primeira célula com falta natural</td><td>Decisão em aberto</td></tr>
       </tbody>
@@ -564,7 +567,7 @@ html { scroll-behavior: smooth; }
         <tr><td>Saída calibrada a partir de 40nan (KC)</td><td class="num">0027</td><td>E40, E47</td></tr>
         <tr><td>TabPFN no tier forte, offline</td><td class="num">0028</td><td>E55</td></tr>
         <tr><td>Busca de classificação na validação (proposto)</td><td class="num">0029</td><td>E70, E71</td></tr>
-        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80 (limite do E80 registrado)</td></tr>
+        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80 (limite do E80 registrado), E84</td></tr>
         <tr><td>Híbrido KC + TabPFN, opt-in e offline; a versão implantável não chega ao TabPFN</td><td class="num">0031</td><td>E69, E74, E82</td></tr>
         <tr><td>TabPFN v2 como tier forte separado na classificação</td><td class="num">0032</td><td>E83</td></tr>
       </tbody>
@@ -843,6 +846,8 @@ html { scroll-behavior: smooth; }
     document.getElementById("bias-rank").textContent = `${first} de ${pairs.length}`;
     const e76 = ((D.primary.remask_e76 || [])[0] || "").match(/on (\d+) \(K\) and \d+ \(H\) of (\d+)/);
     document.getElementById("remask-e76").textContent = e76 ? `${e76[1]} de ${e76[2]}` : "—";
+    const e84 = ((D.primary.spread_e84 || []).find((l) => l.startsWith("Primary")) || "").match(/signal on (\d+) \(K\) and (\d+) \(H\) of (\d+)/);
+    document.getElementById("spread-e84").textContent = e84 ? `${e84[1]} de ${e84[3]}` : "—";
   })();
 
   // ---------- MAR forest ----------
@@ -901,12 +906,15 @@ html { scroll-behavior: smooth; }
     const fx = (l) => { const m2 = l.match(/faithful on (\d+) of (\d+)/); return m2 ? `fiel em ${m2[1]} de ${m2[2]} tabelas` : "—"; };
     document.getElementById("occl-e78").textContent = fx(prim("occlusion_e78")) + " a 40nan";
     document.getElementById("occl-e79").textContent = fx(prim("occlusion_e79"));
+    const at = (k, rate) => (D.primary[k] || []).find((l) => l.startsWith(`Primary (B) at ${rate}`)) || "";
+    document.getElementById("occl-e85-20").textContent = fx(at("occlusion_e85", "20nan"));
+    document.getElementById("occl-e85-80").textContent = fx(at("occlusion_e85", "80nan"));
   })();
 
   // ---------- raw ----------
   (function () {
     const raw = document.getElementById("raw");
-    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)" };
+    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)", spread_e84: "E84 · spread sob MNAR e MAR", occlusion_e85: "E85 · mapa de oclusão a 20nan e 80nan" };
     for (const k in names) {
       const d = document.createElement("details"); d.className = "raw";
       const lines = D.primary[k] || [];

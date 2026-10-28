@@ -60,6 +60,8 @@ READERS: dict[str, list[str]] = {
     "spread_e80": [f"{E}/occlusion_spread.py"],
     "hybrid_e82": [f"{E}/deployable_hybrid.py", "--tally"],
     "tabpfn_cls_e83": [f"{E}/tabpfn_classification.py", "--tally"],
+    "spread_e84": [f"{E}/spread_mechanisms.py", "--tally"],
+    "occlusion_e85": [f"{E}/occlusion_map.py", "--study", "e85", "--tally"],
 }
 
 NUM = r"[+-]?\d+\.\d+"
@@ -405,7 +407,8 @@ def main() -> int:
         },
         "primary": {name: primary_lines(text[name]) for name in
                     ["occlusion_e78", "occlusion_e79", "gap_reliance", "null_gaps", "frozen", "remask_e75",
-                     "remask_e76", "remask_e77", "spread_e80", "default_refresh", "hybrid_e82"]}
+                     "remask_e76", "remask_e77", "spread_e80", "default_refresh", "hybrid_e82",
+                     "spread_e84", "occlusion_e85"]}
                    | {"tabpfn_cls_e83": [x.strip() for x in text["tabpfn_cls_e83"].splitlines() if re.match(r"^- \d+nan:", x)]},
         "trajectory": trajectory(),
         "occlusion_synthetic": occlusion_synthetic(),

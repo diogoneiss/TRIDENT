@@ -3814,6 +3814,13 @@
   "hybrid_e82": [
    "Primary: the deployable hybrid is better than H on 10 of 10, worse on none, and worse than TabPFN on 5 (['vehicle_80nan', 'biodeg_80nan', 'kr-vs-kp_60nan', 'kr-vs-kp_80nan', 'credit-g_60nan']) -> refuted (fold-pair t, seed agreement)"
   ],
+  "spread_e84": [
+   "Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported (fold-pair t, seed agreement)"
+  ],
+  "occlusion_e85": [
+   "Primary (B) at 20nan: faithful on 8 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)",
+   "Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_80nan', 'spambase_80nan', 'credit-g_80nan'] -> refuted (fold-pair t, seed agreement, SESOI 0.01)"
+  ],
   "tabpfn_cls_e83": [
    "- 0nan: TabPFN − TRIDENT macro-F1 +0.0212 [+0.0136, +0.0288] seeds +0.0178, +0.0246, 48 fold pairs -> TabPFN ahead",
    "- 20nan: TabPFN − TRIDENT macro-F1 +0.0186 [+0.0108, +0.0264] seeds +0.0160, +0.0212, 48 fold pairs -> TabPFN ahead",

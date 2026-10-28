@@ -1,14 +1,12 @@
 # What the imputation studies support, as of 2026-10-28 (consolidated)
 
-This report gathers E44–E83 into one statement for the thesis. It was rebuilt 2026-10-28, 00:39 GMT-3 to add
+This report gathers E44–E85 into one statement for the thesis. It was updated 2026-10-28, 12:47 GMT-3 with E84 and
+E85, and rebuilt 2026-10-28, 00:39 GMT-3 to add
 E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
 new analysis.
 
-- **E84** (the spread under MNAR and MAR) completed on 2026-10-28 after this rebuild: supported
-  on 12 of 12 under K and H
-  ([imputation-protocol/32](../tickets/imputation-protocol/32-spread-mechanisms.md)). The
-  statement's line 9 still reads MCAR only, until the user decides ADR 0030's extension.
-- **E85** (the occlusion map at 20/80nan) is running and carries no verdict yet.
+- **E84 and E85 are in** (both complete, 2026-10-28). ADR 0030's extension to MAR and MNAR, which
+  E84 supports, is still the user's decision.
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
     runs each reader unchanged.
@@ -67,12 +65,16 @@ new analysis.
    - It does not make better intervals than a constant width (E77).
    - It runs the wrong way along a row's missingness (E80): it falls as the row has more gaps,
      while the error rises.
-10. **The decoder's column dependencies can be read, and they are faithful (E78, E79).**
+   - Under self-masking MNAR and one MAR draw at 60nan it still ranks: 12 of 12 under K and H
+     (E84). On biodeg it weakens as the tilt grows. ADR 0030 is not yet extended.
+10. **The decoder's column dependencies can be read, and from 20 to 60nan they are faithful (E78,
+    E79, E85).**
     - Hiding each source column as `[MASK]` gives a map.
-    - Hiding a target's top 3 sources hurts more than hiding 3 random ones on 9 of 9 tables at
-      40nan, and on 7 of 9 at 60nan (kc2 and credit-g inconclusive).
-    - On a synthetic table with known blocks the map recovers them: AUROC 0.979 and 0.914, against
-      0.847 from |Spearman|.
+    - Hiding a target's top 3 sources hurts more than hiding 3 random ones on 8, 9 and 7 of 9 tables
+      at 20, 40 and 60nan, but on only 4 of 9 at 80nan (refuted there).
+    - On a synthetic table with known blocks the map recovers them at every rate: AUROC 0.994,
+      0.979, 0.914 and 0.853. At 80nan, though, |Spearman| reads 0.878, so the map no longer beats a
+      linear reading.
 11. **A per-column hedge with TabPFN helps, but most of its gain is TabPFN's own (ADR 0031; E69,
     E74, E82).**
     - The KC + TabPFN hybrid is never worse than KC on the 10 hard variants (E74, mixed).
@@ -168,7 +170,7 @@ new analysis.
   - The bigger encoder costs about 2× the training time.
   - It does not move pendigits_80nan's gap to TabPFN (+0.0121 → +0.0104, still worse).
 
-## 3b. Since 2026-10-23: E67–E83
+## 3b. Since 2026-10-23: E67–E85
 
 Each line cites the study's ticket; the readers' summary lines are in the appendix.
 
@@ -198,7 +200,11 @@ Each line cites the study's ticket; the readers' summary lines are in the append
     [imputation-interpretability/01](../tickets/imputation-interpretability/01-occlusion-map.md));
   - E79 (supported at the bar at 60nan; [02](../tickets/imputation-interpretability/02-occlusion-map-60nan.md));
   - E80 (mixed; [03](../tickets/imputation-interpretability/03-spread-and-missing-sources.md));
-  - E81 (mixed; [04](../tickets/imputation-interpretability/04-gap-reliance.md)).
+  - E81 (mixed; [04](../tickets/imputation-interpretability/04-gap-reliance.md));
+  - E85 (20nan supported, 80nan refuted;
+    [05](../tickets/imputation-interpretability/05-occlusion-map-grid.md)).
+- **The spread off MCAR:** E84 (supported, 12 of 12;
+  [imputation-protocol/32](../tickets/imputation-protocol/32-spread-mechanisms.md)).
   - **E81's structural finding:** under the default (`DECODE_GAP_TOKEN mask`, ADR 0014) a real gap
     and a hidden cell are one token, so the default cannot read the gap pattern.
   - A decoder that can read it (`--decode_gap_token null`) does so under moderate self-masking,
@@ -234,15 +240,16 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 - **The spread (ADR 0030)** is a rank within a column, not an interval (E77). It falls along a row's
   missingness (E80). Under one MAR draw and self-masking MNAR at 60nan it ranks too (E84, 12 of 12), weakening as the
   tilt grows; ADR 0030 is not yet extended.
-- **The occlusion map** is read on K only, under MCAR, at 40 and 60nan. It is not shown on kc2 and
-  credit-g at 60nan, and its effects shrink with missingness.
+- **The occlusion map** is read on K only, under MCAR. It is faithful from 20 to 60nan and fails at
+  80nan beyond pendigits, letter, electricity and vehicle. Its effects shrink with missingness, and
+  kc2 is the weakest table from 20 to 60nan.
 - **The hybrid's deployable form** does not reach TabPFN on the small and categorical tables (E82).
 - **Torch:** every run up to 2026-10-27 used torch 2.5.1. From 2026-10-28 runs use 2.11.0 (ADR 0033's
   preparation), which draws other numbers from the same seed. Studies that span the change say so.
 
 ## 5. Open
 
-- **E84 done (supported); ADR 0030's extension to MAR/MNAR is the user's decision. E85 running.**
+- **ADR 0030's extension to MAR and MNAR** (E84, supported) is the user's decision.
 - **T27's classification step zero:** ADR 0029 and its eight decisions, deferred by the user on
   2026-10-27. T41: the paper's Table 4 with its parameters.
 - **The hybrid's selection:** one weight per table, or shrinkage toward the equal blend, which is
@@ -707,4 +714,19 @@ Primary: the deployable hybrid is better than H on 10 of 10, worse on none, and 
 - 40nan: TabPFN − TRIDENT macro-F1 +0.0170 [+0.0018, +0.0322] seeds +0.0072, +0.0268, 48 fold pairs -> TabPFN ahead
 - 60nan: TabPFN − TRIDENT macro-F1 +0.0240 [+0.0055, +0.0426] seeds +0.0268, +0.0213, 48 fold pairs -> TabPFN ahead
 - 80nan: TabPFN − TRIDENT macro-F1 +0.0236 [+0.0064, +0.0408] seeds +0.0260, +0.0212, 48 fold pairs -> TabPFN ahead
+```
+
+### E84: the spread under MNAR and MAR (imputation-protocol/32)
+
+```text
+Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported (fold-pair t, seed agreement)
+```
+
+### E85: the occlusion map at 20nan and 80nan (imputation-interpretability/05)
+
+```text
+  - descriptive: |Spearman| on the training split, same AUROC (numerical pairs only): 0.867 [0.850, 0.884]
+  - descriptive: |Spearman| on the training split, same AUROC (numerical pairs only): 0.878 [0.861, 0.895]
+Primary (B) at 20nan: faithful on 8 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)
+Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_80nan', 'spambase_80nan', 'credit-g_80nan'] -> refuted (fold-pair t, seed agreement, SESOI 0.01)
 ```

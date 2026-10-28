@@ -59,6 +59,8 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E81: gap-pattern reliance under MNAR", "imputation-interpretability/04", [f"{E}/gap_reliance.py", "--tally"]),
     ("E82: the deployable hybrid", "imputation-protocol/31", [f"{E}/deployable_hybrid.py", "--tally"]),
     ("E83: TabPFN v2's classifier", "classification-step-zero/03", [f"{E}/tabpfn_classification.py", "--tally"]),
+    ("E84: the spread under MNAR and MAR", "imputation-protocol/32", [f"{E}/spread_mechanisms.py", "--tally"]),
+    ("E85: the occlusion map at 20nan and 80nan", "imputation-interpretability/05", [f"{E}/occlusion_map.py", "--study", "e85", "--tally"]),
 ]
 
 

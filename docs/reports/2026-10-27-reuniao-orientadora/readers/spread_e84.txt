@@ -1,0 +1,17 @@
+- `biodeg_probit0p25_60nan`: K num_rank +0.348 [+0.327, +0.369] -> signal; minus biodeg_60nan -0.023 [-0.051, +0.004]; H num_rank +0.332 [+0.309, +0.354] -> signal
+- `biodeg_probit_60nan`: K num_rank +0.322 [+0.290, +0.355] -> signal; minus biodeg_60nan -0.049 [-0.082, -0.017]; H num_rank +0.295 [+0.256, +0.334] -> signal
+- `biodeg_probit1p0_60nan`: K num_rank +0.294 [+0.275, +0.314] -> signal; minus biodeg_60nan -0.077 [-0.094, -0.060]; H num_rank +0.304 [+0.289, +0.318] -> signal
+- `biodeg_probit2p0_60nan`: K num_rank +0.260 [+0.242, +0.279] -> signal; minus biodeg_60nan -0.111 [-0.132, -0.091]; H num_rank +0.239 [+0.209, +0.269] -> signal
+- `vehicle_probit_60nan`: K num_rank +0.101 [+0.084, +0.118] -> signal; minus vehicle_60nan -0.010 [-0.028, +0.009]; H num_rank +0.110 [+0.087, +0.134] -> signal
+- `kc2_probit_60nan`: K num_rank +0.518 [+0.473, +0.563] -> signal; minus kc2_60nan +0.103 [+0.057, +0.149]; H num_rank +0.467 [+0.431, +0.503] -> signal
+- `spambase_probit_60nan`: K num_rank +0.322 [+0.304, +0.341] -> signal; minus spambase_60nan -0.045 [-0.073, -0.017]; H num_rank +0.287 [+0.245, +0.329] -> signal
+- `biodeg_marf_60nan`: K num_rank +0.425 [+0.411, +0.439] -> signal; minus biodeg_marfctl_60nan -0.013 [-0.028, +0.002]; H num_rank +0.413 [+0.399, +0.426] -> signal; minus biodeg_marfctl_60nan -0.021 [-0.042, +0.000]
+- `kc2_marf_60nan`: K num_rank +0.378 [+0.321, +0.434] -> signal; minus kc2_marfctl_60nan -0.092 [-0.151, -0.034]; H num_rank +0.414 [+0.376, +0.452] -> signal; minus kc2_marfctl_60nan -0.022 [-0.071, +0.027]
+- `vehicle_marf_60nan`: K num_rank +0.143 [+0.121, +0.164] -> signal; minus vehicle_marfctl_60nan +0.040 [+0.010, +0.069]; H num_rank +0.134 [+0.114, +0.155] -> signal; minus vehicle_marfctl_60nan +0.037 [+0.005, +0.068]
+- `spambase_marf_60nan`: K num_rank +0.446 [+0.429, +0.463] -> signal; minus spambase_marfctl_60nan -0.009 [-0.028, +0.011]; H num_rank +0.443 [+0.426, +0.459] -> signal; minus spambase_marfctl_60nan -0.014 [-0.039, +0.011]
+- `credit-g_marf_60nan`: K num_rank +0.180 [+0.123, +0.237] -> signal; minus credit-g_marfctl_60nan +0.026 [-0.051, +0.104]; H num_rank +0.195 [+0.140, +0.250] -> signal; minus credit-g_marfctl_60nan +0.008 [-0.078, +0.095]
+
+- K: signal on 12 of 12, against on none
+- H: signal on 12 of 12, against on none
+
+Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported (fold-pair t, seed agreement)
