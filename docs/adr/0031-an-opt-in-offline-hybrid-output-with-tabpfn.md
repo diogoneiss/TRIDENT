@@ -2,7 +2,8 @@
 
 - **Status:** **accepted on 2026-10-27, 12:51 GMT-3** by the user ("eu apoio a 031"). Proposed 2026-10-27, 12:44 GMT-3.
   Amended 2026-10-27, 19:20 GMT-3 with E82's deployable route, on the user's decision ("show, registre essa
-  decisão"). The user asked for it to be
+  decisão"). Amended 2026-10-28, 23:10 GMT-3 with E89's evidence, on the user's request ("sim"); no
+  decision changes. The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -123,3 +124,24 @@
     toward the equal blend where a column has few cells), which is offline on E82's files;
   - the in-run validation-gap weights (benchmark-class);
   - MAR and MNAR.
+- **Since (2026-10-28), evidence only: E89 tested the fewer-weights follow-up**
+  ([imputation-protocol/33](../tickets/imputation-protocol/33-hybrid-selection-rules.md),
+  supported as a development read).
+  - It used E82's own cells and seeds, with TabPFN refit and no training. Four ways of choosing the
+    weights were scored offline, none of them reading the complete table:
+    - `column`: E82's rule, which reproduces E82;
+    - `table`: one numerical weight and one categorical pick per table;
+    - `shrunk`: per-column weights pulled toward the equal blend, more where a column has fewer
+      than about 50 selection cells;
+    - `pooled`: per-column weights chosen on all five folds' validation cells.
+  - **`table`:** better than H on 10 of 10, and worse than TabPFN on none. It is better than TabPFN
+    on electricity at 40 and 80nan, and equivalent or without verdict on the other 8.
+  - **`shrunk`:** better than H on 10 of 10, and worse than TabPFN on 2 (kr-vs-kp at 60 and
+    80nan).
+  - **`pooled`:** mixed (worse than TabPFN on 3).
+  - **What this changes: nothing yet.** The rules were written after reading E82 and scored on its
+    seeds, so a deployable form waits for the fresh-seed confirmation with `table` fixed in
+    advance (E90, [imputation-protocol/34](../tickets/imputation-protocol/34-hybrid-confirmation.md)).
+    E91 checks its cost on variants where the hybrid is not needed.
+  - **If E90 holds,** the order on the 10 hard variants becomes deployable hybrid (`table`) ≈
+    TabPFN > KC > H, without the complete table. Adding that output is the user's decision.

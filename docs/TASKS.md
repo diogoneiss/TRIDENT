@@ -630,6 +630,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E89 done 2026-10-28: supported (development).** `shrunk` is behind TabPFN on 2 of 10, and
     `table` on none, both better than H on 10 of 10. A fresh-seed confirmation with one rule waits
     on the user.
+  - **Running from 2026-10-28 as E90 and E91**
+    ([imputation-protocol/34](tickets/imputation-protocol/34-hybrid-confirmation.md)), on the
+    user's go: `table` on fresh seeds 4545/5656/6767, on the 10 hard variants (E90) and on 7 where
+    the hybrid is not needed (E91). ADR 0031 carries E89 as evidence, with no decision changed.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

@@ -116,6 +116,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
 | E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
 | E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
+| E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – | in progress | |
+| E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – | in progress | |
 
 ## Entries
 
@@ -2879,3 +2881,35 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   rule (`table` or `shrunk`) waits on the user.
 - **Sources:** [imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md);
   `scripts/experiments/hybrid_selection_rules.py`, `run_hybrid_selection_rules_queue.sh`.
+
+### E90 · Does the deployable hybrid's `table` rule hold on fresh seeds? (2026-10-28 – )
+
+- **Status:** in progress
+- **Hypothesis:** E89's `table` rule (one weight and one categorical pick per table, chosen on
+  hidden observed validation cells) keeps the deployable hybrid at TabPFN's level on fresh seeds.
+- **Scenarios:** E82's exact shape (H with the selection read, then TabPFN refit) on E82's 10 hard
+  variants × seeds 4545/5656/6767: 30 cells, gorgona8.
+- **Measures and decision rule:** `table` − H and `table` − TabPFN over 15 fold pairs (SESOI 1% of
+  the opponent's mean).
+  - **Supported** if better than H on 8 or more, worse on none, and worse than TabPFN on 2 or
+    fewer.
+  - **Refuted** if better than H on 5 or fewer, worse on 2 or more, or worse than TabPFN on 5 or
+    more.
+  - **Mixed** otherwise.
+  - The other three rules are secondary. No cell starts after 07:00 (training) or 08:40 (refits)
+    GMT-3 on 10-29, and a study cut there is partial.
+- **Sources:** [imputation-protocol/34](tickets/imputation-protocol/34-hybrid-confirmation.md);
+  `scripts/experiments/hybrid_confirmation.py --study e90`, `run_hybrid_confirmation_queue.sh`.
+
+### E91 · Does the deployable hybrid cost anything where it is not needed? (2026-10-28 – )
+
+- **Status:** in progress
+- **Hypothesis:** on confirmation variants where E60's equal blend already beat TabPFN, the
+  `table` hybrid costs nothing against H or TabPFN.
+- **Scenarios:** E90's shape on biodeg_40nan, kc2_40nan, kc2_80nan, pendigits at 40/60/80nan and
+  vehicle_40nan × seeds 4545/5656/6767: 21 cells, gorgona8, sharing E90's queues.
+- **Measures and decision rule:**
+  - **Supported** if worse than H on none and worse than TabPFN on 1 or fewer of 7.
+  - **Refuted** if worse than H on 2 or more, or worse than TabPFN on 3 or more.
+  - **Mixed** otherwise.
+- **Sources:** as E90, `--study e91`.
