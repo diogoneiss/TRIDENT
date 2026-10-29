@@ -60,7 +60,6 @@ The tally ran on medusa1 (`cls_tenfold.py --tally`, also in the state directory 
 Its printout, unedited:
 
 ```
-done 449 failed 0
 - 00nan (A's mean 0.8625): B − A +0.0006 [-0.0017, +0.0028] seeds +0.0012, -0.0011, -0.0014, +0.0024, +0.0017, 450 fold pairs -> equivalent
   - by table (mean over seeds): biodeg -0.0025; credit-g +0.0063; electricity +0.0043; kc2 -0.0094; kr-vs-kp -0.0008; letter +0.0091; pendigits -0.0002; spambase +0.0001; vehicle -0.0019
 - 20nan (A's mean 0.8043): B − A +0.0022 [-0.0006, +0.0049] seeds +0.0029, +0.0091, -0.0041, -0.0024, +0.0053, 450 fold pairs -> equivalent
@@ -81,7 +80,7 @@ Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-trai
   - The means run from −0.0035 (60nan) to +0.0022 (20nan).
 - **Closest to a gain: 60nan,** at −0.0035 [−0.0070, +0.0000] with all five seeds negative. Its
   upper bound touches zero without excluding it, so by the rule it is no verdict on direction. The
-  gain it would allow is a third of a point.
+  largest gain the interval allows is 0.7 points, against the paper's 1.7.
 - **By table** the means stay within ±0.016. The largest are credit-g +0.016 at 80nan (B higher)
   and vehicle at 40nan (+0.013) and 60nan (−0.012), with no pattern across rates.
 - **Against E71** (three folds on gorgona8, descriptive only by E86): E71's B − A ran from −0.005
