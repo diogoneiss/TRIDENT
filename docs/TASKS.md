@@ -634,6 +634,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-protocol/34](tickets/imputation-protocol/34-hybrid-confirmation.md)), on the
     user's go: `table` on fresh seeds 4545/5656/6767, on the 10 hard variants (E90) and on 7 where
     the hybrid is not needed (E91). ADR 0031 carries E89 as evidence, with no decision changed.
+  - **E90 and E91 done 2026-10-29: both supported.** `table` on fresh seeds is never worse than H
+    or TabPFN on 17 variants (E90: better than H on 9 of 10; E91: better than TabPFN on 6 of 7).
+    `shrunk` does not replicate. A deployable output in ADR 0031 is the user's decision.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

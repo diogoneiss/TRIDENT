@@ -116,8 +116,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 – 2026-10-29 | refuted | B − A equivalent (inside ±0.01) at all five levels, −0.0035 to +0.0022; the paper's +1.7-point gain is excluded |
 | E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
 | E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
-| E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – | in progress | |
-| E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – | in progress | |
+| E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – 2026-10-29 | supported | better than H on 9/10, worse than TabPFN on none (fresh seeds); `shrunk` mixed (4 behind) |
+| E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – 2026-10-29 | supported | worse than H on none of 7, worse than TabPFN on none (better on 6) |
 | E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
 
 ## Entries
@@ -2890,9 +2890,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md);
   `scripts/experiments/hybrid_selection_rules.py`, `run_hybrid_selection_rules_queue.sh`.
 
-### E90 · Does the deployable hybrid's `table` rule hold on fresh seeds? (2026-10-28 – )
+### E90 · Does the deployable hybrid's `table` rule hold on fresh seeds? (2026-10-28 – 2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** E89's `table` rule (one weight and one categorical pick per table, chosen on
   hidden observed validation cells) keeps the deployable hybrid at TabPFN's level on fresh seeds.
 - **Scenarios:** E82's exact shape (H with the selection read, then TabPFN refit) on E82's 10 hard
@@ -2909,12 +2909,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment 2026-10-29, 06:45 GMT-3 (E90 and E91, before any result was read):** the training
   deadline moves from 07:00 to 08:00. The queues ran slower than planned, and small E91 cells would
   have missed 07:00. A rescue runner trains the leftover cells once the four queues stop.
+- **Results (2026-10-29, 07:37 GMT-3):** `table`: better than H on 9 of 10 (electricity_40nan no
+  verdict), worse on none, and worse than TabPFN on none. Supported.
+  - It is better than TabPFN on electricity_80nan and equivalent on 6.
+  - Secondary: `column` worse than TabPFN on 7 (refuted), `shrunk` on 4 (mixed), `pooled` on 4
+    (mixed).
+- **Conclusion:** the deployable hybrid with one weight and one categorical pick per table holds
+  on fresh seeds: never worse than H or TabPFN on the 10 hard variants, with no complete table.
+  E89's primary (`shrunk`) does not replicate. Adding a deployable output to ADR 0031 is the
+  user's decision.
 - **Sources:** [imputation-protocol/34](tickets/imputation-protocol/34-hybrid-confirmation.md);
   `scripts/experiments/hybrid_confirmation.py --study e90`, `run_hybrid_confirmation_queue.sh`.
 
-### E91 · Does the deployable hybrid cost anything where it is not needed? (2026-10-28 – )
+### E91 · Does the deployable hybrid cost anything where it is not needed? (2026-10-28 – 2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** on confirmation variants where E60's equal blend already beat TabPFN, the
   `table` hybrid costs nothing against H or TabPFN.
 - **Scenarios:** E90's shape on biodeg_40nan, kc2_40nan, kc2_80nan, pendigits at 40/60/80nan and
@@ -2923,6 +2932,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Supported** if worse than H on none and worse than TabPFN on 1 or fewer of 7.
   - **Refuted** if worse than H on 2 or more, or worse than TabPFN on 3 or more.
   - **Mixed** otherwise.
+- **Results (2026-10-29, 07:37 GMT-3):** `table`: worse than H on none of 7 (better on 5),
+  and worse than TabPFN on none (better on 6). Supported.
+- **Conclusion:** the hybrid costs nothing where it is not needed. With E90 it is never worse
+  than H or TabPFN on 17 variants.
 - **Sources:** as E90, `--study e91`.
 
 ### E92 · Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? (2026-10-28)
