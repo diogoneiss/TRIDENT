@@ -194,7 +194,7 @@ since E94 has no duplicates):
 - **Imputation: no verdict.**
   - +0.54% [−0.06%, +1.13%] over 350 fold pairs. The upper bound passes the 1% SESOI, so
     imputation studies still run whole on one machine.
-  - The mean is E86's again (+0.59% there), and seven of ten seeds lean positive.
+  - The mean is close to E86's (+0.59% there), and six of ten seeds lean positive.
 - **Descriptive:**
   - kc2_20nan carries the heavy tail, with folds at +0.51, +0.44 and +0.39. kc2 is the smallest
     table, and at 20nan a fold scores few cells.
