@@ -109,3 +109,7 @@ This ticket was written and committed before the study's first cell.
   - kc2 and the unchecked tables (spambase, kr-vs-kp, pendigits, letter, electricity) keep one
     machine a study.
 - **With E94:** classification may split, and imputation may split on these three tables.
+- **Decided by the user, 2026-10-29, 20:22 GMT-3 ([ADR 0035](../../adr/0035-studies-may-split-between-servers-by-seed.md)):**
+  the split extends to every table, kc2 included ("podemos dividir em qualquer maquina, vimos que
+  nao ha diferença relevante e nao precisamos testar em mais datasets"). This supersedes the
+  per-table scope above.

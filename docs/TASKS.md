@@ -762,6 +762,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     E94's imputation variants without kc2, on fresh seeds.
   - **E96 done 2026-10-29: equivalent** (+0.04% [−0.30%, +0.38%]). Imputation studies on credit-g,
     vehicle and biodeg may split by seed; kc2 and the unchecked tables may not.
+  - **Decided 2026-10-29 (ADR 0035, accepted):** any study, on any table, may split between the
+    servers by seed, with both arms of a pair on one machine. The user's words: "podemos dividir em
+    qualquer maquina ... nao precisamos testar em mais datasets". T42 is done.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
 ### Process
