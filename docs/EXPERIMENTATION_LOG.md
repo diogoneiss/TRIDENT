@@ -113,7 +113,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E84 | Does the re-masking spread still rank errors under MNAR and MAR? | 2026-10-27 – 2026-10-28 | supported (full scope) | signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt; 11 cells under torch 2.11.0 |
 | E85 | Does the occlusion map hold at 20nan and 80nan? | 2026-10-27 – 2026-10-28 | 20nan supported, 80nan refuted | 20nan: faithful on 8 of 9 (kc2 inconclusive), synthetic AUROC 0.994; 80nan: faithful on 4 of 9, not faithful on biodeg/kc2/spambase/credit-g; the map holds from 20 to 60nan |
 | E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
-| E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
+| E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 – 2026-10-29 | refuted | B − A equivalent (inside ±0.01) at all five levels, −0.0035 to +0.0022; the paper's +1.7-point gain is excluded |
 | E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
 | E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
 | E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – | in progress | |
@@ -2811,9 +2811,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `/scratch2/diogoneiss/trident-2026-10-28-cross-machine/` and medusa1's
   `/scratch/diogoneiss/trident-2026-10-28-cross-machine/`.
 
-### E87 · Does pre-training help classification with ten folds and five seeds? (2026-10-28)
+### E87 · Does pre-training help classification with ten folds and five seeds? (2026-10-28 – 2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** the paper's Table 4 pre-training gain (about +1.7 macro-F1 points) shows once the
   power is there. E71 found none with three folds and two seeds. This is T41's old-sweep half.
 - **Scenarios:** E71's arms A (the old sweep's hyperparameters, `cosine_legacy`) and B
@@ -2826,6 +2826,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Refuted** if A is higher at 1 level or none.
   - **Mixed** otherwise.
   - Read only with every cell done.
+- **Results (2026-10-29, 03:37 GMT-3):** equivalent at every level.
+  - B − A runs from −0.0035 [−0.0070, +0.0000] (60nan) to +0.0022 [−0.0006, +0.0049] (20nan), 450
+    fold pairs a level. Every interval lies inside ±0.01.
+  - A is higher at no level and B at no level: refuted.
+- **Conclusion:** no pre-training gain on classification under the old sweep configuration. A
+  gain of the paper's size (about +1.7 points) is excluded at every rate. T41's paper-parameters
+  half is the open route.
 - **Sources:** [classification-step-zero/04](tickets/classification-step-zero/04-tenfold-pretraining.md);
   `scripts/experiments/cls_tenfold.py`, `run_cls_tenfold_queue.sh`; MLflow
   `experiment=cls-tenfold-2026-10-28`.

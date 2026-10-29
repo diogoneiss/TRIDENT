@@ -54,4 +54,40 @@ This ticket was written and committed before the study's first cell.
 
 ## Outcome
 
-(open)
+**Done 2026-10-29, 03:37 GMT-3: refuted, no pre-training gain.** All 450 cells ran on medusa1,
+2026-10-28 17:06 to 2026-10-29 03:36 GMT-3, with none failed: 449 in the queues plus the smoke cell.
+The tally ran on medusa1 (`cls_tenfold.py --tally`, also in the state directory as `tally.txt`).
+Its printout, unedited:
+
+```
+done 449 failed 0
+- 00nan (A's mean 0.8625): B − A +0.0006 [-0.0017, +0.0028] seeds +0.0012, -0.0011, -0.0014, +0.0024, +0.0017, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0025; credit-g +0.0063; electricity +0.0043; kc2 -0.0094; kr-vs-kp -0.0008; letter +0.0091; pendigits -0.0002; spambase +0.0001; vehicle -0.0019
+- 20nan (A's mean 0.8043): B − A +0.0022 [-0.0006, +0.0049] seeds +0.0029, +0.0091, -0.0041, -0.0024, +0.0053, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg +0.0049; credit-g +0.0076; electricity -0.0050; kc2 +0.0072; kr-vs-kp -0.0012; letter +0.0046; pendigits -0.0004; spambase +0.0027; vehicle -0.0009
+- 40nan (A's mean 0.7515): B − A -0.0010 [-0.0039, +0.0020] seeds -0.0029, +0.0028, -0.0040, -0.0023, +0.0016, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0037; credit-g -0.0008; electricity -0.0021; kc2 -0.0039; kr-vs-kp -0.0039; letter -0.0049; pendigits -0.0019; spambase -0.0007; vehicle +0.0133
+- 60nan (A's mean 0.6720): B − A -0.0035 [-0.0070, +0.0000] seeds -0.0025, -0.0022, -0.0014, -0.0079, -0.0035, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0051; credit-g -0.0052; electricity -0.0016; kc2 +0.0024; kr-vs-kp +0.0003; letter -0.0070; pendigits +0.0007; spambase -0.0037; vehicle -0.0122
+- 80nan (A's mean 0.5592): B − A -0.0013 [-0.0057, +0.0030] seeds +0.0021, -0.0052, -0.0037, -0.0031, +0.0032, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0054; credit-g +0.0158; electricity +0.0014; kc2 -0.0089; kr-vs-kp +0.0027; letter -0.0040; pendigits +0.0047; spambase -0.0098; vehicle -0.0087
+
+Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-training gain (fold-pair t, seed agreement, SESOI 0.01)
+```
+
+- **Primary: refuted.** A is higher at no level, and B is higher at no level.
+  - At every level the 95% interval of B − A lies inside ±0.01, so the call is equivalent: no
+    pre-training gain of the paper's size (about +0.017) at any rate.
+  - The means run from −0.0035 (60nan) to +0.0022 (20nan).
+- **Closest to a gain: 60nan,** at −0.0035 [−0.0070, +0.0000] with all five seeds negative. Its
+  upper bound touches zero without excluding it, so by the rule it is no verdict on direction. The
+  gain it would allow is a third of a point.
+- **By table** the means stay within ±0.016. The largest are credit-g +0.016 at 80nan (B higher)
+  and vehicle at 40nan (+0.013) and 60nan (−0.012), with no pattern across rates.
+- **Against E71** (three folds on gorgona8, descriptive only by E86): E71's B − A ran from −0.005
+  to +0.004 with no verdict. Ten folds and five seeds narrow that to equivalence at every level.
+- **What follows:**
+  - Under the fork's old sweep configuration, pre-training adds nothing detectable to
+    classification, and a gain of the paper's size is excluded at every rate.
+  - T41's other half (the paper's hyperparameters and split) remains the only open route to the
+    Table 4 gain, and it waits on those parameters.
