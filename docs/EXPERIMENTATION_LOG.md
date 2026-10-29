@@ -2934,4 +2934,3 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Read only with all 200 pairs and E87 done.
 - **Sources:** [classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md);
   `tabpfn_classification.py --study e92`, `run_tabpfn_tenfold_queue.sh`; no MLflow runs.
->>>>>>> Stashed changes
