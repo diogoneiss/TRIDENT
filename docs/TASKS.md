@@ -753,6 +753,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E94, running from 2026-10-29** ([cross-machine/02](tickets/cross-machine/02-equivalence.md)):
     the same check with 350 and 150 fold pairs. If a task is equivalent, its studies may be split by
     seed.
+  - **E94 done 2026-10-29:** classification is equivalent (+0.0009 [−0.0056, +0.0073]), so its
+    studies may split by seed. Imputation has no verdict (+0.54% [−0.06%, +1.13%]) and stays on one
+    machine a study.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
 ### Process

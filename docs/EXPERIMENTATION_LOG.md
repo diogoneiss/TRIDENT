@@ -120,7 +120,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – 2026-10-29 | supported | worse than H on none of 7, worse than TabPFN on none (better on 6) |
 | E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
 | E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 | mixed | better than H on 6/12 (rule 8), worse on spambase_probit; worse than TabPFN on credit-g_marf only; H already leads TabPFN off MCAR |
-| E94 | Is the machine's shift inside the SESOI? | 2026-10-29 – | in progress | |
+| E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 – | in progress | |
 
 ## Entries
@@ -2993,9 +2993,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md);
   `hybrid_confirmation.py --study e93`, `run_hybrid_confirmation_queue.sh`.
 
-### E94 · Is the machine's shift inside the SESOI? (2026-10-29 – )
+### E94 · Is the machine's shift inside the SESOI? (2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** the gorgona8 − medusa1 shift that E86 could not bound (+0.59%, +0.0039) lies
   inside the SESOI once there are enough fold pairs. If it does, a study's cells may be split
   between the machines by seed.
@@ -3007,6 +3007,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   and absolute macro-F1 (SESOI 0.01).
   - **Equivalent:** the split is allowed for that task.
   - **Anything else:** each study stays on one machine.
+- **Results (17:53 GMT-3):**
+  - **Classification:** +0.0009 [−0.0056, +0.0073], 150 pairs: equivalent.
+  - **Imputation:** +0.54% [−0.06%, +1.13%], 350 pairs: no verdict. The upper bound passes 1%, and
+    kc2_20nan carries the heavy tail.
+- **Conclusion:** classification studies may be split between the servers by seed. Imputation
+  studies still run whole on one machine.
 - **Sources:** [cross-machine/02](tickets/cross-machine/02-equivalence.md);
   `cross_machine.py --study e94`, `run_cross_machine_e94_queue.sh`.
 
