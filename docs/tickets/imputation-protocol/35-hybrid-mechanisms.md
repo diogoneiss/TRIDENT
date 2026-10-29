@@ -30,6 +30,21 @@ This ticket was written and committed before the study's queues started.
   - **Deadlines, by the clock alone:** no training cell starts after 2026-10-29 18:00 GMT-3, and no
     cells job after 19:00 GMT-3. Anything missing then is reported partial, with no call.
 
+- **Amendment 2026-10-29, 14:49 GMT-3, before any E93 result was read:** four cells are retrained.
+  - medusa1 rebooted at about 14:30 GMT-3, taking the leader's MLflow server down. Four training
+    cells failed between 14:22 and 14:32 on the server's API (`Max retries exceeded`):
+    kc2_probit_60nan s5656, vehicle_marf_60nan s5656, credit-g_marf_60nan s4545 and
+    vehicle_probit_60nan s6767. Three had finished training and failed when logging; one failed
+    at its start.
+  - Their outputs were moved to `failed-2026-10-29/` in the state directory, so the queue sees them
+    as not done.
+  - Each is retrained once with the same seed, by a rescue runner that starts after the four
+    queues stop, under the same 18:00 deadline.
+  - The failure is infrastructure. The same cells run again, no result was read, and no other cell
+    reruns.
+  - Their unfinished runs stay in the store (not FINISHED), so `report_common.parents` does not
+    count them.
+
 ## Measures and rule, fixed now (`hybrid_confirmation.py --study e93 --tally`)
 
 - **Per variant:** `table` − H and `table` − TabPFN on `impute_score`, over 15 fold pairs. The

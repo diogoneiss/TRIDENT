@@ -2977,5 +2977,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Mixed** otherwise.
   - Descriptive: the MNAR and MAR splits.
   - Deadlines: training 18:00, refits 19:00 GMT-3.
+- **Amendment 2026-10-29, 14:49 GMT-3 (before any result was read):** four cells failed on the
+  leader's MLflow API while medusa1 rebooted (14:22–14:32). They are retrained once with the same
+  seeds by a rescue runner, under the same deadline.
 - **Sources:** [imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md);
   `hybrid_confirmation.py --study e93`, `run_hybrid_confirmation_queue.sh`.
