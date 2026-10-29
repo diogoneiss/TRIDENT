@@ -1,6 +1,6 @@
-"""E90 and E91: the deployable hybrid's `table` rule on fresh seeds (imputation-protocol/34, T39).
+"""E90, E91 and E93: the deployable hybrid's `table` rule on fresh seeds (imputation-protocol/34 and 35, T39).
 
-    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91> train <variant> <seed>
+    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91|e93> train <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --todo <n>
     uv run --python 3.11 --extra tabpfn python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91> cells <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91> --tally
@@ -8,7 +8,7 @@
 E82's shape on seeds 4545/5656/6767: ``train`` is ``deployable_hybrid.train`` (H, with the hidden observed
 validation cells read in place), ``cells`` is ``hybrid_selection_rules.cells`` (TabPFN refit, both cell
 tables kept), each pointed at this study's experiment tag and state. E90 runs E82's 10 hard variants;
-E91 seven variants where the model already leads or ties. ``--todo`` deals both studies' cells,
+E91 seven variants where the model already leads or ties; E93 E84's 12 MNAR and MAR variants at 60nan. ``--todo`` deals both studies' cells,
 over ``QUEUES`` training queues, the longest first. ``--tally`` scores H, TabPFN, the equal blend and
 the four rules of E89, and applies this study's rule to ``table``.
 """
@@ -30,15 +30,17 @@ from scripts.experiments import blend_weights as weights  # noqa: E402
 from scripts.experiments import deployable_hybrid as e82  # noqa: E402
 from scripts.experiments import hybrid_selection_rules as rules  # noqa: E402
 from scripts.experiments import report_common as common  # noqa: E402
+from scripts.experiments.spread_mechanisms import SHIFTED  # noqa: E402
 
 SEEDS = (4545, 5656, 6767)
 STUDIES = {
     "e90": ("hybrid-confirmation-2026-10-28", Path("/scratch2/diogoneiss/trident-2026-10-28-hybrid-confirmation"), weights.HARD),
     "e91": ("hybrid-generality-2026-10-28", Path("/scratch2/diogoneiss/trident-2026-10-28-hybrid-generality"),
             ("biodeg_40nan", "kc2_40nan", "kc2_80nan", "pendigits_40nan", "pendigits_60nan", "pendigits_80nan", "vehicle_40nan")),
+    "e93": ("hybrid-mechanisms-2026-10-29", Path("/scratch2/diogoneiss/trident-2026-10-29-hybrid-mechanisms"), tuple(SHIFTED)),
 }
 # Minutes a cell, from E82's and E44's runs of the same tables; they only deal the cells over the queues.
-MINUTES = {"electricity": 97, "pendigits": 37, "kr-vs-kp": 12, "biodeg": 5, "credit-g": 3.5, "vehicle": 3, "kc2": 2.7}
+MINUTES = {"electricity": 97, "pendigits": 37, "spambase": 37, "kr-vs-kp": 12, "biodeg": 5, "credit-g": 3.5, "vehicle": 3, "kc2": 2.7}
 QUEUES = 4
 
 
@@ -87,7 +89,7 @@ def tally(study: str) -> None:
         over = [v for v, c in calls[rule].items() if c["model"] == "better"]
         under = [v for v, c in calls[rule].items() if c["model"] == "worse"]
         behind = [v for v, c in calls[rule].items() if c["tabpfn"] == "worse"]
-        if study == "e90":
+        if study in ("e90", "e93"):
             reading = ("supported" if len(over) >= 8 and not under and len(behind) <= 2
                        else "refuted" if len(over) <= 5 or len(under) >= 2 or len(behind) >= 5 else "mixed")
         else:

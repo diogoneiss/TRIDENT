@@ -119,6 +119,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – 2026-10-29 | supported | better than H on 9/10, worse than TabPFN on none (fresh seeds); `shrunk` mixed (4 behind) |
 | E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – 2026-10-29 | supported | worse than H on none of 7, worse than TabPFN on none (better on 6) |
 | E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
+| E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 – | in progress | |
 
 ## Entries
 
@@ -2960,3 +2961,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   script now refuses to run without CUDA. The 115 missing pairs wait for the GPU; design unchanged.
 - **Sources:** [classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md);
   `tabpfn_classification.py --study e92`, `run_tabpfn_tenfold_queue.sh`; no MLflow runs.
+
+### E93 · Does the deployable `table` hybrid hold under MNAR and MAR? (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** ADR 0031 decision 6's hybrid (H + TabPFN, one weight and one categorical pick per
+  table, chosen on hidden observed validation cells) holds beyond MCAR.
+- **Scenarios:** E84's 12 variants at 60nan (7 self-masking MNAR, 5 MAR) × seeds 4545/5656/6767,
+  so 36 cells. This is E90's pipeline, on gorgona8.
+- **Measures and decision rule:** E90's.
+  - **Supported** if better than H on 8 or more of 12, worse on none, and worse than TabPFN on 2 or
+    fewer.
+  - **Refuted** if better than H on 5 or fewer, worse on 2 or more, or worse than TabPFN on 5 or
+    more.
+  - **Mixed** otherwise.
+  - Descriptive: the MNAR and MAR splits.
+  - Deadlines: training 18:00, refits 19:00 GMT-3.
+- **Sources:** [imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md);
+  `hybrid_confirmation.py --study e93`, `run_hybrid_confirmation_queue.sh`.

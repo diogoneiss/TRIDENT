@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
-# E90/E91 (docs/tickets/imputation-protocol/34-hybrid-confirmation.md) on gorgona8, from the checkout root:
+# E90/E91 (docs/tickets/imputation-protocol/34-hybrid-confirmation.md) and E93 (35) on gorgona8, from the checkout root:
 #   setsid nohup bash scripts/experiments/run_hybrid_confirmation_queue.sh train <1-4> > /dev/null 2>&1 &
 #   setsid nohup bash scripts/experiments/run_hybrid_confirmation_queue.sh cells <1-2> > /dev/null 2>&1 &
 # A training queue runs its cells from --todo; no cell starts after TRAIN_DEADLINE. A cells lane takes,
 # in turn, every cell whose run the store copy holds and whose cells are not written, until all are
-# written or CELLS_DEADLINE passes. Stop between cells: touch $S/STOP.
+# written or CELLS_DEADLINE passes. Stop between cells: touch $S/STOP. S, TRAIN_AT and CELLS_AT override the
+# state directory and the two deadlines (E93); cells already trained or written are skipped whatever the study.
 set -u
 MODE=$1; N=$2
 export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
 # A shell started by ssh or setsid has not read ~/.bashrc: log through the leader's server (ADR 0033).
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://127.0.0.1:47731}
-TRAIN_DEADLINE=$(date -d '2026-10-29 07:00' +%s); CELLS_DEADLINE=$(date -d '2026-10-29 08:40' +%s)
-S=/scratch2/diogoneiss/trident-2026-10-28-hybrid-confirmation
+TRAIN_DEADLINE=$(date -d "${TRAIN_AT:-2026-10-29 07:00}" +%s); CELLS_DEADLINE=$(date -d "${CELLS_AT:-2026-10-29 08:40}" +%s)
+S=${S:-/scratch2/diogoneiss/trident-2026-10-28-hybrid-confirmation}
 P=$S/progress.log
 mkdir -p $S/logs
 PY="uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py"

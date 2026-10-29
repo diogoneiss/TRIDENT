@@ -640,6 +640,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **ADR 0031 decision 6 proposed 2026-10-29** on the user's request ("sim, proponha"): the
     deployable H + TabPFN hybrid with the `table` rule, opt-in and offline. **Accepted 2026-10-29,
     10:42 GMT-3** ("aprovo"). T39 is done.
+  - **E93, running from 2026-10-29**
+    ([imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md)): decision 6's
+    hybrid under MNAR and MAR at 60nan, on gorgona8.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
