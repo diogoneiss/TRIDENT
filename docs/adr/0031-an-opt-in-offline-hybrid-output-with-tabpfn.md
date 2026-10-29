@@ -3,7 +3,8 @@
 - **Status:** **accepted on 2026-10-27, 12:51 GMT-3** by the user ("eu apoio a 031"). Proposed 2026-10-27, 12:44 GMT-3.
   Amended 2026-10-27, 19:20 GMT-3 with E82's deployable route, on the user's decision ("show, registre essa
   decisão"). Amended 2026-10-28, 23:10 GMT-3 with E89's evidence, on the user's request ("sim"); no
-  decision changes. The user asked for it to be
+  decision changes. **Decision 6 (a deployable form) proposed 2026-10-29, 10:27 GMT-3**, on the user's
+  request ("sim, proponha"), from E90 and E91; it awaits the user's acceptance. The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -69,6 +70,41 @@
      the gain.
 5. **Scope:** MCAR only. E69's 21 variants at 707/808/909 and 404/505/606 (K side). E74's 10 hard
    variants at 1212/2323/3434 (KC side). MAR and MNAR are untested.
+6. **Proposed (2026-10-29): a second, deployable form of the hybrid,** opt-in and offline like the
+   first, from E89, E90 and E91
+   ([imputation-protocol/33](../tickets/imputation-protocol/33-hybrid-selection-rules.md),
+   [34](../tickets/imputation-protocol/34-hybrid-confirmation.md)).
+   - **What it is:** H (ADR 0024) and TabPFN v2 refit on each training fold, blended with E89's
+     `table` rule:
+     - one numerical weight per table, from E69's grid, with each column's residuals scaled by its
+       training split's sd;
+     - one categorical pick per table, model or TabPFN.
+     - Both are chosen on the validation split's *observed* cells, hidden as `[MASK]` in 5
+       groups and filled by the fold's own H, as E82 reads them.
+   - **Its information class is H's.** Nothing in it reads the complete table: the selection
+     truths are observed values. So it is deployable, unlike decision 1's form.
+   - **Shape today:** the scripts that measured it.
+     - `hybrid_confirmation.py train`: E82's in-place selection read, a wrapper around the
+       runner, with the random states restored;
+     - then `cells` (the TabPFN refits) and the rule.
+     - It needs the `tabpfn` extra and no `src/` change. Its fills and weights are files beside
+       the run, never logged into the store.
+     - A built-in form (a flag that writes the selection cells during training) would be a
+       `src/` change and its own decision.
+   - **What a report may claim, on fresh seeds 4545/5656/6767 (E90, E91):**
+     - never worse than H or TabPFN on any of 17 variants (E82's 10 hard ones, and 7 where the
+       equal blend already beat TabPFN);
+     - better than H on 14 of 17, and better than TabPFN on 7;
+     - on the 10 hard variants: better than TabPFN on 1, equivalent on 4, no verdict on 5.
+   - **What it must state:**
+     - its rule was chosen on E82's seeds (E89) and confirmed on fresh ones (E90), with
+       `shrunk`, E89's primary, not replicating;
+     - it is a little worse than the equal blend on 3 variants at 40nan (electricity, kc2,
+       pendigits), where one weight per table is coarse.
+   - **The headlines do not change:** H stays the deployable headline (ADR 0024) and KC the
+     benchmark default (ADR 0027).
+   - **Scope:** MCAR, the 17 variants above, H as the model side. MAR, MNAR and 20nan are
+     untested.
 
 ## Considered options
 
@@ -83,7 +119,9 @@
   - It also adds a `src/` change behind a flag.
   - Deferred to the user.
 - **A deployable hybrid, with weights from observed cells (the masked population).** It would pair
-  with H, or with E47's masked calibration, not with KC.
+  with H, or with E47's masked calibration, not with KC. *Since 2026-10-29: proposed as decision 6,
+  after E82 (per-column weights, refuted), E89 (rules, development) and E90/E91 (`table`, fresh
+  seeds, supported).*
   - Deferred as its own study. The fold ledger holds few masked cells (228 a fold on biodeg_80nan
     over 41 columns, about 5 a column), and its masked fill is the raw checkpoint, not KC.
 - **TabPFN alone as the output.** Rejected. It is an offline baseline (ADR 0028), and it loses to
@@ -95,8 +133,12 @@
 - **The thesis can say:** an offline per-column hedge with TabPFN is never worse than the default
   on the hard variants measured, and beats both on numerical cells at 80nan. It is a benchmark
   output, like KC.
-- **It cannot say:** that the hybrid is a better imputer than TabPFN in general, or that it is
-  deployable.
+- **It cannot say:** that the hybrid is a better imputer than TabPFN in general, or that decision
+  1's form is deployable.
+- **If decision 6 is accepted,** the thesis can also say that a deployable hedge (H, TabPFN and one
+  weight a table chosen on observed cells) is never worse than either on 17 MCAR variants on fresh
+  seeds. It still cannot say the hybrid beats TabPFN in general: on the hard variants it mostly
+  matches it.
 - **What it is for (the user, on acceptance):** a measure of the method's *viability*: what a
   per-column hedge with TabPFN can reach when the weights are known well.
   - In a real deployment the weights would be found by trying combinations on the data at hand.
