@@ -44,6 +44,17 @@ This ticket was written and committed before the studies' queues started.
     cells job after 08:40 GMT-3. A study with cells missing at the deadline is reported partial,
     with no call.
 
+- **Amendment 2026-10-29, 06:45 GMT-3, before any E90 or E91 result was read:** the training
+  deadline moves from 07:00 to 08:00 GMT-3.
+  - The queues ran slower than planned: electricity took about 2 h 50 min a cell with four sharing
+    the GPU, against E82's 1 h 46 min. At 06:45, 40 of 51 cells were trained, and four to six small
+    E91 cells (kc2, vehicle) would have missed 07:00.
+  - The user's window runs to about 09:00.
+  - **How:** the four queues keep their 07:00 cut. A rescue runner starts only after all of them
+    have stopped. It trains the cells they left, one at a time, starting none after 08:00. No cell
+    can run twice.
+  - The cells deadline stays at 08:40. Anything missing then is still reported partial.
+
 ## Measures and rule, fixed now (`hybrid_confirmation.py --study <e90|e91> --tally`)
 
 - **Per variant:** `table` − H, `table` − TabPFN and `table` − the equal blend on `impute_score`,

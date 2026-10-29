@@ -2906,6 +2906,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Mixed** otherwise.
   - The other three rules are secondary. No cell starts after 07:00 (training) or 08:40 (refits)
     GMT-3 on 10-29, and a study cut there is partial.
+- **Amendment 2026-10-29, 06:45 GMT-3 (E90 and E91, before any result was read):** the training
+  deadline moves from 07:00 to 08:00. The queues ran slower than planned, and small E91 cells would
+  have missed 07:00. A rescue runner trains the leftover cells once the four queues stop.
 - **Sources:** [imputation-protocol/34](tickets/imputation-protocol/34-hybrid-confirmation.md);
   `scripts/experiments/hybrid_confirmation.py --study e90`, `run_hybrid_confirmation_queue.sh`.
 
