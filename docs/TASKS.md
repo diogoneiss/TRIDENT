@@ -623,6 +623,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       (kr-vs-kp, credit-g).
     - Candidates for the user: more selection cells, or fewer weights (one per table, or shrinkage
       toward the equal blend).
+  - **Running from 2026-10-28 as E89**
+    ([imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md)), on the
+    user's go ("continue o e82 então"). It scores the table, shrinkage (primary) and pooled rules
+    offline on E82's cells. It is a development read, so fresh seeds confirm a positive result.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

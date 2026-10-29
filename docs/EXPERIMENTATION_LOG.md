@@ -115,6 +115,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
 | E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
 | E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
+| E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | in progress | |
 
 ## Entries
 
@@ -2849,3 +2850,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   claim is "20–60nan MCAR, and 60nan MNAR/MAR, at K"; the 80nan limit stands.
 - **Sources:** [imputation-interpretability/06](tickets/imputation-interpretability/06-occlusion-map-mechanisms.md);
   `occlusion_map.py --study e88`; MLflow `experiment=occlusion-mechanisms-2026-10-28`.
+
+### E89 · Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? (2026-10-28)
+
+- **Status:** in progress
+- **Hypothesis:** E82's deployable hybrid lost to TabPFN on 5 of 10 because its per-column choices
+  were noisy. Choosing less, or on more cells, closes that gap. This is a development read: the
+  rules were written after E82, and E89 scores them on E82's seeds and H runs.
+- **Scenarios:** E82's 30 cells, with TabPFN refit and no training. Four rules, none reading the
+  complete table:
+  - `column` (E82's own; the reproduction check);
+  - `table` (one weight and one categorical pick per table);
+  - `shrunk` (the primary: toward the equal blend with N0 = 50);
+  - `pooled` (per column, on all five folds' validation cells).
+- **Measures and decision rule:** E82's rule per rule: supported if better than H on 8 or more of
+  10, worse on none, and worse than TabPFN on 2 or fewer; refuted if better than H on 5 or fewer,
+  worse on 2 or more, or worse than TabPFN on 5 or more. If supported, the next step is a
+  fresh-seed confirmation in E82's shape, with the user's go.
+- **Sources:** [imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md);
+  `scripts/experiments/hybrid_selection_rules.py`, `run_hybrid_selection_rules_queue.sh`.
