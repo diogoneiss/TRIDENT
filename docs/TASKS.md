@@ -637,6 +637,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E90 and E91 done 2026-10-29: both supported.** `table` on fresh seeds is never worse than H
     or TabPFN on 17 variants (E90: better than H on 9 of 10; E91: better than TabPFN on 6 of 7).
     `shrunk` does not replicate. A deployable output in ADR 0031 is the user's decision.
+  - **ADR 0031 decision 6 proposed 2026-10-29** on the user's request ("sim, proponha"): the
+    deployable H + TabPFN hybrid with the `table` rule, opt-in and offline. It awaits acceptance.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
