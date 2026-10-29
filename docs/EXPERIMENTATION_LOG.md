@@ -121,8 +121,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
 | E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 | mixed | better than H on 6/12 (rule 8), worse on spambase_probit; worse than TabPFN on credit-g_marf only; H already leads TabPFN off MCAR |
 | E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
-| E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 – | in progress | |
-| E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 – | in progress | |
+| E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
+| E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 
 ## Entries
 
@@ -3017,9 +3017,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [cross-machine/02](tickets/cross-machine/02-equivalence.md);
   `cross_machine.py --study e94`, `run_cross_machine_e94_queue.sh`.
 
-### E95 · Does the deployable `table` hybrid hold at 20nan? (2026-10-29 – )
+### E95 · Does the deployable `table` hybrid hold at 20nan? (2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** at 20nan, where the model usually leads TabPFN, decision 6's hybrid costs
   nothing.
 - **Scenarios:** the nine tables at 20nan × seeds 4545/5656/6767, so 27 cells. This is E90's
@@ -3029,12 +3029,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Refuted** if worse than H on 2 or more, or worse than TabPFN on 3 or more.
   - **Mixed** otherwise.
   - Deadlines: training 02:00, refits 03:00 GMT-3 on 10-30.
+- **Results (19:36 GMT-3):** supported. `table` is worse than H on none of 9 (better on 6) and
+  worse than TabPFN on none (better on 6). All four rules are supported.
+- **Conclusion:** the deployable hybrid costs nothing at 20nan. Extending decision 6 to 20nan is
+  the user's decision.
 - **Sources:** [imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md);
   `hybrid_confirmation.py --study e95`.
 
-### E96 · Is the imputation shift inside the SESOI once kc2 is left out? (2026-10-29 – )
+### E96 · Is the imputation shift inside the SESOI once kc2 is left out? (2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** without kc2, whose folds made E94's imputation tail, the machine shift lies
   inside ±1%. A post hoc read of E94 gives −0.02% [−0.30%, +0.26%] on these five variants; this
   study re-runs them on fresh seeds.
@@ -3042,5 +3046,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   11–20, so 50 cells on each machine and 250 fold pairs.
 - **Measures and decision rule:** medusa − gorgona8, relative, SESOI 1%. If equivalent, imputation
   studies on these tables may be split by seed; kc2 stays excluded.
+- **Results (19:36 GMT-3):** equivalent, +0.04% [−0.30%, +0.38%] over 250 fold pairs.
+- **Conclusion:** imputation studies on credit-g, vehicle and biodeg may split between the servers
+  by seed. kc2 and the unchecked tables stay on one machine.
 - **Sources:** [cross-machine/03](tickets/cross-machine/03-equivalence-without-kc2.md);
   `cross_machine.py --study e96`.

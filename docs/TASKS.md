@@ -648,6 +648,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E95, running from 2026-10-29**
     ([imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md)): decision 6's hybrid
     at 20nan, whole on medusa1.
+  - **E95 done 2026-10-29: supported.** At 20nan the hybrid is never worse than H or TabPFN (9 of
+    9). Extending decision 6 to 20nan is the user's decision.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
@@ -758,6 +760,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     machine a study.
   - **E96, running from 2026-10-29** ([cross-machine/03](tickets/cross-machine/03-equivalence-without-kc2.md)):
     E94's imputation variants without kc2, on fresh seeds.
+  - **E96 done 2026-10-29: equivalent** (+0.04% [−0.30%, +0.38%]). Imputation studies on credit-g,
+    vehicle and biodeg may split by seed; kc2 and the unchecked tables may not.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
 ### Process
