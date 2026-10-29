@@ -643,6 +643,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E93, running from 2026-10-29**
     ([imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md)): decision 6's
     hybrid under MNAR and MAR at 60nan, on gorgona8.
+  - **E93 done 2026-10-29: mixed.** The hybrid is better than H on 6 of 12. Under MNAR and MAR, H
+    already leads TabPFN, so decision 6 stays MCAR.
   - **E95, running from 2026-10-29**
     ([imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md)): decision 6's hybrid
     at 20nan, whole on medusa1.
