@@ -686,6 +686,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
       ([ADR 0032](adr/0032-tabpfn-as-a-separate-strong-tier-for-classification.md), accepted).
       H1c's bar stays the best GBDT. Whether to add a class-balanced TabPFN arm is decided with
       step zero's design.
+  - **E92, chained after E87 on medusa1 from 2026-10-28** ([classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md)),
+    on the user's go: plain and class-balanced TabPFN on E87's ten folds and five seeds.
 
 - **T41 · Replicate the paper's pre-training gain on classification, with the old parameters and
   more folds** (future; the user, 2026-10-27: "deixe uma tarefa futura para repetir a execução

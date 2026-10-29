@@ -118,6 +118,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
 | E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – | in progress | |
 | E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – | in progress | |
+| E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
 
 ## Entries
 
@@ -2913,3 +2914,24 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Refuted** if worse than H on 2 or more, or worse than TabPFN on 3 or more.
   - **Mixed** otherwise.
 - **Sources:** as E90, `--study e91`.
+
+### E92 · Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? (2026-10-28)
+
+- **Status:** in progress
+- **Hypothesis:** E83's lead (about +2 macro-F1 points at every level, 3 folds, 2 seeds) holds on
+  E87's ten folds and five seeds. A class-balanced TabPFN also wins on credit-g and electricity,
+  where E83's TabPFN predicted the majority class. T40.
+- **Scenarios:** untuned TabPFN v2 (E83's settings), one fit per fold, predicted twice: plain and
+  with `balance_probabilities`. It runs on E87's folds (`build_folds`, 10 folds, seeds
+  42/7/13/101/202).
+  - 8 tables (letter is out) × 5 levels × 5 seeds: 200 pairs, 2,000 fits.
+  - medusa1, two GPU queues that start when E87's queues end.
+- **Measures and decision rule:** per level, each arm − E87 arm A on test macro-F1, fold-paired,
+  pooled over the 8 tables with one array per seed (400 fold pairs), the project's rule with SESOI 0.01.
+  - Per arm: **supported** if TabPFN is ahead at 4 or more of 5 levels and TRIDENT at none;
+    **refuted** if TabPFN is ahead at 1 level or none; **mixed** otherwise.
+  - Balanced − plain per level, and per-table means: descriptive.
+  - Read only with all 200 pairs and E87 done.
+- **Sources:** [classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md);
+  `tabpfn_classification.py --study e92`, `run_tabpfn_tenfold_queue.sh`; no MLflow runs.
+>>>>>>> Stashed changes
