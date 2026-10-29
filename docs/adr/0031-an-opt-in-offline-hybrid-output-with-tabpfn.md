@@ -4,7 +4,7 @@
   Amended 2026-10-27, 19:20 GMT-3 with E82's deployable route, on the user's decision ("show, registre essa
   decisão"). Amended 2026-10-28, 23:10 GMT-3 with E89's evidence, on the user's request ("sim"); no
   decision changes. **Decision 6 (a deployable form) proposed 2026-10-29, 10:27 GMT-3**, on the user's
-  request ("sim, proponha"), from E90 and E91; it awaits the user's acceptance. The user asked for it to be
+  request ("sim, proponha"), from E90 and E91, and **accepted 2026-10-29, 10:42 GMT-3** ("aprovo"). The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -47,7 +47,7 @@
     - The hybrid hedges per column between two imputers that win on different tables. It does not
       claim to be a better imputer than TabPFN.
 
-## Decision (proposed)
+## Decision
 
 1. **The hybrid is an opt-in, offline output,** in exactly the shape E74 measured.
    - It is `hybrid_blend.py blend` over a cross-validation run's ledgers, with E69's grid, E69's
@@ -70,7 +70,7 @@
      the gain.
 5. **Scope:** MCAR only. E69's 21 variants at 707/808/909 and 404/505/606 (K side). E74's 10 hard
    variants at 1212/2323/3434 (KC side). MAR and MNAR are untested.
-6. **Proposed (2026-10-29): a second, deployable form of the hybrid,** opt-in and offline like the
+6. **Accepted (2026-10-29): a second, deployable form of the hybrid,** opt-in and offline like the
    first, from E89, E90 and E91
    ([imputation-protocol/33](../tickets/imputation-protocol/33-hybrid-selection-rules.md),
    [34](../tickets/imputation-protocol/34-hybrid-confirmation.md)).
@@ -119,7 +119,7 @@
   - It also adds a `src/` change behind a flag.
   - Deferred to the user.
 - **A deployable hybrid, with weights from observed cells (the masked population).** It would pair
-  with H, or with E47's masked calibration, not with KC. *Since 2026-10-29: proposed as decision 6,
+  with H, or with E47's masked calibration, not with KC. *Since 2026-10-29: decision 6 (accepted),
   after E82 (per-column weights, refuted), E89 (rules, development) and E90/E91 (`table`, fresh
   seeds, supported).*
   - Deferred as its own study. The fold ledger holds few masked cells (228 a fold on biodeg_80nan
@@ -135,7 +135,7 @@
   output, like KC.
 - **It cannot say:** that the hybrid is a better imputer than TabPFN in general, or that decision
   1's form is deployable.
-- **If decision 6 is accepted,** the thesis can also say that a deployable hedge (H, TabPFN and one
+- **With decision 6,** the thesis can also say that a deployable hedge (H, TabPFN and one
   weight a table chosen on observed cells) is never worse than either on 17 MCAR variants on fresh
   seeds. It still cannot say the hybrid beats TabPFN in general: on the hard variants it mostly
   matches it.
