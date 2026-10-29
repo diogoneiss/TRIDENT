@@ -98,8 +98,8 @@ Secondary `pooled`: better than H on 6 of 12, worse on ['spambase_probit_60nan']
   - Better than H on 6 of 12; the rule needed 8.
   - Worse than H on 1: spambase_probit_60nan, +0.0090.
   - Worse than TabPFN on 1: credit-g_marf_60nan, +0.0184.
-- **Why it does less here:** under MNAR and MAR, H already beats TabPFN on 10 of the 12 variants
-  (every TabPFN mean but vehicle's and credit-g's is higher than H's). So the hybrid has little to
+- **Why it does less here:** under MNAR and MAR, H's mean is already below TabPFN's on 9 of the 12
+  variants (all but the two vehicle variants and credit-g_marf). So the hybrid has little to
   take from TabPFN. `table` − TabPFN is better on 10 of 12, while `table` − H is near zero on the
   biodeg slopes and kc2.
 - **Where it breaks:**
