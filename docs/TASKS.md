@@ -627,6 +627,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md)), on the
     user's go ("continue o e82 então"). It scores the table, shrinkage (primary) and pooled rules
     offline on E82's cells. It is a development read, so fresh seeds confirm a positive result.
+  - **E89 done 2026-10-28: supported (development).** `shrunk` is behind TabPFN on 2 of 10, and
+    `table` on none, both better than H on 10 of 10. A fresh-seed confirmation with one rule waits
+    on the user.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).

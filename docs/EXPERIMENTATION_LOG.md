@@ -115,7 +115,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E86 | Do gorgona8 and medusa1 give the same fold scores for the same cell? | 2026-10-28 | done | no verdict on either task; per-fold differences up to 0.164 (imputation) and 0.074 (classification): a study stays on one machine |
 | E87 | Does pre-training help classification with ten folds and five seeds? | 2026-10-28 | in progress | |
 | E88 | Does the occlusion map hold under MNAR and MAR? | 2026-10-28 | supported | faithful on 11 of 12 (kc2_probit inconclusive); self-masking weakens D with the slope, MAR strengthens it |
-| E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | in progress | |
+| E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
 
 ## Entries
 
@@ -2853,7 +2853,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E89 · Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? (2026-10-28)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** E82's deployable hybrid lost to TabPFN on 5 of 10 because its per-column choices
   were noisy. Choosing less, or on more cells, closes that gap. This is a development read: the
   rules were written after E82, and E89 scores them on E82's seeds and H runs.
@@ -2867,5 +2867,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   10, worse on none, and worse than TabPFN on 2 or fewer; refuted if better than H on 5 or fewer,
   worse on 2 or more, or worse than TabPFN on 5 or more. If supported, the next step is a
   fresh-seed confirmation in E82's shape, with the user's go.
+- **Results (22:44 GMT-3):** supported (development).
+  - `column` reproduces E82: worse than TabPFN on 5, refuted.
+  - **`shrunk` (primary):** better than H on 10 of 10, and worse than TabPFN on 2 (kr-vs-kp at 60
+    and 80nan).
+  - **`table`:** better than H on 10, and worse than TabPFN on none.
+  - **`pooled`:** mixed, worse than TabPFN on 3.
+- **Conclusion:** fewer choices close most of the deployable hybrid's gap to TabPFN. Shrinking
+  closes the thin tables; one pick per table also closes kr-vs-kp. On E82's own seeds this is a
+  development result, so ADR 0031 is unchanged. A fresh-seed confirmation with one pre-registered
+  rule (`table` or `shrunk`) waits on the user.
 - **Sources:** [imputation-protocol/33](tickets/imputation-protocol/33-hybrid-selection-rules.md);
   `scripts/experiments/hybrid_selection_rules.py`, `run_hybrid_selection_rules_queue.sh`.
