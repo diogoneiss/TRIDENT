@@ -643,6 +643,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E93, running from 2026-10-29**
     ([imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md)): decision 6's
     hybrid under MNAR and MAR at 60nan, on gorgona8.
+  - **E95, running from 2026-10-29**
+    ([imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md)): decision 6's hybrid
+    at 20nan, whole on medusa1.
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
@@ -745,6 +748,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - Both machines are deterministic, but they differ from each other fold by fold, by up to
       0.164 (imputation, relative) and 0.074 (classification macro-F1).
     - So each study runs whole on one machine. Two studies can run in parallel, one per machine.
+  - **E94, running from 2026-10-29** ([cross-machine/02](tickets/cross-machine/02-equivalence.md)):
+    the same check with 350 and 150 fold pairs. If a task is equivalent, its studies may be split by
+    seed.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
 ### Process

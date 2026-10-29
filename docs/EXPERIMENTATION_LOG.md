@@ -120,6 +120,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – 2026-10-29 | supported | worse than H on none of 7, worse than TabPFN on none (better on 6) |
 | E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
 | E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 – | in progress | |
+| E94 | Is the machine's shift inside the SESOI? | 2026-10-29 – | in progress | |
+| E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 – | in progress | |
 
 ## Entries
 
@@ -2982,3 +2984,35 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   seeds by a rescue runner, under the same deadline.
 - **Sources:** [imputation-protocol/35](tickets/imputation-protocol/35-hybrid-mechanisms.md);
   `hybrid_confirmation.py --study e93`, `run_hybrid_confirmation_queue.sh`.
+
+### E94 · Is the machine's shift inside the SESOI? (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** the gorgona8 − medusa1 shift that E86 could not bound (+0.59%, +0.0039) lies
+  inside the SESOI once there are enough fold pairs. If it does, a study's cells may be split
+  between the machines by seed.
+- **Scenarios:** MLflow off.
+  - Imputation (default, five folds): 7 small-table variants × seeds 1–10, so 350 fold pairs.
+  - Classification (E71's arm A, three folds): 5 variants × seeds 1–10, so 150 fold pairs.
+  - 120 cells on each machine.
+- **Measures and decision rule:** per fold, medusa − gorgona8, relative on imputation (SESOI 1%)
+  and absolute macro-F1 (SESOI 0.01).
+  - **Equivalent:** the split is allowed for that task.
+  - **Anything else:** each study stays on one machine.
+- **Sources:** [cross-machine/02](tickets/cross-machine/02-equivalence.md);
+  `cross_machine.py --study e94`, `run_cross_machine_e94_queue.sh`.
+
+### E95 · Does the deployable `table` hybrid hold at 20nan? (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** at 20nan, where the model usually leads TabPFN, decision 6's hybrid costs
+  nothing.
+- **Scenarios:** the nine tables at 20nan × seeds 4545/5656/6767, so 27 cells. This is E90's
+  pipeline, all on medusa1 GPU0.
+- **Measures and decision rule:** E91's.
+  - **Supported** if worse than H on none and worse than TabPFN on 1 or fewer of 9.
+  - **Refuted** if worse than H on 2 or more, or worse than TabPFN on 3 or more.
+  - **Mixed** otherwise.
+  - Deadlines: training 02:00, refits 03:00 GMT-3 on 10-30.
+- **Sources:** [imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md);
+  `hybrid_confirmation.py --study e95`.

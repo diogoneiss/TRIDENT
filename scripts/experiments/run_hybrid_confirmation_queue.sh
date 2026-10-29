@@ -5,7 +5,7 @@
 # A training queue runs its cells from --todo; no cell starts after TRAIN_DEADLINE. A cells lane takes,
 # in turn, every cell whose run the store copy holds and whose cells are not written, until all are
 # written or CELLS_DEADLINE passes. Stop between cells: touch $S/STOP. S, TRAIN_AT and CELLS_AT override the
-# state directory and the two deadlines (E93); cells already trained or written are skipped whatever the study.
+# state directory and the two deadlines (E93); STUDY limits both modes to one study (E95, on medusa1).
 set -u
 MODE=$1; N=$2
 export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
@@ -17,7 +17,7 @@ P=$S/progress.log
 mkdir -p $S/logs
 PY="uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py"
 if [ "$MODE" = train ]; then
-  ITEMS=$($PY --todo $N) || { echo "$(date '+%F %T %z') train $N: queue read FAILED" >> $P; exit 1; }
+  ITEMS=$($PY --todo $N ${STUDY:-}) || { echo "$(date '+%F %T %z') train $N: queue read FAILED" >> $P; exit 1; }
   while read -r st v s; do
     [ -z "$st" ] && continue
     [ -f "$S/STOP" ] && { echo "$(date '+%F %T %z') train $N: STOP file" >> $P; exit 0; }
@@ -36,7 +36,7 @@ fi
 ALL=$(uv run --python 3.11 python -B -c "
 import sys; sys.path.insert(0, '.')
 from scripts.experiments import hybrid_confirmation as h
-work = sorted(((h.MINUTES[v.split('_')[0]], st, v, s) for st, (_, _, vs) in h.STUDIES.items() for v in vs for s in h.SEEDS), key=lambda w: (w[1], -w[0], w[2], w[3]))
+work = sorted(((h.MINUTES[v.split('_')[0]], st, v, s) for st, (_, _, vs) in h.STUDIES.items() if '${STUDY:-}' in ('', st) for v in vs for s in h.SEEDS), key=lambda w: (w[1], -w[0], w[2], w[3]))
 for k, (_, st, v, s) in enumerate(work):
     if k % 2 == $N - 1: print(st, v, s)
 ")
@@ -46,7 +46,7 @@ while true; do
   READY=$(uv run --python 3.11 python -B -c "
 import sys; sys.path.insert(0, '.')
 from scripts.experiments import hybrid_confirmation as h, report_common as c
-runs = {st: c.parents(e) for st, (e, _, _) in h.STUDIES.items()}
+runs = {st: c.parents(e) for st, (e, _, _) in h.STUDIES.items() if '${STUDY:-}' in ('', st)}
 pending = 0
 for line in '''$ALL'''.split(chr(10)):
     st, v, s = line.split()

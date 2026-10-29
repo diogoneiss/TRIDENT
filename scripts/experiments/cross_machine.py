@@ -1,4 +1,6 @@
 """E86: do gorgona8 and medusa1 give the same fold scores for the same cell? (cross-machine/01).
+E94 (cross-machine/02): the same check with enough pairs to show equivalence; every command takes
+``--study e94`` first, which switches the state, the cells and the seeds.
 
     uv run --python 3.11 python -B scripts/experiments/cross_machine.py train <task> <variant> <seed> [dup]
     uv run --python 3.11 python -B scripts/experiments/cross_machine.py --todo <n>
@@ -32,16 +34,28 @@ from scripts.experiments import report_common as common  # noqa: E402
 # medusa1's /scratch2 belongs to root (ADR 0033).
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-28-cross-machine"
 HOSTS = ("gorgona8", "medusa")
-CELLS = {
+CELLS: dict[str, tuple[tuple[str, ...], tuple[int, ...]]] = {
     "imputation": (("credit-g_20nan", "kc2_60nan", "vehicle_40nan", "biodeg_40nan"), (101, 202, 303)),
     "classification": (("vehicle_40nan", "kc2_40nan", "credit-g_20nan", "biodeg_60nan"), (42, 7, 13)),
 }
-DUPLICATES = (("imputation", "credit-g_20nan", 101), ("classification", "vehicle_40nan", 42))
+DUPLICATES: tuple[tuple[str, str, int], ...] = (("imputation", "credit-g_20nan", 101), ("classification", "vehicle_40nan", 42))
 QUEUES = 2
 # Primary: the default output's induced score (relative, SESOI 1%) and macro-F1 (absolute, SESOI 0.01).
 PRIMARY = {"imputation": ("impute/induced/impute_score", 0.01), "classification": ("f1_macro", 0.01)}
 SECONDARY = {"imputation": ("impute/masked/impute_score", "impute/induced/baseline/hgb/impute_score",
                             "impute/induced/baseline/knn5/impute_score"), "classification": ("accuracy",)}
+
+
+def _use_e94() -> None:
+    """E94's cells: seven imputation and five classification variants on small tables, seeds 1 to 10, no duplicates."""
+    global STATE, CELLS, DUPLICATES, QUEUES
+    STATE, QUEUES = STATE.parent / "trident-2026-10-29-cross-machine-e94", 4
+    seeds = tuple(range(1, 11))
+    CELLS = {
+        "imputation": (("credit-g_20nan", "credit-g_60nan", "kc2_20nan", "kc2_60nan", "vehicle_40nan", "vehicle_80nan", "biodeg_40nan"), seeds),
+        "classification": (("vehicle_20nan", "vehicle_40nan", "kc2_40nan", "credit-g_20nan", "biodeg_60nan"), seeds),
+    }
+    DUPLICATES = ()
 
 
 def cell_dir(host: str, task: str, variant: str, seed: int, dup: bool = False) -> Path:
@@ -115,7 +129,7 @@ def tally() -> None:
         print(f"- pooled {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}], seeds {', '.join(f'{s:+.4f}' for s in v.seeds)}, "
               f"{sum(len(per_seed[s]) for s in seeds)} fold pairs -> {v.call} (SESOI {sesoi}; {common.RULE})\n")
     print("## run to run, same machine")
-    for task, variant, seed in DUPLICATES:
+    for task, variant, seed in DUPLICATES:  # none in E94
         metric = PRIMARY[task][0]
         for host in HOSTS:
             a, b = folds(host, task, variant, seed), folds(host, task, variant, seed, dup=True)
@@ -125,6 +139,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:2] == ["--study", "e94"]:
+        _use_e94()
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) in (4, 5) and argv[1] in CELLS:
         train(argv[1], argv[2], int(argv[3]), argv[4:] == ["dup"])
     elif argv[:1] == ["--todo"] and len(argv) == 2:

@@ -1,14 +1,15 @@
-"""E90, E91 and E93: the deployable hybrid's `table` rule on fresh seeds (imputation-protocol/34 and 35, T39).
+"""E90, E91, E93 and E95: the deployable hybrid's `table` rule on fresh seeds (imputation-protocol/34–36, T39).
 
-    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91|e93> train <variant> <seed>
-    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --todo <n>
+    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91|e93|e95> train <variant> <seed>
+    uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --todo <n> [<study>]
     uv run --python 3.11 --extra tabpfn python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91> cells <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_confirmation.py --study <e90|e91> --tally
 
 E82's shape on seeds 4545/5656/6767: ``train`` is ``deployable_hybrid.train`` (H, with the hidden observed
 validation cells read in place), ``cells`` is ``hybrid_selection_rules.cells`` (TabPFN refit, both cell
 tables kept), each pointed at this study's experiment tag and state. E90 runs E82's 10 hard variants;
-E91 seven variants where the model already leads or ties; E93 E84's 12 MNAR and MAR variants at 60nan. ``--todo`` deals both studies' cells,
+E91 seven variants where the model already leads or ties; E93 E84's 12 MNAR and MAR variants at 60nan;
+E95 the nine tables at 20nan, on medusa1. ``--todo`` with a study deals only that study's cells. ``--todo`` deals both studies' cells,
 over ``QUEUES`` training queues, the longest first. ``--tally`` scores H, TabPFN, the equal blend and
 the four rules of E89, and applies this study's rule to ``table``.
 """
@@ -38,9 +39,11 @@ STUDIES = {
     "e91": ("hybrid-generality-2026-10-28", Path("/scratch2/diogoneiss/trident-2026-10-28-hybrid-generality"),
             ("biodeg_40nan", "kc2_40nan", "kc2_80nan", "pendigits_40nan", "pendigits_60nan", "pendigits_80nan", "vehicle_40nan")),
     "e93": ("hybrid-mechanisms-2026-10-29", Path("/scratch2/diogoneiss/trident-2026-10-29-hybrid-mechanisms"), tuple(SHIFTED)),
+    "e95": ("hybrid-20nan-2026-10-29", Path("/scratch/diogoneiss/trident-2026-10-29-hybrid-20nan"),
+            tuple(f"{t}_20nan" for t in ("electricity", "letter", "pendigits", "spambase", "kr-vs-kp", "biodeg", "credit-g", "vehicle", "kc2"))),
 }
 # Minutes a cell, from E82's and E44's runs of the same tables; they only deal the cells over the queues.
-MINUTES = {"electricity": 97, "pendigits": 37, "spambase": 37, "kr-vs-kp": 12, "biodeg": 5, "credit-g": 3.5, "vehicle": 3, "kc2": 2.7}
+MINUTES = {"electricity": 97, "letter": 61, "pendigits": 37, "spambase": 37, "kr-vs-kp": 12, "biodeg": 5, "credit-g": 3.5, "vehicle": 3, "kc2": 2.7}
 QUEUES = 4
 
 
@@ -51,9 +54,10 @@ def use(study: str) -> tuple[str, ...]:
     return variants
 
 
-def todo(which: int) -> None:
-    done = {study: common.parents(experiment) for study, (experiment, _, _) in STUDIES.items()}
-    work = sorted(((MINUTES[v.split("_")[0]], study, v, s) for study, (_, _, variants) in STUDIES.items() for v in variants for s in SEEDS),
+def todo(which: int, only: str | None = None) -> None:
+    studies = {k: v for k, v in STUDIES.items() if only in (None, k)}
+    done = {study: common.parents(experiment) for study, (experiment, _, _) in studies.items()}
+    work = sorted(((MINUTES[v.split("_")[0]], study, v, s) for study, (_, _, variants) in studies.items() for v in variants for s in SEEDS),
                   key=lambda w: (-w[0], w[1], w[2], w[3]))
     loads = [0.0] * QUEUES
     for cost, study, variant, seed in work:
@@ -103,8 +107,8 @@ def tally(study: str) -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    if argv[:1] == ["--todo"] and len(argv) == 2:
-        todo(int(argv[1]))
+    if argv[:1] == ["--todo"] and len(argv) in (2, 3) and argv[2:3] in ([], *([k] for k in STUDIES)):
+        todo(int(argv[1]), argv[2] if len(argv) == 3 else None)
     elif argv[:1] == ["--study"] and len(argv) >= 3 and argv[1] in STUDIES:
         use(argv[1])
         rest = argv[2:]
