@@ -747,6 +747,56 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     - So each study runs whole on one machine. Two studies can run in parallel, one per machine.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
+- **T43 · Conformal intervals for the imputer's fills, calibrated by row missingness** (proposed
+  2026-10-29 from the wiki's claims ledger, `projects/trident/claims`, C18 and P6, batch t49; for
+  the user's decision).
+  - **The gap:** ADR 0030 gives a per-cell rank, not an interval. E77 found that the spread, scaled
+    to 90% by cross-fitting, makes wider intervals than a per-column constant width on 15 of 15
+    variants. E80 found why a single scale fails: the spread *falls* as a row's gaps grow, while the
+    error *rises* when a cell's top sources are missing.
+  - **The literature's answer:** missing values make the error heteroskedastic by pattern, so one
+    correction for every pattern under-covers the rows that hide the most informative columns.
+    Conformal prediction with missing values (Zaffran et al., ICML 2023) restores per-pattern
+    coverage by calibrating on rows that carry the test row's pattern; conformalized matrix
+    completion (Gui et al., NeurIPS 2023) calibrates cell-wise intervals for missing entries.
+  - **What it would be:** offline, on ledgers that already hold fills and spreads (E75, E76, E84),
+    with no new training.
+    - **Groups (Mondrian conformal):** calibrate per numerical column and per bin of the row's
+      missingness, either the count of gaps in the row or the count of the cell's top-3 sources
+      missing from E78's map.
+    - **Two scores per group:** a constant width (|error|), and a spread-scaled width
+      (|error| / (spread + floor), the floor chosen on calibration cells).
+    - **Calibration cells:** other folds' induced cells, as E77 (an oracle reading under K), and,
+      for a deployable reading, observed validation cells hidden on purpose, as E82.
+  - **What it would read:** coverage at a nominal 90% overall and per bin (the Zaffran-style
+    per-pattern check); mean width against E77's per-column constant; both under K and H
+    (ADR 0024); MCAR first, then E84's MNAR and MAR variants. The decision rule is the ticket's.
+  - **What it would settle:** whether the decoder's uncertainty can become an interval at all
+    (ADR 0030's "a rank, not an interval"), and whether binning by row missingness fixes E80.
+
+- **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
+  claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork
+  changes, wiki todo t41).
+  - **The gap:** untuned TabPFN v2 leads TRIDENT's classification under MCAR (E83; ADR 0032), but
+    its prior has only MCAR gaps. The wiki's search (t46) found no published test of TabPFN's
+    native missing-value handling (a mean fill plus an indicator channel) under a controlled
+    MNAR mechanism. The closest, Liang et al. (arXiv 2601.18500, a preprint), uses natural
+    missingness only: there, TabPFN with raw NaNs and TabPFN after 12 imputers are within about
+    0.003 mean AUC.
+  - **What it would be:** two offline, untuned arms beside the protocol's A1 (`[NULL]`) and A2
+    (missForest + indicator), on the same MNAR family, folds and seeds:
+    - **TabPFN, native:** raw NaNs, ADR 0032's settings;
+    - **TabPFN, explicit mask:** the 0/1 missingness mask appended as ordinary features, which the
+      in-context learner can use as predictors (its built-in indicator was trained only where
+      gaps carry no signal).
+    - Class balancing follows E92's outcome.
+  - **What it would read:** each arm against A1 on macro-F1 and log loss, and the interaction
+    (arm − A1) MNAR minus MCAR: does TabPFN's MCAR lead shrink, hold or grow when missingness
+    carries the label? Explicit mask minus native, on the MNAR variants only, measures what the
+    MCAR prior leaves unused.
+  - **What it would settle:** whether TabPFN's lead is robust to informative missingness, which
+    no published study shows, and whether TRIDENT's per-column `[NULL]` gains ground there (H2).
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
