@@ -122,6 +122,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 | mixed | better than H on 6/12 (rule 8), worse on spambase_probit; worse than TabPFN on credit-g_marf only; H already leads TabPFN off MCAR |
 | E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 – | in progress | |
+| E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 – | in progress | |
 
 ## Entries
 
@@ -3030,3 +3031,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - Deadlines: training 02:00, refits 03:00 GMT-3 on 10-30.
 - **Sources:** [imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md);
   `hybrid_confirmation.py --study e95`.
+
+### E96 · Is the imputation shift inside the SESOI once kc2 is left out? (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** without kc2, whose folds made E94's imputation tail, the machine shift lies
+  inside ±1%. A post hoc read of E94 gives −0.02% [−0.30%, +0.26%] on these five variants; this
+  study re-runs them on fresh seeds.
+- **Scenarios:** MLflow off. credit-g at 20/60nan, vehicle at 40/80nan and biodeg_40nan × seeds
+  11–20, so 50 cells on each machine and 250 fold pairs.
+- **Measures and decision rule:** medusa − gorgona8, relative, SESOI 1%. If equivalent, imputation
+  studies on these tables may be split by seed; kc2 stays excluded.
+- **Sources:** [cross-machine/03](tickets/cross-machine/03-equivalence-without-kc2.md);
+  `cross_machine.py --study e96`.

@@ -1,6 +1,7 @@
 """E86: do gorgona8 and medusa1 give the same fold scores for the same cell? (cross-machine/01).
 E94 (cross-machine/02): the same check with enough pairs to show equivalence; every command takes
 ``--study e94`` first, which switches the state, the cells and the seeds.
+E96 (cross-machine/03): ``--study e96``, E94's imputation variants other than kc2, on seeds 11 to 20.
 
     uv run --python 3.11 python -B scripts/experiments/cross_machine.py train <task> <variant> <seed> [dup]
     uv run --python 3.11 python -B scripts/experiments/cross_machine.py --todo <n>
@@ -55,6 +56,14 @@ def _use_e94() -> None:
         "imputation": (("credit-g_20nan", "credit-g_60nan", "kc2_20nan", "kc2_60nan", "vehicle_40nan", "vehicle_80nan", "biodeg_40nan"), seeds),
         "classification": (("vehicle_20nan", "vehicle_40nan", "kc2_40nan", "credit-g_20nan", "biodeg_60nan"), seeds),
     }
+    DUPLICATES = ()
+
+
+def _use_e96() -> None:
+    """E96's cells: E94's five imputation variants without kc2, seeds 11 to 20, no classification."""
+    global STATE, CELLS, DUPLICATES, QUEUES
+    STATE, QUEUES = STATE.parent / "trident-2026-10-29-cross-machine-e96", 4
+    CELLS = {"imputation": (("credit-g_20nan", "credit-g_60nan", "vehicle_40nan", "vehicle_80nan", "biodeg_40nan"), tuple(range(11, 21)))}
     DUPLICATES = ()
 
 
@@ -141,6 +150,9 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:2] == ["--study", "e94"]:
         _use_e94()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e96"]:
+        _use_e96()
         argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) in (4, 5) and argv[1] in CELLS:
         train(argv[1], argv[2], int(argv[3]), argv[4:] == ["dup"])
