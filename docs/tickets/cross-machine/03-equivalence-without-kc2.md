@@ -102,7 +102,7 @@ This ticket was written and committed before the study's first cell.
 ```
 
 - **Equivalent:** medusa − gorgona8 is +0.04% [−0.30%, +0.38%] over 250 fold pairs, well inside
-  ±1%. Its seeds split 6 to 4 in sign, and the largest fold difference is 0.105.
+  ±1%. Its seeds split 5 to 5 in sign, and the largest fold difference is 0.105.
 - **By the rule:** imputation studies whose tables are among credit-g, vehicle and biodeg may split
   their cells between the machines by seed.
   - Both arms of a pair stay on one machine, and the `host` tag records which.

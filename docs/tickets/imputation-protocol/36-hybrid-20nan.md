@@ -71,7 +71,8 @@ Secondary `pooled`: better than H on 7 of 9, worse on none, worse than TabPFN on
   - Worse than TabPFN on none, and better on 6 (electricity, letter, pendigits, spambase, biodeg,
     credit-g).
   - The other three have no verdict: kr-vs-kp, vehicle and kc2. kc2 has wide intervals.
-- **All four rules are supported** at 20nan, where the model leads TabPFN on most tables.
+- **All four rules are supported** at 20nan. H's own mean is below TabPFN's on only 4 of 9
+  (electricity, letter, spambase, biodeg), so the hybrid's lead over TabPFN comes from the blend.
 - **Descriptive:** `table` is a little worse than the equal blend on letter (+0.0018) and pendigits
   (+0.0095), where one weight per table is coarse for many numerical columns, as E91 found at 40nan.
 - **What follows:** decision 6's MCAR scope can extend to 20nan (E95 with E90 and E91: 26 variants,
