@@ -125,8 +125,9 @@ Secondary `pooled`: better than H on 5 of 7, worse on none, worse than TabPFN on
 - **E90, primary `table`: supported on fresh seeds.**
   - Better than H on 9 of 10 and worse on none. electricity_40nan has no verdict: −0.0140, with an
     interval crossing zero.
-  - **Worse than TabPFN on none.** It is better than TabPFN on electricity_80nan, equivalent on 6
-    (vehicle and biodeg at 80nan, kr-vs-kp_60nan, credit-g_40nan) and without verdict on 3.
+  - **Worse than TabPFN on none.** It is better than TabPFN on electricity_80nan, equivalent on 4
+    (vehicle and biodeg at 80nan, kr-vs-kp_60nan, credit-g_40nan) and without verdict on 5
+    (electricity_40nan, kr-vs-kp at 40 and 80nan, credit-g at 60 and 80nan).
   - E89's development result therefore holds on seeds the rule never saw.
 - **The secondary rules on the same seeds:**
   - `column` (E82's): worse than TabPFN on 7, refuted again;

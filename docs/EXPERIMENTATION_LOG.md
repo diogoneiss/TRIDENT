@@ -2911,7 +2911,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   have missed 07:00. A rescue runner trains the leftover cells once the four queues stop.
 - **Results (2026-10-29, 07:37 GMT-3):** `table`: better than H on 9 of 10 (electricity_40nan no
   verdict), worse on none, and worse than TabPFN on none. Supported.
-  - It is better than TabPFN on electricity_80nan and equivalent on 6.
+  - It is better than TabPFN on electricity_80nan, equivalent on 4, and without verdict on 5.
   - Secondary: `column` worse than TabPFN on 7 (refuted), `shrunk` on 4 (mixed), `pooled` on 4
     (mixed).
 - **Conclusion:** the deployable hybrid with one weight and one categorical pick per table holds
