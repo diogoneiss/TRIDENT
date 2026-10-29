@@ -2955,5 +2955,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     **refuted** if TabPFN is ahead at 1 level or none; **mixed** otherwise.
   - Balanced − plain per level, and per-table means: descriptive.
   - Read only with all 200 pairs and E87 done.
+- **Amendment 2026-10-29:** GPU0 failed at 04:52 GMT-3 and CUDA is down on both GPUs. 85 pairs
+  finished on the GPU and stand; 61 written from the CPU fallback are quarantined, unread (E86); the
+  script now refuses to run without CUDA. The 115 missing pairs wait for the GPU; design unchanged.
 - **Sources:** [classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md);
   `tabpfn_classification.py --study e92`, `run_tabpfn_tenfold_queue.sh`; no MLflow runs.

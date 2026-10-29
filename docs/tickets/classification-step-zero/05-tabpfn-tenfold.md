@@ -63,6 +63,19 @@ This ticket was written and committed before the study's first fit.
 - `balance_probabilities` is TabPFN's own reweighting by the context's class frequencies, not a
   class-weighted fit.
 
+## Amendments
+
+- **Amendment 2026-10-29 (about 10:35 GMT-3): the GPU was lost mid-run.** medusa1's GPU0
+  (`41:00.0`) failed at 04:52 GMT-3, and since then CUDA does not start on either GPU. E87 had ended
+  at 03:35 GMT-3 and is not affected.
+  - 85 pairs had finished on the GPU before 04:52; they stand.
+  - The script fell back to the CPU: 54 pairs failed (TabPFN refuses over 1,000 rows on the CPU),
+    and 61 small-table pairs were written from the CPU. A CPU fit differs fold by fold from a GPU one
+    (E86), so the 61 were moved, not deleted, to `quarantine-cpu/` in the state directory and are
+    not read. pendigits_60nan_s13, in flight at 04:52, is among them.
+  - `run_pair` now exits without a CUDA device. The 115 missing pairs run when the GPU is back; the
+    design and the rule are unchanged.
+
 ## Outcome
 
 (open)

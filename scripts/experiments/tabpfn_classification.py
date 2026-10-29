@@ -78,6 +78,9 @@ def run_pair(variant: str, seed: int) -> None:
     out = STATE / "csv" / f"{variant}_s{seed}.csv"
     if out.exists():
         return
+    # A CPU fit differs fold by fold from a GPU one (E86): with the GPU lost, fail rather than mix devices (E92).
+    if not torch.cuda.is_available():
+        sys.exit(f"no CUDA device: {variant} s{seed} not run")
     warnings.filterwarnings("ignore")
     started = time.time()
     tabpfn = importlib.import_module("tabpfn")
