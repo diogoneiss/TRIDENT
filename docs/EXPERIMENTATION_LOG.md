@@ -125,6 +125,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
+| E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 – | in progress | |
 
 ## Entries
 
@@ -3121,3 +3122,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** refuted. With validation-only tuning and the same budget, the GBDT bar leads at
   40, 60 and 80nan, and tuning leaves TRIDENT where the fork budget had it. What H1c becomes is the
   user's decision; no ADR changed.
+
+### E100 · Does a steps-aware training batch help the small tables? (T14) (2026-10-30 – )
+
+- **Status:** in progress
+- **Hypothesis:** at BATCH 256 an epoch takes 2–3 steps on kc2, credit-g, vehicle and biodeg; a
+  batch shrunk to give at least 8 steps (`--min_steps_per_epoch 8`) imputes them better.
+- **Scenarios:** 16 variants (those four tables at 20–80nan) × seeds 42/7/13 × arms M (default)
+  and S8, five folds, MLflow off; seed 42 on gorgona8, 7 and 13 on medusa1.
+- **Measures and decision rule:** S8 − M on the induced `impute_score`, relative, 15 fold pairs a
+  variant, 1% SESOI. Supported if better on 4 or more and worse on at most 1; refuted if better on
+  at most 1; mixed otherwise.
+- **Sources:** [imputation-protocol/37](tickets/imputation-protocol/37-steps-rule.md);
+  `scripts/experiments/steps_rule.py`, `run_steps_rule_queue.sh`.
