@@ -78,4 +78,24 @@ This ticket was written and committed before the study's first fit.
 
 ## Outcome
 
-(open)
+**Done 2026-10-29, 21:50 GMT-3: supported for both arms.** All 200 pairs ran on the GPU; the 61
+quarantined CPU pairs were rerun and stay unread. `tabpfn_classification.py --study e92 --tally`:
+
+| level | plain − TRIDENT | balanced − TRIDENT | balanced − plain |
+|---|---|---|---|
+| 0nan | +0.0166 [+0.0118, +0.0215] ahead | +0.0182 [+0.0145, +0.0219] ahead | +0.0016 [−0.0021, +0.0053] equivalent |
+| 20nan | +0.0098 [+0.0058, +0.0139] ahead | +0.0210 [+0.0178, +0.0242] ahead | +0.0111 [+0.0075, +0.0148] ahead |
+| 40nan | +0.0111 [+0.0050, +0.0171] ahead | +0.0204 [+0.0164, +0.0245] ahead | +0.0094 [+0.0047, +0.0140] ahead |
+| 60nan | +0.0123 [+0.0058, +0.0188] ahead | +0.0282 [+0.0237, +0.0327] ahead | +0.0159 [+0.0108, +0.0209] ahead |
+| 80nan | +0.0114 [+0.0045, +0.0182] ahead | +0.0369 [+0.0311, +0.0427] ahead | +0.0255 [+0.0203, +0.0307] ahead |
+
+Every seed agrees in every "ahead" cell. TabPFN ahead at 5 of 5 levels for both arms, TRIDENT at
+none.
+
+- **credit-g:** balanced 0.693, 0.669, 0.635, 0.592, 0.573 against TRIDENT 0.673, 0.641, 0.637,
+  0.569, 0.520 (plain falls to 0.454 at 80nan). Balancing turns E83's TRIDENT lead into a TabPFN
+  lead, except a tie at 40nan.
+- **electricity:** balanced 0.736, 0.678, 0.604 against TRIDENT 0.734, 0.678, 0.602 at 40–80nan:
+  a tie where E83 had TRIDENT ahead.
+- **Reading:** TRIDENT's E83 wins came from its class-weighted loss against an unbalanced TabPFN.
+  The balanced arm is the fairer strong tier for ADR 0032; switching it is the user's decision.

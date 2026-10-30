@@ -118,7 +118,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E89 | Can fewer or better-fed choices close the deployable hybrid's gap to TabPFN? | 2026-10-28 | supported (development) | `shrunk` better than H 10/10, behind TabPFN on 2 (kr-vs-kp); `table` behind TabPFN on none; fresh seeds to confirm |
 | E90 | Does the deployable hybrid's `table` rule hold on fresh seeds? | 2026-10-28 – 2026-10-29 | supported | better than H on 9/10, worse than TabPFN on none (fresh seeds); `shrunk` mixed (4 behind) |
 | E91 | Does the deployable hybrid cost anything where it is not needed? | 2026-10-28 – 2026-10-29 | supported | worse than H on none of 7, worse than TabPFN on none (better on 6) |
-| E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 | in progress | |
+| E92 | Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? | 2026-10-28 – 2026-10-29 | supported (both arms) | balanced TabPFN − TRIDENT +0.018 to +0.037 macro-F1, ahead at 5 of 5 levels; balancing closes credit-g and electricity |
 | E93 | Does the deployable `table` hybrid hold under MNAR and MAR? | 2026-10-29 | mixed | better than H on 6/12 (rule 8), worse on spambase_probit; worse than TabPFN on credit-g_marf only; H already leads TabPFN off MCAR |
 | E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
@@ -2945,7 +2945,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E92 · Does TabPFN v2's classification lead hold on ten folds, and does class balancing close credit-g and electricity? (2026-10-28)
 
-- **Status:** in progress
+- **Status:** done, supported for both arms (2026-10-29, 21:50 GMT-3).
 - **Hypothesis:** E83's lead (about +2 macro-F1 points at every level, 3 folds, 2 seeds) holds on
   E87's ten folds and five seeds. A class-balanced TabPFN also wins on credit-g and electricity,
   where E83's TabPFN predicted the majority class. T40.
@@ -2963,6 +2963,23 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment 2026-10-29:** GPU0 failed at 04:52 GMT-3 and CUDA is down on both GPUs. 85 pairs
   finished on the GPU and stand; 61 written from the CPU fallback are quarantined, unread (E86); the
   script now refuses to run without CUDA. The 115 missing pairs wait for the GPU; design unchanged.
+- **Results:** 200 of 200 pairs, finished 2026-10-29 at 21:41 GMT-3, all on the GPU (115 rerun on
+  GPU1 after the reboot). TabPFN − E87 arm A, test macro-F1, 400 fold pairs a level:
+  - **plain:** +0.017, +0.010, +0.011, +0.012, +0.011 at 0–80nan, TabPFN ahead at 5 of 5, every seed
+    agreeing: **supported**.
+  - **balanced:** +0.018, +0.021, +0.020, +0.028, +0.037, ahead at 5 of 5: **supported**.
+  - **balanced − plain:** +0.002 (equivalent) at 0nan, then +0.011, +0.009, +0.016, +0.026, ahead at
+    every level with gaps.
+  - **credit-g and electricity:** balancing removes TRIDENT's edge. credit-g balanced 0.669, 0.635,
+    0.592, 0.573 against TRIDENT 0.641, 0.637, 0.569, 0.520 at 20–80nan (plain 0.619 to 0.454).
+    electricity balanced 0.736, 0.678, 0.604 against TRIDENT 0.734, 0.678, 0.602 at 40–80nan, a tie.
+  - TRIDENT is ahead on no level; per table it leads only kr-vs-kp at 0nan (0.995 against 0.994) and
+    pendigits at 80nan (0.534 against 0.530).
+- **Conclusion:** E83's lead holds with E87's power, and class balancing widens it as gaps grow:
+  about +2 macro-F1 points at 20–40nan, +3.7 at 80nan. TRIDENT's only wins in E83 came from its
+  class-weighted loss against an unbalanced TabPFN; balanced, TabPFN matches or beats it on every
+  table. ADR 0032's strong tier for classification should use the balanced arm; that is the user's
+  call.
 - **Sources:** [classification-step-zero/05](tickets/classification-step-zero/05-tabpfn-tenfold.md);
   `tabpfn_classification.py --study e92`, `run_tabpfn_tenfold_queue.sh`; no MLflow runs.
 
