@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .types import (
+    CLASSIFICATION_SEARCH_OBJECTIVES,
     DEFAULT_BASELINE_CACHE_DIR,
     DECODE_CALIBRATIONS,
     DECODE_MASK_WEIGHTINGS,
@@ -327,6 +328,12 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --search_objective requires --task imputation")
+    # Classification's own choice between the test and the validation split (ADR 0029).
+    if (
+        getattr(args, "classification_search_objective", None) is not None
+        and getattr(args, "task", DEFAULT_TASK) != DEFAULT_TASK
+    ):
+        raise SystemExit("error: --classification_search_objective requires --task classification")
 
     return args
 
@@ -660,6 +667,18 @@ def build_training_parser() -> argparse.ArgumentParser:
             "ADR 0008 used; or 'induced', the validation rows' own gaps scored against the "
             "complete _00nan sibling, the population the headline test score is on. "
             "Unspecified means 'masked'. 'induced' needs a variant with gaps."
+        ),
+    )
+    parser.add_argument(
+        "--classification_search_objective",
+        type=str,
+        default=None,
+        choices=CLASSIFICATION_SEARCH_OBJECTIVES,
+        help=(
+            "What a classification study ranks its trials by (ADR 0029): 'test', the test "
+            "macro F1 upstream ranks on, or 'validation', the validation macro F1 at each "
+            "fold's kept epoch (val_f1_macro), so the test split never chooses. Unspecified "
+            "means 'test'. Requires --task classification."
         ),
     )
     return parser

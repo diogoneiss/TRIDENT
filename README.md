@@ -190,7 +190,8 @@ Exactly one of `--dataset_name` or `--all` is required.
 - `--use_optuna`: Enable hyperparameter optimization (mutually exclusive with `--all`)
 - `--n_trials`: Number of optimization trials (default: `50`)
 - `--retrain_best`: Retrain using the best parameters found during search
-- `--promote_best`: Publish the winning configuration where the task's runs read it (see "Configuration System"); independent of `--retrain_best`
+- `--promote_best`: Publish the winning configuration where the task's runs read it (see "Configuration System"); independent of `--retrain_best`. Refused for classification until a classification-keyed file exists ([ADR 0029](docs/adr/0029-classification-search-ranked-on-validation.md))
+- `--classification_search_objective`: What a classification study ranks its trials by, `test` (default, the test macro F1 upstream ranks on) or `validation` (`val_f1_macro`, the validation macro F1 at each fold's kept epoch); requires `--task classification` ([ADR 0029](docs/adr/0029-classification-search-ranked-on-validation.md)). Under `--use_optuna`, `--cv_folds` now reaches every trial and the retrain, and each classification fold records `val_f1_macro`, `val_f1_micro`, `val_accuracy` and `kept_epoch`
 - `--search_objective`: Which validation population an imputation study ranks its trials by, `masked` (default, every study before [ADR 0008](docs/adr/0008-selectable-search-objective-population.md)) or `induced` (the validation rows' own gaps scored against the complete `_00nan` sibling); `induced` needs a variant with gaps, and the flag requires `--task imputation`
 - `--search_space`: Which knobs a study samples, `full` or `reduced` ([ADR 0005](docs/adr/0005-reduced-optuna-search-for-imputation.md)); `reduced` exists for `--task imputation` only, and unspecified follows the task (`reduced` for imputation, `full` for classification)
 
@@ -228,8 +229,8 @@ A run resolves its hyperparameters in this order and logs the source it used as 
 `--lr_scheduler` overrides `LR_SCHEDULER` from any of these. An Optuna study never writes
 these files on its own: its running best and final best stay inside its results directory
 (`results/{dataset_name}/optuna_{timestamp}/`), and it publishes the winning configuration
-only under `--promote_best`, to the task-keyed file for imputation and the shared file for
-classification. A promoted file is complete: every key the task uses, held values included,
+only under `--promote_best`, to the task-keyed file for imputation; classification promotion is
+refused until a classification-keyed file exists ([ADR 0029](docs/adr/0029-classification-search-ranked-on-validation.md)). A promoted file is complete: every key the task uses, held values included,
 and `LR_SCHEDULER` set to the schedule the study ran under
 ([ADR 0005](docs/adr/0005-reduced-optuna-search-for-imputation.md)).
 

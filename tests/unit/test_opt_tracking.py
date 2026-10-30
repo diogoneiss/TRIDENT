@@ -77,7 +77,13 @@ class _TrainingStub:
             if trial_number in self.induced_validation_scores:
                 metrics["validation/impute/induced/impute_score"] = self.induced_validation_scores[trial_number]
             return metrics
-        return {"fold": "single_split", "dataset": args.dataset_name, "f1_macro": score}
+        # A classification fold carries its kept epoch's validation macro F1 (ADR 0029).
+        return {
+            "fold": "single_split",
+            "dataset": args.dataset_name,
+            "f1_macro": score,
+            "val_f1_macro": self.validation_scores.get(trial_number, score),
+        }
 
     @staticmethod
     def _trial_number(active) -> int | None:
@@ -516,39 +522,50 @@ def test_an_imputation_study_holds_and_promotes_the_task_defaults_unless_flags_s
     assert promoted["DECODE_PATIENCE"] == 20
 
 
-def test_promotion_writes_a_complete_classification_configuration_to_the_shared_file(
-    mlflow_backend, monkeypatch
-) -> None:
-    """Classification's promotion target is the shared file every classification run
-    read before ADR 0005, and it is complete like imputation's: the sampled mapping
-    carries neither ``LR_SCHEDULER`` (a command-line choice) nor ``LABELS`` (never
-    sampled), so a file made of the sampled keys alone would leave both to the reader.
-    """
+def test_promotion_is_refused_for_classification_before_any_trial(mlflow_backend, monkeypatch) -> None:
+    """Classification's promoted file would be the shared ``<dataset>.json`` imputation falls
+    back to (F-07-4), so ``--promote_best`` is refused for it before any trial trains
+    (ADR 0029, decision 4)."""
     stub = _TrainingStub(scores={0: 0.5, 1: 0.7})
     monkeypatch.setattr(opt, "train_main", stub)
 
-    opt.run_hyperparameter_optimization(_optuna_args(n_trials=2, promote_best=True))
+    with pytest.raises(ValueError, match="ADR 0029"):
+        opt.run_hyperparameter_optimization(_optuna_args(n_trials=2, promote_best=True))
 
-    config_dir = Path("datasets") / "hiperparams" / "vehicle"
-    assert not (config_dir / "vehicle_00nan.imputation.json").exists()
-    promoted = json.loads((config_dir / "vehicle_00nan.json").read_text())
-    assert set(promoted) == {
-        "DIM", "HIDDEN_DIM", "HEADS", "LAYERS", "DIM_FEED", "DROPOUT", "EPOCHS_PRE",
-        "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "EPOCH_FINE", "LR_FINE",
-        "WEIGHT_DECAY_FINE", "LABELS", "LR_SCHEDULER",
-    }
-    # No schedule was named, so the file pins the one the study ran under: the legacy
-    # default, spelled out rather than left to whatever the default is later.
-    assert promoted["LR_SCHEDULER"] == "cosine_legacy"
-    client = MlflowClient(tracking_uri=mlflow_backend)
+    assert stub.calls == []
+    assert not (Path("datasets") / "hiperparams").exists()
+
+
+def test_a_classification_study_can_rank_its_trials_on_validation(mlflow_backend, monkeypatch) -> None:
+    """With ``--classification_search_objective validation`` the trial with the better
+    validation macro F1 wins although its test macro F1 is the worse (ADR 0029, decision 2),
+    and the tag says which objective ran. Without the flag the test split still ranks."""
+    stub = _TrainingStub(scores={0: 0.9, 1: 0.4}, validation_scores={0: 0.5, 1: 0.8})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(
+        _optuna_args(n_trials=2, classification_search_objective="validation")
+    )
+
     study = next(
         run
-        for name, run in _runs_by_name(client).items()
+        for name, run in _runs_by_name(MlflowClient(tracking_uri=mlflow_backend)).items()
         if name.startswith("optuna_vehicle_00nan_")
     )
+    assert study.data.metrics["optuna/best_objective_value"] == pytest.approx(0.8)
     assert study.data.metrics["optuna/best_trial_number"] == 1.0
-    assert promoted["DIM"] == int(study.data.params["best_DIM"])
-    assert promoted["LR_FINE"] == float(study.data.params["best_LR_FINE"])
+    assert study.data.tags["search_objective"] == "val_f1_macro"
+
+
+def test_the_study_folds_reach_every_trial_and_the_retrain(mlflow_backend, monkeypatch) -> None:
+    """``--cv_folds`` used to be dropped under ``--use_optuna``: trials and the retrain ran on
+    one split (ADR 0029, decision 3)."""
+    stub = _TrainingStub(scores={0: 0.5, 1: 0.7})
+    monkeypatch.setattr(opt, "train_main", stub)
+
+    opt.run_hyperparameter_optimization(_optuna_args(n_trials=2, retrain_best=True, cv_folds=10))
+
+    assert [args.cv_folds for args in stub.calls] == [10, 10, 10]
 
 
 def test_a_finished_study_ranks_the_knobs_it_sampled(mlflow_backend, monkeypatch) -> None:

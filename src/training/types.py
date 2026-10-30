@@ -116,6 +116,10 @@ SEARCH_SPACE_PROFILES: tuple[str, ...] = ("full", "reduced")
 # against the complete sibling like the induced test population.
 SEARCH_OBJECTIVE_POPULATIONS: tuple[str, ...] = ("masked", "induced")
 DEFAULT_SEARCH_OBJECTIVE_POPULATION = "masked"
+# What a classification search ranks its trials by (ADR 0029): the test macro F1 upstream
+# ranks on (the default), or the validation macro F1 at each fold's kept epoch.
+CLASSIFICATION_SEARCH_OBJECTIVES: tuple[str, ...] = ("test", "validation")
+CLASSIFICATION_VALIDATION_OBJECTIVE = "val_f1_macro"
 
 
 def validation_objective_key(population: str) -> str:

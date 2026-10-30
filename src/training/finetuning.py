@@ -1,5 +1,6 @@
 """Classifier fine-tuning and fold metric calculation."""
 
+from dataclasses import replace
 from typing import Sequence
 
 import numpy as np
@@ -117,6 +118,10 @@ def train_and_evaluate_classifier(
     )
     best_validation_loss = float("inf")
     best_model_state = None
+    # The validation reading of the kept epoch (ADR 0029, decision 1); the last epoch's when
+    # no epoch improved on infinity, which is the model the loop then keeps.
+    kept_validation: dict[str, float | int] = {}
+    last_validation: dict[str, float | int] = {}
     train_losses: list[float] = []
     validation_losses: list[float] = []
 
@@ -156,26 +161,31 @@ def train_and_evaluate_classifier(
         validation_losses.append(validation_loss_value)
         validation_expected = validation_labels.cpu().numpy()
         validation_predicted = validation_predictions.cpu().numpy()
+        validation_f1_micro = float(f1_score(validation_expected, validation_predicted, average="micro"))
+        validation_f1_macro = float(f1_score(validation_expected, validation_predicted, average="macro"))
         tracker.log_metrics(
             {
                 "finetune/train_loss": float(average_train_loss),
                 "finetune/val_loss": float(validation_loss_value),
-                "finetune/val_f1_micro": float(
-                    f1_score(validation_expected, validation_predicted, average="micro")
-                ),
-                "finetune/val_f1_macro": float(
-                    f1_score(validation_expected, validation_predicted, average="macro")
-                ),
+                "finetune/val_f1_micro": validation_f1_micro,
+                "finetune/val_f1_macro": validation_f1_macro,
                 "finetune/learning_rate": scheduler.learning_rate,
             },
             step=epoch,
         )
+        last_validation = {
+            "val_f1_macro": validation_f1_macro,
+            "val_f1_micro": validation_f1_micro,
+            "val_accuracy": float(accuracy_score(validation_expected, validation_predicted)),
+            "kept_epoch": epoch,
+        }
         scheduler.after_epoch(validation_loss_value)
         if validation_loss_value < best_validation_loss:
             best_validation_loss = validation_loss_value
             best_model_state = {
                 name: tensor.detach().clone() for name, tensor in model.state_dict().items()
             }
+            kept_validation = last_validation
 
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
@@ -196,6 +206,8 @@ def train_and_evaluate_classifier(
             "test/loss": float(test_loss.item()),
         }
     )
+    # Added after the test metrics are logged, so no validation number is logged as ``test/``.
+    result = replace(result, metrics={**result.metrics, **(kept_validation or last_validation)})
     return FinetuningOutcome(
         model=model,
         result=result,

@@ -37,6 +37,7 @@ from src.training.config import (
 from src.training.data import PROCESSED_DATASETS, declared_column_types, has_complete_sibling
 from src.training.tracking import execution_tags, mirror_root_safely
 from src.training.types import (
+    CLASSIFICATION_VALIDATION_OBJECTIVE,
     DEFAULT_SEARCH_OBJECTIVE_POPULATION,
     DatasetSpec,
     default_lr_scheduler,
@@ -195,6 +196,9 @@ class ObjectiveFunctionWrapper:
         self.configuration_flags: dict[str, object] = {}
         # trial number -> MLflow run id, filled as trials run.
         self.trial_run_ids: dict[int, str] = {}
+        # The study's --cv_folds, handed to every trial (ADR 0029, decision 3); None is the
+        # predefined split.
+        self.cv_folds: int | None = None
 
     def __call__(self, trial):
         # Define hyperparameters for this trial
@@ -223,6 +227,7 @@ class ObjectiveFunctionWrapper:
         args.plot_losses = False
         args.save_model = False
         args.seed = self.seed
+        args.cv_folds = self.cv_folds
         # This namespace is built here, not parsed, so the study's task has to be copied
         # on. Without it the runner falls back to classification, trains the wrong stage
         # and never produces the imputation ranking metric the objective then asks for.
@@ -402,6 +407,17 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     logger.info(f"Starting hyperparameter optimization for {args.dataset_name}")
     logger.info(f"Number of trials: {args.n_trials}")
 
+    task = task_spec(getattr(args, "task", None) or "classification")
+    # Classification's promoted file would be the shared ``<dataset>.json``, which imputation
+    # falls back to (F-07-4). Refused until a classification-keyed file exists (ADR 0029,
+    # decision 4), before any trial runs.
+    if getattr(args, "promote_best", False) and task.name == "classification":
+        raise ValueError(
+            "--promote_best is refused for classification until a classification-keyed "
+            "configuration file exists (ADR 0029, decision 4); the study's best stays in its "
+            "own directory."
+        )
+
     # An imputation study ranks by one validation population (ADR 0008). The induced one
     # needs gaps and the complete table they were cut from; a complete variant has
     # neither, and every trial would then fail on a missing key. Refused before anything
@@ -439,12 +455,16 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     objective.metrics_dir = getattr(args, "metrics_dir", "metrics")
     objective.disable_mlflow = getattr(args, "disable_mlflow", False)
     objective.configuration_flags = {flag: getattr(args, flag, None) for flag in CONFIGURATION_FLAGS}
-    task = task_spec(getattr(args, "task", None) or "classification")
+    # Every trial and the retrain run on the study's folds; the flag used to be dropped here.
+    objective.cv_folds = getattr(args, "cv_folds", None)
     objective.task = task.name
     objective.ranking_metric = task.ranking_metric
-    objective.search_objective = (
-        validation_objective_key(population) if task.name == "imputation" else task.search_objective
-    )
+    if task.name == "imputation":
+        objective.search_objective = validation_objective_key(population)
+    elif getattr(args, "classification_search_objective", None) == "validation":
+        objective.search_objective = CLASSIFICATION_VALIDATION_OBJECTIVE
+    else:
+        objective.search_objective = task.search_objective
     logger.info(f"Search objective: {objective.search_objective}")
     objective.direction = task.direction
     objective.best_score = float("-inf") if task.direction == "maximize" else float("inf")
@@ -492,7 +512,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
         run_role="optuna_study",
         run_type="optuna_study",
         seed=args.seed,
-        cv_folds=None,
+        cv_folds=objective.cv_folds,
         lr_scheduler=getattr(args, "lr_scheduler", None) or default_lr_scheduler(task.name),
         environment=None,
         extra_tags={
@@ -605,6 +625,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
         final_args.plot_losses = True
         final_args.save_model = True
         final_args.seed = args.seed
+        final_args.cv_folds = objective.cv_folds
         # Same hand-built namespace as a trial: the task travels with it.
         final_args.task = task.name
         final_args.hyperparams_override = best_config
