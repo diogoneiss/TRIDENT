@@ -148,6 +148,9 @@ alone with the same 20-trial budget, TRIDENT trails the bar by 0.024–0.032 mac
   - **Kept epochs:** median 29 over 1350 folds; 15 collapsed (kept epoch below 5).
 - **What follows is the user's to decide:** what H1c becomes in the thesis, and the deep-baseline
   amendment agreed on 2026-10-29. No ADR, plan or report was changed.
+- **The user's decision (2026-10-30 16:37 GMT-3):** the GBDT bar was an internal sanity check. It stays in these
+  records and is not reported in the thesis or anywhere outside them ("isso foi apenas um sanity
+  check, é sabido que ele performaria pior").
 
 ### The tally, unedited (`stage4_tally.py`, 2026-10-30 15:59 GMT-3)
 
