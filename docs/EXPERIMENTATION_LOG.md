@@ -124,6 +124,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
+| E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – | in progress | |
 
 ## Entries
 
@@ -3090,3 +3091,23 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   there are gaps. Stage 4 tunes native HGB/LightGBM and missForest+ind+HGB as the bar.
 - **Sources:** [classification-step-zero/06](tickets/classification-step-zero/06-cpu-bar.md);
   `scripts/experiments/cls_stage1_bar.py`.
+
+### E98 · Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** H1c. Tuned on validation only, TRIDENT leads the best tuned native-NaN GBDT at
+  40, 60 and 80nan.
+- **Scenarios:** all 45 variants, ten folds.
+  - **TRIDENT:** an ADR 0029 study per variant, 20 trials of the `full` profile (20–60 epochs),
+    ranked on mean validation macro-F1 at seed 42, then evaluated at seeds 42/7/13.
+  - **The bar:** HGB and LightGBM, tuned the same way (20 trials, spaces in the ticket). Per
+    variant, the one with the better validation score is used.
+  - **References:** E87's arm A, the untuned fork budget; E92's TabPFN, the strong tier.
+  - **Running:** six GPU queues over gorgona8 and medusa1; the cap is 2026-10-31 08:00.
+- **Measures and decision rule:** tuned TRIDENT − bar, per level over 270 fold pairs, with the
+  project's rule.
+  - **Refuted** if the bar is higher at any of 40/60/80nan.
+  - **Supported** if TRIDENT is higher at all three.
+  - **Unconfirmed** otherwise.
+- **Sources:** [classification-step-zero/07](tickets/classification-step-zero/07-step-zero.md);
+  `scripts/experiments/stage4_trident.py`, `run_stage4_queue.sh`, `stage4_gbdt.py`.
