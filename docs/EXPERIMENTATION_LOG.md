@@ -123,6 +123,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
+| E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 – | in progress | |
 
 ## Entries
 
@@ -3051,3 +3052,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   by seed. kc2 and the unchecked tables stay on one machine.
 - **Sources:** [cross-machine/03](tickets/cross-machine/03-equivalence-without-kc2.md);
   `cross_machine.py --study e96`.
+
+### E97 · Step zero Stage 1: the CPU bar on the sweep's folds (2026-10-29 – )
+
+- **Status:** in progress
+- **Hypothesis:** descriptive. How far untuned GBDTs with native NaN, and impute-then-learn arms,
+  sit from TRIDENT's classification on the same folds, before Stage 4 tunes any of them.
+- **Scenarios:** the sweep's 3 folds at seed 42 on all 45 variants. 20 arms a fold:
+  - native NaN with HGB and LightGBM;
+  - three imputers (mode+LightGBM, mean/mode, missForest), each with and without indicators, each
+    followed by HGB, LightGBM and RandomForest.
+  - All balanced and untuned, on gorgona8's CPU.
+- **Measures:** (arm − TRIDENT) macro-F1 per level, against E71's arm A at seed 42 (the headline
+  reference) and the old sweep (descriptive). Descriptive only, with no call.
+- **Sources:** [classification-step-zero/06](tickets/classification-step-zero/06-cpu-bar.md);
+  `scripts/experiments/cls_stage1_bar.py`.
