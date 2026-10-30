@@ -1,7 +1,9 @@
-# ADR 0029: Classification search ranked on validation macro-F1 (proposed)
+# ADR 0029: Classification search ranked on validation macro-F1
 
-- **Status:** proposed, 2026-10-23. For the user's decision. Part of classification step zero
-  ([plan](../plans/2026-10-23-classification-step-zero.md), Stage 3).
+- **Status:** **accepted on 2026-10-29, 21:20 GMT-3** by the user, with decisions 1–5 as written
+  ("concordo com suas recomendações"). Proposed 2026-10-23. Part of classification step zero
+  ([plan](../plans/2026-10-23-classification-step-zero.md), Stage 3). The plan's eight step-zero
+  decisions were settled at the same time; see the plan's "Settled" section.
 - **Amends:** ADR 0005, which kept classification's test-ranked search on purpose
   (ADR 0005:260-262).
 
@@ -25,7 +27,7 @@
 - **Imputation already ranks on validation** (ADR 0005, ADR 0008), so this makes the two tasks
   agree.
 
-## Decision (proposed)
+## Decision
 
 1. **Each classification fold result carries its validation reading at the kept checkpoint:**
    `val_f1_macro`, `val_f1_micro`, `val_accuracy`, and `kept_epoch`. These are new keys in
@@ -63,5 +65,4 @@
 
 ## Open for the user
 
-- Accept, amend or reject decisions 1–5.
 - Whether `validation` should become the default once step zero has run with it.

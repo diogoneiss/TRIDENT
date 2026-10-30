@@ -177,6 +177,23 @@ fold metrics leaves it unchanged.
 8. **Speed flags for new classification arms:** compilation and the batched lookup on from the
    start, or today's eager path.
 
+**Settled on 2026-10-29, 21:20 GMT-3** (the user: "concordo com suas recomendações, podemos rodar
+os baselines profundos depois como uma emenda, certo?"):
+
+1. **Splits:** `--cv_folds 10` (80/10/10), no new code.
+2. **Tuning budget:** 20 trials × 50 epochs for each TRIDENT arm and each GBDT, the paper's
+   baseline budget. It is tuned on a covering subset of the 45 variants (every base and every
+   level), and evaluated on all 45. The subset is fixed in Stage 4's pre-registration.
+3. **Schedule:** `cosine_legacy` for every TRIDENT arm, fixed and logged.
+4. **ADR 0029:** accepted as written. `validation` is passed by flag, not made the default.
+5. **XGBoost:** out. The bar is LightGBM and HistGradientBoosting.
+6. **Compute cap:** set in Stage 4's pre-registration from a timed estimate, and approved by the
+   user there, before its first cell.
+7. **Deep baselines:** out of step zero. They may join later as an amendment, with their own
+   pre-registration.
+8. **Speed flags:** today's eager path, with no compilation (T06: break-even a cell).
+- **Machines:** step zero may split between gorgona8 and medusa1 by seed (ADR 0035).
+
 **Recommended order:**
 
 - **Now:** Stage 0, then Stage 1 on the CPU. Neither needs a decision beyond this plan.
