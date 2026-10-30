@@ -6,7 +6,7 @@ This ticket was written and committed before the study's first cell. No cell has
   (0.323), and E27 saw its validation loss still falling near epoch 450. Defaults have moved since
   (ADR 0013–0015, 0018, 0027). Does the large batch still help pendigits, and does a longer decode
   add to it?
-- **The user's go:** "sim, rode" (2026-10-30, about 18:45 GMT-3).
+- **The user's go:** "sim, rode" (2026-10-30, between 18:41 and 20:30 GMT-3).
 - **No code change:** the arms are `hyperparams_override` on each variant's resolved
   configuration, so pendigits_20nan keeps ADR 0018's encoder. Checked: the override changes BATCH,
   LR_PRE, LR_DECODE and (P600) EPOCHS_DECODE only.
