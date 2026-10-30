@@ -123,7 +123,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E94 | Is the machine's shift inside the SESOI? | 2026-10-29 | classification equivalent; imputation no verdict | macro-F1 +0.0009 [−0.0056, +0.0073]; imputation +0.54% [−0.06%, +1.13%]: split by seed allowed for classification only |
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
-| E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 – | in progress | |
+| E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 
 ## Entries
 
@@ -3070,9 +3070,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [cross-machine/03](tickets/cross-machine/03-equivalence-without-kc2.md);
   `cross_machine.py --study e96`.
 
-### E97 · Step zero Stage 1: the CPU bar on the sweep's folds (2026-10-29 – )
+### E97 · Step zero Stage 1: the CPU bar on the sweep's folds (2026-10-29)
 
-- **Status:** in progress
+- **Status:** done
 - **Hypothesis:** descriptive. How far untuned GBDTs with native NaN, and impute-then-learn arms,
   sit from TRIDENT's classification on the same folds, before Stage 4 tunes any of them.
 - **Scenarios:** the sweep's 3 folds at seed 42 on all 45 variants. 20 arms a fold:
@@ -3082,5 +3082,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - All balanced and untuned, on gorgona8's CPU.
 - **Measures:** (arm − TRIDENT) macro-F1 per level, against E71's arm A at seed 42 (the headline
   reference) and the old sweep (descriptive). Descriptive only, with no call.
+- **Results (22:14 GMT-3, descriptive):** native/hgb − TRIDENT (E71 A, s42) is +0.007 (00nan), +0.015,
+  +0.019, +0.033 and +0.032 (20–80nan), every interval with gaps above zero. The best arm is
+  missForest + indicators + HGB at 20–60nan (up to +0.037), and native HGB at 80nan. The
+  indicator contrast is a null-to-small MCAR control.
+- **Conclusion:** untuned GBDTs lead the fork's TRIDENT classification by 1.5–3.3 points wherever
+  there are gaps. Stage 4 tunes native HGB/LightGBM and missForest+ind+HGB as the bar.
 - **Sources:** [classification-step-zero/06](tickets/classification-step-zero/06-cpu-bar.md);
   `scripts/experiments/cls_stage1_bar.py`.
