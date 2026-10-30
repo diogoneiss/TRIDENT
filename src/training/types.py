@@ -268,6 +268,9 @@ class Hyperparameters:
     encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
     decode_mask_weighting: str = DEFAULT_DECODE_MASK_WEIGHTING
     embedding_lookup: str = DEFAULT_EMBEDDING_LOOKUP
+    # T14: the fewest optimizer steps a training epoch may take; the batch shrinks to fit.
+    # 0, every run before it, keeps ``batch_size`` on every table.
+    min_steps_per_epoch: int = 0
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -316,6 +319,8 @@ class Hyperparameters:
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
+        if self.min_steps_per_epoch < 0:
+            raise ValueError(f"The minimum steps an epoch counts steps, so it cannot be {self.min_steps_per_epoch}")
         if self.decode_freeze_epochs < 0:
             raise ValueError(f"The decode freeze counts epochs, so it cannot be {self.decode_freeze_epochs}")
         if not self.decode_encoder_lr_scale > 0:
@@ -376,6 +381,7 @@ class Hyperparameters:
                 values.get("DECODE_MASK_WEIGHTING", values.get("decode_mask_weighting", DEFAULT_DECODE_MASK_WEIGHTING))
             ),
             embedding_lookup=str(values.get("EMBEDDING_LOOKUP", values.get("embedding_lookup", DEFAULT_EMBEDDING_LOOKUP))),
+            min_steps_per_epoch=int(values.get("MIN_STEPS_PER_EPOCH", values.get("min_steps_per_epoch", 0))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

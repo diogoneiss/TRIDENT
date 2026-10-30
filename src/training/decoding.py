@@ -23,7 +23,7 @@ from .data import evaluation_mask, in_variant_dtypes
 from .baseline_cache import BaselineScorer
 from .calibration import Calibration, apply_calibration, fit_calibration
 from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
-from .schedulers import StageScheduler, batches_per_epoch
+from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
 from .types import (
     DecodingOutcome,
     FoldResult,
@@ -77,11 +77,12 @@ def train_and_evaluate_decoder(
     )
     # E50: the pre-trained embedder and transformer, held fixed for the first epochs if asked.
     encoder = [*model.embedder.parameters(), *model.transformer.parameters()]
+    train_batch = training_batch_size(len(train_frame), hyperparameters.batch_size, hyperparameters.min_steps_per_epoch)
     scheduler = StageScheduler(
         optimizer,
         hyperparameters.lr_scheduler,
         epochs=hyperparameters.decode_epochs,
-        batches_per_epoch=batches_per_epoch(len(train_frame), hyperparameters.batch_size),
+        batches_per_epoch=batches_per_epoch(len(train_frame), train_batch),
     )
 
     # Clean targets never change, so they are encoded once per fold. The validation mask
@@ -162,8 +163,8 @@ def train_and_evaluate_decoder(
         order = torch.randperm(len(train_frame)).to(device)
         running = torch.zeros((), dtype=torch.float64, device=device)
         steps = 0
-        for start in range(0, len(train_frame), hyperparameters.batch_size):
-            batch = order[start : start + hyperparameters.batch_size]
+        for start in range(0, len(train_frame), train_batch):
+            batch = order[start : start + train_batch]
             optimizer.zero_grad()
             loss, _ = model(hidden_train[batch], clean_train[batch])
             loss.backward()

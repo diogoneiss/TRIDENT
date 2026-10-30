@@ -9,7 +9,7 @@ from src.embedder import EncodedTable, EpochMasker, TabularEmbedder
 from src.models import NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 
-from .schedulers import StageScheduler, batches_per_epoch
+from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
@@ -79,11 +79,12 @@ def train_pretrainer(
         lr=hyperparameters.pretraining_learning_rate,
         weight_decay=hyperparameters.pretraining_weight_decay,
     )
+    train_batch = training_batch_size(len(train_frame), hyperparameters.batch_size, hyperparameters.min_steps_per_epoch)
     scheduler = StageScheduler(
         optimizer,
         hyperparameters.lr_scheduler,
         epochs=hyperparameters.pretraining_epochs,
-        batches_per_epoch=batches_per_epoch(len(train_frame), hyperparameters.batch_size),
+        batches_per_epoch=batches_per_epoch(len(train_frame), train_batch),
     )
     train_losses: list[float] = []
     validation_losses: list[float] = []
@@ -111,8 +112,8 @@ def train_pretrainer(
         # the same order and precision as before without a synchronisation each step.
         train_loss_sum = torch.zeros((), dtype=torch.float64, device=device)
         train_steps = 0
-        for start in range(0, len(train_frame), hyperparameters.batch_size):
-            batch_indices = indices[start : start + hyperparameters.batch_size]
+        for start in range(0, len(train_frame), train_batch):
+            batch_indices = indices[start : start + train_batch]
             optimizer.zero_grad()
             total_loss, _ = model(masked_train[batch_indices], original_train[batch_indices])
             total_loss.backward()

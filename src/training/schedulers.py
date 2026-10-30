@@ -108,6 +108,14 @@ class StageScheduler:
         return float(self._optimizer.param_groups[0]["lr"])
 
 
+def training_batch_size(row_count: int, batch_size: int, min_steps_per_epoch: int) -> int:
+    """The training batch: ``batch_size``, shrunk so an epoch over ``row_count`` rows takes at least
+    ``min_steps_per_epoch`` steps (T14; 0 keeps ``batch_size``)."""
+    if min_steps_per_epoch <= 0:
+        return batch_size
+    return max(1, min(batch_size, row_count // min_steps_per_epoch))
+
+
 def batches_per_epoch(row_count: int, batch_size: int) -> int:
     """Number of optimizer steps one epoch performs over ``row_count`` rows."""
     return max(1, math.ceil(row_count / batch_size))

@@ -287,7 +287,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
-        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP",
+        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH",
     }
 
 
@@ -720,3 +720,30 @@ def test_the_embedding_lookup_is_an_imputation_flag_per_column_by_default() -> N
         parser.parse_args([*imputation, "--embedding_lookup", "fused"])
     with pytest.raises(ValueError, match="embedding lookup"):
         Hyperparameters.from_mapping({"EMBEDDING_LOOKUP": "fused"})
+
+
+def test_min_steps_per_epoch_is_an_imputation_flag_off_by_default() -> None:
+    """T14: ``--min_steps_per_epoch`` defaults to every run before it (0), applies to imputation
+    only, and refuses a negative count."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.min_steps_per_epoch == 0
+    asked = resolve_training_request(parser.parse_args([*imputation, "--min_steps_per_epoch", "8"]))
+    assert asked.hyperparameters.min_steps_per_epoch == 8
+    with pytest.raises(SystemExit, match="min_steps_per_epoch"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--min_steps_per_epoch", "8"]))
+    with pytest.raises(ValueError, match="minimum steps"):
+        Hyperparameters.from_mapping({"MIN_STEPS_PER_EPOCH": -1})
+
+
+def test_the_training_batch_shrinks_only_to_reach_the_minimum_steps() -> None:
+    """T14: off keeps BATCH; on, a small table gets floor(rows / N) and so at least N steps, and a
+    table with enough rows keeps BATCH."""
+    from src.training.schedulers import batches_per_epoch, training_batch_size
+
+    assert training_batch_size(640, 256, 0) == 256
+    assert training_batch_size(640, 256, 8) == 80
+    assert batches_per_epoch(640, training_batch_size(640, 256, 8)) == 8
+    assert batches_per_epoch(645, training_batch_size(645, 256, 8)) >= 8
+    assert training_batch_size(36000, 256, 8) == 256
+    assert training_batch_size(5, 256, 8) == 1
