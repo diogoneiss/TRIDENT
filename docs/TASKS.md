@@ -653,6 +653,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
+  **Done 2026-10-30 by E100 ([imputation-protocol/37](tickets/imputation-protocol/37-steps-rule.md)): refuted.** `--min_steps_per_epoch 8` is better on 0 of 16 small-table variants and worse on 4; closed, the flag stays off.
 - **T15 · MAE-style architecture** (ADR 0004 Design C, handoff item 5): the most expensive; only if
   T02–T03 fall short.
 

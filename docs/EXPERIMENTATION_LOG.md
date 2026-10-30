@@ -125,7 +125,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
-| E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 – | in progress | |
+| E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
 
 ## Entries
 
@@ -3123,9 +3123,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   40, 60 and 80nan, and tuning leaves TRIDENT where the fork budget had it. What H1c becomes is the
   user's decision; no ADR changed.
 
-### E100 · Does a steps-aware training batch help the small tables? (T14) (2026-10-30 – )
+### E100 · Does a steps-aware training batch help the small tables? (T14) (2026-10-30)
 
-- **Status:** in progress
+- **Status:** refuted
 - **Hypothesis:** at BATCH 256 an epoch takes 2–3 steps on kc2, credit-g, vehicle and biodeg; a
   batch shrunk to give at least 8 steps (`--min_steps_per_epoch 8`) imputes them better.
 - **Scenarios:** 16 variants (those four tables at 20–80nan) × seeds 42/7/13 × arms M (default)
@@ -3135,3 +3135,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   at most 1; mixed otherwise.
 - **Sources:** [imputation-protocol/37](tickets/imputation-protocol/37-steps-rule.md);
   `scripts/experiments/steps_rule.py`, `run_steps_rule_queue.sh`.
+- **Results (2026-10-30 18:41 GMT-3):** all 96 cells. S8 − M: better on 0, equivalent on 1 (credit-g_80nan), no
+  verdict on 11, worse on 4: credit-g_40nan +1.99%, credit-g_60nan +1.17%, biodeg_20nan +5.32%,
+  biodeg_60nan +1.85%. The masked score is higher under S8 on 14 of 16.
+- **Conclusion:** refuted. More steps at a smaller batch, with the learning rates unchanged, do not
+  help the small tables. T14 closes; BATCH stays one value for every table, and the flag stays off.
