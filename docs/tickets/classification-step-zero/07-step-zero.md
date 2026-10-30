@@ -76,6 +76,21 @@ epochs on the old sweep's other hyperparameters. It took about 15 min for the ni
   - Each variant's study and evaluations still run on medusa1 or gorgona8 alone, never across both.
     The design and the cap are unchanged.
 
+- **Amendment 2026-10-30, 06:52 GMT-3, before any result was read:** gorgona8's unstarted variants
+  move to medusa1.
+  - **Why:** after 8 h, gorgona8's three electricity studies are at 16–17 of 20 trials (about 30 min a
+    trial on the 3090 Ti, shared three ways). Its 21 other variants would not fit the cap. medusa1 has
+    finished most of its own and has an idle GPU.
+  - **What moves:** each of those 21 variants, whole (study and both evaluations). They are claimed on
+    gorgona8 so its queues skip them, and run on medusa1 by `run_stage4_variants.sh`. That runner also
+    picks up medusa1's evaluations left behind when a helper ran the study. Each variant still runs on
+    one machine.
+  - **kc2_00nan** ended up with a study on both machines. The smoke ran on gorgona8, but the deal gave
+    the variant to medusa1, whose queue ran it again. **medusa1's study and its two evaluations are the
+    ones read;** the gorgona8 smoke is set aside, unread, since its evaluations would have had to cross
+    machines.
+  - Electricity at 00, 20 and 40nan stays on gorgona8. The design, the rule and the cap are unchanged.
+
 ## Measures and rule, fixed now
 
 - **The measure:** test macro-F1, paired by fold and seed. Per level, the pairs pool over the 9
