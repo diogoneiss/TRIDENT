@@ -126,6 +126,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
+| E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 – | in progress | |
 
 ## Entries
 
@@ -3140,3 +3141,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   biodeg_60nan +1.85%. The masked score is higher under S8 on 14 of 16.
 - **Conclusion:** refuted. More steps at a smaller batch, with the learning rates unchanged, do not
   help the small tables. T14 closes; BATCH stays one value for every table, and the flag stays off.
+
+### E101 · Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) (2026-10-30 – )
+
+- **Status:** in progress
+- **Hypothesis:** E28's Q4 still helps pendigits on today's defaults, and a 600-epoch decode adds
+  to it.
+- **Scenarios:** pendigits 20–80nan × seeds 42/7/13 × arms M, P (BATCH 1024, LR x4) and P600 (P with
+  EPOCHS_DECODE 600), five folds, MLflow off; seed 42 on gorgona8, 7 and 13 on medusa1.
+- **Measures and decision rule:** P600 − M on the induced `impute_score`, relative, 15 fold pairs,
+  1% SESOI. Supported if better on 2 or more of 4 and worse on none; refuted if better on none.
+- **Sources:** [imputation-protocol/38](tickets/imputation-protocol/38-large-batch.md);
+  `scripts/experiments/large_batch.py`, `run_large_batch_queue.sh`.

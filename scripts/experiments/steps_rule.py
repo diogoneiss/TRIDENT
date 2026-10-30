@@ -76,7 +76,8 @@ def tally() -> None:
     missing = []
     print(f"## S8 − M on {PRIMARY}, relative to M; 15 fold pairs a variant ({common.RULE}, SESOI {SESOI})")
     for variant in VARIANTS:
-        per_seed, extra = [], {m: [] for m in SECONDARY}
+        per_seed: list[np.ndarray] = []
+        extra: dict[str, list[float]] = {m: [] for m in SECONDARY}
         for seed, root in roots.items():
             m, s = folds(root, "M", variant, seed), folds(root, "S8", variant, seed)
             if m is None or s is None:
