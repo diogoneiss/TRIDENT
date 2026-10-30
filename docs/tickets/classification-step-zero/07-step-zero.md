@@ -67,6 +67,15 @@ epochs on the old sweep's other hyperparameters. It took about 15 min for the ni
   - **The cap:** no item starts after 2026-10-31 08:00 GMT-3. A variant missing then is reported
     missing, and the levels it belongs to are partial.
 
+- **Amendment 2026-10-29, 23:45 GMT-3, before any result was read:** helper queues on medusa1
+  GPU0.
+  - The other user's job on GPU0 ended, so three helper queues (`run_stage4_helper.sh`) now take
+    medusa1's items from the end of its lists.
+  - `stage4_trident.py` claims each item atomically before it runs. The six items already running
+    were claimed by hand, so no item runs twice. A study that is finished is skipped.
+  - Each variant's study and evaluations still run on medusa1 or gorgona8 alone, never across both.
+    The design and the cap are unchanged.
+
 ## Measures and rule, fixed now
 
 - **The measure:** test macro-F1, paired by fold and seed. Per level, the pairs pool over the 9

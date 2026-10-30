@@ -15,6 +15,7 @@ two evaluations, over the queues, the largest tables first. Every output is unde
 from __future__ import annotations
 
 import json
+import os
 import socket
 import sys
 from argparse import Namespace
@@ -53,8 +54,24 @@ def eval_dir(variant: str, seed: int) -> Path:
     return STATE / "eval" / f"{variant}_s{seed}"
 
 
+def claim(item: str) -> bool:
+    """Reserve an item for this process; False if another queue holds or finished it (amendment
+    2026-10-30: helper queues share the work of the six)."""
+    path = STATE / "claims" / item
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.close(os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+    except FileExistsError:
+        return False
+    return True
+
+
 def study(variant: str) -> None:
     import opt
+
+    if retrained(variant) or not claim(f"study_{variant}"):
+        print("CELL_DONE study", variant, "skipped: finished or claimed by another queue", flush=True)
+        return
 
     opt.run_hyperparameter_optimization(Namespace(
         dataset_name=variant, label_column="class", n_trials=TRIALS, seed=TUNING_SEED,
@@ -70,8 +87,11 @@ def evaluate(variant: str, seed: int) -> None:
     from train import main as train_main
 
     config = best_config(variant)
-    if config is None:
-        sys.exit(f"{variant}: no finished study")
+    if config is None or not retrained(variant):
+        sys.exit(f"{variant}: no finished study yet")
+    if fold_metrics(eval_dir(variant, seed)) is not None or not claim(f"eval_{variant}_s{seed}"):
+        print("CELL_DONE eval", variant, seed, "skipped: finished or claimed by another queue", flush=True)
+        return
     train_main(Namespace(
         dataset_name=variant, label_column="class", output_dir=str(eval_dir(variant, seed)),
         metrics_dir=str(STATE / "metrics" / f"{variant}_s{seed}"), disable_mlflow=False, plot_losses=False,
