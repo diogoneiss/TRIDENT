@@ -139,7 +139,7 @@ def _fit(model: str, params: dict[str, Any], frames: list[pd.DataFrame], label: 
     present, counts = np.unique(y[0], return_counts=True)
     weights = np.ones(classes)
     weights[present] = len(y[0]) / (len(present) * counts)
-    shared = {"column_idx": prep.column_idx, "cat_embed_input": prep.cat_embed_input,
+    shared = {"column_idx": prep.column_idx, "cat_embed_input": getattr(prep, "cat_embed_input", None),  # unset on an all-numerical table
               "continuous_cols": continuous or None}
     if model == "mlp":
         net = TabMlp(mlp_hidden_dims=[int(h) for h in params["hidden"].split("-")], mlp_dropout=params["dropout"], **shared)
@@ -154,6 +154,7 @@ def _fit(model: str, params: dict[str, Any], frames: list[pd.DataFrame], label: 
     trainer = Trainer(wide, objective="multiclass", seed=seed, verbose=0, callbacks=[stopper],
                       optimizers=torch.optim.AdamW(wide.parameters(), lr=params["lr"], weight_decay=params["weight_decay"]),
                       class_weight=weights.tolist(),
+                      num_workers=0,  # the default, one worker per core, respawns every epoch: 38 s a kc2 fold
                       **({"lambda_sparse": params["lambda_sparse"]} if model == "tabnet" else {}))
     clock = time.perf_counter()
     trainer.fit(X_train={"X_tab": x[0], "target": y[0]}, X_val={"X_tab": x[1], "target": y[1]},
