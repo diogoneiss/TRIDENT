@@ -23,6 +23,11 @@ dependencies = [
 tabpfn = [
     "tabpfn==9.2.0",
 ]
+# E99 (classification-step-zero/08): the deep baselines MLP, SAINT and TabNet, one training loop.
+deep-baselines = [
+    "pytorch-widedeep==1.5.0",
+    "torchvision",
+]
 
 [tool.uv]
 package = false
@@ -34,6 +39,11 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
+]
+# pytorch-widedeep imports torchvision; its PyPI wheel does not match the cu128 torch.
+torchvision = [
     { index = "pytorch-cu128", marker = "sys_platform == 'win32'" },
     { index = "pytorch-cu128", marker = "sys_platform == 'linux'" },
 ]
@@ -65,6 +75,11 @@ mypy_path = "$MYPY_CONFIG_FILE_DIR/stubs"
 # tqdm ships no stubs and typing it is not this effort's business; see docs/BACKLOG.md.
 [[tool.mypy.overrides]]
 module = ["tqdm.*"]
+ignore_missing_imports = true
+
+# pytorch-widedeep (the deep-baselines extra) ships no stubs either.
+[[tool.mypy.overrides]]
+module = ["pytorch_widedeep.*"]
 ignore_missing_imports = true
 
 # ----------------------------------------------------------------------------------------
