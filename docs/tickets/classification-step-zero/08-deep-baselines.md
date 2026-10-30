@@ -24,3 +24,30 @@ session what exists.
   when higher at 3 or more of 5 levels and lower at none; supported if it leads all three, refuted if
   any baseline is higher at 3 or more levels, mixed otherwise); the search spaces and batch sizes in
   the script; a cost probe, then the compute cap.
+
+## Cost probe (medusa1, 2026-10-30 17:15–17:49 GMT-3; seconds only, no score read)
+
+One mid-space configuration per model (`MIDDLE` in the script), seed 42's ten folds, each table at
+40nan, `deep_baselines.py probe`; log in `/scratch/diogoneiss/trident-2026-10-30-deep-probe/`. MLP
+and TabNet shared GPU0, SAINT ran on GPU1; from 17:31 E100's queues shared both.
+
+| table | MLP | SAINT | TabNet |
+|---|---|---|---|
+| kc2 | 4 s | 14 s | 18 s |
+| credit-g | 7 s | 12 s | 19 s |
+| vehicle | 6 s | 19 s | 21 s |
+| biodeg | 6 s | out of memory | 20 s |
+| spambase | 12 s | out of memory | 110 s |
+| kr-vs-kp | 20 s | 28 s | 70 s |
+| pendigits | 63 s | 117 s | 317 s |
+| letter | 211 s | 140 s | 717 s |
+| electricity | 223 s | 286 s | 683 s |
+| **sum** | **9 min** | **10 min + 2** | **33 min** |
+
+- **The whole study** is about 23 ten-fold fits a variant (20 trials and three evaluations) over 5
+  levels, so roughly 18, 20+ and 63 GPU-hours: about 100 in all, before parallelism.
+- **SAINT ran out of memory** (21 GB) on biodeg and spambase, the tables with the most columns
+  once the gap indicators double them. To settle: a smaller SAINT batch, or no indicators for it.
+- **Fixed during the probe** (the commit after 6e155e8): the all-numerical tables (kc2) and widedeep's default
+  of one loader worker per core, which cost 38 s a kc2 fold against 0.4 s in-process.
+- Written 2026-10-30 18:36 GMT-3.
