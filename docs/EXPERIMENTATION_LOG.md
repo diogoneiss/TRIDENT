@@ -124,7 +124,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E95 | Does the deployable `table` hybrid hold at 20nan? | 2026-10-29 | supported | worse than H or TabPFN on none of 9; better than both on 6 |
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
-| E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – | in progress | |
+| E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
 
 ## Entries
 
@@ -3092,9 +3092,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [classification-step-zero/06](tickets/classification-step-zero/06-cpu-bar.md);
   `scripts/experiments/cls_stage1_bar.py`.
 
-### E98 · Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? (2026-10-29 – )
+### E98 · Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? (2026-10-29 – 2026-10-30)
 
-- **Status:** in progress
+- **Status:** refuted
 - **Hypothesis:** H1c. Tuned on validation only, TRIDENT leads the best tuned native-NaN GBDT at
   40, 60 and 80nan.
 - **Scenarios:** all 45 variants, ten folds.
@@ -3110,4 +3110,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - **Supported** if TRIDENT is higher at all three.
   - **Unconfirmed** otherwise.
 - **Sources:** [classification-step-zero/07](tickets/classification-step-zero/07-step-zero.md);
-  `scripts/experiments/stage4_trident.py`, `run_stage4_queue.sh`, `stage4_gbdt.py`.
+  `scripts/experiments/stage4_trident.py`, `run_stage4_queue.sh`, `stage4_gbdt.py`, `stage4_tally.py`.
+- **Results (2026-10-30 15:59 GMT-3):** all 45 variants, 270 fold pairs a level. Tuned TRIDENT − the bar:
+  00nan −0.017 [−0.023, −0.011], 20nan −0.025 [−0.029, −0.020], 40nan −0.024 [−0.029, −0.019],
+  60nan −0.032 [−0.039, −0.026], 80nan −0.030 [−0.035, −0.025]; every seed below zero at every level.
+  - Against the untuned fork budget (E87 A): no verdict at 20–80nan, −0.004 at 00nan.
+  - Against TabPFN: behind at every level (plain −0.010 to −0.020, balanced −0.020 to −0.035).
+  - TRIDENT's mean is above the bar only on kc2 00/20nan, credit-g 40nan and kr-vs-kp 60nan.
+  - 15 of 1350 folds collapsed.
+- **Conclusion:** refuted. With validation-only tuning and the same budget, the GBDT bar leads at
+  40, 60 and 80nan, and tuning leaves TRIDENT where the fork budget had it. What H1c becomes is the
+  user's decision; no ADR changed.

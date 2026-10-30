@@ -72,6 +72,7 @@ def main() -> None:
         diffs: dict[str, dict[int, list[np.ndarray]]] = {k: {s: [] for s in SEEDS} for k in ("bar", "fork", "tabpfn", "tabpfn_balanced", "missforest+ind/hgb")}
         bars: dict[str, str] = {}
         means: dict[str, list[float]] = {"TRIDENT": [], "bar": []}
+        tables: dict[str, list[tuple[float, float]]] = {}
         for base in BASES:
             variant = f"{base}_{level}nan"
             g = gbdt(variant)
@@ -93,6 +94,7 @@ def main() -> None:
                     diffs[arm][seed].append(ours - theirs)
                 means["TRIDENT"].append(float(ours.mean()))
                 means["bar"].append(float(_f1(rows[rows.arm == bar]).mean()))
+                tables.setdefault(base, []).append((means["TRIDENT"][-1], means["bar"][-1]))
                 f = fork(variant, seed)
                 if f is not None:
                     diffs["fork"][seed].append(ours - _f1(f))
@@ -102,6 +104,8 @@ def main() -> None:
                     diffs["tabpfn_balanced"][seed].append(ours - _f1(p, "f1_macro_balanced"))
         print(f"## {level}nan · TRIDENT mean {np.mean(means['TRIDENT']):.4f}, bar mean {np.mean(means['bar']):.4f} · bar per table: "
               + ", ".join(f"{b} {a}" for b, a in bars.items()))
+        print("- per table, TRIDENT/bar mean over seeds: " + ", ".join(
+            f"{b} {np.mean([t for t, _ in m]):.3f}/{np.mean([g for _, g in m]):.3f}" for b, m in tables.items()))
         for name, label in (("bar", "TRIDENT − tuned GBDT bar"), ("missforest+ind/hgb", "TRIDENT − missForest+ind+HGB"),
                             ("fork", "TRIDENT − fork budget (E87 A)"), ("tabpfn", "TRIDENT − TabPFN"), ("tabpfn_balanced", "TRIDENT − TabPFN balanced")):
             per_seed = [np.concatenate(diffs[name][s]) for s in SEEDS if diffs[name][s]]

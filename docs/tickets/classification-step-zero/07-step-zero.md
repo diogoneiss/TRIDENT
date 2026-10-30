@@ -111,4 +111,88 @@ epochs on the old sweep's other hyperparameters. It took about 15 min for the ni
 
 ## Outcome
 
-(open)
+**Written 2026-10-30 15:59 GMT-3. Refuted: the tuned GBDT bar is higher than tuned TRIDENT at 40, 60 and 80nan**
+(interval below zero and every seed below at each), and at 00 and 20nan too. Tuned on validation
+alone with the same 20-trial budget, TRIDENT trails the bar by 0.024–0.032 macro-F1 from 40nan up.
+
+- **Complete:** all 45 variants tuned and evaluated at seeds 42/7/13, inside the cap (the last cell
+  ended 2026-10-30 15:05 GMT-3). Every level has 270 fold pairs against the bar and 240 against
+  TabPFN (8 tables). No training cell crashed.
+  - The `FAILED` lines in the queue logs (42 on gorgona8, 4 on medusa1) are all evaluations that
+    exited at once with "no finished study yet": on gorgona8, evaluations of the variants that
+    moved to medusa1; on medusa1, evaluations of pendigits_20nan and letter_80nan tried before
+    their studies ended. Each of those ran later on its own machine.
+  - **Read:** gorgona8 for electricity 00/20/40nan; medusa1 for the other 42 variants, kc2_00nan
+    included (the tally prefers medusa1's copy; the gorgona8 smoke stays unread).
+  - Pairing assumes fold k is the same split in every arm. All come from
+    `build_folds(frame, 'class', 10, seed)` at the same seeds, as in E87 and E92.
+- **Process notes, none touching the design or the rule:**
+  - letter_80nan's two evaluations ran at 14:56 on two sweep lanes on medusa1 GPU0, launched by
+    hand before the end chain would have (the sweep of the amendment; claims kept them single).
+  - The end chain never left its first wait: `grep -c` exits 1 at zero matches, so `|| echo 1`
+    read "busy" forever. It was stopped, and the copy and the tally ran by hand at 15:57.
+  - The tally ran twice. After the first run, its per-table means (pre-registered as
+    descriptive) were added to the script; the second run printed the same level means, the same
+    differences and the same Primary line. The tally below is the second run, unedited.
+- **Descriptive:**
+  - **Did tuning help?** Tuned TRIDENT − the untuned fork budget: no verdict at 20–80nan
+    (−0.001 to +0.001), slightly below at 00nan (−0.004 [−0.008, −0.000]). The gap to the GBDT is
+    not a budget artifact: E97's untuned gap (+0.015 to +0.033) stays at +0.017 to +0.032 with both
+    sides tuned.
+  - **The strong tier:** TRIDENT trails TabPFN at every level, by 0.010–0.020 plain and
+    0.020–0.035 balanced (as E83 and E92).
+  - **missForest + indicators + HGB** is above the bar at 20 and 40nan and below it at 00, 60 and
+    80nan; TRIDENT trails it at every level.
+  - **Per table:** TRIDENT's mean is above the bar's only on kc2 at 00/20nan, credit-g at 40nan and
+    kr-vs-kp at 60nan. The largest gap is electricity at 00nan (0.833 against 0.942).
+  - **Kept epochs:** median 29 over 1350 folds; 15 collapsed (kept epoch below 5).
+- **What follows is the user's to decide:** what H1c becomes in the thesis, and the deep-baseline
+  amendment agreed on 2026-10-29. No ADR, plan or report was changed.
+
+### The tally, unedited (`stage4_tally.py`, 2026-10-30 15:59 GMT-3)
+
+```
+## 00nan · TRIDENT mean 0.8594, bar mean 0.8764 · bar per table: biodeg hgb, credit-g hgb, electricity hgb, kc2 lgbm, kr-vs-kp lgbm, letter lgbm, pendigits lgbm, spambase lgbm, vehicle hgb
+- per table, TRIDENT/bar mean over seeds: biodeg 0.838/0.849, credit-g 0.684/0.695, electricity 0.833/0.942, kc2 0.738/0.719, kr-vs-kp 0.994/0.996, letter 0.964/0.972, pendigits 0.993/0.994, spambase 0.936/0.955, vehicle 0.755/0.766
+- TRIDENT − tuned GBDT bar: -0.0170 [-0.0227, -0.0113] seeds -0.0192, -0.0177, -0.0140, 270 fold pairs -> the other higher
+- TRIDENT − missForest+ind+HGB: -0.0156 [-0.0216, -0.0096] seeds -0.0170, -0.0180, -0.0118, 270 fold pairs -> the other higher
+- TRIDENT − fork budget (E87 A): -0.0041 [-0.0080, -0.0001] seeds -0.0035, -0.0067, -0.0020, 270 fold pairs -> the other higher
+- TRIDENT − TabPFN: -0.0198 [-0.0269, -0.0127] seeds -0.0220, -0.0210, -0.0165, 240 fold pairs -> the other higher
+- TRIDENT − TabPFN balanced: -0.0224 [-0.0280, -0.0167] seeds -0.0255, -0.0218, -0.0198, 240 fold pairs -> the other higher
+
+## 20nan · TRIDENT mean 0.8038, bar mean 0.8285 · bar per table: biodeg lgbm, credit-g lgbm, electricity hgb, kc2 lgbm, kr-vs-kp hgb, letter lgbm, pendigits lgbm, spambase lgbm, vehicle lgbm
+- per table, TRIDENT/bar mean over seeds: biodeg 0.813/0.831, credit-g 0.645/0.666, electricity 0.776/0.846, kc2 0.721/0.706, kr-vs-kp 0.884/0.902, letter 0.845/0.881, pendigits 0.969/0.975, spambase 0.912/0.932, vehicle 0.670/0.717
+- TRIDENT − tuned GBDT bar: -0.0247 [-0.0293, -0.0201] seeds -0.0230, -0.0267, -0.0244, 270 fold pairs -> the other higher
+- TRIDENT − missForest+ind+HGB: -0.0297 [-0.0349, -0.0244] seeds -0.0254, -0.0315, -0.0320, 270 fold pairs -> the other higher
+- TRIDENT − fork budget (E87 A): +0.0004 [-0.0036, +0.0043] seeds +0.0022, +0.0054, -0.0065, 270 fold pairs -> no verdict
+- TRIDENT − TabPFN: -0.0100 [-0.0152, -0.0047] seeds -0.0092, -0.0105, -0.0102, 240 fold pairs -> the other higher
+- TRIDENT − TabPFN balanced: -0.0214 [-0.0255, -0.0173] seeds -0.0173, -0.0226, -0.0244, 240 fold pairs -> the other higher
+
+## 40nan · TRIDENT mean 0.7509, bar mean 0.7750 · bar per table: biodeg lgbm, credit-g hgb, electricity lgbm, kc2 lgbm, kr-vs-kp lgbm, letter lgbm, pendigits lgbm, spambase hgb, vehicle lgbm
+- per table, TRIDENT/bar mean over seeds: biodeg 0.772/0.796, credit-g 0.638/0.620, electricity 0.728/0.775, kc2 0.708/0.717, kr-vs-kp 0.805/0.819, letter 0.683/0.737, pendigits 0.912/0.932, spambase 0.895/0.914, vehicle 0.618/0.665
+- TRIDENT − tuned GBDT bar: -0.0241 [-0.0290, -0.0192] seeds -0.0238, -0.0272, -0.0213, 270 fold pairs -> the other higher
+- TRIDENT − missForest+ind+HGB: -0.0291 [-0.0346, -0.0236] seeds -0.0285, -0.0308, -0.0279, 270 fold pairs -> the other higher
+- TRIDENT − fork budget (E87 A): -0.0008 [-0.0045, +0.0028] seeds -0.0003, +0.0018, -0.0040, 270 fold pairs -> no verdict
+- TRIDENT − TabPFN: -0.0107 [-0.0176, -0.0037] seeds -0.0092, -0.0116, -0.0112, 240 fold pairs -> the other higher
+- TRIDENT − TabPFN balanced: -0.0196 [-0.0242, -0.0150] seeds -0.0202, -0.0190, -0.0196, 240 fold pairs -> the other higher
+
+## 60nan · TRIDENT mean 0.6714, bar mean 0.7037 · bar per table: biodeg lgbm, credit-g hgb, electricity lgbm, kc2 lgbm, kr-vs-kp hgb, letter lgbm, pendigits lgbm, spambase hgb, vehicle lgbm
+- per table, TRIDENT/bar mean over seeds: biodeg 0.748/0.756, credit-g 0.578/0.608, electricity 0.683/0.707, kc2 0.671/0.733, kr-vs-kp 0.710/0.705, letter 0.494/0.537, pendigits 0.793/0.820, spambase 0.873/0.883, vehicle 0.491/0.584
+- TRIDENT − tuned GBDT bar: -0.0323 [-0.0386, -0.0260] seeds -0.0263, -0.0359, -0.0347, 270 fold pairs -> the other higher
+- TRIDENT − missForest+ind+HGB: -0.0306 [-0.0376, -0.0236] seeds -0.0252, -0.0333, -0.0333, 270 fold pairs -> the other higher
+- TRIDENT − fork budget (E87 A): +0.0011 [-0.0036, +0.0059] seeds +0.0050, -0.0026, +0.0011, 270 fold pairs -> no verdict
+- TRIDENT − TabPFN: -0.0135 [-0.0226, -0.0044] seeds -0.0077, -0.0178, -0.0150, 240 fold pairs -> the other higher
+- TRIDENT − TabPFN balanced: -0.0285 [-0.0352, -0.0218] seeds -0.0242, -0.0311, -0.0302, 240 fold pairs -> the other higher
+
+## 80nan · TRIDENT mean 0.5599, bar mean 0.5893 · bar per table: biodeg hgb, credit-g hgb, electricity hgb, kc2 lgbm, kr-vs-kp lgbm, letter lgbm, pendigits lgbm, spambase lgbm, vehicle lgbm
+- per table, TRIDENT/bar mean over seeds: biodeg 0.659/0.708, credit-g 0.510/0.547, electricity 0.604/0.623, kc2 0.671/0.730, kr-vs-kp 0.627/0.629, letter 0.248/0.279, pendigits 0.536/0.560, spambase 0.792/0.802, vehicle 0.392/0.427
+- TRIDENT − tuned GBDT bar: -0.0295 [-0.0345, -0.0245] seeds -0.0260, -0.0282, -0.0342, 270 fold pairs -> the other higher
+- TRIDENT − missForest+ind+HGB: -0.0218 [-0.0278, -0.0158] seeds -0.0135, -0.0258, -0.0261, 270 fold pairs -> the other higher
+- TRIDENT − fork budget (E87 A): +0.0004 [-0.0052, +0.0061] seeds +0.0083, +0.0015, -0.0085, 270 fold pairs -> no verdict
+- TRIDENT − TabPFN: -0.0102 [-0.0177, -0.0026] seeds -0.0024, -0.0127, -0.0154, 240 fold pairs -> the other higher
+- TRIDENT − TabPFN balanced: -0.0345 [-0.0409, -0.0282] seeds -0.0279, -0.0377, -0.0379, 240 fold pairs -> the other higher
+
+- kept epochs: 1350 folds, median 29, collapsed (below 5): 15
+
+Primary (H1c, 40/60/80nan): 40nan the other higher, 60nan the other higher, 80nan the other higher -> refuted: the bar is higher at 40nan, 60nan, 80nan (fold-pair t, seed agreement)
+```
