@@ -130,6 +130,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
 | E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 – | in progress | |
+| E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 – | in progress | |
 
 ## Entries
 
@@ -3212,3 +3213,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   or fewer or worse on any; partial otherwise.
 - **Sources:** [imputation-protocol/41](tickets/imputation-protocol/41-large-batch-rule.md);
   `scripts/experiments/large_batch.py --study e104`.
+
+### E105 · Does the re-masking spread still rank errors under MNAR and MAR at 40nan? (2026-10-31 – )
+
+- **Status:** in progress
+- **Hypothesis:** E84's result (the spread's within-column ranking holds under MAR and self-masking
+  MNAR) holds at 40nan too.
+- **Scenarios:** E84's 12 shifted variants at 40nan (new data files), their MCAR twins and `marfctl`
+  controls, seeds 101/202/303, 63 cells, MLflow off, medusa1.
+- **Measures and decision rule:** E84's: a signal on 10 or more of 12 under K and H and none against
+  → supported; 7 or fewer under K or any against → refuted; mixed otherwise.
+- **Sources:** [imputation-protocol/42](tickets/imputation-protocol/42-spread-40nan.md);
+  `scripts/experiments/spread_40nan.py`, `run_spread_40nan_queue.sh`.
