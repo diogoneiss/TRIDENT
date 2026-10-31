@@ -3232,4 +3232,4 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-10-31 12:11 GMT-3):** all 63 cells. Signal on 12 of 12 under K and under H, none against; ρ
   +0.11 to +0.54 under K, +0.10 to +0.53 under H. On biodeg, shifted minus MCAR is +0.002, +0.001, −0.021, −0.080 at slopes 0.25–2.0.
 - **Conclusion:** supported. The spread's ranking holds under MAR and self-masking MNAR at 40nan as
-  at 60nan, weakening with the tilt. Extending ADR 0030's decision 7 to 40nan is the user's decision.
+  at 60nan, weakening with the tilt. Extending ADR 0030's decision 7 to 40nan is the user's decision. **Extended 2026-10-31 on the user's decision (ADR 0030, decision 7).**
