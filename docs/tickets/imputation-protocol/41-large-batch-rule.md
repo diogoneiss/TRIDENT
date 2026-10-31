@@ -8,8 +8,8 @@ This ticket was written and committed before the study's first cell. No cell has
   −5.8%), fading or a little worse at 60–80nan, and nothing on electricity. That scope, "pendigits
   and letter at 20–40nan", was chosen after seeing those results, so it is confirmed here on seeds
   none of them used before any ADR.
-- **The user's go:** "Isso, rode aa duas em paralelo agora" (2026-10-31, between 10:01 and 10:10
-  GMT-3), on this study and E105 in parallel.
+- **The user's go:** "Isso, rode aa duas em paralelo agora" (2026-10-31, after 09:58 and
+  before 10:14 GMT-3), on this study and E105 in parallel.
 - **No code change:** `large_batch.py --study e104`.
 
 ## Design (fixed before the first cell)
