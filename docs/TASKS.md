@@ -231,6 +231,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
 - **T11 · pendigits: batch 1024 at LR x4 with a longer patience** (100, or a 600-epoch ceiling):
   its best arm (E28, 0.323) and a validation loss still falling near epoch 450 (E27).
+  **E101 done 2026-10-30 ([imputation-protocol/38](tickets/imputation-protocol/38-large-batch.md)): supported.** BATCH 1024, LR x4 and EPOCHS_DECODE 600 better on pendigits 20/40/60nan (−5.4%, −4.3%, −1.2%), equivalent at 80nan; a fresh-seed confirmation before any ADR.
 - **T12 · A lower `LR_PRE` with the normalised objective:** every full-profile winner chose 2–34x
   below the default (E21).
   - **Skipped by the user's decision (2026-10-21),** on my recommendation. T28's decision table pointed here (E53's `BATCH 64` moved credit-g's probe), but E52 and E53 show the decode stage rebuilding the encoder from scratch, so a better pre-trained one would be overwritten too.

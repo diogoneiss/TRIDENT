@@ -126,7 +126,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
-| E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 – | in progress | |
+| E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 
 ## Entries
 
@@ -3142,9 +3142,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** refuted. More steps at a smaller batch, with the learning rates unchanged, do not
   help the small tables. T14 closes; BATCH stays one value for every table, and the flag stays off.
 
-### E101 · Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) (2026-10-30 – )
+### E101 · Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) (2026-10-30)
 
-- **Status:** in progress
+- **Status:** supported
 - **Hypothesis:** E28's Q4 still helps pendigits on today's defaults, and a 600-epoch decode adds
   to it.
 - **Scenarios:** pendigits 20–80nan × seeds 42/7/13 × arms M, P (BATCH 1024, LR x4) and P600 (P with
@@ -3153,3 +3153,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   1% SESOI. Supported if better on 2 or more of 4 and worse on none; refuted if better on none.
 - **Sources:** [imputation-protocol/38](tickets/imputation-protocol/38-large-batch.md);
   `scripts/experiments/large_batch.py`, `run_large_batch_queue.sh`.
+- **Results (2026-10-30 23:13 GMT-3):** all 36 cells. P600 − M: 20nan −5.37%, 40nan −4.27%, 60nan −1.19% (better),
+  80nan +0.16% (equivalent). P − M: better at 20–60nan (−3.39%, −2.53%, −0.88%), worse at 80nan
+  (+0.37%).
+- **Conclusion:** supported. On today's defaults pendigits still gains from batch 1024 with the
+  learning rates x4, and more with a 600-epoch decode. A fresh-seed confirmation comes before any
+  ADR; no default changed.
