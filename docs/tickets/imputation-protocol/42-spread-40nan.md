@@ -38,7 +38,7 @@ This ticket was written and committed before the study's first cell. No cell has
 ## Outcome
 
 **Written 2026-10-31 12:11 GMT-3. Supported: the within-column ranking signals on 12 of 12 shifted variants under
-K and 12 of 12 under H, none against** (ρ +0.10 to +0.54 under K; lowest lower bound +0.088).
+K and 12 of 12 under H, none against** (ρ +0.11 to +0.54 under K, +0.10 to +0.53 under H; lowest lower bound +0.073, H on vehicle_marf).
 
 - **Complete:** all 63 cells on medusa1, 10:16–12:09 GMT-3, no failure.
 - **Shifted minus control (descriptive):** as at 60nan, the ranking weakens on biodeg as the
