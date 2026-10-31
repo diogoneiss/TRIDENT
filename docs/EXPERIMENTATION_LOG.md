@@ -2744,7 +2744,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
     and −0.111 at slopes 0.25 to 2.0.
   - **Conclusion:** supported. The spread's within-column ranking holds under one MAR draw and
     self-masking MNAR at 60nan on five tables, weakening as the tilt grows. Extending ADR 0030 is
-    the user's decision.
+    the user's decision. **Extended 2026-10-31 on the user's decision (ADR 0030, decision 7).**
 
 
 ### E85 · Does the occlusion map hold at 20nan and 80nan? (2026-10-27)
@@ -3055,7 +3055,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (19:36 GMT-3):** supported. `table` is worse than H on none of 9 (better on 6) and
   worse than TabPFN on none (better on 6). All four rules are supported.
 - **Conclusion:** the deployable hybrid costs nothing at 20nan. Extending decision 6 to 20nan is
-  the user's decision.
+  the user's decision. **Extended 2026-10-31 on the user's decision (ADR 0031).**
 - **Sources:** [imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md);
   `hybrid_confirmation.py --study e95`.
 

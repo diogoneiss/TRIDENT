@@ -650,7 +650,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     ([imputation-protocol/36](tickets/imputation-protocol/36-hybrid-20nan.md)): decision 6's hybrid
     at 20nan, whole on medusa1.
   - **E95 done 2026-10-29: supported.** At 20nan the hybrid is never worse than H or TabPFN (9 of
-    9). Extending decision 6 to 20nan is the user's decision.
+    9). Extending decision 6 to 20nan is the user's decision. **Extended 2026-10-31 on the user's decision (ADR 0031).**
 
 - **T14 · A steps-aware batch rule** (at least ~8 steps an epoch) instead of one batch for every
   table (E28).
