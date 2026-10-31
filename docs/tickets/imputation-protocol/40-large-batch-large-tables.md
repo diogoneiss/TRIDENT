@@ -7,7 +7,7 @@ This ticket was written and committed before the study's first cell. No cell has
   checks it on fresh seeds. letter and electricity are the only other tables where batch 1024
   still leaves an epoch enough steps (14 and 31 at five folds; spambase 3, kr-vs-kp 2). Does the
   gain hold there? If so, an ADR would be a rule for the large tables rather than a pendigits case.
-- **The user's go:** "sim, agende" (2026-10-31, about 00:20 GMT-3), on the proposal to schedule it for
+- **The user's go:** "sim, agende" (2026-10-31, between 00:15 and 00:17 GMT-3), on the proposal to schedule it for
   the night without intervention, with a cap.
 - **No code change:** `large_batch.py --study e103` runs M and P600 over each variant's resolved
   configuration (letter_20nan keeps ADR 0018's encoder).
