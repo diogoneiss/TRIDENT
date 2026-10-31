@@ -129,7 +129,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
-| E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 – | in progress | |
+| E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 | replicated | better on 4 of 4: pendigits −5.9%/−4.1%, letter −3.3%/−1.5%; an ADR proposal for the user |
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
 
 ## Entries
@@ -3201,9 +3201,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   pendigits and letter at 20–40nan and fades or costs a little by 60–80nan; it does nothing on
   electricity. No default change follows; the user decides whether anything does.
 
-### E104 · Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? (2026-10-31 – )
+### E104 · Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? (2026-10-31)
 
-- **Status:** in progress
+- **Status:** replicated
 - **Hypothesis:** the scope E101–E103 suggest, chosen after those results, holds on unseen seeds:
   P600 beats the default on pendigits and letter at 20 and 40nan.
 - **Scenarios:** those 4 variants × seeds 1357/2468/3579 × arms M and P600, five folds, MLflow off;
@@ -3213,6 +3213,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   or fewer or worse on any; partial otherwise.
 - **Sources:** [imputation-protocol/41](tickets/imputation-protocol/41-large-batch-rule.md);
   `scripts/experiments/large_batch.py --study e104`.
+- **Results (2026-10-31 12:58 GMT-3):** all 24 cells. P600 − M: pendigits_20nan −5.93%, pendigits_40nan −4.10%,
+  letter_20nan −3.25%, letter_40nan −1.54%, all better with every seed below zero.
+- **Conclusion:** replicated. The rule chosen from E101–E103 holds on unseen seeds; an ADR proposal
+  for these four variants goes to the user.
 
 ### E105 · Does the re-masking spread still rank errors under MNAR and MAR at 40nan? (2026-10-31)
 
