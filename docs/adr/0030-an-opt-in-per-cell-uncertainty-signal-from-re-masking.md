@@ -3,7 +3,9 @@
 - **Status:** **accepted on 2026-10-26, 22:30 GMT-3** by the user ("ok, aceito"). Proposed 2026-10-25. Amended the same day with E77 (refuted: no
   better intervals) before any decision. Updated 2026-10-26 with E76 (supported: the
   within-column reading replicates, pre-registered). Amended 2026-10-27 with E80's limit, on the
-  user's decision ("sim, o adr 30 deve registrar isso"). The user asked for the proposal
+  user's decision ("sim, o adr 30 deve registrar isso"). **Amended 2026-10-31 09:56 GMT-3 with E84: the scope extends
+  to MAR and self-masking MNAR at 60% missing (decision 7), on the user's decision ("apoio fazer
+  o 3.2 e 3.1, nessa ordem", 2026-10-31).** The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
   ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
 - **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
@@ -75,6 +77,18 @@
 6. **No backfill and no tag,** as for the other `--score_*` diagnostics. The ledger columns and
    metric keys mark a run that has it. On acceptance, the flag's help text says it is the
    uncertainty output; no other code changes.
+7. **Its scope includes MAR and self-masking MNAR at 60% missing** (amended 2026-10-31, from E84,
+   [imputation-protocol/32](../tickets/imputation-protocol/32-spread-mechanisms.md), supported on
+   its full pre-registered scope).
+   - E84 ran 12 shifted variants at 60nan, seeds 101/202/303: self-masking MNAR (probit) on biodeg
+     at slopes 0.25/0.5/1/2, vehicle, kc2 and spambase; one MAR draw (`marf`) on biodeg, kc2,
+     vehicle, spambase and credit-g.
+   - The within-column ranking signals on 12 of 12 under K and under H, none against; ρ +0.10 to
+     +0.52, lowest lower bound +0.084.
+   - **It weakens as the self-masking tilt grows:** on biodeg, shifted minus MCAR is −0.023,
+     −0.049, −0.077 and −0.111 at slopes 0.25 to 2.0. A report that uses it under MNAR states this.
+   - **Not covered:** other rates under MAR or MNAR, other MAR draws, and MNAR mechanisms other
+     than self-masking. Decision 5's 60% ceiling stands.
 
 ## Considered options
 
@@ -98,9 +112,9 @@
 - **What it cannot claim:** a better interval. E77 found a constant per-column width narrower at the
   same coverage, so the signal's use is to flag cells (which fills to check first), not to size them.
 - **Limits that travel with the claim:**
-  - It was tested under MCAR only: E75 on the 15 confirmation variants (707/808/909), E76 on the 21
-    development variants (101/202/303). credit-g_60nan shows no signal.
-  - The MAR and MNAR families are untested.
+  - Under MCAR: E75 on the 15 confirmation variants (707/808/909), E76 on the 21 development
+    variants (101/202/303). credit-g_60nan shows no signal.
+  - Under MAR and self-masking MNAR: E84 at 60nan only (decision 7), weakening with the tilt.
   - **It runs the wrong way along a row's missingness** (E80,
     [imputation-interpretability/03](../tickets/imputation-interpretability/03-spread-and-missing-sources.md)).
     - The spread *falls* as the cell's row has more gaps: Spearman −0.04 to −0.47 on all 16 real
@@ -114,4 +128,5 @@
       missingness*. A report that flags cells by spread also flags rows whose top sources are
       missing, from E78's map, since the spread does not.
 - **Follow-ups, each its own pre-registered study if the user wants it:**
-  - the MNAR family, where an honest signal should grow with the mechanism's tilt.
+  - the MNAR family, where an honest signal should grow with the mechanism's tilt. **Done by E84
+    (decision 7):** it holds, but it weakens, not grows, as the tilt grows.
