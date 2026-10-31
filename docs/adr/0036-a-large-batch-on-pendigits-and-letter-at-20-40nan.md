@@ -1,8 +1,9 @@
 # ADR 0036: A large batch and a longer decode on pendigits and letter at 20 and 40nan
 
-- **Status:** **proposed 2026-10-31** for the user's decision, from E104's Outcome
+- **Status:** **accepted 2026-10-31** by the user ("aprovo, Extenda"), as proposed: the four
+  variants, pendigits_60nan left out. Proposed the same day from E104's Outcome
   ([imputation-protocol/41](../tickets/imputation-protocol/41-large-batch-rule.md)), whose ticket
-  fixed this proposal as the step after a replication. Nothing is implemented until it is accepted.
+  fixed this proposal as the step after a replication. Implemented and verified 2026-10-31 18:23 GMT-3 (below).
 - **Builds on:** ADR 0005 (promoted per-variant files), ADR 0013 (the imputation defaults), ADR 0018
   (the bigger encoder on pendigits_20nan and letter_20nan, kept here).
 
@@ -35,7 +36,7 @@
   20nan, with ADR 0018's bigger encoder, about the same: pendigits 29 against 29–33, letter 36–55
   against 51–63.
 
-## Decision (proposed)
+## Decision
 
 1. **pendigits_20nan, pendigits_40nan, letter_20nan and letter_40nan train with BATCH 1024,
    LR_PRE and LR_DECODE four times their resolved values (0.00136 and 0.004), and EPOCHS_DECODE
@@ -48,11 +49,17 @@
    outside E104's confirmed scope; letter_60nan was equivalent; both 80nan variants are a little
    worse; electricity gains nothing; the other tables leave an epoch too few steps at 1024.
 
-## Verification (on acceptance)
+## Verification (2026-10-31 18:23 GMT-3)
 
-- A default run of each of the four variants at one of E104's seeds equals E104's P600 cell of that
-  seed on every model metric, and records the four keys and the promoted file as `config_source`.
-- Both regression fixtures and the unit suite pass.
+- **The files:** `datasets/hiperparams/pendigits/pendigits_{20,40}nan.imputation.json` and
+  `datasets/hiperparams/letter/letter_{20,40}nan.imputation.json`. Each variant's resolved
+  configuration now equals E104's P600 override and differs from the old default only in BATCH,
+  LR_PRE, LR_DECODE and EPOCHS_DECODE.
+- **Default runs match E104's P600:** a plain imputation run of each variant at seed 1357 on
+  gorgona8, with no override and MLflow off, equals E104's P600 cell of that seed and machine on
+  every numeric column of its fold metrics, timings aside (68 columns on the 20nan variants, 75 on
+  the 40nan ones, none differing).
+- **Tests:** the unit suite with the typing gate (459) and both regression fixtures pass.
 
 ## Considered options
 

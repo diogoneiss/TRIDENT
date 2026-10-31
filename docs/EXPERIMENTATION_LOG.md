@@ -3216,7 +3216,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-10-31 12:58 GMT-3):** all 24 cells. P600 − M: pendigits_20nan −5.93%, pendigits_40nan −4.10%,
   letter_20nan −3.25%, letter_40nan −1.54%, all better with every seed below zero.
 - **Conclusion:** replicated. The rule chosen from E101–E103 holds on unseen seeds; an ADR proposal
-  for these four variants goes to the user.
+  for these four variants goes to the user. **ADR 0036 accepted 2026-10-31; the four promoted files carry P600.**
 
 ### E105 · Does the re-masking spread still rank errors under MNAR and MAR at 40nan? (2026-10-31)
 
