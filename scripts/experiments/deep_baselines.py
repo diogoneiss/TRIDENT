@@ -168,8 +168,19 @@ def _fit(model: str, params: dict[str, Any], frames: list[pd.DataFrame], label: 
 
 
 def _scores(model: str, params: dict[str, Any], folds: list[list[pd.DataFrame]], dataset: Any, seed: int) -> list[dict[str, float]]:
+    import gc
+
+    import torch
+
     categorical = list(dataset.categorical_columns)
-    return [_fit(model, params, frames, dataset.label_column, categorical, seed) for frames in folds]
+    out = []
+    for frames in folds:
+        out.append(_fit(model, params, frames, dataset.label_column, categorical, seed))
+        # widedeep's trainer sits in reference cycles; without a collection each fit's model stays on
+        # the GPU, and SAINT ran out of memory by the eighth fold on biodeg (23 GiB, 0.02 with this).
+        gc.collect()
+        torch.cuda.empty_cache()
+    return out
 
 
 def _dataset(variant: str) -> Any:
