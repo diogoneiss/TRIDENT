@@ -10,6 +10,7 @@ times 4 (E28's Q4) over the variant's resolved configuration; ``P600`` as P with
 ``--todo`` deals the (variant, seed) pairs of this machine's seeds over the queues, every arm of a
 pair in one queue. ``--tally`` reads both machines' directories (medusa1's copied under
 ``STATE/medusa``) and prints each arm − M per variant and the primary reading (P600 − M).
+E102 (imputation-protocol/39): ``--study e102`` first, M and P600 on fresh seeds 7878/8989/9090.
 """
 
 from __future__ import annotations
@@ -32,7 +33,17 @@ from scripts.experiments import report_common as common  # noqa: E402
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-30-large-batch"
 VARIANTS = tuple(f"pendigits_{r}nan" for r in (20, 40, 60, 80))
 SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}  # ADR 0035: split by seed, both arms of a pair on one machine
-ARMS = ("M", "P", "P600")
+ARMS: tuple[str, ...] = ("M", "P", "P600")
+
+
+def _use_e102() -> None:
+    """E102's confirmation: M and P600 only, on fresh seeds, in its own state."""
+    global STATE, SEEDS, ARMS
+    STATE = STATE.parent / "trident-2026-10-30-large-batch-e102"
+    SEEDS = {"gorgona8": (7878,), "medusa": (8989, 9090)}
+    ARMS = ("M", "P600")
+
+
 CHANGES = {"P": {"BATCH": 1024, "LR_SCALE": 4}, "P600": {"BATCH": 1024, "LR_SCALE": 4, "EPOCHS_DECODE": 600}}
 PRIMARY, SESOI = "impute/induced/impute_score", 0.01
 SECONDARY = ("impute/masked/impute_score",)
@@ -81,10 +92,10 @@ def todo(which: int, queues: int) -> None:
 
 
 def tally() -> None:
-    roots = {42: STATE, 7: STATE / "medusa", 13: STATE / "medusa"}
+    roots = {seed: STATE if host == "gorgona8" else STATE / "medusa" for host, seeds in SEEDS.items() for seed in seeds}
     calls: dict[str, str] = {}
     missing = []
-    for arm in ("P", "P600"):
+    for arm in ARMS[1:]:
         print(f"## {arm} − M on {PRIMARY}, relative to M; 15 fold pairs a variant ({common.RULE}, SESOI {SESOI})")
         for variant in VARIANTS:
             per_seed: list[np.ndarray] = []
@@ -114,6 +125,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:2] == ["--study", "e102"]:
+        _use_e102()
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] in ARMS and argv[2] in VARIANTS:
         train(argv[1], argv[2], int(argv[3]))
     elif argv[:1] == ["--todo"] and len(argv) == 3:

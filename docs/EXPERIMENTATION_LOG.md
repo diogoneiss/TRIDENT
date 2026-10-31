@@ -127,6 +127,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
+| E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – | in progress | |
 
 ## Entries
 
@@ -3159,3 +3160,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** supported. On today's defaults pendigits still gains from batch 1024 with the
   learning rates x4, and more with a 600-epoch decode. A fresh-seed confirmation comes before any
   ADR; no default changed.
+
+### E102 · Does E101's pendigits gain replicate on fresh seeds? (2026-10-30 – )
+
+- **Status:** in progress
+- **Hypothesis:** P600 (BATCH 1024, LR x4, EPOCHS_DECODE 600) stays better than the default on
+  pendigits on seeds E101 never saw.
+- **Scenarios:** pendigits 20–80nan × seeds 7878/8989/9090 × arms M and P600, five folds, MLflow off;
+  7878 on gorgona8, 8989 and 9090 on medusa1.
+- **Measures and decision rule:** P600 − M on the induced `impute_score`, relative, 15 fold pairs,
+  1% SESOI. Replicated if better on 2 or more of 4 and worse on none; not replicated if better on
+  none or worse on any; partial otherwise.
+- **Sources:** [imputation-protocol/39](tickets/imputation-protocol/39-large-batch-confirmation.md);
+  `scripts/experiments/large_batch.py --study e102`.
