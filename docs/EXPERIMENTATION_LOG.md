@@ -129,6 +129,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
+| E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 – | in progress | |
 
 ## Entries
 
@@ -3198,3 +3199,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** letter mixed, electricity refuted. With E101 and E102: the large batch helps
   pendigits and letter at 20–40nan and fades or costs a little by 60–80nan; it does nothing on
   electricity. No default change follows; the user decides whether anything does.
+
+### E104 · Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? (2026-10-31 – )
+
+- **Status:** in progress
+- **Hypothesis:** the scope E101–E103 suggest, chosen after those results, holds on unseen seeds:
+  P600 beats the default on pendigits and letter at 20 and 40nan.
+- **Scenarios:** those 4 variants × seeds 1357/2468/3579 × arms M and P600, five folds, MLflow off;
+  1357 on gorgona8, 2468 and 3579 on medusa1.
+- **Measures and decision rule:** P600 − M on the induced `impute_score`, relative, 15 fold pairs,
+  1% SESOI. Replicated if better on 3 or more of 4 and worse on none; not replicated if better on 1
+  or fewer or worse on any; partial otherwise.
+- **Sources:** [imputation-protocol/41](tickets/imputation-protocol/41-large-batch-rule.md);
+  `scripts/experiments/large_batch.py --study e104`.
