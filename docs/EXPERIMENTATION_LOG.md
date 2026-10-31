@@ -128,7 +128,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
-| E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 – | in progress | |
+| E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
 
 ## Entries
 
@@ -3180,9 +3180,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   replicate at E101's sizes; at 80nan the large batch costs a little. No ADR proposal follows from
   this rule.
 
-### E103 · Does the large batch and longer decode help letter and electricity? (2026-10-31 – )
+### E103 · Does the large batch and longer decode help letter and electricity? (2026-10-31)
 
-- **Status:** in progress
+- **Status:** letter mixed; electricity refuted
 - **Hypothesis:** E101's P600 (BATCH 1024, LR x4, EPOCHS_DECODE 600) beats the default on the other
   two tables where batch 1024 keeps enough steps an epoch.
 - **Scenarios:** letter and electricity 20–80nan × seeds 42/7/13 × arms M and P600, five folds,
@@ -3192,3 +3192,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   on none, mixed otherwise.
 - **Sources:** [imputation-protocol/40](tickets/imputation-protocol/40-large-batch-large-tables.md);
   `scripts/experiments/large_batch.py --study e103`.
+- **Results (2026-10-31 07:36 GMT-3):** all 48 cells, inside the cap. letter: 20nan −2.90%, 40nan −1.46% (better),
+  60nan −0.13% (equivalent), 80nan +0.21% (worse). electricity: 20nan +0.09%, 40nan +0.80% (no
+  verdict), 60nan −0.09%, 80nan −0.02% (equivalent).
+- **Conclusion:** letter mixed, electricity refuted. With E101 and E102: the large batch helps
+  pendigits and letter at 20–40nan and fades or costs a little by 60–80nan; it does nothing on
+  electricity. No default change follows; the user decides whether anything does.
