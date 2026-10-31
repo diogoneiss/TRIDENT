@@ -4,7 +4,8 @@
   Amended 2026-10-27, 19:20 GMT-3 with E82's deployable route, on the user's decision ("show, registre essa
   decisão"). Amended 2026-10-28, 23:10 GMT-3 with E89's evidence, on the user's request ("sim"); no
   decision changes. **Decision 6 (a deployable form) proposed 2026-10-29, 10:27 GMT-3**, on the user's
-  request ("sim, proponha"), from E90 and E91, and **accepted 2026-10-29, 10:42 GMT-3** ("aprovo"). The user asked for it to be
+  request ("sim, proponha"), from E90 and E91, and **accepted 2026-10-29, 10:42 GMT-3** ("aprovo"). **Decision 6's scope extended to 20nan
+  2026-10-31 09:57 GMT-3 with E95**, on the user's decision ("apoio fazer o 3.2 e 3.1, nessa ordem", 2026-10-31). The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -103,8 +104,17 @@
        pendigits), where one weight per table is coarse.
    - **The headlines do not change:** H stays the deployable headline (ADR 0024) and KC the
      benchmark default (ADR 0027).
-   - **Scope:** MCAR, the 17 variants above, H as the model side. MAR, MNAR and 20nan are
-     untested.
+   - **Scope:** MCAR, the 17 variants above and the nine tables at 20nan (below), H as the model
+     side. MAR and MNAR are untested here; E93 found the hybrid mixed off MCAR, so the scope stays
+     MCAR.
+   - **At 20nan (amended 2026-10-31, from E95,
+     [imputation-protocol/36](../tickets/imputation-protocol/36-hybrid-20nan.md), supported):** the
+     nine tables × seeds 4545/5656/6767, E91's rule.
+     - never worse than H or TabPFN on any of the 9;
+     - better than H on 6 and better than TabPFN on 6 (electricity, letter, pendigits, spambase,
+       biodeg, credit-g); no verdict against either on kr-vs-kp, vehicle and kc2;
+     - a little worse than the equal blend on letter (+0.002) and pendigits (+0.010), as at 40nan
+       where one weight per table is coarse. A report states it.
 
 ## Considered options
 
