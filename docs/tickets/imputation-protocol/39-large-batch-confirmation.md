@@ -27,4 +27,27 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-10-31 01:09 GMT-3. Not replicated, by the rule fixed above: P600 is better on 3 of 4 and worse on
+1.** The rule asked for worse on none, and pendigits_80nan is worse (+0.42% [+0.19%, +0.65%], every
+seed above zero). That is below the 1% SESOI, but the rule reads the sign and the seeds, not the
+SESOI, for "worse".
+
+- **What did replicate:** the gains at 20, 40 and 60nan, at nearly E101's sizes: −5.8% (E101 −5.4%),
+  −4.2% (−4.3%), −1.2% (−1.2%), every seed below zero.
+- **What changed:** 80nan, equivalent in E101 (+0.16%), is worse here (+0.42%). Read with E101's P
+  arm (+0.37% at 80nan, worse), the large batch costs a little at 80nan and helps below it.
+- **Complete:** all 24 cells, 23:14–01:08 GMT-3, no failure.
+- **What follows:** no ADR proposal from this rule. A pendigits rule limited to 20–60nan would be a
+  new question, the user's to ask; E103 (letter, electricity) runs on, unchanged.
+
+### The tally, unedited (`large_batch.py --study e102 --tally`, 2026-10-31 01:09 GMT-3)
+
+```
+## P600 − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_20nan: -5.84% [-6.36%, -5.32%] seeds -5.66%, -5.88%, -5.98% -> better; masked -5.10%
+- pendigits_40nan: -4.21% [-4.65%, -3.77%] seeds -4.21%, -3.98%, -4.45% -> better; masked -3.90%
+- pendigits_60nan: -1.18% [-1.53%, -0.82%] seeds -1.01%, -1.13%, -1.40% -> better; masked -0.79%
+- pendigits_80nan: +0.42% [+0.19%, +0.65%] seeds +0.54%, +0.22%, +0.50% -> worse; masked +0.22%
+
+Primary (P600 − M), pendigits: better 3 / no difference 0 / worse 1 (fold-pair t, seed agreement) of 4 -> not replicated
+```
