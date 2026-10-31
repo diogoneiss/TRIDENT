@@ -11,6 +11,7 @@ times 4 (E28's Q4) over the variant's resolved configuration; ``P600`` as P with
 pair in one queue. ``--tally`` reads both machines' directories (medusa1's copied under
 ``STATE/medusa``) and prints each arm − M per variant and the primary reading (P600 − M).
 E102 (imputation-protocol/39): ``--study e102`` first, M and P600 on fresh seeds 7878/8989/9090.
+E103 (imputation-protocol/40): ``--study e103`` first, M and P600 on letter and electricity, seeds 42/7/13.
 """
 
 from __future__ import annotations
@@ -31,17 +32,26 @@ sys.path.insert(0, str(ROOT))
 from scripts.experiments import report_common as common  # noqa: E402
 
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-30-large-batch"
-VARIANTS = tuple(f"pendigits_{r}nan" for r in (20, 40, 60, 80))
+VARIANTS: tuple[str, ...] = tuple(f"pendigits_{r}nan" for r in (20, 40, 60, 80))
+STUDY = "e101"
 SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}  # ADR 0035: split by seed, both arms of a pair on one machine
 ARMS: tuple[str, ...] = ("M", "P", "P600")
 
 
 def _use_e102() -> None:
     """E102's confirmation: M and P600 only, on fresh seeds, in its own state."""
-    global STATE, SEEDS, ARMS
+    global STATE, SEEDS, ARMS, STUDY
     STATE = STATE.parent / "trident-2026-10-30-large-batch-e102"
     SEEDS = {"gorgona8": (7878,), "medusa": (8989, 9090)}
-    ARMS = ("M", "P600")
+    ARMS, STUDY = ("M", "P600"), "e102"
+
+
+def _use_e103() -> None:
+    """E103: M and P600 on the other two large tables, letter first (the cheaper), E101's seeds."""
+    global STATE, VARIANTS, ARMS, STUDY
+    STATE = STATE.parent / "trident-2026-10-30-large-batch-e103"
+    VARIANTS = tuple(f"{b}_{r}nan" for b in ("letter", "electricity") for r in (20, 40, 60, 80))
+    ARMS, STUDY = ("M", "P600"), "e103"
 
 
 CHANGES = {"P": {"BATCH": 1024, "LR_SCALE": 4}, "P600": {"BATCH": 1024, "LR_SCALE": 4, "EPOCHS_DECODE": 600}}
@@ -117,16 +127,24 @@ def tally() -> None:
     if missing:
         print(f"\n- missing: {len(missing)}: {', '.join(missing)}\n\nPrimary: incomplete")
         return
-    better = sum(c == "better" for c in calls.values())
-    worse = sum(c == "worse" for c in calls.values())
-    reading = ("supported" if better >= 2 and worse == 0 else "refuted" if better == 0 else "mixed")
-    print(f"\nPrimary (P600 − M): {common.tally(calls.values())} of {len(calls)} -> {reading}")
+    # One reading per table: E101's rule (E103 applies it to each table), E102's replication rule.
+    for table in sorted({v.split("_")[0] for v in calls}):
+        own = [c for v, c in calls.items() if v.split("_")[0] == table]
+        better, worse = own.count("better"), own.count("worse")
+        if STUDY == "e102":
+            reading = "replicated" if better >= 2 and worse == 0 else "not replicated" if better == 0 or worse else "partial"
+        else:
+            reading = "supported" if better >= 2 and worse == 0 else "refuted" if better == 0 else "mixed"
+        print(f"\nPrimary (P600 − M), {table}: {common.tally(own)} of {len(own)} -> {reading}")
 
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:2] == ["--study", "e102"]:
         _use_e102()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e103"]:
+        _use_e103()
         argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] in ARMS and argv[2] in VARIANTS:
         train(argv[1], argv[2], int(argv[3]))

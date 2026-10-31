@@ -128,6 +128,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – | in progress | |
+| E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 – | in progress | |
 
 ## Entries
 
@@ -3173,3 +3174,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   none or worse on any; partial otherwise.
 - **Sources:** [imputation-protocol/39](tickets/imputation-protocol/39-large-batch-confirmation.md);
   `scripts/experiments/large_batch.py --study e102`.
+
+### E103 · Does the large batch and longer decode help letter and electricity? (2026-10-31 – )
+
+- **Status:** in progress
+- **Hypothesis:** E101's P600 (BATCH 1024, LR x4, EPOCHS_DECODE 600) beats the default on the other
+  two tables where batch 1024 keeps enough steps an epoch.
+- **Scenarios:** letter and electricity 20–80nan × seeds 42/7/13 × arms M and P600, five folds,
+  MLflow off; 42 on gorgona8, 7 and 13 on medusa1; no cell starts after 2026-10-31 09:00 GMT-3.
+- **Measures and decision rule:** P600 − M on the induced `impute_score`, relative, 15 fold pairs,
+  1% SESOI; per table, supported if better on 2 or more of 4 and worse on none, refuted if better
+  on none, mixed otherwise.
+- **Sources:** [imputation-protocol/40](tickets/imputation-protocol/40-large-batch-large-tables.md);
+  `scripts/experiments/large_batch.py --study e103`.
