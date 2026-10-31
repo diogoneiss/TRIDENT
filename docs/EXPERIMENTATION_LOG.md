@@ -130,7 +130,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
 | E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 – | in progress | |
-| E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 – | in progress | |
+| E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
 
 ## Entries
 
@@ -3214,9 +3214,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/41](tickets/imputation-protocol/41-large-batch-rule.md);
   `scripts/experiments/large_batch.py --study e104`.
 
-### E105 · Does the re-masking spread still rank errors under MNAR and MAR at 40nan? (2026-10-31 – )
+### E105 · Does the re-masking spread still rank errors under MNAR and MAR at 40nan? (2026-10-31)
 
-- **Status:** in progress
+- **Status:** supported
 - **Hypothesis:** E84's result (the spread's within-column ranking holds under MAR and self-masking
   MNAR) holds at 40nan too.
 - **Scenarios:** E84's 12 shifted variants at 40nan (new data files), their MCAR twins and `marfctl`
@@ -3225,3 +3225,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   → supported; 7 or fewer under K or any against → refuted; mixed otherwise.
 - **Sources:** [imputation-protocol/42](tickets/imputation-protocol/42-spread-40nan.md);
   `scripts/experiments/spread_40nan.py`, `run_spread_40nan_queue.sh`.
+- **Results (2026-10-31 12:11 GMT-3):** all 63 cells. Signal on 12 of 12 under K and under H, none against; ρ
+  +0.10 to +0.54. On biodeg, shifted minus MCAR is +0.002, +0.001, −0.021, −0.080 at slopes 0.25–2.0.
+- **Conclusion:** supported. The spread's ranking holds under MAR and self-masking MNAR at 40nan as
+  at 60nan, weakening with the tilt. Extending ADR 0030's decision 7 to 40nan is the user's decision.

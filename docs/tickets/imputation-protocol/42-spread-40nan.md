@@ -37,4 +37,34 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-10-31 12:11 GMT-3. Supported: the within-column ranking signals on 12 of 12 shifted variants under
+K and 12 of 12 under H, none against** (ρ +0.10 to +0.54 under K; lowest lower bound +0.088).
+
+- **Complete:** all 63 cells on medusa1, 10:16–12:09 GMT-3, no failure.
+- **Shifted minus control (descriptive):** as at 60nan, the ranking weakens on biodeg as the
+  self-masking tilt grows: +0.002, +0.001, −0.021 and −0.080 at slopes 0.25 to 2.0 (K). It is
+  stronger on kc2 under MNAR (+0.07). The other differences are within ±0.05, most with intervals
+  spanning zero.
+- **What follows, as fixed above:** extending ADR 0030's decision 7 to 40nan is the user's decision.
+
+### The tally, unedited (`spread_40nan.py --tally`, 2026-10-31 12:11 GMT-3)
+
+```
+- `biodeg_probit0p25_40nan`: K num_rank +0.444 [+0.431, +0.456] -> signal; minus biodeg_40nan +0.002 [-0.017, +0.021]; H num_rank +0.443 [+0.433, +0.454] -> signal; minus biodeg_40nan +0.006 [-0.012, +0.024]
+- `biodeg_probit_40nan`: K num_rank +0.443 [+0.431, +0.455] -> signal; minus biodeg_40nan +0.001 [-0.011, +0.013]; H num_rank +0.447 [+0.435, +0.459] -> signal; minus biodeg_40nan +0.010 [-0.004, +0.024]
+- `biodeg_probit1p0_40nan`: K num_rank +0.421 [+0.403, +0.438] -> signal; minus biodeg_40nan -0.021 [-0.044, +0.002]; H num_rank +0.412 [+0.399, +0.426] -> signal; minus biodeg_40nan -0.025 [-0.042, -0.007]
+- `biodeg_probit2p0_40nan`: K num_rank +0.361 [+0.350, +0.373] -> signal; minus biodeg_40nan -0.080 [-0.093, -0.067]; H num_rank +0.361 [+0.338, +0.385] -> signal; minus biodeg_40nan -0.076 [-0.098, -0.054]
+- `vehicle_probit_40nan`: K num_rank +0.130 [+0.106, +0.155] -> signal; minus vehicle_40nan -0.014 [-0.039, +0.012]; H num_rank +0.119 [+0.096, +0.143] -> signal; minus vehicle_40nan -0.027 [-0.050, -0.003]
+- `kc2_probit_40nan`: K num_rank +0.536 [+0.503, +0.569] -> signal; minus kc2_40nan +0.072 [+0.029, +0.116]; H num_rank +0.533 [+0.509, +0.556] -> signal; minus kc2_40nan +0.082 [+0.042, +0.121]
+- `spambase_probit_40nan`: K num_rank +0.471 [+0.459, +0.484] -> signal; minus spambase_40nan -0.023 [-0.046, +0.000]; H num_rank +0.467 [+0.443, +0.491] -> signal; minus spambase_40nan -0.006 [-0.035, +0.023]
+- `biodeg_marf_40nan`: K num_rank +0.469 [+0.452, +0.486] -> signal; minus biodeg_marfctl_40nan -0.006 [-0.030, +0.018]; H num_rank +0.476 [+0.462, +0.490] -> signal; minus biodeg_marfctl_40nan +0.003 [-0.014, +0.020]
+- `kc2_marf_40nan`: K num_rank +0.448 [+0.408, +0.488] -> signal; minus kc2_marfctl_40nan -0.035 [-0.084, +0.013]; H num_rank +0.418 [+0.369, +0.467] -> signal; minus kc2_marfctl_40nan -0.068 [-0.109, -0.027]
+- `vehicle_marf_40nan`: K num_rank +0.109 [+0.088, +0.131] -> signal; minus vehicle_marfctl_40nan -0.020 [-0.053, +0.012]; H num_rank +0.100 [+0.073, +0.127] -> signal; minus vehicle_marfctl_40nan -0.029 [-0.060, +0.001]
+- `spambase_marf_40nan`: K num_rank +0.521 [+0.501, +0.541] -> signal; minus spambase_marfctl_40nan -0.012 [-0.044, +0.021]; H num_rank +0.523 [+0.515, +0.532] -> signal; minus spambase_marfctl_40nan +0.000 [-0.021, +0.021]
+- `credit-g_marf_40nan`: K num_rank +0.267 [+0.230, +0.305] -> signal; minus credit-g_marfctl_40nan +0.050 [-0.007, +0.106]; H num_rank +0.237 [+0.204, +0.269] -> signal; minus credit-g_marfctl_40nan +0.041 [-0.025, +0.107]
+
+- K: signal on 12 of 12, against on none
+- H: signal on 12 of 12, against on none
+
+Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported (fold-pair t, seed agreement)
+```
