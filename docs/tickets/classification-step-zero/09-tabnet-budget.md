@@ -34,4 +34,38 @@ This ticket was written and committed before the study's first cell. A cost prob
 
 ## Outcome
 
-(open)
+**Written 2026-11-01 14:39 GMT-3. E99's TabNet reading holds: TRIDENT leads TabNet-B** at all three levels
+(+0.096, +0.098, +0.076 macro-F1, every seed above zero). The bigger budget helps TabNet only a
+little (+0.008 to +0.016), so E99's TabNet margin is not a budget artefact.
+
+- **Complete:** all 27 units, 11:26–14:38 GMT-3, no failure; the end chain read it once nothing was
+  missing. Much faster than the probe, since E99's tuned configurations are lighter than the probe's
+  mid-space one.
+- **Descriptive:** the bigger budget did apply (median 19 s a fold against 5 s in E99; kept epochs up
+  to 175 against 139), but the median kept epoch barely moved (29 against 31): with E99's
+  configurations TabNet mostly stops early even with room to train.
+- TabNet stays the weakest deep baseline; a report can now say its margin survives a bigger budget.
+
+### TabNet-B − TabNet (E99), same folds (descriptive, scripted, 2026-11-01 14:39 GMT-3)
+
+```
+40nan: TabNet-B − TabNet +0.0147 [+0.0070, +0.0224], 270 fold pairs; means 0.640 -> 0.655
+60nan: TabNet-B − TabNet +0.0077 [+0.0000, +0.0153], 270 fold pairs; means 0.565 -> 0.573
+80nan: TabNet-B − TabNet +0.0156 [+0.0079, +0.0233], 270 fold pairs; means 0.469 -> 0.484
+```
+
+### The tally, unedited (`deep_baselines.py --study e106 --tally`, 2026-11-01 14:39 GMT-3)
+
+```
+## 40nan
+- TRIDENT − tabnet: +0.0961 [+0.0874, +0.1049] seeds +0.0930, +0.1018, +0.0936 -> TRIDENT higher
+
+## 60nan
+- TRIDENT − tabnet: +0.0984 [+0.0900, +0.1069] seeds +0.1010, +0.0948, +0.0994 -> TRIDENT higher
+
+## 80nan
+- TRIDENT − tabnet: +0.0758 [+0.0675, +0.0840] seeds +0.0841, +0.0743, +0.0689 -> TRIDENT higher
+
+
+Primary (E106, TabNet with the bigger budget, 40/60/80nan): TRIDENT leads -> E99's TabNet reading holds (fold-pair t, seed agreement)
+```
