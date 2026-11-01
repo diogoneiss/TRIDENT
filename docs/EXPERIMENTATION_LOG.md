@@ -125,6 +125,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E96 | Is the imputation shift inside the SESOI once kc2 is left out? | 2026-10-29 | equivalent | +0.04% [−0.30%, +0.38%]: imputation on credit-g/vehicle/biodeg may split by seed |
 | E97 | Step zero Stage 1: the CPU bar on the sweep's folds | 2026-10-29 | done (descriptive) | untuned native HGB leads TRIDENT by +0.015 to +0.033 macro-F1 at 20–80nan; best arm missForest+ind+HGB at 20–60nan |
 | E98 | Step zero proper (H1c): does TRIDENT's classification lead survive a fair rerun? | 2026-10-29 – 2026-10-30 | refuted | the tuned GBDT bar beats tuned TRIDENT at every level, by 0.024–0.032 macro-F1 at 40–80nan; tuning does not move TRIDENT off the fork budget |
+| E99 | Does TRIDENT generally beat MLP, SAINT and TabNet on classification at 40–80nan? | 2026-10-31 – | in progress | |
 | E100 | Does a steps-aware training batch help the small tables? (T14) | 2026-10-30 | refuted | S8 better on 0 of 16, worse on 4 (credit-g 40/60nan, biodeg 20/60nan); T14 closed |
 | E101 | Does pendigits still gain from batch 1024 with the learning rates x4, and from a longer decode? (T11) | 2026-10-30 | supported | P600 better on 3 of 4 (−5.4%, −4.3%, −1.2% at 20–60nan), equivalent at 80nan; a fresh-seed confirmation next |
 | E102 | Does E101's pendigits gain replicate on fresh seeds? | 2026-10-30 – 2026-10-31 | not replicated | better on 3 (−5.8%, −4.2%, −1.2% at 20–60nan, as in E101), worse at 80nan (+0.42%, under the SESOI); the rule asked for worse on none |
@@ -3233,3 +3234,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   +0.11 to +0.54 under K, +0.10 to +0.53 under H. On biodeg, shifted minus MCAR is +0.002, +0.001, −0.021, −0.080 at slopes 0.25–2.0.
 - **Conclusion:** supported. The spread's ranking holds under MAR and self-masking MNAR at 40nan as
   at 60nan, weakening with the tilt. Extending ADR 0030's decision 7 to 40nan is the user's decision. **Extended 2026-10-31 on the user's decision (ADR 0030, decision 7).**
+
+### E99 · Does TRIDENT generally beat MLP, SAINT and TabNet on classification at 40–80nan? (2026-10-31 – )
+
+- **Status:** in progress (numbered when drafted on 2026-10-30; pre-registered 2026-10-31).
+- **Hypothesis:** the user's claim: TRIDENT, tuned on validation (E98), beats deep tabular models
+  trained per dataset (MLP, SAINT, TabNet), tuned the same way, at 40, 60 and 80nan.
+- **Scenarios:** 27 variants × 3 models, each a 20-trial TPE study on seed 42's validation macro-F1
+  and evaluations at seeds 42/7/13 on ten folds; TRIDENT's folds from E98. pytorch-widedeep 1.5.0;
+  medusa1 and gorgona8 by unit; no unit starts after 2026-11-01 08:00 GMT-3.
+- **Measures and decision rule:** TRIDENT − baseline test macro-F1, 270 fold pairs a level, the
+  project's rule. TRIDENT leads a baseline if higher at 2 or more of 3 levels and lower at none.
+  Supported if it leads all three; refuted if any baseline is higher at 2 or more levels; mixed
+  otherwise.
+- **Sources:** [classification-step-zero/08](tickets/classification-step-zero/08-deep-baselines.md);
+  `scripts/experiments/deep_baselines.py`, `run_deep_baselines_queue.sh`.

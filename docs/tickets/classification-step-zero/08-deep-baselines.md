@@ -1,29 +1,71 @@
-# Deep baselines for classification: MLP, SAINT and TabNet (E99; DRAFT, not pre-registered)
+# Deep baselines for classification: does TRIDENT generally beat MLP, SAINT and TabNet? (E99; pre-registered 2026-10-31 21:34 GMT-3)
 
-**Draft written 2026-10-30 16:58 GMT-3.** Nothing has run: no cell, no cost probe, no score read. The design is
-to be settled with the user in a separate session before any cell; this file only hands that
-session what exists.
+This ticket was written and committed before the study's first cell. A draft (2026-10-30), a cost
+probe and a memory check came first, and they are disclosed under "Before the ticket". No score of
+any in-scope cell has been read.
 
-- **Why:** the user's claim to test is that TRIDENT "em geral" beats similar algorithms, meaning
-  deep tabular models trained per dataset. The user chose MLP, SAINT and TabNet (2026-10-30). TabPFN
-  stays in the strong tier (ADR 0032). GBDTs are an internal sanity check only and stay out of the
-  thesis (the user, 2026-10-30; E98).
-- **What exists (uncommitted until this commit, untested):**
-  - `pyproject.toml`: the `deep-baselines` extra (`pytorch-widedeep==1.5.0`, plus `torchvision`
-    from the cu128 index, which its PyPI wheel does not match); a mypy override for
-    `pytorch_widedeep.*`. `uv.lock` updated; torch, scikit-learn, numpy, pandas and pyarrow are
-    unchanged. Installed on gorgona8 (`uv sync --inexact --extra tabpfn --extra deep-baselines`),
-    not on medusa1.
-  - `scripts/experiments/deep_baselines.py`: `run <model> <variant>` and a cost-only `probe`.
-    TRIDENT's recipe: 20 TPE trials on mean validation macro-F1 over seed 42's ten folds, balanced
-    class weights, the lowest-validation-loss epoch kept (patience 20, at most 200 epochs),
-    evaluation at seeds 42/7/13. Gaps: numerical mean plus indicators, categorical `[NULL]` level.
-    pytorch-widedeep 1.5.0 needs `np.Inf` (removed in NumPy 2), patched in the script.
-  - The TRIDENT arm would be E98's tuned evaluations, reused on the same folds.
-- **To decide before the first cell:** the rule for "em geral" (proposed: TRIDENT leads a baseline
-  when higher at 3 or more of 5 levels and lower at none; supported if it leads all three, refuted if
-  any baseline is higher at 3 or more levels, mixed otherwise); the search spaces and batch sizes in
-  the script; a cost probe, then the compute cap.
+- **Why:** the user's claim to test: on classification with gaps, TRIDENT "em geral" beats similar
+  algorithms, meaning deep tabular models trained per dataset. The user chose MLP, SAINT and TabNet
+  (2026-10-30). TabPFN, a pre-trained foundation model, stays in the strong tier (ADR 0032) and is
+  not one of them. GBDTs were an internal sanity check (E98) and stay out of the thesis.
+- **The user's decisions (2026-10-31, "vamos pro e99", then three answers):** the majority rule
+  below; only 40, 60 and 80nan; a cap of one night.
+- **The TRIDENT arm is E98's,** unchanged: an ADR 0029 study per variant (20 trials, validation
+  macro-F1 at seed 42's ten folds), evaluated at seeds 42/7/13 on the same ten folds
+  (`build_folds(frame, 'class', 10, seed)`). Read with `stage4_tally.trident`, which reads medusa1's
+  copy first (E98's amendments).
+
+## Design (fixed before the first cell)
+
+- **Variants:** the 27 at 40, 60 and 80nan (9 tables, MCAR).
+- **Baselines** (`scripts/experiments/deep_baselines.py`, pytorch-widedeep 1.5.0, the
+  `deep-baselines` extra): `TabMlp`, `SAINT` (with its row attention) and `TabNet`.
+- **Each (model, variant) unit:** 20 TPE trials (sampler seed 42) on the mean validation macro-F1
+  over seed 42's ten folds, then the best configuration evaluated at seeds 42, 7 and 13 on each
+  seed's ten folds. TRIDENT's recipe for every fit:
+  - cross-entropy weighted by the training split's balanced class weights; AdamW;
+  - at most 200 epochs, early stopping on the validation loss with patience 20, best weights
+    restored (the epoch of the lowest validation loss is kept, as TRIDENT keeps it);
+  - inputs fit on the training split: a numerical gap filled with the training mean plus a 0/1
+    indicator per numerical column with a training gap; a categorical gap as its own level
+    `[NULL]`; numerical columns standardised.
+- **Search spaces and batches** (in the script, `_space` and `BATCH`):
+  - MLP: hidden 128-64 / 256-128 / 256-256-128 / 512-256, dropout 0–0.5, lr log 1e-4–1e-2, batch 256;
+  - SAINT: input_dim 16/32, blocks 1–3, heads 2/4/8, attention and feed-forward dropout 0–0.3, lr
+    log 1e-4–3e-3, batch 256;
+  - TabNet: steps 3–7, step_dim (= attn_dim) 8/16/32/64, gamma 1–2, lambda_sparse log 1e-6–1e-3, lr
+    log 5e-3–5e-2, batch 1024;
+  - all: weight decay log 1e-6–1e-3.
+- **Running:** 81 units dealt between the machines by the probe's cost, dearest first
+  (`--deal`; about 61 to medusa1, 20 to gorgona8). Each unit runs whole on one machine. Lanes
+  (`run_deep_baselines_queue.sh`) take units by lock: six on medusa1 (three a GPU), three on
+  gorgona8. MLflow off; outputs in `trident-2026-10-31-deep-baselines/` on each machine.
+- **The cap:** at 2026-11-01 08:00 GMT-3 a STOP file is written on both machines; no unit starts
+  after it, units running then finish. A unit missing then is reported missing, and its level for
+  that baseline is incomplete.
+
+## Measures and rule, fixed now (`deep_baselines.py --tally`)
+
+- **Per level and baseline:** TRIDENT − baseline, test macro-F1, paired by fold and seed and pooled
+  over the 9 tables, one array per seed: 270 pairs. The project's rule (95% t-interval, seed
+  agreement): "TRIDENT higher", "baseline higher" or no verdict.
+- **TRIDENT leads a baseline** if it is higher at 2 or more of the 3 levels and lower at none (the
+  user's majority rule, on three levels).
+- **Supported:** TRIDENT leads all three. **Refuted:** any baseline is higher than TRIDENT at 2 or
+  more levels. **Mixed:** otherwise.
+- **What it allows:** supported → the thesis may say TRIDENT generally beats these deep tabular
+  baselines on classification at 40–80% missing. Refuted or mixed → it may not.
+
+## Before the ticket (disclosed)
+
+- **The draft** (2026-10-30, 6e155e8) and its fixes: all-numerical tables,
+  in-process data loading (widedeep's default of one worker per core cost 38 s a kc2 fold).
+- **A memory leak, found and fixed before this ticket** (afc948d): widedeep's trainer sits in
+  reference cycles, so each fit's model stayed on the GPU; SAINT reached 23 GiB by the eighth
+  biodeg fold. A collection after each fit holds 0.02 GiB; a single fit peaks at 3.8 GiB at batch
+  256, flat over 3–60 epochs. That was the probe's "out of memory", not SAINT's size.
+- **A smoke on kc2_00nan** (outside the scope), all three models, to run the whole path once; its
+  scores are not part of the study.
 
 ## Cost probe (medusa1, 2026-10-30 17:15–17:49 GMT-3; seconds only, no score read)
 
@@ -51,3 +93,7 @@ and TabNet shared GPU0, SAINT ran on GPU1; from 17:31 E100's queues shared both.
 - **Fixed during the probe** (the commit after 6e155e8): the all-numerical tables (kc2) and widedeep's default
   of one loader worker per core, which cost 38 s a kc2 fold against 0.4 s in-process.
 - Written 2026-10-30 18:36 GMT-3.
+
+## Outcome
+
+(open)

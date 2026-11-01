@@ -2,6 +2,8 @@
 
     uv run --python 3.11 --extra deep-baselines python -B scripts/experiments/deep_baselines.py [--state <dir>] run <model> <variant>
     uv run --python 3.11 --extra deep-baselines python -B scripts/experiments/deep_baselines.py [--state <dir>] probe <model> <variant>
+    uv run --python 3.11 --extra deep-baselines python -B scripts/experiments/deep_baselines.py --deal <machine>
+    uv run --python 3.11 --extra deep-baselines python -B scripts/experiments/deep_baselines.py --tally
 
 ``run`` tunes ``<model>`` (``mlp``, ``saint`` or ``tabnet``, from pytorch-widedeep) on seed 42's ten
 folds (``build_folds(frame, 'class', 10, 42)``), then evaluates the tuned parameters at seeds 42, 7
@@ -19,12 +21,14 @@ unknown index; numerical columns standardised.
 (written after tuning; a rerun reuses it), ``<state>/csv/<model>_<variant>.csv`` one row per seed
 and fold (written last; a unit with it is skipped), both through a temporary name. ``probe`` fits
 one mid-space configuration on seed 42's ten folds and prints only the seconds, never a score.
-Nothing touches the store.
+Nothing touches the store. ``--deal`` prints a machine's (model, variant) units, dearest first (E99's
+split by the probe's cost); ``--tally`` reads E99's rule against E98's tuned TRIDENT.
 """
 
 from __future__ import annotations
 
 import json
+import socket
 import sys
 import time
 import warnings
@@ -44,7 +48,13 @@ np.Inf = np.inf  # type: ignore[attr-defined]
 
 from scripts.experiments.cls_stage2_run import VARIANTS  # noqa: E402
 
-STATE = Path("/scratch2/diogoneiss/trident-2026-10-30-step-zero/deep")
+STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-31-deep-baselines"
+LEVELS = ("40", "60", "80")  # E99's scope (the user, 2026-10-31)
+# The cost probe's seconds for ten folds at 40nan (ticket 08); SAINT's two out-of-memory tables are guesses.
+COST = {"mlp": {"kc2": 4, "credit-g": 7, "vehicle": 6, "biodeg": 6, "spambase": 12, "kr-vs-kp": 20, "pendigits": 63, "letter": 211, "electricity": 223},
+        "saint": {"kc2": 14, "credit-g": 12, "vehicle": 19, "biodeg": 25, "spambase": 60, "kr-vs-kp": 28, "pendigits": 117, "letter": 140, "electricity": 286},
+        "tabnet": {"kc2": 18, "credit-g": 19, "vehicle": 21, "biodeg": 20, "spambase": 110, "kr-vs-kp": 70, "pendigits": 317, "letter": 717, "electricity": 683}}
+CAPACITY = {"medusa": 2.0, "gorgona8": 0.7}  # two 5090s against one shared 3090 Ti
 TUNING_SEED = 42
 SEEDS = (42, 7, 13)
 FOLDS = 10
@@ -236,12 +246,77 @@ def run(model: str, variant: str, state: Path) -> None:
     print(f"DONE {model} {variant}: {time.time() - started:.0f} s", flush=True)
 
 
+def deal(machine: str) -> None:
+    """Dearest units first, each to the machine with the least load per capacity; print this one's."""
+    units = sorted(((COST[m][v.split("_")[0]], m, v) for m in MODELS for v in VARIANTS if v.rsplit("_", 1)[1][:2] in LEVELS),
+                   key=lambda u: (-u[0], u[1], u[2]))
+    load = {k: 0.0 for k in CAPACITY}
+    for cost, model, variant in units:
+        target = min(load, key=lambda k: load[k] / CAPACITY[k])
+        load[target] += cost
+        if target == machine:
+            print(model, variant)
+
+
+def tally() -> None:
+    """E99's rule: per level and baseline, TRIDENT − baseline test macro-F1 over 270 fold pairs."""
+    from scripts.experiments import report_common as common
+    from scripts.experiments.cls_stage2_run import BASES
+    from scripts.experiments.stage4_tally import SEEDS as T_SEEDS
+    from scripts.experiments.stage4_tally import trident
+
+    assert tuple(T_SEEDS) == SEEDS
+    missing: list[str] = []
+    marks: dict[str, dict[str, str]] = {m: {} for m in MODELS}
+    for level in LEVELS:
+        print(f"## {level}nan")
+        for model in MODELS:
+            per_seed: dict[int, list[np.ndarray]] = {s: [] for s in SEEDS}
+            for base in BASES:
+                variant = f"{base}_{level}nan"
+                found = [p for p in (STATE / "csv" / f"{model}_{variant}.csv", STATE / "medusa" / "csv" / f"{model}_{variant}.csv") if p.exists()]
+                if not found:
+                    missing.append(f"{model} {variant}")
+                    continue
+                theirs = pd.read_csv(found[0])
+                for seed in SEEDS:
+                    ours = trident(variant, seed)
+                    if ours is None:
+                        missing.append(f"TRIDENT {variant} s{seed}")
+                        continue
+                    rows = theirs[theirs.seed == seed].sort_values("fold")
+                    per_seed[seed].append(ours.sort_values("fold")["f1_macro"].to_numpy(dtype=float) - rows["f1_macro"].to_numpy(dtype=float))
+            if any(len(per_seed[s]) < len(BASES) for s in SEEDS):
+                print(f"- TRIDENT − {model}: incomplete")
+                continue
+            v = common.verdict([np.concatenate(per_seed[s]) for s in SEEDS])
+            # The rule reads lower as better; a positive difference favours TRIDENT.
+            mark = {"worse": "TRIDENT higher", "better": "baseline higher", "none": "no verdict"}[v.call]
+            marks[model][level] = mark
+            print(f"- TRIDENT − {model}: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] seeds "
+                  + ", ".join(f"{x:+.4f}" for x in v.seeds) + f" -> {mark}")
+        print()
+    if missing:
+        print(f"- missing: {len(missing)}: {', '.join(missing[:12])}{' ...' if len(missing) > 12 else ''}\n\nPrimary: incomplete")
+        return
+    leads = {m: sum(x == "TRIDENT higher" for x in marks[m].values()) >= 2 and "baseline higher" not in marks[m].values() for m in MODELS}
+    beaten = [m for m in MODELS if sum(x == "baseline higher" for x in marks[m].values()) >= 2]
+    reading = "supported" if all(leads.values()) else "refuted" if beaten else "mixed"
+    print("- leads: " + ", ".join(f"{m} {'yes' if leads[m] else 'no'}" for m in MODELS)
+          + f"\n\nPrimary (E99, 40/60/80nan): {reading}" + (f" (higher than TRIDENT at 2 or more levels: {', '.join(beaten)})" if beaten else "")
+          + f" ({common.RULE})")
+
+
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:1] == ["--state"] and len(argv) >= 2:
         STATE = Path(argv[1])
         argv = argv[2:]
-    if len(argv) == 3 and argv[0] in ("run", "probe") and argv[1] in MODELS and argv[2] in VARIANTS:
+    if argv[:1] == ["--deal"] and len(argv) == 2:
+        deal(argv[1])
+    elif argv == ["--tally"]:
+        tally()
+    elif len(argv) == 3 and argv[0] in ("run", "probe") and argv[1] in MODELS and argv[2] in VARIANTS:
         probe(argv[1], argv[2]) if argv[0] == "probe" else run(argv[1], argv[2], STATE)
     else:
         sys.exit(__doc__)
