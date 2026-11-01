@@ -96,4 +96,49 @@ and TabNet shared GPU0, SAINT ran on GPU1; from 17:31 E100's queues shared both.
 
 ## Outcome
 
-(open)
+**Written 2026-11-01 05:57 GMT-3. Supported: TRIDENT leads MLP, SAINT and TabNet** by the rule fixed above, each
+higher than TRIDENT at no level and lower at 2 or more of 40, 60 and 80nan.
+
+| TRIDENT − baseline, test macro-F1 (270 fold pairs) | 40nan | 60nan | 80nan |
+|---|---|---|---|
+| MLP | +0.013 [+0.009, +0.017] | +0.008 [+0.003, +0.014] | −0.001 [−0.007, +0.004], no verdict |
+| SAINT | +0.036 | +0.036 | +0.029 |
+| TabNet | +0.111 | +0.106 | +0.091 |
+
+- **Complete:** all 81 units (61 on medusa1, 20 on gorgona8), 2026-10-31 21:35 to 2026-11-01 05:56
+  GMT-3, no failure, inside the cap; the STOP file was written after every lane had ended.
+- **What the claim can and cannot carry (descriptive):**
+  - **The margin over MLP is small:** about one point at 40nan, under one at 60nan, none at 80nan.
+    "Generally beats" holds by the majority rule, not at every rate.
+  - **TabNet is weak here:** mean macro-F1 0.640 / 0.565 / 0.469 against MLP's 0.738 / 0.663 /
+    0.561, lowest on vehicle (0.33) and letter (0.37). It is not collapsing (median kept epoch 31, 1%
+    of folds at 1–2), so it trained, but within this recipe (200 epochs, patience 20, batch 1024, 20
+    trials) it is the weakest baseline by far. A report should not lean on the TabNet margin; the
+    claim stands on MLP and SAINT alone as well.
+  - Kept epochs: MLP median 28 (7% of folds at 1–2), SAINT 11 (2%), TabNet 31 (1%).
+- **What it allows (as fixed above):** the thesis may say that TRIDENT generally beats these deep
+  tabular baselines on classification at 40–80% missing, with the MLP margin and the 80nan tie
+  stated beside it. Nothing about GBDTs or TabPFN follows (the user, 2026-10-30).
+
+### The tally, unedited (`deep_baselines.py --tally`, 2026-11-01 05:57 GMT-3)
+
+```
+## 40nan
+- TRIDENT − mlp: +0.0128 [+0.0085, +0.0171] seeds +0.0119, +0.0153, +0.0111 -> TRIDENT higher
+- TRIDENT − saint: +0.0358 [+0.0294, +0.0422] seeds +0.0375, +0.0344, +0.0355 -> TRIDENT higher
+- TRIDENT − tabnet: +0.1108 [+0.1013, +0.1204] seeds +0.1113, +0.1159, +0.1053 -> TRIDENT higher
+
+## 60nan
+- TRIDENT − mlp: +0.0083 [+0.0031, +0.0135] seeds +0.0162, +0.0036, +0.0050 -> TRIDENT higher
+- TRIDENT − saint: +0.0364 [+0.0277, +0.0450] seeds +0.0420, +0.0344, +0.0327 -> TRIDENT higher
+- TRIDENT − tabnet: +0.1061 [+0.0976, +0.1146] seeds +0.1105, +0.1028, +0.1049 -> TRIDENT higher
+
+## 80nan
+- TRIDENT − mlp: -0.0014 [-0.0073, +0.0044] seeds +0.0017, +0.0025, -0.0085 -> no verdict
+- TRIDENT − saint: +0.0294 [+0.0216, +0.0371] seeds +0.0323, +0.0318, +0.0240 -> TRIDENT higher
+- TRIDENT − tabnet: +0.0913 [+0.0818, +0.1008] seeds +0.0981, +0.0919, +0.0841 -> TRIDENT higher
+
+- leads: mlp yes, saint yes, tabnet yes
+
+Primary (E99, 40/60/80nan): supported (fold-pair t, seed agreement)
+```
