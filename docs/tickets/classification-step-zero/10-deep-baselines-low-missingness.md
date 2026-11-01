@@ -5,7 +5,7 @@ This ticket was written and committed before the study's first cell. No cell has
 - **Why:** E99 ([08](08-deep-baselines.md)) supported TRIDENT leading MLP, SAINT and TabNet at
   40–80nan. Its scope left out 00 and 20nan. Does TRIDENT also lead with few gaps? Descriptive: no
   claim depends on it.
-- **The user's go:** "3 e 4 agora então" (2026-11-01, after 05:58 and before 06:10 GMT-3); this is
+- **The user's go:** "3 e 4 agora então" (2026-11-01, after 05:58 and before 09:22 GMT-3); this is
   item 4.
 - **No new code:** `deep_baselines.py --study e107` is E99's driver, recipe and spaces at
   `LEVELS = ("00", "20")`.
