@@ -23,6 +23,9 @@ and fold (written last; a unit with it is skipped), both through a temporary nam
 one mid-space configuration on seed 42's ten folds and prints only the seconds, never a score.
 Nothing touches the store. ``--deal`` prints a machine's (model, variant) units, dearest first (E99's
 split by the probe's cost); ``--tally`` reads E99's rule against E98's tuned TRIDENT.
+``--study e106`` first: TabNet alone with a bigger budget (batch 256, 400 epochs, patience 50) at
+40–80nan (classification-step-zero/09). ``--study e107`` first: the three models at 00 and 20nan,
+descriptive (classification-step-zero/10).
 """
 
 from __future__ import annotations
@@ -49,7 +52,7 @@ np.Inf = np.inf  # type: ignore[attr-defined]
 from scripts.experiments.cls_stage2_run import VARIANTS  # noqa: E402
 
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-31-deep-baselines"
-LEVELS = ("40", "60", "80")  # E99's scope (the user, 2026-10-31)
+LEVELS: tuple[str, ...] = ("40", "60", "80")  # E99's scope (the user, 2026-10-31)
 # The cost probe's seconds for ten folds at 40nan (ticket 08); SAINT's two out-of-memory tables are guesses.
 COST = {"mlp": {"kc2": 4, "credit-g": 7, "vehicle": 6, "biodeg": 6, "spambase": 12, "kr-vs-kp": 20, "pendigits": 63, "letter": 211, "electricity": 223},
         "saint": {"kc2": 14, "credit-g": 12, "vehicle": 19, "biodeg": 25, "spambase": 60, "kr-vs-kp": 28, "pendigits": 117, "letter": 140, "electricity": 286},
@@ -61,7 +64,8 @@ FOLDS = 10
 TRIALS = 20
 EPOCHS = 200
 PATIENCE = 20
-MODELS = ("mlp", "saint", "tabnet")
+MODELS: tuple[str, ...] = ("mlp", "saint", "tabnet")
+STUDY = "e99"
 NULL = "[NULL]"
 # One configuration from the middle of each space, for the cost probe only.
 MIDDLE: dict[str, dict[str, Any]] = {
@@ -246,6 +250,17 @@ def run(model: str, variant: str, state: Path) -> None:
     print(f"DONE {model} {variant}: {time.time() - started:.0f} s", flush=True)
 
 
+def _use(study: str) -> None:
+    """E106 and E107: the same driver with another scope or budget, in their own state."""
+    global STATE, LEVELS, MODELS, EPOCHS, PATIENCE, STUDY
+    STATE, STUDY = STATE.parent / f"trident-2026-11-01-deep-{study}", study
+    if study == "e106":
+        MODELS, EPOCHS, PATIENCE = ("tabnet",), 400, 50
+        BATCH["tabnet"] = 256
+    else:
+        LEVELS = ("00", "20")
+
+
 def deal(machine: str) -> None:
     """Dearest units first, each to the machine with the least load per capacity; print this one's."""
     units = sorted(((COST[m][v.split("_")[0]], m, v) for m in MODELS for v in VARIANTS if v.rsplit("_", 1)[1][:2] in LEVELS),
@@ -299,7 +314,14 @@ def tally() -> None:
     if missing:
         print(f"- missing: {len(missing)}: {', '.join(missing[:12])}{' ...' if len(missing) > 12 else ''}\n\nPrimary: incomplete")
         return
+    if STUDY == "e107":
+        print("Descriptive (E107, 00/20nan): " + "; ".join(f"{m} " + ", ".join(f"{lv}nan {marks[m][lv]}" for lv in LEVELS) for m in MODELS))
+        return
     leads = {m: sum(x == "TRIDENT higher" for x in marks[m].values()) >= 2 and "baseline higher" not in marks[m].values() for m in MODELS}
+    if STUDY == "e106":
+        print(f"\nPrimary (E106, TabNet with the bigger budget, 40/60/80nan): TRIDENT {'leads' if leads['tabnet'] else 'does not lead'}"
+              f" -> E99's TabNet reading {'holds' if leads['tabnet'] else 'does not hold'} ({common.RULE})")
+        return
     beaten = [m for m in MODELS if sum(x == "baseline higher" for x in marks[m].values()) >= 2]
     reading = "supported" if all(leads.values()) else "refuted" if beaten else "mixed"
     print("- leads: " + ", ".join(f"{m} {'yes' if leads[m] else 'no'}" for m in MODELS)
@@ -309,6 +331,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107"):
+        _use(argv[1])
+        argv = argv[2:]
     if argv[:1] == ["--state"] and len(argv) >= 2:
         STATE = Path(argv[1])
         argv = argv[2:]

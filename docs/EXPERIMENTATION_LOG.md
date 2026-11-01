@@ -132,6 +132,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
 | E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 | replicated | better on 4 of 4: pendigits −5.9%/−4.1%, letter −3.3%/−1.5%; an ADR proposal for the user |
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
+| E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 – | in progress | |
 
 ## Entries
 
@@ -3254,3 +3255,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   far (mean 0.47–0.64), though not collapsed.
 - **Conclusion:** supported: TRIDENT leads all three by the majority rule. The margin over MLP is about
   a point and vanishes at 80nan; a report states it and does not lean on the TabNet margin.
+
+### E107 · The deep baselines at 00 and 20nan (descriptive) (2026-11-01 – )
+
+- **Status:** in progress
+- **Question:** does TRIDENT also lead MLP, SAINT and TabNet with few gaps (E99 covered 40–80nan)?
+- **Scenarios:** E99's 3 models × the 18 variants at 00 and 20nan, E99's recipe; TRIDENT from E98;
+  both machines; no unit starts after 2026-11-02 08:00 GMT-3.
+- **Measures:** TRIDENT − baseline test macro-F1, 270 fold pairs a level, the project's rule;
+  descriptive, no primary call.
+- **Sources:** [classification-step-zero/10](tickets/classification-step-zero/10-deep-baselines-low-missingness.md);
+  `deep_baselines.py --study e107`.
