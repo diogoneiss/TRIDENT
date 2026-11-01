@@ -6,7 +6,7 @@ This ticket was written and committed before the study's first cell. A cost prob
   0.47–0.64, ~0.1 under MLP), within a recipe of at most 200 epochs, patience 20 and batch 1024.
   The obvious objection to E99's TabNet margin is that it was undertrained.
 - **The user's go:** "3 e 4 agora então" (2026-11-01, after 05:58 and before 09:22 GMT-3), item 3;
-  then, on the probe's cost, "Retreinar sem re-tunar" (before 10:55 GMT-3).
+  then, on the probe's cost, "Retreinar sem re-tunar" (after 10:50 and before 11:26 GMT-3).
 - **The cost probe** (gorgona8, sharing its GPU with E107; seconds only, no score read): one
   mid-space configuration on seed 42's ten folds at 40nan, with the bigger budget. vehicle 81 s,
   letter 3133 s, electricity 5247 s, against E99's probe 21, 717 and 683 s. Kept epochs on letter
