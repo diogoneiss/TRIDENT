@@ -6,7 +6,7 @@ tables read (imputation-protocol/43).
 
 ``train`` runs one cell of today's default (the variant's promoted file, ADR 0036), five folds,
 ``--score_checkpoints --score_calibrated`` so every readout the tables use is logged, MLflow tag
-``experiment=adr36-thesis-2026-11-01``. ``--todo`` deals this machine's cells (CELLS) over the queues,
+``experiment=adr36-thesis-g8-2026-11-01``. ``--todo`` deals this machine's cells (CELLS) over the queues,
 skipping any the store already holds.
 """
 
@@ -24,12 +24,15 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.experiments import report_common as common  # noqa: E402
 
-EXPERIMENT = "adr36-thesis-2026-11-01"
+# Amended 2026-11-01: medusa1's in-run kNN baselines differ from E41's offline ones (computed on
+# gorgona8) by up to 2e-3, and the tables require them equal, so every cell reruns on gorgona8
+# under a new tag; the first tag's 18 runs stay in the store, unread.
+EXPERIMENT = "adr36-thesis-g8-2026-11-01"
 # The development tables read pendigits_20nan and letter_20nan at 101/202/303 and 42/7/13; the
 # confirmation set (E44) reads pendigits_40nan and letter_40nan at 707/808/909.
 CELLS = [*((v, s) for v in ("pendigits_20nan", "letter_20nan") for s in (101, 202, 303, 42, 7, 13)),
          *((v, s) for v in ("pendigits_40nan", "letter_40nan") for s in (707, 808, 909))]
-MACHINE = {"gorgona8": CELLS[::3], "medusa": [c for k, c in enumerate(CELLS) if k % 3]}  # medusa1 has two GPUs
+MACHINE = {"gorgona8": CELLS, "medusa": []}
 
 
 def train(variant: str, seed: int) -> None:
