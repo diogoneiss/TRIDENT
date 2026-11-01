@@ -134,6 +134,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
 | E106 | Was E99's TabNet undertrained? Its configuration with a bigger budget | 2026-11-01 | holds | TRIDENT still leads TabNet-B by +0.08 to +0.10; the budget adds +0.008 to +0.016 to TabNet |
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
+| E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – | in progress | |
 
 ## Entries
 
@@ -3286,3 +3287,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-01 14:39 GMT-3):** all 27 units. TRIDENT − TabNet-B +0.096, +0.098, +0.076 at 40/60/80nan, every
   seed above zero. TabNet-B − TabNet +0.015, +0.008, +0.016.
 - **Conclusion:** E99's TabNet margin is not a budget artefact; TRIDENT still leads by about 0.08–0.10.
+
+### E108 · The thesis tables' cells ADR 0036 changed, rerun on today's default (2026-11-01 – )
+
+- **Status:** in progress (a rerun for reporting, not a hypothesis test).
+- **Scenarios:** pendigits_20nan and letter_20nan at 101/202/303 and 42/7/13; pendigits_40nan and
+  letter_40nan at 707/808/909; today's default, five folds, `--score_checkpoints
+  --score_calibrated`, MLflow tag `experiment=adr36-thesis-2026-11-01`.
+- **Measures:** the thesis tables (`thesis_table.py`, `tabpfn_report.py`) rebuilt with these runs,
+  before and after.
+- **Sources:** [imputation-protocol/43](tickets/imputation-protocol/43-adr36-thesis-cells.md).
