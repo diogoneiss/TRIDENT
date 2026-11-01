@@ -133,7 +133,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 | replicated | better on 4 of 4: pendigits −5.9%/−4.1%, letter −3.3%/−1.5%; an ADR proposal for the user |
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
 | E106 | Was E99's TabNet undertrained? Its configuration with a bigger budget | 2026-11-01 | holds | TRIDENT still leads TabNet-B by +0.08 to +0.10; the budget adds +0.008 to +0.016 to TabNet |
-| E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 – | in progress | |
+| E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
 
 ## Entries
 
@@ -3257,9 +3257,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** supported: TRIDENT leads all three by the majority rule. The margin over MLP is about
   a point and vanishes at 80nan; a report states it and does not lean on the TabNet margin.
 
-### E107 · The deep baselines at 00 and 20nan (descriptive) (2026-11-01 – )
+### E107 · The deep baselines at 00 and 20nan (descriptive) (2026-11-01)
 
-- **Status:** in progress
+- **Status:** done (descriptive)
 - **Question:** does TRIDENT also lead MLP, SAINT and TabNet with few gaps (E99 covered 40–80nan)?
 - **Scenarios:** E99's 3 models × the 18 variants at 00 and 20nan, E99's recipe; TRIDENT from E98;
   both machines; no unit starts after 2026-11-02 08:00 GMT-3.
@@ -3267,6 +3267,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   descriptive, no primary call.
 - **Sources:** [classification-step-zero/10](tickets/classification-step-zero/10-deep-baselines-low-missingness.md);
   `deep_baselines.py --study e107`.
+- **Results (2026-11-01 16:15 GMT-3):** all 54 units. TRIDENT − MLP −0.012 (00nan, MLP higher), +0.009 (20nan); − SAINT
+  +0.006, +0.029; − TabNet +0.055, +0.108; every call with seed agreement.
+- **Conclusion (descriptive):** with E99, TRIDENT leads all three from 20 to 60nan, ties MLP at
+  80nan, and trails MLP on the complete tables.
 
 ### E106 · Was E99's TabNet undertrained? Its configuration with a bigger budget (2026-11-01)
 
