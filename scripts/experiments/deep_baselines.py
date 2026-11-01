@@ -224,7 +224,10 @@ def run(model: str, variant: str, state: Path) -> None:
     dataset = _dataset(variant)
     started = time.time()
     folds = _folds(dataset, TUNING_SEED)
-    if js.exists():
+    if STUDY == "e106":
+        # E106 retrains E99's tuned configuration with the bigger budget; no new search (the user, 2026-11-01).
+        tuned = json.loads((STATE / "e99_json" / f"{model}_{variant}.json").read_text())
+    elif js.exists():
         tuned = json.loads(js.read_text())
     else:
         optuna.logging.set_verbosity(optuna.logging.WARNING)

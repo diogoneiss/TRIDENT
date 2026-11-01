@@ -132,6 +132,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E103 | Does the large batch and longer decode help letter and electricity? | 2026-10-31 | letter mixed; electricity refuted | letter −2.9%/−1.5% at 20/40nan, worse +0.2% at 80nan; electricity better on none |
 | E104 | Does the large batch hold on pendigits and letter at 20–40nan, on fresh seeds? | 2026-10-31 | replicated | better on 4 of 4: pendigits −5.9%/−4.1%, letter −3.3%/−1.5%; an ADR proposal for the user |
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
+| E106 | Was E99's TabNet undertrained? Its configuration with a bigger budget | 2026-11-01 – | in progress | |
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 – | in progress | |
 
 ## Entries
@@ -3266,3 +3267,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   descriptive, no primary call.
 - **Sources:** [classification-step-zero/10](tickets/classification-step-zero/10-deep-baselines-low-missingness.md);
   `deep_baselines.py --study e107`.
+
+### E106 · Was E99's TabNet undertrained? Its configuration with a bigger budget (2026-11-01 – )
+
+- **Status:** in progress
+- **Hypothesis to rule out:** E99's TabNet margin (+0.09 to +0.11) is a budget artefact.
+- **Scenarios:** E99's best TabNet configuration per variant (27 at 40–80nan), retrained with batch
+  256, up to 400 epochs and patience 50, seeds 42/7/13, ten folds; no new search (the user's
+  choice, on a probe pricing a re-tune at ~190 GPU-hours).
+- **Measures and decision rule:** TRIDENT − TabNet-B, 270 fold pairs a level; E99's TabNet reading
+  holds if TRIDENT leads by E99's rule. TabNet-B − TabNet is descriptive.
+- **Sources:** [classification-step-zero/09](tickets/classification-step-zero/09-tabnet-budget.md);
+  `deep_baselines.py --study e106`.
