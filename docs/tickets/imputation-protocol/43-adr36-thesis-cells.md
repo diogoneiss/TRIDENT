@@ -19,7 +19,7 @@ first cell.
   those variants, the tables are rebuilt, and the before/after counts are written here. The offline
   baselines (E41's, E42's, E55's TabPFN) depend only on the folds and are reused.
 
-## Amendment (2026-11-01, 19:20 GMT-3): every cell on gorgona8
+## Amendment (2026-11-01, 19:09 GMT-3): every cell on gorgona8
 
 - **What happened:** the 18 runs finished (16:44–19:05, none failed, all with ADR 0036's BATCH 1024,
   LR_PRE 0.00136, LR_DECODE 0.004, EPOCHS_DECODE 600). Rebuilding the tables stopped at their check
