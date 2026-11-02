@@ -16,6 +16,8 @@ E104 (imputation-protocol/41): ``--study e104`` first, M and P600 on pendigits a
 seeds 1357/2468/3579.
 E109 (imputation-protocol/44): ``--study e109`` first, M and P600 on pendigits_60nan, fresh seeds
 2121/3232/4343, all on medusa1.
+E113 (imputation-protocol/46, T32): ``--study e113`` first, M and BIG (ADR 0018's bigger encoder) on
+pendigits and letter at 40/60nan, seeds 42/7/13, on gorgona8.
 """
 
 from __future__ import annotations
@@ -76,7 +78,19 @@ def _use_e109() -> None:
     ARMS, STUDY = ("M", "P600"), "e109"
 
 
-CHANGES = {"P": {"BATCH": 1024, "LR_SCALE": 4}, "P600": {"BATCH": 1024, "LR_SCALE": 4, "EPOCHS_DECODE": 600}}
+def _use_e113() -> None:
+    """E113 (T32): the bigger encoder on pendigits and letter at 40 and 60nan, on gorgona8."""
+    global STATE, VARIANTS, SEEDS, ARMS, STUDY
+    STATE = STATE.parent / "trident-2026-10-30-large-batch-e113"
+    VARIANTS = tuple(f"{b}_{r}nan" for b in ("pendigits", "letter") for r in (40, 60))
+    SEEDS = {"gorgona8": (42, 7, 13), "medusa": ()}
+    ARMS, STUDY = ("M", "BIG"), "e113"
+
+
+CHANGES: dict[str, dict[str, object]] = {
+    "P": {"BATCH": 1024, "LR_SCALE": 4}, "P600": {"BATCH": 1024, "LR_SCALE": 4, "EPOCHS_DECODE": 600},
+    # E113 (T32): ADR 0018's bigger encoder over today's default (ADR 0036's P600 where it applies).
+    "BIG": {"LAYERS": 4, "DIM_FEED": 256, "ENCODER_FINAL_NORM": "layer"}}
 PRIMARY, SESOI = "impute/induced/impute_score", 0.01
 SECONDARY = ("impute/masked/impute_score",)
 
@@ -96,7 +110,7 @@ def train(arm: str, variant: str, seed: int) -> None:
         base = logged_hyperparameters(resolve_training_request(
             build_training_parser().parse_args(["--dataset_name", variant, "--task", "imputation"])))
         change = dict(CHANGES[arm])
-        scale = float(change.pop("LR_SCALE"))
+        scale = float(change.pop("LR_SCALE", 1.0))  # type: ignore[arg-type]
         override = {**base, **change, "LR_PRE": float(base["LR_PRE"]) * scale, "LR_DECODE": float(base["LR_DECODE"]) * scale}  # type: ignore[arg-type]
     args = Namespace(dataset_name=variant, label_column="class", output_dir=str(out / "results"),
                      metrics_dir=str(out / "metrics"), disable_mlflow=True, plot_losses=False,
@@ -142,12 +156,17 @@ def tally() -> None:
                     extra[k].append(float(((s[k] - m[k]) / m[k]).mean()))
             else:
                 v = common.verdict(per_seed, sesoi=SESOI)
-                if arm == "P600":
+                if arm == ARMS[-1]:
                     calls[variant] = v.call
                 print(f"- {variant}: {v.mean:+.2%} [{v.low:+.2%}, {v.high:+.2%}] seeds "
                       + ", ".join(f"{x:+.2%}" for x in v.seeds) + f" -> {v.call}; masked {np.mean(extra[SECONDARY[0]]):+.2%}")
     if missing:
         print(f"\n- missing: {len(missing)}: {', '.join(missing)}\n\nPrimary: incomplete")
+        return
+    if STUDY == "e113":
+        better, worse = list(calls.values()).count("better"), list(calls.values()).count("worse")
+        reading = "supported" if better >= 2 and worse == 0 else "refuted" if better == 0 else "mixed"
+        print(f"\nPrimary (E113, BIG − M): {common.tally(calls.values())} of {len(calls)} -> {reading}")
         return
     if STUDY == "e109":
         call = calls.get("pendigits_60nan", "missing")
@@ -182,6 +201,9 @@ if __name__ == "__main__":
         argv = argv[2:]
     elif argv[:2] == ["--study", "e109"]:
         _use_e109()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e113"]:
+        _use_e113()
         argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] in ARMS and argv[2] in VARIANTS:
         train(argv[1], argv[2], int(argv[3]))

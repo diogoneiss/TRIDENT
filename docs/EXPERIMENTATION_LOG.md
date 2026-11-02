@@ -139,6 +139,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – 2026-11-02 | supported | a signal on 12 of 12 under K and H, none against; no weakening with the tilt at 20nan |
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
 | E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 – | in progress | |
+| E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – | in progress | |
 
 ## Entries
 
@@ -3353,3 +3354,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** E − B per level, 450 fold pairs, SESOI 0.01; supported if E is
   higher at 3 or more of 5 levels and lower at none, refuted if higher at 1 or fewer. E − A descriptive.
 - **Sources:** [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md). **Amended 2026-11-02 11:28 GMT-3:** a NaN bug (the teacher read gaps as NaN) fixed and the study relaunched from scratch under tag `cls-ema-v2-2026-11-02`; design and rule unchanged. **Second amendment 2026-11-02 14:31 GMT-3:** seed 202 moved whole to medusa1 (gorgona8 about 3x slower an E cell), against E87's B there; gorgona8's cells unread.
+
+### E113 · Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) (2026-11-02 – )
+
+- **Status:** in progress
+- **Hypothesis:** ADR 0018's bigger encoder improves pendigits and letter at 40 and 60nan over today's
+  defaults (ADR 0036's P600 included), as E59 saw over the older ones.
+- **Scenarios:** those 4 variants × seeds 42/7/13 × arms M and BIG, five folds, MLflow off, gorgona8.
+- **Measures and decision rule:** BIG − M on the induced `impute_score`, relative, 15 fold pairs, 1%
+  SESOI; supported if better on 2 or more of 4 and worse on none, refuted if better on none.
+- **Sources:** [imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md);
+  `large_batch.py --study e113`.
