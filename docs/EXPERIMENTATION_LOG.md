@@ -136,7 +136,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
 | E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – | in progress | |
 | E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
-| E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-02 – | in progress | |
+| E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – | in progress | |
 
 ## Entries
 
@@ -3313,7 +3313,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-01 22:42 GMT-3):** P600 − M −1.34% [−1.66%, −1.02%], seeds −0.99%, −1.49%, −1.54%: better.
 - **Conclusion:** supported; adding pendigits_60nan to ADR 0036 is the user's decision.
 
-### E110 · Does the re-masking spread still rank errors under MNAR and MAR at 20nan? (2026-11-02 – )
+### E110 · Does the re-masking spread still rank errors under MNAR and MAR at 20nan? (2026-11-01 – )
 
 - **Status:** in progress
 - **Hypothesis:** E84's and E105's result holds at 20nan.

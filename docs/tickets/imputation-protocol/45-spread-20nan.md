@@ -4,8 +4,8 @@ This ticket was written and committed before the study's first cell. No cell has
 
 - **Why:** ADR 0030's decision 7 covers MAR and self-masking MNAR at 40 and 60nan (E84, E105). Its
   MCAR scope starts at 20nan, so 20nan under MAR and MNAR is the remaining gap. This is E105 at 20nan.
-- **The user's go:** "voce pode colocar mais coisas pra rodar nsa duas maquinas" (2026-11-01, after
-  23:56 GMT-3; back at 09:00).
+- **The user's go:** "voce pode colocar mais coisas pra rodar nsa duas maquinas" (2026-11-01, before
+  23:59 GMT-3; back at 09:00).
 - **Data:** the 20nan MAR family and the probit variants of biodeg, kc2 and vehicle already existed;
   written on medusa1 before this ticket, with the same generators: `spambase_probit_20nan` and
   biodeg at slopes 0.25, 1.0 and 2.0 (`generate_mnar.py --pct 0.2`).
