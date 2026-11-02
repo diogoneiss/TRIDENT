@@ -30,6 +30,12 @@ first cell.
   baselines were computed; the tables read that tag. The first tag's runs stay in the store,
   unread. No table number was read from the first runs.
 
+## Second amendment (2026-11-01, 22:50 GMT-3): pendigits_60nan joins
+
+- **Why:** the user added pendigits_60nan to ADR 0036 on E109 ("sim, incluir"). It is in the
+  confirmation set, so its cells at 707/808/909 rerun too, on gorgona8 under the same tag, one after
+  another in a fourth process beside the three queues. 21 cells in all.
+
 ## Outcome
 
 (open)

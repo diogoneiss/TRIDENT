@@ -31,7 +31,9 @@ EXPERIMENT = "adr36-thesis-g8-2026-11-01"
 # The development tables read pendigits_20nan and letter_20nan at 101/202/303 and 42/7/13; the
 # confirmation set (E44) reads pendigits_40nan and letter_40nan at 707/808/909.
 CELLS = [*((v, s) for v in ("pendigits_20nan", "letter_20nan") for s in (101, 202, 303, 42, 7, 13)),
-         *((v, s) for v in ("pendigits_40nan", "letter_40nan") for s in (707, 808, 909))]
+         *((v, s) for v in ("pendigits_40nan", "letter_40nan") for s in (707, 808, 909)),
+         # ADR 0036 amended 2026-11-01 (E109): pendigits_60nan, in the confirmation set.
+         *(("pendigits_60nan", s) for s in (707, 808, 909))]
 MACHINE = {"gorgona8": CELLS, "medusa": []}
 
 
