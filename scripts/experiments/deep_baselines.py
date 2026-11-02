@@ -224,7 +224,7 @@ def run(model: str, variant: str, state: Path) -> None:
     dataset = _dataset(variant)
     started = time.time()
     folds = _folds(dataset, TUNING_SEED)
-    if STUDY == "e106":
+    if STUDY in ("e106", "e111"):
         # E106 retrains E99's tuned configuration with the bigger budget; no new search (the user, 2026-11-01).
         tuned = json.loads((STATE / "e99_json" / f"{model}_{variant}.json").read_text())
     elif js.exists():
@@ -255,11 +255,13 @@ def run(model: str, variant: str, state: Path) -> None:
 
 def _use(study: str) -> None:
     """E106 and E107: the same driver with another scope or budget, in their own state."""
-    global STATE, LEVELS, MODELS, EPOCHS, PATIENCE, STUDY
+    global STATE, LEVELS, MODELS, EPOCHS, PATIENCE, STUDY, SEEDS
     STATE, STUDY = STATE.parent / f"trident-2026-11-01-deep-{study}", study
     if study == "e106":
         MODELS, EPOCHS, PATIENCE = ("tabnet",), 400, 50
         BATCH["tabnet"] = 256
+    elif study == "e111":
+        MODELS, SEEDS = ("mlp", "saint"), (5151, 6262, 7373)
     else:
         LEVELS = ("00", "20")
 
@@ -283,7 +285,7 @@ def tally() -> None:
     from scripts.experiments.stage4_tally import SEEDS as T_SEEDS
     from scripts.experiments.stage4_tally import trident
 
-    assert tuple(T_SEEDS) == SEEDS
+    assert STUDY == "e111" or tuple(T_SEEDS) == SEEDS
     missing: list[str] = []
     marks: dict[str, dict[str, str]] = {m: {} for m in MODELS}
     for level in LEVELS:
@@ -326,6 +328,11 @@ def tally() -> None:
               f" -> E99's TabNet reading {'holds' if leads['tabnet'] else 'does not hold'} ({common.RULE})")
         return
     beaten = [m for m in MODELS if sum(x == "baseline higher" for x in marks[m].values()) >= 2]
+    if STUDY == "e111":
+        reading = "replicated" if all(leads.values()) else "not replicated"
+        print("- leads: " + ", ".join(f"{m} {'yes' if leads[m] else 'no'}" for m in MODELS)
+              + f"\n\nPrimary (E111, E99 on seeds 5151/6262/7373, MLP and SAINT): {reading} ({common.RULE})")
+        return
     reading = "supported" if all(leads.values()) else "refuted" if beaten else "mixed"
     print("- leads: " + ", ".join(f"{m} {'yes' if leads[m] else 'no'}" for m in MODELS)
           + f"\n\nPrimary (E99, 40/60/80nan): {reading}" + (f" (higher than TRIDENT at 2 or more levels: {', '.join(beaten)})" if beaten else "")
@@ -334,7 +341,7 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107"):
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107", "e111"):
         _use(argv[1])
         argv = argv[2:]
     if argv[:1] == ["--state"] and len(argv) >= 2:

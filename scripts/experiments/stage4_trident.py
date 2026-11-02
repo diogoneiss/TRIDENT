@@ -83,7 +83,7 @@ def study(variant: str) -> None:
     print("CELL_DONE study", variant, json.dumps(best_config(variant)), flush=True)
 
 
-def evaluate(variant: str, seed: int) -> None:
+def evaluate(variant: str, seed: int, experiment: str = EXPERIMENT) -> None:
     from train import main as train_main
 
     config = best_config(variant)
@@ -96,7 +96,7 @@ def evaluate(variant: str, seed: int) -> None:
         dataset_name=variant, label_column="class", output_dir=str(eval_dir(variant, seed)),
         metrics_dir=str(STATE / "metrics" / f"{variant}_s{seed}"), disable_mlflow=False, plot_losses=False,
         save_model=False, seed=seed, cv_folds=FOLDS, task="classification", lr_scheduler="cosine_legacy",
-        hyperparams_override=config, mlflow_tags={"experiment": EXPERIMENT, "arm": "trident_tuned"},
+        hyperparams_override=config, mlflow_tags={"experiment": experiment, "arm": "trident_tuned"},
     ), return_metrics=True)
     frame = fold_metrics(eval_dir(variant, seed))
     print("CELL_DONE eval", variant, seed, [] if frame is None else [round(float(x), 4) for x in frame["f1_macro"]], flush=True)
@@ -121,8 +121,9 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:1] == ["study"] and len(argv) == 2:
         study(argv[1])
-    elif argv[:1] == ["eval"] and len(argv) == 3:
-        evaluate(argv[1], int(argv[2]))
+    elif argv[:1] == ["eval"] and len(argv) in (3, 4):
+        # E111 (classification-step-zero/11) evaluates at fresh seeds under its own experiment tag.
+        evaluate(argv[1], int(argv[2]), *argv[3:])
     elif argv[:1] == ["--todo"] and len(argv) == 3:
         todo(int(argv[1]), int(argv[2]))
     else:
