@@ -134,7 +134,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E105 | Does the re-masking spread still rank errors under MNAR and MAR at 40nan? | 2026-10-31 | supported | a signal on 12 of 12 under K and H, none against; weakens on biodeg with the tilt, as at 60nan |
 | E106 | Was E99's TabNet undertrained? Its configuration with a bigger budget | 2026-11-01 | holds | TRIDENT still leads TabNet-B by +0.08 to +0.10; the budget adds +0.008 to +0.016 to TabNet |
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
-| E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – | in progress | |
+| E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – 2026-11-02 | done | only the five ADR 0036 variants moved, all toward TRIDENT; pendigits_20nan now beats TabPFN on both development sets |
 | E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
 | E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – | in progress | |
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 – | in progress | |
@@ -3291,15 +3291,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   seed above zero. TabNet-B − TabNet +0.015, +0.008, +0.016.
 - **Conclusion:** E99's TabNet margin is not a budget artefact; TRIDENT still leads by about 0.08–0.10.
 
-### E108 · The thesis tables' cells ADR 0036 changed, rerun on today's default (2026-11-01 – )
+### E108 · The thesis tables' cells ADR 0036 changed, rerun on today's default (2026-11-01 – 2026-11-02)
 
-- **Status:** in progress (a rerun for reporting, not a hypothesis test).
+- **Status:** done (a rerun for reporting, not a hypothesis test).
 - **Scenarios:** pendigits_20nan and letter_20nan at 101/202/303 and 42/7/13; pendigits_40nan and
   letter_40nan at 707/808/909; today's default, five folds, `--score_checkpoints
   --score_calibrated`, MLflow tag `experiment=adr36-thesis-2026-11-01`.
 - **Measures:** the thesis tables (`thesis_table.py`, `tabpfn_report.py`) rebuilt with these runs,
   before and after.
 - **Sources:** [imputation-protocol/43](tickets/imputation-protocol/43-adr36-thesis-cells.md).
+- **Results (2026-11-02 02:49 GMT-3):** 21 cells on gorgona8 (medusa1's first 18 set aside: its kNN baselines differ
+  from E41's). K − TabPFN on pendigits_20nan +0.012 → −0.008 (101/202/303) and +0.025 → −0.007 (42/7/13);
+  letter_20nan −0.021 → −0.033 and +0.005 → −0.032. Development K vs TabPFN 8/6/7 → 9/6/6; the 42/7/13 set
+  grows to 18 variants. No other variant moved.
 
 ### E109 · Does the large batch help pendigits_60nan on fresh seeds? (2026-11-01)
 

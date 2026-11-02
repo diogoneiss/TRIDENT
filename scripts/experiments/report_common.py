@@ -304,6 +304,9 @@ def seed_effects(per_seed: Sequence[NDArray[np.float64]]) -> tuple[float, float,
 # configuration that is no longer the default and are never pooled with other seed sets.
 FORTY_WITH_REMOVED_FILES = ("credit-g_40nan", "kr-vs-kp_40nan", "spambase_40nan")
 BIG_ENCODER = ("pendigits_20nan", "letter_20nan")
+# ADR 0036 changed these variants' default; E108 reran, on gorgona8, the cells the thesis tables read.
+ADR36 = ("pendigits_20nan", "letter_20nan", "pendigits_40nan", "letter_40nan", "pendigits_60nan")
+ADR36_EXPERIMENT = "adr36-thesis-g8-2026-11-01"
 
 
 @dataclass(frozen=True)
@@ -316,6 +319,8 @@ class Source:
 def development_source(variant: str, seeds: str) -> Source | None:
     """Where today's default K for ``variant`` on a seed set (``"101/202/303"``, ``"42/7/13"`` or
     ``"404/505/606"``) lives, or None where that set has no run of it."""
+    if variant in ADR36 and seeds in ("101/202/303", "42/7/13"):
+        return Source(ADR36_EXPERIMENT, None)
     if seeds == "101/202/303":
         if variant in BIG_ENCODER:
             return Source("architecture-large-2026-10-06", "ALL")

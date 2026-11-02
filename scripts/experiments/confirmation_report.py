@@ -63,7 +63,8 @@ def runs() -> dict[tuple[str, int], list[common.Run]]:
 
 
 def cell(variant: str, seed: int) -> tuple[common.Run, pd.DataFrame] | None:
-    found = runs().get((variant, seed), [])
+    # ADR 0036 changed pendigits_40nan's, letter_40nan's and pendigits_60nan's default; E108 reran their E44 cells.
+    found = (common.parents(common.ADR36_EXPERIMENT) if variant in common.ADR36 else runs()).get((variant, seed), [])
     if len(found) > 1:
         sys.exit(f"{variant} s{seed}: {len(found)} finished runs; the design allows one")
     if not found:

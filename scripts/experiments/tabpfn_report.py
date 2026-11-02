@@ -72,7 +72,9 @@ def _values(run: common.Run, frame: pd.DataFrame, name: str) -> np.ndarray:
     if name in ("K", "H"):
         return common.model(frame, run, name)
     if name == "KC":
-        return np.asarray(frame[KC], dtype=float)
+        # A run ADR 0027 calibrated (E108's reruns) carries KC as its headline; older runs as ``KC``.
+        calibrated_run = "impute/induced/uncalibrated/impute_score" in frame.columns
+        return common.model(frame, run, "KC") if calibrated_run else np.asarray(frame[KC], dtype=float)
     if name == "tabpfn":
         return np.asarray(frame[TABPFN], dtype=float)
     if name == "tuned":
@@ -116,6 +118,12 @@ def report(label: str, found: list[tuple[str, Cells | None]]) -> None:
     print()
 
 
+def _has_kc(run: common.Run, frame: pd.DataFrame) -> bool:
+    """Whether a run carries KC: the ``calibrated`` diagnostic of an older run, or the headline of one
+    ADR 0027 calibrated (E108's reruns, which keep their K in ``uncalibrated``)."""
+    return KC in frame.columns or "impute/induced/uncalibrated/impute_score" in frame.columns
+
+
 def readouts(label: str, found: list[tuple[str, Cells | None]]) -> None:
     """E57: the default output (KC at 40nan and above, ADR 0027) and H (ADR 0024) against TabPFN."""
     print(f"## E57: {label}, KC and H against TabPFN")
@@ -124,7 +132,7 @@ def readouts(label: str, found: list[tuple[str, Cells | None]]) -> None:
     for variant, cells in found:
         if cells is None or variant.endswith("_20nan"):
             continue
-        if not all(KC in frame.columns for _, frame in cells):
+        if not all(_has_kc(run, frame) for run, frame in cells):
             print(f"- `{variant}`: no KC on these runs")
             continue
         readings = {name: contrast(cells, name, "tabpfn") for name in ("K", "KC", "H")}
