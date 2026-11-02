@@ -3319,7 +3319,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Status:** in progress
 - **Hypothesis:** E84's and E105's result holds at 20nan.
 - **Scenarios, measures and rule:** E105's at 20nan (63 cells, medusa1, MLflow off); no cell starts after
-  2026-11-02 08:30 GMT-3.
+  2026-11-02 08:30 GMT-3. **Cap removed 2026-11-02 00:04 GMT-3 on the user's word, before any result.**
 - **Sources:** [imputation-protocol/45](tickets/imputation-protocol/45-spread-20nan.md);
   `spread_40nan.py --level 20`.
 
@@ -3328,6 +3328,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Status:** in progress
 - **Hypothesis:** E99's reading holds on seeds 5151/6262/7373, with no re-tuning of either side.
 - **Scenarios:** 27 variants at 40–80nan; TRIDENT (E98's configurations) and MLP and SAINT (E99's)
-  evaluated at the three seeds, ten folds; both machines; no item starts after 2026-11-02 08:30 GMT-3.
+  evaluated at the three seeds, ten folds; both machines; no item starts after 2026-11-02 08:30 GMT-3. **Cap removed 2026-11-02 00:04 GMT-3 on the user's word, before any result.**
 - **Measures and decision rule:** E99's; replicated if TRIDENT leads both MLP and SAINT.
 - **Sources:** [classification-step-zero/11](tickets/classification-step-zero/11-deep-baselines-fresh-seeds.md).

@@ -23,6 +23,8 @@ This ticket was written and committed before the study's first cell. No cell has
   dealt by cost between the machines (gorgona8's start when E108 ends).
 - **The cap:** no item starts after 2026-11-02 08:30 GMT-3 (STOP files on both machines). Missing items
   are reported missing and their levels incomplete.
+- **Amendment (2026-11-02 00:04 GMT-3, before any result):** the cap is removed on the user's word ("nao precisa
+  interromper"); the study runs until every item has ended.
 
 ## Measures and rule, fixed now (`deep_baselines.py --study e111 --tally`)
 

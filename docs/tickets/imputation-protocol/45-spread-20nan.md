@@ -20,6 +20,8 @@ This ticket was written and committed before the study's first cell. No cell has
 - **Supported** with a within-column `num_rank` signal on 10 or more of 12 under K and H and none
   against under K; **refuted** with 7 or fewer under K or any against; **mixed** otherwise.
 - **The cap:** no cell starts after 2026-11-02 08:30 GMT-3.
+- **Amendment (2026-11-02 00:04 GMT-3, before any result):** the cap is removed on the user's word ("nao precisa
+  interromper"); the study runs until every item has ended.
 - **What follows:** supported → extending decision 7 to 20nan is the user's decision.
 
 ## Outcome
