@@ -6,7 +6,7 @@ import torch.optim as optim
 from tqdm import tqdm
 
 from src.embedder import EncodedTable, EpochMasker, TabularEmbedder
-from src.models import NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
+from src.models import EmaTargetPretrainer, NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 
 from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
@@ -32,6 +32,8 @@ def _stage_model(
         )
     if hyperparameters.pretraining_objective == "embedding_normalized":
         return NormalizedEmbeddingPretrainer(embedder, transformer)
+    if hyperparameters.pretraining_objective == "embedding_ema":
+        return EmaTargetPretrainer(embedder, transformer)
     return TridentPretrainer(embedder, transformer)
 
 
@@ -74,6 +76,10 @@ def train_pretrainer(
             nn.init.xavier_uniform_(module.weight)
 
     model.apply(initialize_weights)
+    # T13: the EMA teacher starts as the initialised student and is never in the optimiser's way.
+    ema = model if isinstance(model, EmaTargetPretrainer) else None
+    if ema is not None:
+        ema.copy_teacher()
     optimizer = optim.AdamW(
         model.parameters(),
         lr=hyperparameters.pretraining_learning_rate,
@@ -118,6 +124,8 @@ def train_pretrainer(
             total_loss, _ = model(masked_train[batch_indices], original_train[batch_indices])
             total_loss.backward()
             optimizer.step()
+            if ema is not None:
+                ema.update_teacher()
             scheduler.after_batch()
             train_loss_sum += total_loss.detach().double()
             train_steps += 1

@@ -25,7 +25,7 @@ DEFAULT_LR_SCHEDULER = "cosine_legacy"
 # itself, through fresh decoder heads that the stage discards; ``embedding_normalized`` keeps
 # the embedding target but layer-normalises it and reads the transformer through a predictor
 # head.
-PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_normalized")
+PRETRAINING_OBJECTIVES: tuple[str, ...] = ("embedding", "value", "embedding_normalized", "embedding_ema")
 DEFAULT_PRETRAINING_OBJECTIVE = "embedding"
 
 # How the decoder applies its per-column heads, accepted by ``Hyperparameters.decoder_heads``

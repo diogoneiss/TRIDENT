@@ -138,6 +138,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
 | E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – 2026-11-02 | supported | a signal on 12 of 12 under K and H, none against; no weakening with the tilt at 20nan |
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
+| E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 – | in progress | |
 
 ## Entries
 
@@ -3341,3 +3342,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-02 05:04 GMT-3):** TRIDENT − MLP +0.009, +0.007, −0.000 (no verdict) at 40/60/80nan; − SAINT +0.035,
   +0.035, +0.029.
 - **Conclusion:** replicated; E99's reading holds on seeds it never used.
+
+### E112 · Does an EMA target make classification pre-training help? (T13) (2026-11-02 – )
+
+- **Status:** in progress
+- **Hypothesis:** with an EMA teacher as the target (`PRETRAIN_OBJECTIVE embedding_ema`), pre-training
+  beats no pre-training on classification, where E87 found the legacy objective gave nothing.
+- **Scenarios:** E87's protocol (old sweep configuration, ten folds, 45 variants, seeds
+  42/7/13/101/202); arm E new, arms A and B from E87 (B rerun on gorgona8 at seed 202, beside its E).
+- **Measures and decision rule:** E − B per level, 450 fold pairs, SESOI 0.01; supported if E is
+  higher at 3 or more of 5 levels and lower at none, refuted if higher at 1 or fewer. E − A descriptive.
+- **Sources:** [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md).

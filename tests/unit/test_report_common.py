@@ -125,8 +125,10 @@ def test_tables_are_tested_by_their_mean_gap_and_holm_steps_down() -> None:
 
 
 def test_the_development_cells_follow_the_decisions_since_e34() -> None:
-    assert common.development_source("pendigits_20nan", "101/202/303") == common.Source("architecture-large-2026-10-06", "ALL")
+    # ADR 0036 (E108): its variants read the reruns on both development seed sets, unlabelled.
+    assert common.development_source("pendigits_20nan", "101/202/303") == common.Source(common.ADR36_EXPERIMENT, None)
+    assert not common.development_source("letter_20nan", "42/7/13").labelled
     assert common.development_source("kr-vs-kp_40nan", "101/202/303") == common.Source("retune-2026-10-15", "D")
     assert common.development_source("vehicle_20nan", "101/202/303") == common.Source("selection-2026-10-03", None)
-    assert common.development_source("letter_20nan", "42/7/13").labelled
+    assert common.development_source("kr-vs-kp_40nan", "42/7/13").labelled
     assert not common.development_source("vehicle_20nan", "42/7/13").labelled

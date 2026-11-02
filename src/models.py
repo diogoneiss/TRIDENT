@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 from typing import cast
 
@@ -108,6 +109,59 @@ class NormalizedEmbeddingPretrainer(TridentPretrainer):
 
     def _target(self, clean: torch.Tensor) -> torch.Tensor:
         return nn.functional.layer_norm(clean, (self.d_model,))
+
+
+class EmaTargetPretrainer(NormalizedEmbeddingPretrainer):
+    """The normalised objective with an EMA teacher as the target (T13; data2vec, BYOL, SMART).
+
+    The target of a masked cell is no longer its own input embedding but what a slowly moving
+    copy of the encoder (embedder and transformer, decay ``EMA_DECAY``) says at that cell when it
+    sees the clean row, layer-normalised. The student keeps the predictor head. The teacher is
+    never trained by the optimiser: ``copy_teacher`` sets it to the student once, after weight
+    initialisation, and ``update_teacher`` moves it after every optimiser step.
+    """
+
+    EMA_DECAY = 0.996  # SMART's decay (wiki ``references/smart-paper``)
+
+    def __init__(self, embedder: TabularEmbedder, transformer: TabularTransformerEncoder):
+        super().__init__(embedder, transformer)
+        self.teacher_embedder = copy.deepcopy(embedder).requires_grad_(False)
+        self.teacher_transformer = copy.deepcopy(transformer).requires_grad_(False)
+
+    def _pairs(self) -> list[tuple[nn.Module, nn.Module]]:
+        return [(self.teacher_embedder, self.embedder), (self.teacher_transformer, self.transformer)]
+
+    @torch.no_grad()
+    def copy_teacher(self) -> None:
+        for teacher, student in self._pairs():
+            teacher.load_state_dict(student.state_dict())
+
+    @torch.no_grad()
+    def update_teacher(self) -> None:
+        for teacher, student in self._pairs():
+            for t, s in zip(teacher.parameters(), student.parameters()):
+                t.mul_(self.EMA_DECAY).add_(s.detach(), alpha=1.0 - self.EMA_DECAY)
+
+    def forward(self, masked, original):
+        device = next(self.parameters()).device
+        masked = self._as_encoded(masked, device)
+        original = self._as_encoded(original, device)
+        encoded = self.transformer(self.embedder(masked))
+        with torch.no_grad():
+            # The teacher runs in eval mode (no dropout) whatever the student's mode.
+            was_training = self.teacher_transformer.training
+            self.teacher_embedder.eval()
+            self.teacher_transformer.eval()
+            target = self.teacher_transformer(self.teacher_embedder(original))
+            self.teacher_embedder.train(was_training)
+            self.teacher_transformer.train(was_training)
+        mask_tensor = masked.masked_positions
+        enc_sel = self._prediction(encoded[:, 1:, :][mask_tensor])
+        tgt_sel = self._target(target[:, 1:, :][mask_tensor])
+        if enc_sel.numel() == 0:
+            return torch.tensor(0., device=device, requires_grad=True), {}
+        loss = nn.functional.mse_loss(enc_sel, tgt_sel)
+        return loss, {"mse_embedding": loss.detach()}
 
 
 @dataclass(frozen=True)

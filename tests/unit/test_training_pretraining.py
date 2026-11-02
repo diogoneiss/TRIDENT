@@ -8,7 +8,7 @@ import torch
 from sklearn.preprocessing import StandardScaler
 
 from src.embedder import TabularEmbedder
-from src.models import NormalizedEmbeddingPretrainer, TridentPretrainer
+from src.models import EmaTargetPretrainer, NormalizedEmbeddingPretrainer, TridentPretrainer
 from src.training.pretraining import train_pretrainer
 from src.training.tracking import BufferedFoldTracker
 from src.training.types import FoldSplit, Hyperparameters, PreparedDataset
@@ -141,7 +141,7 @@ def test_each_objective_trains_its_own_stage_model() -> None:
     """A run asking for the normalised objective must not silently train the raw one."""
     dataset = _learnable_dataset()
     kinds = {}
-    for objective in ("embedding", "embedding_normalized"):
+    for objective in ("embedding", "embedding_normalized", "embedding_ema"):
         outcome = train_pretrainer(
             dataset,
             _fold(),
@@ -154,7 +154,35 @@ def test_each_objective_trains_its_own_stage_model() -> None:
     assert kinds == {
         "embedding": TridentPretrainer,
         "embedding_normalized": NormalizedEmbeddingPretrainer,
+        "embedding_ema": EmaTargetPretrainer,
     }
+
+
+def test_the_ema_teacher_follows_the_student_and_never_the_optimiser() -> None:
+    """T13: the teacher starts equal to the initialised student, takes no gradient, and after a
+    run sits strictly between where it started and the student, as an EMA does; the encoder
+    handed on is the student's."""
+    outcome = train_pretrainer(
+        _learnable_dataset(), _fold(), _hyperparameters(PRETRAIN_OBJECTIVE="embedding_ema", EPOCHS_PRE=3),
+        torch.device("cpu"), BufferedFoldTracker(),
+    )
+    model = outcome.model
+    assert isinstance(model, EmaTargetPretrainer)
+    assert not any(p.requires_grad for p in (*model.teacher_embedder.parameters(), *model.teacher_transformer.parameters()))
+    assert all(p.grad is None for p in model.teacher_transformer.parameters())
+    student = torch.cat([p.detach().flatten() for p in model.transformer.parameters()])
+    teacher = torch.cat([p.detach().flatten() for p in model.teacher_transformer.parameters()])
+    assert not torch.equal(student, teacher)
+    assert all(np.isfinite(outcome.train_losses))
+
+    # One update moves the teacher a fraction 1 - decay of the way to the student.
+    before = [p.clone() for p in model.teacher_transformer.parameters()]
+    model.update_teacher()
+    for t0, t1, s1 in zip(before, model.teacher_transformer.parameters(), model.transformer.parameters()):
+        torch.testing.assert_close(t1, EmaTargetPretrainer.EMA_DECAY * t0 + (1 - EmaTargetPretrainer.EMA_DECAY) * s1)
+    model.copy_teacher()
+    for t, s in zip(model.teacher_transformer.parameters(), model.transformer.parameters()):
+        assert torch.equal(t, s)
 
 
 def test_the_pretraining_stage_can_show_every_real_gap_as_mask_and_still_learns_only_from_truths(

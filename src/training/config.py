@@ -559,7 +559,8 @@ def build_training_parser() -> argparse.ArgumentParser:
             "What pre-training reconstructs at a masked cell (ADR 0011). Overrides "
             "PRETRAIN_OBJECTIVE from the hyperparameter file. Default: embedding (the cell's "
             "clean embedding, as every run before ADR 0011) for classification, "
-            "embedding_normalized for imputation (ADR 0013)."
+            "embedding_normalized for imputation (ADR 0013). embedding_ema (T13): the target is "
+            "an EMA copy of the encoder's output on the clean row, layer-normalised."
         ),
     )
     parser.add_argument(
