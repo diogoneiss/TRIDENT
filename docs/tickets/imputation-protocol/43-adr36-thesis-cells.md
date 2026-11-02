@@ -59,15 +59,15 @@ configuration; their in-run baselines match E41's offline ones exactly, and the 
     from 16 to 18 variants: K vs bar 12 / 3 / 1 → 14 / 3 / 1; vs TabPFN 5 / 8 / 3 → 7 / 8 / 3; D4
     wins 7 of 16 → 9 of 18.
   - Confirmation (E44): the three variants were already better than TabPFN; the counts do not move.
-- **Reader changes (no number of another variant moved):** \`report_common.development_source\` and
-  \`confirmation_report.cell\` read \`adr36-thesis-g8-2026-11-01\` for the five variants;
-  \`tabpfn_report\` reads KC through \`readout_key\` on runs ADR 0027 calibrated (it looked for the
-  older \`calibrated\` key and reported "no KC" on them).
+- **Reader changes (no number of another variant moved):** `report_common.development_source` and
+  `confirmation_report.cell` read `adr36-thesis-g8-2026-11-01` for the five variants;
+  `tabpfn_report` reads KC through `readout_key` on runs ADR 0027 calibrated (it looked for the
+  older `calibrated` key and reported "no KC" on them).
 - **Still to do:** the consolidated report and the thesis-table report quote the old numbers.
 
-### Before → after, unedited (\`diff\` of the scripts' outputs, 2026-11-02 02:49 GMT-3)
+### Before → after, unedited (`diff` of the scripts' outputs, 2026-11-02 02:49 GMT-3)
 
-\`thesis_table.py --seeds 101/202/303\`:
+`thesis_table.py --seeds 101/202/303`:
 
 ```
 23,24c23,24
@@ -106,7 +106,7 @@ configuration; their in-run baselines match E41's offline ones exactly, and the 
 > - Holm across opponents: missforest 0.0312, bar 0.1367, per_type 0.1367, tuned 0.1367, tabpfn 0.6562, strong 1.0000, tuned_strong 1.0000, best_of_all 1.0000
 ```
 
-\`thesis_table.py --seeds 42/7/13\`:
+`thesis_table.py --seeds 42/7/13`:
 
 ```
 23,24c23,24
@@ -171,7 +171,7 @@ configuration; their in-run baselines match E41's offline ones exactly, and the 
 > - D4, a win needs K better than both the bar and the tuned bar: 9 wins of 18; worse than either on 2 (credit-g_80nan, electricity_20nan)
 ```
 
-\`tabpfn_report.py\`:
+`tabpfn_report.py`:
 
 ```
 20,21c20,21
