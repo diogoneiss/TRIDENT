@@ -1,5 +1,6 @@
 """Masked reconstruction pre-training stage."""
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -107,6 +108,12 @@ def train_pretrainer(
     # or [MASK] as the decode stage shows it since ADR 0014. Applied to the corrupted inputs
     # only; the targets and the loss positions do not move, and nothing is drawn.
     shown = embedder.gaps_as_mask if hyperparameters.pretrain_gap_token == "mask" else _as_is
+    if ema is not None:
+        # T13: the teacher reads the clean row as the student reads its rows, a gap as [NULL]. The
+        # raw encoding holds NaN at a numerical gap, which the transformer would spread to every
+        # position; the other objectives read the target only at the masked cells and never meet it.
+        original_train = train_masker.apply(np.zeros(train_frame.shape, dtype=bool))
+        original_validation = validation_masker.apply(np.zeros(validation_frame.shape, dtype=bool))
 
     for epoch in tqdm(range(hyperparameters.pretraining_epochs), desc="Pre train epochs"):
         masked_train = shown(train_masker.draw(hyperparameters.mask_probability))

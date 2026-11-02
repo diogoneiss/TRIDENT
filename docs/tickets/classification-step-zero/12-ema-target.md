@@ -41,6 +41,24 @@ first (below); no in-scope cell has run.
 - **What follows:** supported → the EMA objective as classification's pre-training is an ADR for
   the user. Refuted → T13 closes for classification.
 
+## Amendment (2026-11-02 11:28 GMT-3): a NaN bug, fixed, and a relaunch
+
+- **What happened:** the first launch (10:17 GMT-3, tag `cls-ema-2026-11-02`) failed its first letter
+  cells (20 and 40nan, seed 42) with a non-finite final loss; their fold metrics showed a constant
+  prediction (accuracy 1/26), the only scores seen, and they are not part of any reading.
+- **The cause:** the teacher was fed the raw encoding of the clean row, which holds NaN at a numerical
+  gap; through attention the NaN reached every position, so every loss was NaN from the first epoch on
+  any table with gaps. The legacy objectives read their target only at the masked cells and never meet
+  it. Reproduced on letter_40nan's first fold (12 epochs, all NaN).
+- **The fix:** the teacher reads the clean row as the student reads its rows, every gap as `[NULL]`
+  (`EpochMasker.apply` with nothing hidden). The same fold now trains (train loss 1.12 → 0.099 in 12
+  epochs). A regression test trains the objective on a table with gaps; the unit suite (461) and both
+  fixtures pass.
+- **The relaunch:** every queue was stopped, the first launch's outputs moved to
+  `trident-2026-11-02-cls-ema-failed/` on both machines, and the study reruns from scratch under the tag
+  `cls-ema-v2-2026-11-02`, the design and the rule unchanged. The first tag's runs stay in the store,
+  unread.
+
 ## Outcome
 
 (open)

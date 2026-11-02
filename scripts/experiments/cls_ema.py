@@ -7,7 +7,7 @@
 E87's protocol (``cls_tenfold.py``: the old sweep's ``hyperparameters.json``, ``cosine_legacy``, ten
 folds) with arm E, ``PRETRAIN_OBJECTIVE embedding_ema``. Each pair runs on one machine (ADR 0035):
 medusa1 runs E at seeds 42/7/13/101 against E87's B there; gorgona8 runs E and B at seed 202. MLflow
-tag ``experiment=cls-ema-2026-11-02``. ``--tally`` (on gorgona8, with medusa1's cells and E87's copied
+tag ``experiment=cls-ema-v2-2026-11-02``. ``--tally`` (on gorgona8, with medusa1's cells and E87's copied
 under ``STATE/medusa`` and ``STATE/e87``) reads E − B per level and E − A (medusa1's seeds) descriptively.
 """
 
@@ -30,7 +30,8 @@ from scripts.experiments import report_common as common  # noqa: E402
 from scripts.experiments.cls_determinism_run import sweep_run  # noqa: E402
 from scripts.experiments.cls_stage2_run import ARM_COST, BASES, LEVELS, ROWS, cell_dir, fold_metrics  # noqa: E402
 
-EXPERIMENT = "cls-ema-2026-11-02"
+# The first launch (tag cls-ema-2026-11-02) ran before the NaN fix; its runs stay in the store, unread.
+EXPERIMENT = "cls-ema-v2-2026-11-02"
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-11-02-cls-ema"
 VARIANTS = tuple(f"{b}_{lv}nan" for b in BASES for lv in LEVELS)
 ARMS = {"E": {"PRETRAIN_OBJECTIVE": "embedding_ema"}, "B": {"EPOCHS_PRE": 0}}

@@ -158,6 +158,20 @@ def test_each_objective_trains_its_own_stage_model() -> None:
     }
 
 
+def test_the_ema_objective_stays_finite_on_a_table_with_gaps() -> None:
+    """T13's teacher reads the clean row with its gaps as [NULL]; fed the raw encoding, a numerical
+    gap's NaN spread through attention and made every loss NaN (E112, letter)."""
+    dataset = _learnable_dataset()
+    frame = dataset.frame.copy()
+    frame.loc[frame.index % 4 == 0, "x"] = np.nan
+    frame.loc[frame.index % 6 == 0, "sign"] = np.nan
+    dataset = PreparedDataset(**{**dataset.__dict__, "frame": frame})
+    outcome = train_pretrainer(dataset, _fold(), _hyperparameters(PRETRAIN_OBJECTIVE="embedding_ema", EPOCHS_PRE=2),
+                               torch.device("cpu"), BufferedFoldTracker())
+    assert np.isfinite(outcome.train_losses).all() and np.isfinite(outcome.validation_losses).all()
+    assert all(torch.isfinite(p).all() for p in outcome.model.parameters())
+
+
 def test_the_ema_teacher_follows_the_student_and_never_the_optimiser() -> None:
     """T13: the teacher starts equal to the initialised student, takes no gradient, and after a
     run sits strictly between where it started and the student, as an EMA does; the encoder
