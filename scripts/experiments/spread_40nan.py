@@ -4,6 +4,8 @@
     uv run --python 3.11 python -B scripts/experiments/spread_40nan.py --todo <n> <queues>
     uv run --python 3.11 python -B scripts/experiments/spread_40nan.py --tally
 
+E110 (imputation-protocol/45): ``--level 20`` first, the same study at 20nan, in its own state.
+
 E84's study (``spread_mechanisms.py``) at 40nan: the same 12 shifted variants, the same seeds, the same
 cell (today's default, ``--score_checkpoints --score_remask``, five folds) and the same measure and
 rule. Two differences: MLflow is off, and the MNAR variants' MCAR twins (``<base>_40nan``) are trained
@@ -28,11 +30,14 @@ sys.path.insert(0, str(ROOT))
 from scripts.experiments import report_common as common  # noqa: E402
 from scripts.experiments.spread_mechanisms import POPULATIONS, ROWS, SEEDS, _mark, within_column  # noqa: E402
 
-STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-10-31-spread-40nan"
-MNAR = {"biodeg_probit0p25_40nan": "biodeg_40nan", "biodeg_probit_40nan": "biodeg_40nan",
-        "biodeg_probit1p0_40nan": "biodeg_40nan", "biodeg_probit2p0_40nan": "biodeg_40nan",
-        "vehicle_probit_40nan": "vehicle_40nan", "kc2_probit_40nan": "kc2_40nan", "spambase_probit_40nan": "spambase_40nan"}
-MAR = {f"{table}_marf_40nan": f"{table}_marfctl_40nan" for table in ("biodeg", "kc2", "vehicle", "spambase", "credit-g")}
+LEVEL = sys.argv[2] if sys.argv[1:2] == ["--level"] else "40"
+if sys.argv[1:2] == ["--level"]:
+    del sys.argv[1:3]
+STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / (
+    "trident-2026-10-31-spread-40nan" if LEVEL == "40" else f"trident-2026-11-02-spread-{LEVEL}nan")
+MNAR = {f"biodeg_probit{slope}_{LEVEL}nan": f"biodeg_{LEVEL}nan" for slope in ("0p25", "", "1p0", "2p0")} | {
+    f"{table}_probit_{LEVEL}nan": f"{table}_{LEVEL}nan" for table in ("vehicle", "kc2", "spambase")}
+MAR = {f"{table}_marf_{LEVEL}nan": f"{table}_marfctl_{LEVEL}nan" for table in ("biodeg", "kc2", "vehicle", "spambase", "credit-g")}
 SHIFTED = [*MNAR, *MAR]
 TRAINED = sorted({*MNAR, *MAR, *MNAR.values(), *MAR.values()})
 
