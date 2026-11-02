@@ -25,7 +25,7 @@ first (below); no in-scope cell has run.
 
 - **E87's protocol:** the old sweep's `hyperparameters.json` per variant, `cosine_legacy`, ten folds,
   the 45 variants (00–80nan), seeds 42/7/13/101/202 (`scripts/experiments/cls_ema.py`,
-  `run_cls_ema_queue.sh`, MLflow tag `experiment=cls-ema-2026-11-02`).
+  `run_cls_ema_queue.sh`, MLflow tag `experiment=cls-ema-v2-2026-11-02` since the amendment below).
 - **Arm E:** that configuration with `PRETRAIN_OBJECTIVE embedding_ema`. **Arm B:** `EPOCHS_PRE 0`
   (no pre-training). **Arm A:** E87's, the legacy objective.
 - **Running (each pair on one machine, ADR 0035):** medusa1 runs E at seeds 42/7/13/101 and pairs it
