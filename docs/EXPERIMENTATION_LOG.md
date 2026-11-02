@@ -3312,7 +3312,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/44](tickets/imputation-protocol/44-large-batch-pendigits-60nan.md);
   `large_batch.py --study e109`.
 - **Results (2026-11-01 22:42 GMT-3):** P600 − M −1.34% [−1.66%, −1.02%], seeds −0.99%, −1.49%, −1.54%: better.
-- **Conclusion:** supported; adding pendigits_60nan to ADR 0036 is the user's decision.
+- **Conclusion:** supported; adding pendigits_60nan to ADR 0036 is the user's decision. **Added 2026-11-02 on the user's decision (ADR 0036 amended; verified identical to E109's P600 cell).**
 
 ### E110 · Does the re-masking spread still rank errors under MNAR and MAR at 20nan? (2026-11-01 – )
 

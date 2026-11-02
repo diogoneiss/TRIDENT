@@ -3,7 +3,7 @@
 - **Status:** **accepted 2026-10-31** by the user ("aprovo, Extenda"), as proposed: the four
   variants, pendigits_60nan left out. Proposed the same day from E104's Outcome
   ([imputation-protocol/41](../tickets/imputation-protocol/41-large-batch-rule.md)), whose ticket
-  fixed this proposal as the step after a replication. Implemented and verified 2026-10-31 18:23 GMT-3 (below).
+  fixed this proposal as the step after a replication. **Amended 2026-11-02 00:09 GMT-3: pendigits_60nan joins** (E109, [44](../tickets/imputation-protocol/44-large-batch-pendigits-60nan.md), supported; the user: "sim, incluir"). Implemented and verified 2026-10-31 18:23 GMT-3 (below).
 - **Builds on:** ADR 0005 (promoted per-variant files), ADR 0013 (the imputation defaults), ADR 0018
   (the bigger encoder on pendigits_20nan and letter_20nan, kept here).
 
@@ -20,7 +20,7 @@
 |---|---|---|---|---|
 | pendigits_20nan | −5.37% better | −5.84% better | | −5.93% better |
 | pendigits_40nan | −4.27% better | −4.21% better | | −4.10% better |
-| pendigits_60nan | −1.19% better | −1.18% better | | |
+| pendigits_60nan | −1.19% better | −1.18% better | | (E109, 2121/3232/4343: −1.34% better) |
 | pendigits_80nan | +0.16% equivalent | +0.42% worse | | |
 | letter_20nan | | | −2.90% better | −3.25% better |
 | letter_40nan | | | −1.46% better | −1.54% better |
@@ -45,8 +45,10 @@
      keep the bigger encoder; the two 40nan variants get new
      `datasets/hiperparams/<base>/<variant>.imputation.json` files holding today's complete
      imputation configuration with the four keys. No code changes and no global default moves.
-2. **No other variant changes.** pendigits_60nan was better twice (−1.2%, E101 and E102) but sits
-   outside E104's confirmed scope; letter_60nan was equivalent; both 80nan variants are a little
+2. **pendigits_60nan too** (amended 2026-11-02 00:09 GMT-3): better in E101 and E102 (−1.2%), then on fresh seeds in
+   E109 (−1.34% [−1.66%, −1.02%], every seed below zero). Its new promoted file carries the same four
+   keys.
+3. **No other variant changes.** letter_60nan was equivalent; both 80nan variants are a little
    worse; electricity gains nothing; the other tables leave an epoch too few steps at 1024.
 
 ## Verification (2026-10-31 18:23 GMT-3)
@@ -60,13 +62,15 @@
   every numeric column of its fold metrics, timings aside (68 columns on the 20nan variants, 75 on
   the 40nan ones, none differing).
 - **Tests:** the unit suite with the typing gate (459) and both regression fixtures pass.
+- **pendigits_60nan (amendment):** a plain default run at seed 2121 on medusa1 equals E109's P600
+  cell of that seed and machine on all 75 numeric fold-metric columns, timings aside.
 
 ## Considered options
 
 - **Leave every table at one batch.** The gain is replicated on fresh seeds at 1.5–5.9% and the
   cells cost no more, so only simplicity argues for keeping these four as they are.
-- **Include pendigits_60nan.** Better on 6 seeds over two studies (−1.2% both), but its scope was
-  not part of E104's confirmation; adding it is the user's call, with or without another check.
+- **Include pendigits_60nan.** Better on 6 seeds over two studies (−1.2% both), outside E104's
+  confirmation; checked on fresh seeds by E109 and added by the amendment.
 - **A rule by steps an epoch or by table size.** electricity, the table with the most steps at 1024,
   gained nothing, so no such rule is supported.
 
