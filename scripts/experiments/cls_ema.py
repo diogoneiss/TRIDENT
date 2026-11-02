@@ -6,7 +6,7 @@
 
 E87's protocol (``cls_tenfold.py``: the old sweep's ``hyperparameters.json``, ``cosine_legacy``, ten
 folds) with arm E, ``PRETRAIN_OBJECTIVE embedding_ema``. Each pair runs on one machine (ADR 0035):
-medusa1 runs E at seeds 42/7/13/101 against E87's B there; gorgona8 runs E and B at seed 202. MLflow
+medusa1 runs E at every seed against E87's B there (seed 202 moved from gorgona8 by an amendment). MLflow
 tag ``experiment=cls-ema-v2-2026-11-02``. ``--tally`` (on gorgona8, with medusa1's cells and E87's copied
 under ``STATE/medusa`` and ``STATE/e87``) reads E − B per level and E − A (medusa1's seeds) descriptively.
 """
@@ -35,7 +35,9 @@ EXPERIMENT = "cls-ema-v2-2026-11-02"
 STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-11-02-cls-ema"
 VARIANTS = tuple(f"{b}_{lv}nan" for b in BASES for lv in LEVELS)
 ARMS = {"E": {"PRETRAIN_OBJECTIVE": "embedding_ema"}, "B": {"EPOCHS_PRE": 0}}
-WORK = {"medusa": ((42, 7, 13, 101), ("E",)), "gorgona8": ((202,), ("E", "B"))}
+# Amended 2026-11-02 (before any reading): gorgona8 ran an E cell about 3x slower than medusa1, so
+# seed 202 moved whole to medusa1, against E87's B there like the other seeds; gorgona8's cells are unread.
+WORK: dict[str, tuple[tuple[int, ...], tuple[str, ...]]] = {"medusa": ((42, 7, 13, 101, 202), ("E",)), "gorgona8": ((), ("E", "B"))}
 FOLDS = 10
 SESOI = 0.01
 
@@ -107,7 +109,7 @@ def tally() -> None:
     descriptive = _contrast(WORK["medusa"][0], "E", "A")
     if descriptive:
         for level, v in descriptive.items():
-            print(f"  - {level}nan, descriptive (42/7/13/101): E − A {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] -> {read[v.call]}")
+            print(f"  - {level}nan, descriptive (all seeds): E − A {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] -> {read[v.call]}")
     helps = [lv for lv, v in primary.items() if v.call == "worse"]
     hurts = [lv for lv, v in primary.items() if v.call == "better"]
     reading = "supported" if len(helps) >= 3 and not hurts else "refuted" if len(helps) <= 1 else "mixed"

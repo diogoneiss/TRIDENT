@@ -59,6 +59,16 @@ first (below); no in-scope cell has run.
   `cls-ema-v2-2026-11-02`, the design and the rule unchanged. The first tag's runs stay in the store,
   unread.
 
+## Second amendment (2026-11-02 14:31 GMT-3, before any reading): seed 202 moves to medusa1
+
+- **Why:** an E cell took 85 minutes on gorgona8 (three queues on one GPU) against 29 on medusa1; at
+  that rate gorgona8's seed 202 would have taken over a day, against about ten hours for medusa1's four
+  seeds.
+- **What changes:** gorgona8's queues are stopped and its cells (4 E, none read) set aside; medusa1
+  runs E at seed 202 too once its first four seeds end, against E87's B and A there, as for the other
+  seeds. Every pair stays on one machine; the design and the rule are unchanged. E − A, descriptive,
+  now covers all five seeds.
+
 ## Outcome
 
 (open)

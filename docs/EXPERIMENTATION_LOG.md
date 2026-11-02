@@ -3352,4 +3352,4 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   42/7/13/101/202); arm E new, arms A and B from E87 (B rerun on gorgona8 at seed 202, beside its E).
 - **Measures and decision rule:** E − B per level, 450 fold pairs, SESOI 0.01; supported if E is
   higher at 3 or more of 5 levels and lower at none, refuted if higher at 1 or fewer. E − A descriptive.
-- **Sources:** [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md). **Amended 2026-11-02 11:28 GMT-3:** a NaN bug (the teacher read gaps as NaN) fixed and the study relaunched from scratch under tag `cls-ema-v2-2026-11-02`; design and rule unchanged.
+- **Sources:** [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md). **Amended 2026-11-02 11:28 GMT-3:** a NaN bug (the teacher read gaps as NaN) fixed and the study relaunched from scratch under tag `cls-ema-v2-2026-11-02`; design and rule unchanged. **Second amendment 2026-11-02 14:31 GMT-3:** seed 202 moved whole to medusa1 (gorgona8 about 3x slower an E cell), against E87's B there; gorgona8's cells unread.
