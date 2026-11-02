@@ -23,4 +23,17 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-01 22:42 GMT-3. Supported: P600 is better on pendigits_60nan, −1.34% [−1.66%, −1.02%]**, every
+seed below zero (−0.99%, −1.49%, −1.54%), the third time at this size (E101 −1.19%, E102 −1.18%).
+
+- **Complete:** all 6 cells on medusa1, 22:16–22:37 GMT-3, no failure.
+- **What follows, as fixed above:** adding pendigits_60nan to ADR 0036 is the user's decision.
+
+### The tally, unedited (`large_batch.py --study e109 --tally`, 2026-11-01 22:42 GMT-3)
+
+```
+## P600 − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_60nan: -1.34% [-1.66%, -1.02%] seeds -0.99%, -1.49%, -1.54% -> better; masked -0.96%
+
+Primary (E109, P600 − M on pendigits_60nan): better -> supported
+```

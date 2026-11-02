@@ -135,7 +135,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E106 | Was E99's TabNet undertrained? Its configuration with a bigger budget | 2026-11-01 | holds | TRIDENT still leads TabNet-B by +0.08 to +0.10; the budget adds +0.008 to +0.016 to TabNet |
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
 | E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – | in progress | |
-| E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 – | in progress | |
+| E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
 
 ## Entries
 
@@ -3299,9 +3299,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   before and after.
 - **Sources:** [imputation-protocol/43](tickets/imputation-protocol/43-adr36-thesis-cells.md).
 
-### E109 · Does the large batch help pendigits_60nan on fresh seeds? (2026-11-01 – )
+### E109 · Does the large batch help pendigits_60nan on fresh seeds? (2026-11-01)
 
-- **Status:** in progress
+- **Status:** supported
 - **Hypothesis:** E101's and E102's −1.2% on pendigits_60nan under P600 replicates on unseen seeds.
 - **Scenarios:** pendigits_60nan × seeds 2121/3232/4343 × arms M and P600, five folds, MLflow off,
   medusa1.
@@ -3309,3 +3309,5 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   SESOI; supported if better.
 - **Sources:** [imputation-protocol/44](tickets/imputation-protocol/44-large-batch-pendigits-60nan.md);
   `large_batch.py --study e109`.
+- **Results (2026-11-01 22:42 GMT-3):** P600 − M −1.34% [−1.66%, −1.02%], seeds −0.99%, −1.49%, −1.54%: better.
+- **Conclusion:** supported; adding pendigits_60nan to ADR 0036 is the user's decision.
