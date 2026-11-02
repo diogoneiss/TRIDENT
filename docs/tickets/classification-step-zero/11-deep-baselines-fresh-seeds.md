@@ -34,4 +34,34 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-02 05:04 GMT-3. Replicated: TRIDENT leads MLP and SAINT on fresh seeds**, by E99's rule.
+
+| TRIDENT − baseline, test macro-F1 (270 fold pairs) | 40nan | 60nan | 80nan |
+|---|---|---|---|
+| MLP | +0.009 (E99 +0.013) | +0.007 (E99 +0.008) | −0.000, no verdict (E99 −0.001) |
+| SAINT | +0.035 (E99 +0.036) | +0.035 (E99 +0.036) | +0.029 (E99 +0.029) |
+
+- **Complete:** 81 TRIDENT evaluations and 54 baseline units, 2026-11-02 00:01–05:03 GMT-3, no
+  failure. The end chain's rsync error is harmless: E111 tunes nothing, so no `json/` exists.
+- **The same picture as E99:** about a point over MLP at 40–60nan, a tie at 80nan, three to four
+  points over SAINT everywhere.
+
+### The tally, unedited (`deep_baselines.py --study e111 --tally`, 2026-11-02 05:04 GMT-3)
+
+```
+## 40nan
+- TRIDENT − mlp: +0.0087 [+0.0042, +0.0133] seeds +0.0073, +0.0074, +0.0115 -> TRIDENT higher
+- TRIDENT − saint: +0.0353 [+0.0285, +0.0421] seeds +0.0311, +0.0349, +0.0398 -> TRIDENT higher
+
+## 60nan
+- TRIDENT − mlp: +0.0069 [+0.0013, +0.0125] seeds +0.0089, +0.0046, +0.0072 -> TRIDENT higher
+- TRIDENT − saint: +0.0347 [+0.0275, +0.0420] seeds +0.0395, +0.0283, +0.0364 -> TRIDENT higher
+
+## 80nan
+- TRIDENT − mlp: -0.0003 [-0.0067, +0.0060] seeds -0.0009, -0.0043, +0.0041 -> no verdict
+- TRIDENT − saint: +0.0293 [+0.0216, +0.0370] seeds +0.0304, +0.0252, +0.0324 -> TRIDENT higher
+
+- leads: mlp yes, saint yes
+
+Primary (E111, E99 on seeds 5151/6262/7373, MLP and SAINT): replicated (fold-pair t, seed agreement)
+```

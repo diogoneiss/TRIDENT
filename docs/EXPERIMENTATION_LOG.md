@@ -136,8 +136,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E107 | The deep baselines at 00 and 20nan (descriptive) | 2026-11-01 | done (descriptive) | TRIDENT ahead of SAINT and TabNet at both; MLP ahead at 00nan (−0.012), TRIDENT ahead at 20nan (+0.009) |
 | E108 | The thesis tables' cells ADR 0036 changed, rerun on today's default | 2026-11-01 – 2026-11-02 | done | only the five ADR 0036 variants moved, all toward TRIDENT; pendigits_20nan now beats TabPFN on both development sets |
 | E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
-| E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – | in progress | |
-| E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 – | in progress | |
+| E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – 2026-11-02 | supported | a signal on 12 of 12 under K and H, none against; no weakening with the tilt at 20nan |
+| E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
 
 ## Entries
 
@@ -3318,20 +3318,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-01 22:42 GMT-3):** P600 − M −1.34% [−1.66%, −1.02%], seeds −0.99%, −1.49%, −1.54%: better.
 - **Conclusion:** supported; adding pendigits_60nan to ADR 0036 is the user's decision. **Added 2026-11-02 on the user's decision (ADR 0036 amended; verified identical to E109's P600 cell).**
 
-### E110 · Does the re-masking spread still rank errors under MNAR and MAR at 20nan? (2026-11-01 – )
+### E110 · Does the re-masking spread still rank errors under MNAR and MAR at 20nan? (2026-11-01 – 2026-11-02)
 
-- **Status:** in progress
+- **Status:** supported
 - **Hypothesis:** E84's and E105's result holds at 20nan.
 - **Scenarios, measures and rule:** E105's at 20nan (63 cells, medusa1, MLflow off); no cell starts after
   2026-11-02 08:30 GMT-3. **Cap removed 2026-11-02 00:04 GMT-3 on the user's word, before any result.**
 - **Sources:** [imputation-protocol/45](tickets/imputation-protocol/45-spread-20nan.md);
   `spread_40nan.py --level 20`.
+- **Results (2026-11-02 05:04 GMT-3):** 63 cells; a signal on 12 of 12 under K and H, none against; ρ +0.14 to +0.55.
+  On biodeg the ranking does not weaken with the tilt at 20nan.
+- **Conclusion:** supported; extending ADR 0030's decision 7 to 20nan is the user's decision.
 
-### E111 · E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? (2026-11-02 – )
+### E111 · E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? (2026-11-02)
 
-- **Status:** in progress
+- **Status:** replicated
 - **Hypothesis:** E99's reading holds on seeds 5151/6262/7373, with no re-tuning of either side.
 - **Scenarios:** 27 variants at 40–80nan; TRIDENT (E98's configurations) and MLP and SAINT (E99's)
   evaluated at the three seeds, ten folds; both machines; no item starts after 2026-11-02 08:30 GMT-3. **Cap removed 2026-11-02 00:04 GMT-3 on the user's word, before any result.**
 - **Measures and decision rule:** E99's; replicated if TRIDENT leads both MLP and SAINT.
 - **Sources:** [classification-step-zero/11](tickets/classification-step-zero/11-deep-baselines-fresh-seeds.md).
+- **Results (2026-11-02 05:04 GMT-3):** TRIDENT − MLP +0.009, +0.007, −0.000 (no verdict) at 40/60/80nan; − SAINT +0.035,
+  +0.035, +0.029.
+- **Conclusion:** replicated; E99's reading holds on seeds it never used.
