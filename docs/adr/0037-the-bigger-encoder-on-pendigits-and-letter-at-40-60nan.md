@@ -47,5 +47,8 @@
   filter on `LAYERS`, `DIM_FEED`, the tag `encoder_final_norm` and `config_source`. Older arms re-run on
   them must pin LAYERS 2, DIM_FEED 32, ENCODER_FINAL_NORM none.
 - **The thesis tables** read pendigits_40nan, pendigits_60nan and letter_40nan in the confirmation set
-  (E44, 707/808/909); on acceptance those cells rerun on gorgona8, as E108 did for ADR 0036.
+  (E44, 707/808/909). Those 9 cells were pre-computed on gorgona8 before the decision (2026-11-03, tag
+  `adr37-thesis-pre-2026-11-03`, ADR 0018's encoder as an override over today's default); on acceptance a
+  default run is checked identical to them, and the tables read them, as E108 did for ADR 0036. If the
+  ADR is not accepted they are never read.
 - **Cost:** about 1.3–1.7x a cell on these variants.

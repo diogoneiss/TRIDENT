@@ -37,15 +37,33 @@ CELLS = [*((v, s) for v in ("pendigits_20nan", "letter_20nan") for s in (101, 20
 MACHINE = {"gorgona8": CELLS, "medusa": []}
 
 
+# ADR 0037 (proposed 2026-11-03): its confirmation-set cells, pre-computed before the user's decision under
+# their own tag with ADR 0018's encoder as an override, read only if the ADR is accepted.
+ADR37_EXPERIMENT = "adr37-thesis-pre-2026-11-03"
+ADR37_CELLS = [(v, s) for v in ("pendigits_40nan", "pendigits_60nan", "letter_40nan") for s in (707, 808, 909)]
+ADR37 = "--adr37" in sys.argv
+if ADR37:
+    sys.argv.remove("--adr37")
+    EXPERIMENT, CELLS = ADR37_EXPERIMENT, ADR37_CELLS
+    MACHINE = {"gorgona8": ADR37_CELLS, "medusa": []}
+
+
 def train(variant: str, seed: int) -> None:
+    from src.training.config import build_training_parser, logged_hyperparameters, resolve_training_request
     from train import main as train_main
+
+    override = None
+    if ADR37:
+        base = logged_hyperparameters(resolve_training_request(
+            build_training_parser().parse_args(["--dataset_name", variant, "--task", "imputation"])))
+        override = {**base, "LAYERS": 4, "DIM_FEED": 256, "ENCODER_FINAL_NORM": "layer"}
 
     out = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-11-01-adr36-thesis"
     train_main(Namespace(
         dataset_name=variant, label_column="class", output_dir=str(out / "results" / f"{variant}_s{seed}"),
         metrics_dir=str(out / "metrics" / f"{variant}_s{seed}"), disable_mlflow=False, plot_losses=False,
         save_model=False, seed=seed, cv_folds=5, task="imputation", score_checkpoints=True, score_calibrated=True,
-        mlflow_tags={"experiment": EXPERIMENT},
+        mlflow_tags={"experiment": EXPERIMENT}, **({"hyperparams_override": override} if override else {}),
     ), return_metrics=True)
     print("CELL_DONE", variant, seed, flush=True)
 

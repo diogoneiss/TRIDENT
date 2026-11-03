@@ -7,10 +7,12 @@ set -u
 N=$1; Q=$2
 export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://127.0.0.1:47731}
-if [ "$(hostname)" = gorgona8 ]; then S=/scratch2/diogoneiss/trident-2026-11-01-adr36-thesis; else S=/scratch/diogoneiss/trident-2026-11-01-adr36-thesis; fi
+# ADR37=1 pre-computes ADR 0037's confirmation cells (adr36_thesis_runs.py --adr37) in their own state.
+if [ -n "${ADR37:-}" ]; then D=trident-2026-11-03-adr37-thesis-pre; X=" --adr37"; else D=trident-2026-11-01-adr36-thesis; X=""; fi
+if [ "$(hostname)" = gorgona8 ]; then S=/scratch2/diogoneiss/$D; else S=/scratch/diogoneiss/$D; fi
 P=$S/progress.log
 mkdir -p $S/logs
-PY="uv run --python 3.11 python -B scripts/experiments/adr36_thesis_runs.py"
+PY="uv run --python 3.11 python -B scripts/experiments/adr36_thesis_runs.py$X"
 ITEMS=$($PY --todo $N $Q) || { echo "$(date '+%F %T %z') queue $N: queue read FAILED" >> $P; exit 1; }
 while read -r v s; do
   [ -z "$v" ] && continue
