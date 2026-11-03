@@ -138,7 +138,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E109 | Does the large batch help pendigits_60nan on fresh seeds? | 2026-11-01 | supported | −1.34%, every seed below zero; the third time (E101, E102); adding it to ADR 0036 is the user's call |
 | E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – 2026-11-02 | supported | a signal on 12 of 12 under K and H, none against; no weakening with the tilt at 20nan |
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
-| E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 – | in progress | |
+| E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 | mixed | E − B higher at 40nan (+0.005) and 60nan (+0.009), equivalent elsewhere; below the SESOI |
 | E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – | in progress | |
 
 ## Entries
@@ -3344,9 +3344,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   +0.035, +0.029.
 - **Conclusion:** replicated; E99's reading holds on seeds it never used.
 
-### E112 · Does an EMA target make classification pre-training help? (T13) (2026-11-02 – )
+### E112 · Does an EMA target make classification pre-training help? (T13) (2026-11-02)
 
-- **Status:** in progress
+- **Status:** mixed
 - **Hypothesis:** with an EMA teacher as the target (`PRETRAIN_OBJECTIVE embedding_ema`), pre-training
   beats no pre-training on classification, where E87 found the legacy objective gave nothing.
 - **Scenarios:** E87's protocol (old sweep configuration, ten folds, 45 variants, seeds
@@ -3354,6 +3354,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** E − B per level, 450 fold pairs, SESOI 0.01; supported if E is
   higher at 3 or more of 5 levels and lower at none, refuted if higher at 1 or fewer. E − A descriptive.
 - **Sources:** [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md). **Amended 2026-11-02 11:28 GMT-3:** a NaN bug (the teacher read gaps as NaN) fixed and the study relaunched from scratch under tag `cls-ema-v2-2026-11-02`; design and rule unchanged. **Second amendment 2026-11-02 14:31 GMT-3:** seed 202 moved whole to medusa1 (gorgona8 about 3x slower an E cell), against E87's B there; gorgona8's cells unread.
+- **Results (2026-11-02 22:34 GMT-3):** 225 E cells. E − B: 00nan +0.0012, 20nan +0.0014 (equivalent), 40nan +0.0050, 60nan
+  +0.0085 (E higher), 80nan +0.0036 (equivalent). E − A: E higher at 40nan (+0.004), equivalent elsewhere.
+- **Conclusion:** mixed. The EMA target is the first pre-training to move classification (40–60nan), by
+  less than the SESOI; the user decides between a fresh-seed check and closing T13.
 
 ### E113 · Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) (2026-11-02 – )
 

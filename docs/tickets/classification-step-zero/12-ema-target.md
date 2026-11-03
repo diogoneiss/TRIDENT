@@ -71,4 +71,36 @@ first (below); no in-scope cell has run.
 
 ## Outcome
 
-(open)
+**Written 2026-11-02 22:34 GMT-3. Mixed: E is higher than B at 40 and 60nan and equivalent at 00, 20 and 80nan.**
+The rule asked for 3 levels; there are 2, and none where B is higher.
+
+| E − B, test macro-F1 (450 fold pairs) | 00nan | 20nan | 40nan | 60nan | 80nan |
+|---|---|---|---|---|---|
+| E (EMA pre-training) − B (none) | +0.001 equiv. | +0.001 equiv. | **+0.005 E higher** | **+0.009 E higher** | +0.004 equiv. |
+| E − A (legacy pre-training), descriptive | +0.002 equiv. | +0.004 equiv. | +0.004 E higher | +0.005 equiv. | +0.002 equiv. |
+
+- **Complete:** all 225 E cells on medusa1 (2026-11-02 11:28–22:34 GMT-3), no failure, read against E87's
+  A and B there.
+- **Reading:** for the first time in this project, pre-training moves classification at all: with the
+  EMA target it is ahead of no pre-training at 40 and 60nan, where E87's legacy objective was not.
+  But the gains are half a point and under a point of macro-F1, below the 0.01 SESOI, and every
+  other level is equivalent to no pre-training. It does not reach the rule's three levels.
+- **What follows, as fixed above:** mixed → reported, and the user chooses (an ADR is not indicated by
+  the rule; a fresh-seed check at 40–60nan, or closing T13, are the options).
+
+### The tally, unedited (`cls_ema.py --tally`, 2026-11-02 22:34 GMT-3)
+
+```
+- 00nan: E − B +0.0012 [-0.0011, +0.0035] seeds +0.0019, +0.0003, +0.0039, -0.0031, +0.0029 -> equivalent
+- 20nan: E − B +0.0014 [-0.0017, +0.0044] seeds -0.0018, +0.0003, +0.0019, +0.0041, +0.0023 -> equivalent
+- 40nan: E − B +0.0050 [+0.0021, +0.0080] seeds +0.0048, +0.0025, +0.0090, +0.0038, +0.0051 -> E higher
+- 60nan: E − B +0.0085 [+0.0051, +0.0120] seeds +0.0079, +0.0022, +0.0127, +0.0106, +0.0093 -> E higher
+- 80nan: E − B +0.0036 [-0.0005, +0.0078] seeds +0.0032, +0.0088, -0.0023, +0.0076, +0.0010 -> equivalent
+  - 00nan, descriptive (all seeds): E − A +0.0017 [-0.0008, +0.0043] -> equivalent
+  - 20nan, descriptive (all seeds): E − A +0.0035 [+0.0006, +0.0064] -> equivalent
+  - 40nan, descriptive (all seeds): E − A +0.0041 [+0.0013, +0.0068] -> E higher
+  - 60nan, descriptive (all seeds): E − A +0.0050 [+0.0018, +0.0083] -> equivalent
+  - 80nan, descriptive (all seeds): E − A +0.0023 [-0.0020, +0.0066] -> equivalent
+
+Primary (E112, E − B): E higher at ['40', '60'], B higher at no level of 5 -> mixed (fold-pair t, seed agreement, SESOI 0.01)
+```
