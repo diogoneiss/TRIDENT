@@ -307,6 +307,9 @@ BIG_ENCODER = ("pendigits_20nan", "letter_20nan")
 # ADR 0036 changed these variants' default; E108 reran, on gorgona8, the cells the thesis tables read.
 ADR36 = ("pendigits_20nan", "letter_20nan", "pendigits_40nan", "letter_40nan", "pendigits_60nan")
 ADR36_EXPERIMENT = "adr36-thesis-g8-2026-11-01"
+# ADR 0037 (bigger encoder) changed these confirmation-set variants again; their E44 cells were rerun on gorgona8.
+ADR37 = ("pendigits_40nan", "pendigits_60nan", "letter_40nan")
+ADR37_EXPERIMENT = "adr37-thesis-pre-2026-11-03"
 
 
 @dataclass(frozen=True)

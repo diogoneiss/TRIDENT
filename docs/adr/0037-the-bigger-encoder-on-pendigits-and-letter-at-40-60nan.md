@@ -1,9 +1,8 @@
 # ADR 0037: The bigger encoder on pendigits and letter at 40 and 60nan
 
-- **Status:** **proposed 2026-11-03** for the user's decision, from E113 and E116
+- **Status:** **accepted 2026-11-03** by the user ("sim, de acordo"), from E113 and E116
   ([imputation-protocol/46](../tickets/imputation-protocol/46-bigger-encoder-large-tables.md),
-  [47](../tickets/imputation-protocol/47-bigger-encoder-confirmation.md)). Nothing is implemented until it
-  is accepted.
+  [47](../tickets/imputation-protocol/47-bigger-encoder-confirmation.md)); verified 10:43 GMT-3.
 - **Builds on:** ADR 0018 (the bigger encoder on pendigits_20nan and letter_20nan), ADR 0036 (P600 on
   pendigits at 20–60nan and letter at 20–40nan), ADR 0005 (promoted per-variant files).
 
@@ -25,7 +24,7 @@
 - **Cost (gorgona8, E113, two queues sharing the GPU):** pendigits 32–33 against 19–22 minutes a cell,
   letter 54–63 against 32–50 (about 1.3–1.7x).
 
-## Decision (proposed)
+## Decision
 
 1. **pendigits_40nan, pendigits_60nan, letter_40nan and letter_60nan train with ADR 0018's encoder:**
    LAYERS 4, DIM_FEED 256, ENCODER_FINAL_NORM layer.
@@ -36,10 +35,21 @@
    was mixed and under the SESOI (pendigits −0.39%, letter +0.37%); electricity gained nothing from the
    bigger encoder in E38.
 
-## Verification (on acceptance)
+## Verification (2026-11-03 10:43 GMT-3)
 
-- A plain default run of each variant at one of E116's seeds equals E116's BIG cell of that seed and
-  machine on every fold metric; both regression fixtures and the unit suite pass.
+- **The files** (c349aa3): `datasets/hiperparams/pendigits/pendigits_{40,60}nan.imputation.json` and
+  `datasets/hiperparams/letter/letter_{40,60}nan.imputation.json` resolve to ADR 0018's encoder over today's
+  default (ADR 0036's P600 included on pendigits_40/60nan and letter_40nan).
+- **Default runs match E116's BIG:** a plain imputation run of each of the four variants at seed 7171 on
+  medusa1, with no override and MLflow off, equals E116's BIG cell of that seed and machine on all 75
+  numeric fold-metric columns, timings aside, none differing.
+- **Default run matches the pre-computed thesis cell:** a plain run of pendigits_40nan at seed 707 on
+  gorgona8 equals its cell under tag `adr37-thesis-pre-2026-11-03` on all 75 columns, none differing.
+- **Tests:** the unit suite with the typing gate (461) and both regression fixtures pass.
+- **The thesis tables** now read the 9 pre-computed cells (`report_common.ADR37`, `ADR37_EXPERIMENT`).
+  Against TabPFN on the confirmation set (`tabpfn_report.py`, before → after), K − TabPFN:
+  pendigits_40nan −0.0279 → −0.0489, pendigits_60nan −0.0244 → −0.0356, letter_40nan −0.0431 → −0.0661;
+  no other variant moved and no call changed.
 
 ## Consequences
 
@@ -48,7 +58,6 @@
   them must pin LAYERS 2, DIM_FEED 32, ENCODER_FINAL_NORM none.
 - **The thesis tables** read pendigits_40nan, pendigits_60nan and letter_40nan in the confirmation set
   (E44, 707/808/909). Those 9 cells were pre-computed on gorgona8 before the decision (2026-11-03, tag
-  `adr37-thesis-pre-2026-11-03`, ADR 0018's encoder as an override over today's default); on acceptance a
-  default run is checked identical to them, and the tables read them, as E108 did for ADR 0036. If the
-  ADR is not accepted they are never read.
+  `adr37-thesis-pre-2026-11-03`, ADR 0018's encoder as an override over today's default); a default run was
+  checked identical to one of them (Verification), and the tables read them, as E108 did for ADR 0036.
 - **Cost:** about 1.3–1.7x a cell on these variants.
