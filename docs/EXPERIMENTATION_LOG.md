@@ -3469,3 +3469,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-03 16:03 GMT-3):** TRIDENT − MLP under MNAR +0.0025 [−0.0090, +0.0141], seeds all positive, no
   verdict; SAINT under MNAR, and both under MAR, TRIDENT higher as in E115.
 - **Conclusion:** no verdict; with E115, no lead over MLP can be claimed under MNAR.
+
+### E121 · Does ADR 0018's bigger encoder help pendigits and letter at 20nan under MAR and MNAR? (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** the bigger encoder's MCAR gain at 20nan (E38) holds on MAR (`marf`) and MNAR (`probit`), as
+  E119 found at 40–60nan.
+- **Scenarios:** 4 variants × arms M (sibling's configuration, encoder undone) and BIG × seeds 42 (gorgona8),
+  7/13 (medusa1), five folds, MLflow off.
+- **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; per mechanism, holds if better on
+  both and worse on none, does not hold if better on neither or worse on any.
+- **Sources:** [imputation-protocol/50](tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md).

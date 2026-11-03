@@ -22,6 +22,7 @@ E116 (imputation-protocol/47): ``--study e116`` first, E113 on fresh seeds 6161 
 E117 (imputation-protocol/48): ``--study e117`` first, M and BIG on pendigits_80nan and letter_80nan.
 E119 (imputation-protocol/49): ``--study e119`` first, M and BIG on pendigits and letter's MAR (marf) and MNAR
 (probit) variants at 40/60nan, both arms over the MCAR sibling's configuration (ADR 0037's encoder off in M).
+E121 (imputation-protocol/50): ``--study e121`` first, the same at 20nan (ADR 0018's encoder off in M).
 """
 
 from __future__ import annotations
@@ -121,6 +122,15 @@ def _use_e119() -> None:
     ARMS, STUDY = ("M", "BIG"), "e119"
 
 
+def _use_e121() -> None:
+    """E121: ADR 0018's encoder off MCAR at 20nan, as E119 at 40-60nan, split by seed (ADR 0035)."""
+    global STATE, VARIANTS, SEEDS, ARMS, STUDY
+    STATE = STATE.parent / "trident-2026-10-30-large-batch-e121"  # run_large_batch_queue.sh names it so
+    VARIANTS = tuple(f"{b}_{m}_20nan" for m in ("marf", "probit") for b in ("pendigits", "letter"))
+    SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}
+    ARMS, STUDY = ("M", "BIG"), "e121"
+
+
 def sibling(variant: str) -> str:
     """The MCAR variant whose resolved configuration an E119 variant trains with."""
     base, *_, level = variant.split("_")
@@ -147,7 +157,7 @@ def train(arm: str, variant: str, seed: int) -> None:
 
     out = cell_dir(STATE, arm, variant, seed)
     override = None
-    if STUDY == "e119":
+    if STUDY in ("e119", "e121"):
         # No file for the new variants: both arms take the sibling's resolved configuration (ADR 0036/0037).
         base = logged_hyperparameters(resolve_training_request(
             build_training_parser().parse_args(["--dataset_name", sibling(variant), "--task", "imputation"])))
@@ -211,12 +221,15 @@ def tally() -> None:
     if missing:
         print(f"\n- missing: {len(missing)}: {', '.join(missing)}\n\nPrimary: incomplete")
         return
-    if STUDY == "e119":
+    if STUDY in ("e119", "e121"):
         for name, tag in (("MAR (marf)", "_marf_"), ("MNAR (probit)", "_probit_")):
             own = [c for v, c in calls.items() if tag in v]
             better, worse = own.count("better"), own.count("worse")
-            reading = "holds" if better >= 3 and worse == 0 else "does not hold" if better <= 1 or worse else "partial"
-            print(f"\nPrimary (E119, BIG − M), {name}: {common.tally(own)} of {len(own)} -> {reading}")
+            if STUDY == "e119":
+                reading = "holds" if better >= 3 and worse == 0 else "does not hold" if better <= 1 or worse else "partial"
+            else:  # E121: two variants a mechanism
+                reading = "holds" if better == len(own) and worse == 0 else "does not hold" if better == 0 or worse else "partial"
+            print(f"\nPrimary ({STUDY.upper()}, BIG − M), {name}: {common.tally(own)} of {len(own)} -> {reading}")
         return
     if STUDY == "e117":
         better, worse = list(calls.values()).count("better"), list(calls.values()).count("worse")
@@ -278,6 +291,9 @@ if __name__ == "__main__":
         argv = argv[2:]
     elif argv[:2] == ["--study", "e119"]:
         _use_e119()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e121"]:
+        _use_e121()
         argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] in ARMS and argv[2] in VARIANTS:
         train(argv[1], argv[2], int(argv[3]))
