@@ -50,3 +50,32 @@ sooner, gorgona8's one unstarted pair, `letter_probit_60nan` seed 42, runs on me
 arms there (ADR 0035's pairing holds; seed 42 is now split between machines on this one variant). gorgona8 stops
 between cells once queue 1 starts its last cell, so it never starts that pair. `--tally` reads the pair from
 medusa1's directory (`MOVED` in `large_batch.py`). Nothing else changes: same cells, seeds, rule.
+
+## Outcome (2026-11-03 19:54 GMT-3): holds under MAR and under MNAR
+
+All 48 cells done, none failed (the moved pair ran on medusa1 as amended; gorgona8 stopped on the STOP file
+after its last pair). The unedited `large_batch.py --study e119 --tally`:
+
+```
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_marf_40nan: -3.61% [-4.41%, -2.81%] seeds -3.81%, -2.97%, -4.05% -> better; masked -4.06%
+- pendigits_marf_60nan: -4.73% [-5.25%, -4.21%] seeds -4.96%, -4.59%, -4.65% -> better; masked -3.04%
+- letter_marf_40nan: -5.94% [-6.26%, -5.63%] seeds -6.02%, -5.92%, -5.89% -> better; masked -5.35%
+- letter_marf_60nan: -5.06% [-5.41%, -4.70%] seeds -4.86%, -4.98%, -5.33% -> better; masked -2.32%
+- pendigits_probit_40nan: -6.89% [-7.34%, -6.43%] seeds -7.17%, -6.22%, -7.27% -> better; masked -4.37%
+- pendigits_probit_60nan: -3.55% [-3.93%, -3.18%] seeds -3.49%, -3.32%, -3.85% -> better; masked -0.87%
+- letter_probit_40nan: -5.30% [-5.64%, -4.96%] seeds -5.65%, -5.14%, -5.11% -> better; masked -3.77%
+- letter_probit_60nan: -1.79% [-1.97%, -1.61%] seeds -1.88%, -1.56%, -1.92% -> better; masked +0.20%
+
+Primary (E119, BIG − M), MAR (marf): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds
+
+Primary (E119, BIG − M), MNAR (probit): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds
+```
+
+- **MAR (marf): holds**, BIG better on 4 of 4 (−3.6% to −5.9%), worse on none.
+- **MNAR (probit): holds**, BIG better on 4 of 4 (−1.8% to −6.9%), worse on none.
+- All 24 seed means are negative (BIG better). Secondary, masked: better on 7 of 8; `letter_probit_60nan`
+  +0.20% (not scored by the rule).
+- **What follows:** the user decides whether ADR 0037 states its scope as all three mechanisms; until then it
+  stays as written (MCAR evidence).
+

@@ -3443,7 +3443,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E119 · Does ADR 0037's bigger encoder help pendigits and letter under MAR and MNAR? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** holds (MAR and MNAR)
 - **Hypothesis:** BIG's MCAR gain (E113, E116) holds on MAR (`marf`) and MNAR (`probit`) variants at 40–60nan.
 - **Scenarios:** 8 new variants × arms M (sibling's configuration, encoder undone) and BIG × seeds 42
   (gorgona8), 7/13 (medusa1), five folds, MLflow off.
@@ -3452,6 +3452,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/49](tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md).
 - **Amendment (2026-11-03 18:56 GMT-3):** the pair `letter_probit_60nan` seed 42 moved from gorgona8 to medusa1
   (both arms there) to finish sooner; same cells and rule.
+- **Results (2026-11-03 19:54 GMT-3):** BIG − M better on 4 of 4 MAR variants (−3.6% to −5.9%) and 4 of 4 MNAR (−1.8% to
+  −6.9%), worse on none; every seed mean negative.
+- **Conclusion:** ADR 0037's encoder helps pendigits and letter at 40–60nan under MAR and MNAR as under MCAR;
+  the ADR's scope is the user's decision.
 
 ### E120 · Does TRIDENT lead MLP under MNAR on fresh seeds? (2026-11-03)
 
