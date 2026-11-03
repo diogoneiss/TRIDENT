@@ -3427,7 +3427,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E118 · Does pre-training help classification under the upstream code's defaults? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** refuted
 - **Hypothesis:** the paper's Table 4 pre-training gain (about +1.7 macro-F1) shows under the upstream
   code's built-in defaults (40/40 epochs), where E87's old sweep (300/150) showed none. The paper's tuned
   per-dataset values are not in the repository and stay untested.
@@ -3436,3 +3436,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** E87's: B − A on test macro-F1, 450 fold pairs a level, SESOI 0.01;
   supported if A is higher at 3 or more of 5 levels and B at none, refuted if at 1 or none.
 - **Sources:** [classification-step-zero/15](tickets/classification-step-zero/15-upstream-defaults-pretraining.md), T41.
+- **Results (2026-11-03 14:26 GMT-3):** B − A equivalent at every level (inside ±0.01), from −0.0009 (60nan) to +0.0023
+  (00nan); A higher at no level, B at none. 450 cells, none failed.
+- **Conclusion:** refuted; no pre-training gain under the upstream defaults, as under E87's old sweep. The
+  paper's tuned per-pair values stay untested.

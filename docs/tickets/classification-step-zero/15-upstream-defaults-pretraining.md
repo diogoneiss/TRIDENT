@@ -59,3 +59,48 @@ E87's, verbatim, so the two halves read the same:
 - **Read only with every cell done.** The tally refuses a partial read; a cut stays partial, with no call.
 - **Descriptive:** each table's mean B − A per level; A's mean macro-F1 against Table 4's TRIDENT column
   (0.8426, 0.8128, 0.7564, 0.7107, 0.5806) and E87's.
+
+## Outcome
+
+**Written 2026-11-03 14:26 GMT-3. Refuted: no pre-training gain under the upstream defaults either.** A is higher at no
+level and B at no level; at every level the 95% interval of B − A lies inside ±0.01 (equivalent), from −0.0009
+(60nan) to +0.0023 (00nan).
+
+- **Complete:** all 450 cells, 2026-11-03 11:02–13:36 GMT-3, none failed; seeds 42/7/13/101 on medusa1 (360),
+  202 on gorgona8 (90), smoke cells included.
+- **Amendment (2026-11-03, about 12:00–14:24 GMT-3):** the account's home in the department's directory moved to
+  `/home/pos/diogoneiss`, which broke ssh between the machines. Training was unaffected (the MLflow tunnel
+  stayed up); the end chain waited, copied gorgona8's results to medusa1 at 14:26 and its tally failed on a
+  missing `uv` in the new home's PATH. The tally was rerun by hand on medusa1, at commit 7feea1c, with the old
+  home's PATH. No cell or rule changed.
+- **A's mean against Table 4's TRIDENT and E87's A** (descriptive; other protocol, other split):
+
+| level | E118 A | Table 4 TRIDENT | E87 A |
+|---|---|---|---|
+| 00nan | 0.8516 | 0.8426 | 0.8625 |
+| 20nan | 0.7965 | 0.8128 | 0.8043 |
+| 40nan | 0.7444 | 0.7564 | 0.7515 |
+| 60nan | 0.6683 | 0.7107 | 0.6720 |
+| 80nan | 0.5555 | 0.5806 | 0.5592 |
+
+- **What it says:** neither the old sweep (E87) nor the untuned upstream defaults (E118) show the paper's
+  +1.7 points; the gain, if it exists, depends on the paper's per-pair tuned values, which stay untested. The
+  thesis can say pre-training does not help classification under these two configurations, not that the paper
+  fails to replicate.
+
+### The tally, unedited (`cls_tenfold.py --study e118 --tally`, medusa1, 2026-11-03 14:26 GMT-3)
+
+```
+- 00nan (A's mean 0.8516): B − A +0.0023 [-0.0000, +0.0046] seeds +0.0048, +0.0022, +0.0002, +0.0031, +0.0011, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0042; credit-g +0.0085; electricity +0.0088; kc2 -0.0060; kr-vs-kp -0.0005; letter +0.0099; pendigits +0.0000; spambase +0.0028; vehicle +0.0014
+- 20nan (A's mean 0.7965): B − A +0.0013 [-0.0014, +0.0041] seeds +0.0046, +0.0016, +0.0004, +0.0007, -0.0007, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0037; credit-g -0.0010; electricity +0.0039; kc2 -0.0000; kr-vs-kp +0.0022; letter +0.0113; pendigits +0.0003; spambase +0.0005; vehicle -0.0016
+- 40nan (A's mean 0.7444): B − A +0.0005 [-0.0028, +0.0037] seeds +0.0043, -0.0018, -0.0066, +0.0031, +0.0032, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0020; credit-g +0.0070; electricity +0.0030; kc2 -0.0015; kr-vs-kp -0.0024; letter +0.0083; pendigits -0.0007; spambase -0.0013; vehicle -0.0062
+- 60nan (A's mean 0.6683): B − A -0.0009 [-0.0045, +0.0027] seeds -0.0065, +0.0074, +0.0007, -0.0028, -0.0033, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg +0.0006; credit-g +0.0008; electricity +0.0011; kc2 -0.0049; kr-vs-kp +0.0038; letter +0.0037; pendigits +0.0007; spambase -0.0012; vehicle -0.0127
+- 80nan (A's mean 0.5555): B − A +0.0012 [-0.0036, +0.0060] seeds +0.0053, -0.0089, +0.0055, +0.0030, +0.0012, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0017; credit-g +0.0002; electricity +0.0020; kc2 +0.0072; kr-vs-kp -0.0014; letter +0.0007; pendigits -0.0007; spambase -0.0050; vehicle +0.0096
+
+Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-training gain (fold-pair t, seed agreement, SESOI 0.01)
+```
