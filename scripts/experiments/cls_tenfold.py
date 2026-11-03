@@ -8,11 +8,16 @@ E71's arms A (the old sweep's ``hyperparameters.json`` as is) and B (``EPOCHS_PR
 ``cosine_legacy``, on ten folds (``--cv_folds 10``) and five seeds, MLflow tag
 ``experiment=cls-tenfold-2026-10-28``. Both ``--todo`` and ``--tally`` read ``raw_fold_metrics.csv``
 on disk, as E71 did, so neither waits on a store copy. Run from the checkout root on medusa1.
+
+E118 (classification-step-zero/15, T41): ``--study e118`` first. The upstream code's built-in defaults
+(commit 14d226c, 40/40 epochs) with no sweep file: A ``EPOCHS_PRE 40``, B ``EPOCHS_PRE 0``, both
+``EPOCH_FINE 40``; split by seed between the machines (ADR 0035), ``--todo`` deals this host's seeds.
 """
 
 from __future__ import annotations
 
 import json
+import socket
 import sys
 from argparse import Namespace
 from pathlib import Path
@@ -36,13 +41,29 @@ ARMS = {"A": {}, "B": {"EPOCHS_PRE": 0}}
 FOLDS = 10
 QUEUES = 8
 SESOI = 0.01
+SWEEP = True
+HOST_SEEDS: dict[str, tuple[int, ...]] = {}
+
+
+def _use_e118() -> None:
+    """E118: T41's upstream-defaults half, split by seed between the machines (ADR 0035)."""
+    global EXPERIMENT, STATE, ARMS, QUEUES, SWEEP, HOST_SEEDS
+    EXPERIMENT = "cls-upstream-defaults-2026-11-03"
+    STATE = Path("/scratch2/diogoneiss" if socket.gethostname() == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-11-03-cls-upstream"
+    ARMS = {"A": {"EPOCHS_PRE": 40, "EPOCH_FINE": 40}, "B": {"EPOCHS_PRE": 0, "EPOCH_FINE": 40}}
+    HOST_SEEDS = {"gorgona8": (202,), "medusa": (42, 7, 13, 101)}
+    QUEUES = {"gorgona8": 2, "medusa": 8}[socket.gethostname()]
+    SWEEP = False
 
 
 def train(variant: str, seed: int, arm: str) -> None:
     from train import main as train_main
 
-    run_id, artifacts = sweep_run(variant)
-    override = json.loads((artifacts / "parameters" / "hyperparameters.json").read_text()) | ARMS[arm]
+    if SWEEP:
+        run_id, artifacts = sweep_run(variant)
+        override = json.loads((artifacts / "parameters" / "hyperparameters.json").read_text()) | ARMS[arm]
+    else:
+        run_id, override = "none", dict(ARMS[arm])
     print("cell", variant, seed, arm, "sweep run", run_id, "override", json.dumps(override), flush=True)
     args = Namespace(
         dataset_name=variant, label_column="class",
@@ -58,7 +79,7 @@ def train(variant: str, seed: int, arm: str) -> None:
 
 def todo(which: int) -> None:
     """Seed by seed in SEEDS order; within a seed, the largest tables first, dealt greedily by cost."""
-    for seed in SEEDS:
+    for seed in HOST_SEEDS[socket.gethostname()] if HOST_SEEDS else SEEDS:
         work = sorted(((ROWS[v.split("_")[0]] * ARM_COST[a], v, a) for v in VARIANTS for a in ARMS), key=lambda w: (-w[0], w[1], w[2]))
         loads = [0.0] * QUEUES
         for cost, variant, arm in work:
@@ -108,6 +129,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:2] == ["--study", "e118"]:
+        _use_e118()
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[3] in ARMS:
         train(argv[1], int(argv[2]), argv[3])
     elif argv[:1] == ["--todo"] and len(argv) == 2:

@@ -748,6 +748,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **E87 done 2026-10-29: refuted.** B − A is equivalent (inside ±0.01) at every level, from
     −0.0035 to +0.0022. Under the old sweep, pre-training adds nothing, and the paper's gain is
     excluded. The paper's-parameters half stays open.
+  - **The upstream-defaults half, running from 2026-11-03 as E118**
+    ([classification-step-zero/15](tickets/classification-step-zero/15-upstream-defaults-pretraining.md)),
+    on the user's go ("rode o t41 agora nas duas"): the upstream code's built-in defaults (40/40 epochs), E87's
+    arms, cells and rule, split by seed between the machines. The paper's tuned values stay untested.
 
 - **T42 · Can one study's cells run on both servers?** (the user's go, 2026-10-28: "vamos testar o
   0!").

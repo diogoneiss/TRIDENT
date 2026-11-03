@@ -3424,3 +3424,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/48](tickets/imputation-protocol/48-bigger-encoder-80nan.md).
 - **Results (2026-11-03 06:09 GMT-3):** BIG − M pendigits_80nan −0.39% (better), letter_80nan +0.37% (worse).
 - **Conclusion:** mixed, both under the SESOI; ADR 0037 keeps its 40–60nan scope.
+
+### E118 · Does pre-training help classification under the upstream code's defaults? (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** the paper's Table 4 pre-training gain (about +1.7 macro-F1) shows under the upstream
+  code's built-in defaults (40/40 epochs), where E87's old sweep (300/150) showed none. The paper's tuned
+  per-dataset values are not in the repository and stay untested.
+- **Scenarios:** arms A (`EPOCHS_PRE 40`) and B (`EPOCHS_PRE 0`), both `EPOCH_FINE 40`, `cosine_legacy`;
+  9 tables × 5 levels × seeds 42/7/13/101 (medusa1) and 202 (gorgona8), ten folds; 450 cells.
+- **Measures and decision rule:** E87's: B − A on test macro-F1, 450 fold pairs a level, SESOI 0.01;
+  supported if A is higher at 3 or more of 5 levels and B at none, refuted if at 1 or none.
+- **Sources:** [classification-step-zero/15](tickets/classification-step-zero/15-upstream-defaults-pretraining.md), T41.
