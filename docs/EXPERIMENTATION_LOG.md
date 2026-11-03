@@ -140,6 +140,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
 | E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 | mixed | E − B higher at 40nan (+0.005) and 60nan (+0.009), equivalent elsewhere; below the SESOI |
 | E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – | in progress | |
+| E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – | in progress | |
 
 ## Entries
 
@@ -3369,3 +3370,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   SESOI; supported if better on 2 or more of 4 and worse on none, refuted if better on none.
 - **Sources:** [imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md);
   `large_batch.py --study e113`.
+
+### E114 · Does the EMA target's gain at 40–60nan replicate on fresh seeds? (2026-11-02 – )
+
+- **Status:** in progress
+- **Hypothesis:** E112's E − B gains at 40 and 60nan hold on seeds 3131/4141/5252.
+- **Scenarios:** 18 variants at 40/60nan × 3 seeds × arms E and B, E87's protocol, medusa1.
+- **Measures and decision rule:** E − B per level, 270 fold pairs, SESOI 0.01; replicated if E higher at
+  both levels, not replicated if at neither or B higher at either, partial otherwise.
+- **Sources:** [classification-step-zero/13](tickets/classification-step-zero/13-ema-target-confirmation.md).

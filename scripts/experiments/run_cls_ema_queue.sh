@@ -7,10 +7,12 @@ set -u
 N=$1; Q=$2
 export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-http://127.0.0.1:47731}
-if [ "$(hostname)" = gorgona8 ]; then S=/scratch2/diogoneiss/trident-2026-11-02-cls-ema; else S=/scratch/diogoneiss/trident-2026-11-02-cls-ema; fi
+STUDY=${STUDY:-}
+if [ "$STUDY" = e114 ]; then D=trident-2026-11-03-cls-ema-e114; else D=trident-2026-11-02-cls-ema; fi
+if [ "$(hostname)" = gorgona8 ]; then S=/scratch2/diogoneiss/$D; else S=/scratch/diogoneiss/$D; fi
 P=$S/progress.log
 mkdir -p $S/logs
-PY="uv run --python 3.11 python -B scripts/experiments/cls_ema.py"
+PY="uv run --python 3.11 python -B scripts/experiments/cls_ema.py${STUDY:+ --study $STUDY}"
 ITEMS=$($PY --todo $N $Q) || { echo "$(date '+%F %T %z') queue $N: queue read FAILED" >> $P; exit 1; }
 while read -r v s a; do
   [ -z "$a" ] && continue
