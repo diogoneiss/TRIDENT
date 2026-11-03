@@ -2,8 +2,8 @@
     "DIM": 128,
     "HIDDEN_DIM": 16,
     "HEADS": 16,
-    "LAYERS": 2,
-    "DIM_FEED": 32,
+    "LAYERS": 4,
+    "DIM_FEED": 256,
     "DROPOUT": 0.2,
     "EPOCHS_PRE": 300,
     "BATCH": 1024,
@@ -28,5 +28,5 @@
     "DECODE_CHECKPOINT": "induced",
     "DECODE_CALIBRATION": "auto",
     "PRETRAIN_GAP_TOKEN": "null",
-    "ENCODER_FINAL_NORM": "none"
+    "ENCODER_FINAL_NORM": "layer"
 }
