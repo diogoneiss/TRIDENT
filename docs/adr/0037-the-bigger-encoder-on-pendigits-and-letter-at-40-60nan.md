@@ -3,6 +3,8 @@
 - **Status:** **accepted 2026-11-03** by the user ("sim, de acordo"), from E113 and E116
   ([imputation-protocol/46](../tickets/imputation-protocol/46-bigger-encoder-large-tables.md),
   [47](../tickets/imputation-protocol/47-bigger-encoder-confirmation.md)); verified 10:43 GMT-3.
+- **Extended 2026-11-03 20:39 GMT-3** by the user ("vale para todos então") to MAR and MNAR, from E119
+  ([imputation-protocol/49](../tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md)): decision 3.
 - **Builds on:** ADR 0018 (the bigger encoder on pendigits_20nan and letter_20nan), ADR 0036 (P600 on
   pendigits at 20–60nan and letter at 20–40nan), ADR 0005 (promoted per-variant files).
 
@@ -34,6 +36,22 @@
 2. **No other variant changes.** At 80nan E117 ([48](../tickets/imputation-protocol/48-bigger-encoder-80nan.md))
    was mixed and under the SESOI (pendigits −0.39%, letter +0.37%); electricity gained nothing from the
    bigger encoder in E38.
+
+3. **The scope covers all three mechanisms (2026-11-03).** Under MAR (`marf`) and MNAR (`probit`), E119
+   trained BIG (the MCAR sibling's resolved configuration) against M (the same, encoder undone):
+
+| variant | MAR (marf) | MNAR (probit) |
+|---|---|---|
+| pendigits_40nan | −3.61% better | −6.89% better |
+| pendigits_60nan | −4.73% better | −3.55% better |
+| letter_40nan | −5.94% better | −5.30% better |
+| letter_60nan | −5.06% better | −1.79% better |
+
+   - Through promoted files: `<base>_{marf,probit}_{40,60}nan.imputation.json` for pendigits and letter,
+     each a copy of its MCAR sibling's file, so a plain run trains what E119's BIG trained. The copy carries
+     ADR 0036's P600 where the sibling has it (pendigits 40/60nan, letter_40nan); both E119 arms trained it, so
+     E119 tested the encoder on top of P600, not P600 itself. No code change.
+   - Not covered: `marfctl` (E64's control) and 20nan off MCAR, which E119 did not run.
 
 ## Verification (2026-11-03 10:43 GMT-3)
 
