@@ -3334,7 +3334,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `spread_40nan.py --level 20`.
 - **Results (2026-11-02 05:04 GMT-3):** 63 cells; a signal on 12 of 12 under K and H, none against; ρ +0.14 to +0.55.
   On biodeg the ranking does not weaken with the tilt at 20nan.
-- **Conclusion:** supported; extending ADR 0030's decision 7 to 20nan is the user's decision.
+- **Conclusion:** supported; extending ADR 0030's decision 7 to 20nan is the user's decision. **Extended 2026-11-03 on the user's decision (ADR 0030, decision 7).**
 
 ### E111 · E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? (2026-11-02)
 
