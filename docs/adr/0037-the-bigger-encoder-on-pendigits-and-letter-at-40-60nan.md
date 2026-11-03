@@ -69,6 +69,15 @@
   pendigits_40nan −0.0279 → −0.0489, pendigits_60nan −0.0244 → −0.0356, letter_40nan −0.0431 → −0.0661;
   no other variant moved and no call changed.
 
+## Verification of decision 3 (2026-11-03 20:46 GMT-3)
+
+- **The files** (64aa5de) resolve, for all eight variants, to the same configuration as their MCAR sibling,
+  with ADR 0018's encoder.
+- **Default run matches E119's BIG:** a plain run of pendigits_marf_40nan at seed 7 on medusa1, no override,
+  MLflow off, five folds, equals E119's BIG cell of that seed and machine on all 68 numeric fold-metric
+  columns, none differing.
+- **Tests:** the unit suite with the typing gate (461) passes.
+
 ## Consequences
 
 - **Comparisons across time:** runs of these four variants after the decision train a bigger encoder;
