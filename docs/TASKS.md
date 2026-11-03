@@ -241,6 +241,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   gradient stopped, with no transformer layer (corrected 2026-10-19 by T28's report); SMART adds an EMA target
   encoder (decay 0.996) and an embedding decoder. E04, E05 and E24 suggest the pre-training
   collapses. **A future task, by the user's decision (2026-10-17):** plan §2h; after T28.
+  **Done 2026-11-03 for classification (E112 mixed, E114 partial; [classification-step-zero/12](tickets/classification-step-zero/12-ema-target.md), [13](tickets/classification-step-zero/13-ema-target-confirmation.md)):** `PRETRAIN_OBJECTIVE embedding_ema` beats no pre-training by under a point at 40–60nan, below the SESOI; closed, the flag stays off. Imputation was left out on T28's diagnosis (washout, not collapse).
 - **T28 · Why pre-training adds little to direct imputation, and what the ingested literature
   offers** (the user's request, 2026-10-17). This is an investigation, not a run.
   - **The fork's evidence:**
@@ -360,6 +361,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost:** about 2× the training time (1.98× pendigits, 2.05× letter).
   - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
+  **E113 done 2026-11-03 ([imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md)): supported** on today's defaults, better on 4 of 4 (pendigits −6.0%/−3.1%, letter −5.5%/−1.1% at 40/60nan); E116 confirms on fresh seeds before an ADR.
 - **T33 · A clean `[NULL]`/`[MASK]` ablation in the decode stage** (proposed 2026-10-22, about
   19:25 GMT-3, from the wiki's sync of the fork; accepted by the user; see below).
   - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".

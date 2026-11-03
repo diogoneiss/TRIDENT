@@ -27,4 +27,21 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-03 02:14 GMT-3. Partial: E is higher than B at 60nan (+0.008 [+0.003, +0.013]) and has no verdict at
+40nan (+0.009 [+0.005, +0.013], one seed at −0.0005).** The rule asked for both levels.
+
+- **Complete:** all 108 cells on medusa1 (2026-11-02 22:37 to 2026-11-03 02:13 GMT-3), no failure.
+- **Reading:** the direction repeats at both levels (+0.009 and +0.008, close to E112's +0.005 and
+  +0.009), but the gain stays under the 0.01 SESOI and misses seed agreement at 40nan by one seed.
+- **What follows, as fixed above:** not replicated in full, so T13 closes for classification: the EMA
+  target moves classification pre-training a little at 40–60nan, below what the project counts as
+  relevant. No ADR. The flag stays, off by default.
+
+### The tally, unedited (`cls_ema.py --study e114 --tally`, 2026-11-03 02:14 GMT-3)
+
+```
+- 40nan: E − B +0.0086 [+0.0045, +0.0127] seeds +0.0154, +0.0109, -0.0005 -> no verdict
+- 60nan: E − B +0.0083 [+0.0033, +0.0134] seeds +0.0117, +0.0013, +0.0121 -> E higher
+
+Primary (E114, E − B at 40/60nan, fresh seeds): E higher at ['60'], B higher at no level -> partial (fold-pair t, seed agreement, SESOI 0.01)
+```

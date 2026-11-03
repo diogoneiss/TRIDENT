@@ -140,7 +140,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
 | E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 | mixed | E − B higher at 40nan (+0.005) and 60nan (+0.009), equivalent elsewhere; below the SESOI |
 | E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – 2026-11-03 | supported | better on 4 of 4: pendigits −6.0%/−3.1%, letter −5.5%/−1.1% |
-| E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – | in progress | |
+| E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – 2026-11-03 | partial | E higher at 60nan (+0.008), no verdict at 40nan (+0.009, one seed below zero); below the SESOI; T13 closes |
 | E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
 | E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 – | in progress | |
 
@@ -3376,14 +3376,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   letter_60nan −1.12%, all better with every seed below zero.
 - **Conclusion:** supported; a fresh-seed confirmation (E116) before an ADR for the user.
 
-### E114 · Does the EMA target's gain at 40–60nan replicate on fresh seeds? (2026-11-02 – )
+### E114 · Does the EMA target's gain at 40–60nan replicate on fresh seeds? (2026-11-02 – 2026-11-03)
 
-- **Status:** in progress
+- **Status:** partial
 - **Hypothesis:** E112's E − B gains at 40 and 60nan hold on seeds 3131/4141/5252.
 - **Scenarios:** 18 variants at 40/60nan × 3 seeds × arms E and B, E87's protocol, medusa1.
 - **Measures and decision rule:** E − B per level, 270 fold pairs, SESOI 0.01; replicated if E higher at
   both levels, not replicated if at neither or B higher at either, partial otherwise.
 - **Sources:** [classification-step-zero/13](tickets/classification-step-zero/13-ema-target-confirmation.md).
+- **Results (2026-11-03 02:14 GMT-3):** E − B 40nan +0.0086 (no verdict, seed 5252 −0.0005), 60nan +0.0083 (E higher).
+- **Conclusion:** partial; T13 closes for classification (a small, sub-SESOI gain at 40–60nan), no ADR.
 
 ### E115 · TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) (2026-11-03)
 
