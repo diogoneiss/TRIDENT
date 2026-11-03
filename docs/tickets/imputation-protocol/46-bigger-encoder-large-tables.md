@@ -28,4 +28,23 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-03 01:44 GMT-3. Supported: BIG is better on 4 of 4, every seed below zero** — pendigits_40nan −6.0%,
+pendigits_60nan −3.1%, letter_40nan −5.5%, letter_60nan −1.1% on the induced error. On today's defaults
+(ADR 0036's P600 included) the bigger encoder helps more than E59 saw over the older ones.
+
+- **Complete:** all 24 cells on gorgona8, 2026-11-02 17:22 to 2026-11-03 01:43 GMT-3, no failure.
+- **Descriptive:** the masked score moves the same way, by less (−4.0%, −0.8%, −3.7%, −0.1%).
+- **What follows:** the scope was fixed before the result, but as for ADR 0036 a fresh-seed
+  confirmation (E116) comes before an ADR for the user.
+
+### The tally, unedited (`large_batch.py --study e113 --tally`, 2026-11-03 01:44 GMT-3)
+
+```
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_40nan: -6.04% [-6.80%, -5.27%] seeds -5.88%, -6.49%, -5.74% -> better; masked -4.00%
+- pendigits_60nan: -3.14% [-3.55%, -2.72%] seeds -3.27%, -3.11%, -3.04% -> better; masked -0.77%
+- letter_40nan: -5.47% [-5.85%, -5.10%] seeds -5.64%, -5.41%, -5.36% -> better; masked -3.71%
+- letter_60nan: -1.12% [-1.35%, -0.89%] seeds -0.99%, -1.07%, -1.30% -> better; masked -0.07%
+
+Primary (E113, BIG − M): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> supported
+```

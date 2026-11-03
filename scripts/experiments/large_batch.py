@@ -18,6 +18,7 @@ E109 (imputation-protocol/44): ``--study e109`` first, M and P600 on pendigits_6
 2121/3232/4343, all on medusa1.
 E113 (imputation-protocol/46, T32): ``--study e113`` first, M and BIG (ADR 0018's bigger encoder) on
 pendigits and letter at 40/60nan, seeds 42/7/13, on gorgona8.
+E116 (imputation-protocol/47): ``--study e116`` first, E113 on fresh seeds 6161 (gorgona8), 7171/8181 (medusa1).
 """
 
 from __future__ import annotations
@@ -85,6 +86,15 @@ def _use_e113() -> None:
     VARIANTS = tuple(f"{b}_{r}nan" for b in ("pendigits", "letter") for r in (40, 60))
     SEEDS = {"gorgona8": (42, 7, 13), "medusa": ()}
     ARMS, STUDY = ("M", "BIG"), "e113"
+
+
+def _use_e116() -> None:
+    """E116: E113 on fresh seeds, split by seed between the machines (ADR 0035)."""
+    global STATE, VARIANTS, SEEDS, ARMS, STUDY
+    STATE = STATE.parent / "trident-2026-10-30-large-batch-e116"
+    VARIANTS = tuple(f"{b}_{r}nan" for b in ("pendigits", "letter") for r in (40, 60))
+    SEEDS = {"gorgona8": (6161,), "medusa": (7171, 8181)}
+    ARMS, STUDY = ("M", "BIG"), "e116"
 
 
 CHANGES: dict[str, dict[str, object]] = {
@@ -163,6 +173,11 @@ def tally() -> None:
     if missing:
         print(f"\n- missing: {len(missing)}: {', '.join(missing)}\n\nPrimary: incomplete")
         return
+    if STUDY == "e116":
+        better, worse = list(calls.values()).count("better"), list(calls.values()).count("worse")
+        reading = "replicated" if better >= 3 and worse == 0 else "not replicated" if better <= 1 or worse else "partial"
+        print(f"\nPrimary (E116, BIG − M, fresh seeds): {common.tally(calls.values())} of {len(calls)} -> {reading}")
+        return
     if STUDY == "e113":
         better, worse = list(calls.values()).count("better"), list(calls.values()).count("worse")
         reading = "supported" if better >= 2 and worse == 0 else "refuted" if better == 0 else "mixed"
@@ -204,6 +219,9 @@ if __name__ == "__main__":
         argv = argv[2:]
     elif argv[:2] == ["--study", "e113"]:
         _use_e113()
+        argv = argv[2:]
+    elif argv[:2] == ["--study", "e116"]:
+        _use_e116()
         argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] in ARMS and argv[2] in VARIANTS:
         train(argv[1], argv[2], int(argv[3]))

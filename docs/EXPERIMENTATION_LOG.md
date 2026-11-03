@@ -139,9 +139,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E110 | Does the re-masking spread still rank errors under MNAR and MAR at 20nan? | 2026-11-01 – 2026-11-02 | supported | a signal on 12 of 12 under K and H, none against; no weakening with the tilt at 20nan |
 | E111 | E99 on fresh seeds: does TRIDENT still lead MLP and SAINT at 40–80nan? | 2026-11-02 | replicated | MLP +0.009/+0.007/tie, SAINT +0.035/+0.035/+0.029, as in E99 |
 | E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 | mixed | E − B higher at 40nan (+0.005) and 60nan (+0.009), equivalent elsewhere; below the SESOI |
-| E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – | in progress | |
+| E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – 2026-11-03 | supported | better on 4 of 4: pendigits −6.0%/−3.1%, letter −5.5%/−1.1% |
 | E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – | in progress | |
 | E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
+| E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 – | in progress | |
 
 ## Entries
 
@@ -3361,9 +3362,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** mixed. The EMA target is the first pre-training to move classification (40–60nan), by
   less than the SESOI; the user decides between a fresh-seed check and closing T13.
 
-### E113 · Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) (2026-11-02 – )
+### E113 · Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) (2026-11-02 – 2026-11-03)
 
-- **Status:** in progress
+- **Status:** supported
 - **Hypothesis:** ADR 0018's bigger encoder improves pendigits and letter at 40 and 60nan over today's
   defaults (ADR 0036's P600 included), as E59 saw over the older ones.
 - **Scenarios:** those 4 variants × seeds 42/7/13 × arms M and BIG, five folds, MLflow off, gorgona8.
@@ -3371,6 +3372,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   SESOI; supported if better on 2 or more of 4 and worse on none, refuted if better on none.
 - **Sources:** [imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md);
   `large_batch.py --study e113`.
+- **Results (2026-11-03 01:44 GMT-3):** BIG − M: pendigits_40nan −6.04%, pendigits_60nan −3.14%, letter_40nan −5.47%,
+  letter_60nan −1.12%, all better with every seed below zero.
+- **Conclusion:** supported; a fresh-seed confirmation (E116) before an ADR for the user.
 
 ### E114 · Does the EMA target's gain at 40–60nan replicate on fresh seeds? (2026-11-02 – )
 
@@ -3392,3 +3396,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [classification-step-zero/14](tickets/classification-step-zero/14-deep-baselines-mar-mnar.md).
 - **Results (2026-11-03 01:19 GMT-3):** TRIDENT − SAINT +0.045 (MNAR), +0.043 (MAR), TRIDENT higher; − MLP +0.011 (MAR, TRIDENT
   higher), +0.006 (MNAR, no verdict: one seed below zero).
+
+### E116 · Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? (2026-11-03 – )
+
+- **Status:** in progress
+- **Hypothesis:** E113's BIG − M gains hold on seeds 6161/7171/8181.
+- **Scenarios:** the 4 variants × 3 seeds × arms M and BIG, five folds, MLflow off; 6161 on gorgona8,
+  7171/8181 on medusa1.
+- **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; replicated if better on 3 or
+  more of 4 and worse on none.
+- **Sources:** [imputation-protocol/47](tickets/imputation-protocol/47-bigger-encoder-confirmation.md).
