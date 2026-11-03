@@ -29,4 +29,25 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-03 01:19 GMT-3 (descriptive).** The MCAR picture holds off MCAR: TRIDENT stays well ahead of SAINT
+under both mechanisms, and ahead of MLP under MAR; under MNAR its lead over MLP has no verdict.
+
+| TRIDENT − baseline, test macro-F1 | MNAR (4 variants, 120 pairs) | MAR (6 variants, 180 pairs) | MCAR at 60nan (E99) |
+|---|---|---|---|
+| MLP | +0.006 [−0.005, +0.016], no verdict (seeds +0.007, +0.011, −0.001) | **+0.011 TRIDENT higher** | +0.008 TRIDENT higher |
+| SAINT | **+0.045 TRIDENT higher** | **+0.043 TRIDENT higher** | +0.036 TRIDENT higher |
+
+- **Complete:** 30 TRIDENT evaluations and 20 baseline units on medusa1, 00:53–01:19 GMT-3, no failure.
+- Each side used its MCAR sibling's tuning; a variant-specific tuning could move either side.
+
+### The tally, unedited (`deep_baselines.py --study e115 --tally`, 2026-11-03 01:19 GMT-3)
+
+```
+## MNAR (probit): biodeg, kc2, vehicle, spambase
+- TRIDENT − mlp: +0.0056 [-0.0046, +0.0157] seeds +0.0074, +0.0106, -0.0012, 120 fold pairs -> no verdict
+- TRIDENT − saint: +0.0449 [+0.0313, +0.0585] seeds +0.0425, +0.0447, +0.0475, 120 fold pairs -> TRIDENT higher
+
+## MAR (marf): biodeg, kc2, vehicle, spambase, credit-g, kr-vs-kp
+- TRIDENT − mlp: +0.0112 [+0.0048, +0.0176] seeds +0.0114, +0.0131, +0.0092, 180 fold pairs -> TRIDENT higher
+- TRIDENT − saint: +0.0433 [+0.0322, +0.0544] seeds +0.0492, +0.0412, +0.0394, 180 fold pairs -> TRIDENT higher
+```

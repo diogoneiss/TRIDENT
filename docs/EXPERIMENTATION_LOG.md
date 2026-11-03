@@ -141,7 +141,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E112 | Does an EMA target make classification pre-training help? (T13) | 2026-11-02 | mixed | E − B higher at 40nan (+0.005) and 60nan (+0.009), equivalent elsewhere; below the SESOI |
 | E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – | in progress | |
 | E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – | in progress | |
-| E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 – | in progress | |
+| E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
 
 ## Entries
 
@@ -3381,12 +3381,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   both levels, not replicated if at neither or B higher at either, partial otherwise.
 - **Sources:** [classification-step-zero/13](tickets/classification-step-zero/13-ema-target-confirmation.md).
 
-### E115 · TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) (2026-11-03 – )
+### E115 · TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) (2026-11-03)
 
-- **Status:** in progress
+- **Status:** done (descriptive)
 - **Question:** does E99's MCAR picture (TRIDENT ahead of MLP and SAINT at 60nan) hold under MAR and
   self-masking MNAR?
 - **Scenarios:** 4 MNAR and 6 MAR variants at 60nan, each side with its MCAR sibling's tuned
   configuration (E98, E99), seeds 42/7/13, ten folds, medusa1.
 - **Measures:** per mechanism, TRIDENT − baseline test macro-F1, the project's rule; descriptive.
 - **Sources:** [classification-step-zero/14](tickets/classification-step-zero/14-deep-baselines-mar-mnar.md).
+- **Results (2026-11-03 01:19 GMT-3):** TRIDENT − SAINT +0.045 (MNAR), +0.043 (MAR), TRIDENT higher; − MLP +0.011 (MAR, TRIDENT
+  higher), +0.006 (MNAR, no verdict: one seed below zero).
