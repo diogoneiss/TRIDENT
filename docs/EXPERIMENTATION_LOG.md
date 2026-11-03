@@ -3453,10 +3453,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E120 · Does TRIDENT lead MLP under MNAR on fresh seeds? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** no verdict
 - **Hypothesis:** TRIDENT − MLP test macro-F1 under MNAR is positive, as under MCAR and MAR (E115 left it
   without a verdict).
 - **Scenarios:** E115's 10 variants at 60nan, seeds 5151/6262/7373, ten folds, MCAR siblings' tuning, medusa1.
 - **Measures and decision rule:** TRIDENT − MLP under MNAR, 120 fold pairs, SESOI 0.01: supported if TRIDENT
   higher, refuted if MLP higher, tie if equivalent.
 - **Sources:** [classification-step-zero/16](tickets/classification-step-zero/16-trident-mlp-mnar-fresh-seeds.md).
+- **Results (2026-11-03 16:03 GMT-3):** TRIDENT − MLP under MNAR +0.0025 [−0.0090, +0.0141], seeds all positive, no
+  verdict; SAINT under MNAR, and both under MAR, TRIDENT higher as in E115.
+- **Conclusion:** no verdict; with E115, no lead over MLP can be claimed under MNAR.

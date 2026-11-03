@@ -30,3 +30,30 @@ This ticket was written and committed before the study's first cell (15:20 GMT-3
   - **no verdict** otherwise.
 - **Descriptive:** TRIDENT − SAINT under MNAR, and both under MAR, read beside E115.
 - **Read only with every unit done.**
+
+## Outcome
+
+**Written 2026-11-03 16:03 GMT-3. Primary: no verdict.** Under MNAR, TRIDENT − MLP is +0.0025 [−0.0090, +0.0141] over 120
+fold pairs: every seed above zero (+0.0028, +0.0009, +0.0040), but the interval crosses both zero and the
+±0.01 margin, so it shows neither a lead nor a tie. With E115 (+0.006, no verdict), two independent seed sets
+agree: under MNAR TRIDENT and MLP are close, and no lead over MLP can be claimed there.
+
+- **Complete:** 30 TRIDENT evaluations and 20 baseline units on medusa1, 15:21–15:54 GMT-3, none failed.
+- **Descriptive, beside E115:** TRIDENT stays ahead of SAINT under MNAR (+0.035) and MAR (+0.040), and of MLP
+  under MAR (+0.012), all "TRIDENT higher", as in E115.
+- **For the thesis:** "TRIDENT leads similar deep models" holds under MCAR and MAR against MLP and SAINT, and
+  under MNAR against SAINT; against MLP under MNAR the two are not separable.
+
+### The tally, unedited (`deep_baselines.py --study e120 --tally`, medusa1, 2026-11-03 16:03 GMT-3)
+
+```
+## MNAR (probit): biodeg, kc2, vehicle, spambase
+- TRIDENT − mlp: +0.0025 [-0.0090, +0.0141] seeds +0.0028, +0.0009, +0.0040, 120 fold pairs -> no verdict
+- TRIDENT − saint: +0.0349 [+0.0187, +0.0510] seeds +0.0366, +0.0342, +0.0337, 120 fold pairs -> TRIDENT higher
+
+## MAR (marf): biodeg, kc2, vehicle, spambase, credit-g, kr-vs-kp
+- TRIDENT − mlp: +0.0119 [+0.0058, +0.0180] seeds +0.0202, +0.0055, +0.0100, 180 fold pairs -> TRIDENT higher
+- TRIDENT − saint: +0.0398 [+0.0295, +0.0502] seeds +0.0442, +0.0341, +0.0411, 180 fold pairs -> TRIDENT higher
+
+Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict
+```
