@@ -3440,3 +3440,23 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (00nan); A higher at no level, B at none. 450 cells, none failed.
 - **Conclusion:** refuted; no pre-training gain under the upstream defaults, as under E87's old sweep. The
   paper's tuned per-pair values stay untested.
+
+### E119 · Does ADR 0037's bigger encoder help pendigits and letter under MAR and MNAR? (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** BIG's MCAR gain (E113, E116) holds on MAR (`marf`) and MNAR (`probit`) variants at 40–60nan.
+- **Scenarios:** 8 new variants × arms M (sibling's configuration, encoder undone) and BIG × seeds 42
+  (gorgona8), 7/13 (medusa1), five folds, MLflow off.
+- **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; per mechanism, holds if better on
+  3 or more of 4 and worse on none, does not hold if better on 1 or fewer or worse on any.
+- **Sources:** [imputation-protocol/49](tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md).
+
+### E120 · Does TRIDENT lead MLP under MNAR on fresh seeds? (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** TRIDENT − MLP test macro-F1 under MNAR is positive, as under MCAR and MAR (E115 left it
+  without a verdict).
+- **Scenarios:** E115's 10 variants at 60nan, seeds 5151/6262/7373, ten folds, MCAR siblings' tuning, medusa1.
+- **Measures and decision rule:** TRIDENT − MLP under MNAR, 120 fold pairs, SESOI 0.01: supported if TRIDENT
+  higher, refuted if MLP higher, tie if equivalent.
+- **Sources:** [classification-step-zero/16](tickets/classification-step-zero/16-trident-mlp-mnar-fresh-seeds.md).

@@ -361,7 +361,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Cost:** about 2× the training time (1.98× pendigits, 2.05× letter).
   - **To adopt it:** a fresh-seed confirmation, pre-registered, then an ADR amending 0018.
 
-  **E113 done 2026-11-03 ([imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md)): supported** on today's defaults, better on 4 of 4 (pendigits −6.0%/−3.1%, letter −5.5%/−1.1% at 40/60nan); **E116 ([47](tickets/imputation-protocol/47-bigger-encoder-confirmation.md)) replicated it on fresh seeds (4 of 4); ADR 0037 accepted 2026-11-03: pendigits and letter at 40–60nan train with ADR 0018's encoder. T32 closed.**
+  **E113 done 2026-11-03 ([imputation-protocol/46](tickets/imputation-protocol/46-bigger-encoder-large-tables.md)): supported** on today's defaults, better on 4 of 4 (pendigits −6.0%/−3.1%, letter −5.5%/−1.1% at 40/60nan); **E116 ([47](tickets/imputation-protocol/47-bigger-encoder-confirmation.md)) replicated it on fresh seeds (4 of 4); ADR 0037 accepted 2026-11-03: pendigits and letter at 40–60nan train with ADR 0018's encoder. T32 closed.** **E119 ([49](tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md)), from 2026-11-03: does it hold under MAR and MNAR?**
 - **T33 · A clean `[NULL]`/`[MASK]` ablation in the decode stage** (proposed 2026-10-22, about
   19:25 GMT-3, from the wiki's sync of the fork; accepted by the user; see below).
   - **Accepted by the user (2026-10-22, about 19:40 GMT-3):** "eu concordo com todas as suas ideias".

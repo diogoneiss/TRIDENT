@@ -25,7 +25,8 @@ Nothing touches the store. ``--deal`` prints a machine's (model, variant) units,
 split by the probe's cost); ``--tally`` reads E99's rule against E98's tuned TRIDENT.
 ``--study e106`` first: TabNet alone with a bigger budget (batch 256, 400 epochs, patience 50) at
 40–80nan (classification-step-zero/09). ``--study e107`` first: the three models at 00 and 20nan,
-descriptive (classification-step-zero/10).
+descriptive (classification-step-zero/10). ``--study e120`` first: E115 on fresh seeds 5151/6262/7373, with
+a primary call on TRIDENT − MLP under MNAR (classification-step-zero/16).
 """
 
 from __future__ import annotations
@@ -224,7 +225,7 @@ def run(model: str, variant: str, state: Path) -> None:
     dataset = _dataset(variant)
     started = time.time()
     folds = _folds(dataset, TUNING_SEED)
-    if STUDY == "e115":
+    if STUDY in ("e115", "e120"):
         tuned = json.loads((STATE / "e99_json" / f"{model}_{sibling(variant)}.json").read_text())
     elif STUDY in ("e106", "e111"):
         # E106 retrains E99's tuned configuration with the bigger budget; no new search (the user, 2026-11-01).
@@ -277,6 +278,8 @@ def _use(study: str) -> None:
         MODELS, SEEDS = ("mlp", "saint"), (5151, 6262, 7373)
     elif study == "e115":
         MODELS, LEVELS, VARIANTS = ("mlp", "saint"), ("60",), E115_VARIANTS
+    elif study == "e120":
+        MODELS, LEVELS, VARIANTS, SEEDS = ("mlp", "saint"), ("60",), E115_VARIANTS, (5151, 6262, 7373)
     else:
         LEVELS = ("00", "20")
 
@@ -286,7 +289,7 @@ def deal(machine: str) -> None:
     units = sorted(((COST[m][v.split("_")[0]], m, v) for m in MODELS for v in VARIANTS if v.rsplit("_", 1)[1][:2] in LEVELS),
                    key=lambda u: (-u[0], u[1], u[2]))
     load = {k: 0.0 for k in CAPACITY}
-    if STUDY == "e115":  # all on medusa1, beside TRIDENT's evaluations and its E98 studies
+    if STUDY in ("e115", "e120"):  # all on medusa1, beside TRIDENT's evaluations and its E98 studies
         load["gorgona8"] = float("inf")
     for cost, model, variant in units:
         target = min(load, key=lambda k: load[k] / CAPACITY[k])
@@ -303,6 +306,7 @@ def tally_e115() -> None:
     from scripts.experiments.cls_stage2_run import fold_metrics
 
     groups = {"MNAR (probit)": [v for v in VARIANTS if "_probit_" in v], "MAR (marf)": [v for v in VARIANTS if "_marf_" in v]}
+    primary = "incomplete"
     for name, variants in groups.items():
         print(f"## {name}: {', '.join(v.split('_')[0] for v in variants)}")
         for model in MODELS:
@@ -324,11 +328,16 @@ def tally_e115() -> None:
             if missing:
                 print(f"- TRIDENT − {model}: incomplete ({len(missing)} missing, e.g. {missing[0]})")
                 continue
-            vd = common.verdict(per_seed)
-            mark = {"worse": "TRIDENT higher", "better": "baseline higher", "none": "no verdict"}[vd.call]
+            vd = common.verdict(per_seed, **({"sesoi": 0.01} if STUDY == "e120" else {}))
+            mark = {"worse": "TRIDENT higher", "better": "baseline higher", "none": "no verdict", "equivalent": "equivalent"}[vd.call]
+            if STUDY == "e120" and name.startswith("MNAR") and model == "mlp":
+                primary = {"worse": "supported (TRIDENT leads MLP under MNAR)", "better": "refuted (MLP leads)",
+                           "equivalent": "tie (inside ±0.01)", "none": "no verdict"}[vd.call]
             print(f"- TRIDENT − {model}: {vd.mean:+.4f} [{vd.low:+.4f}, {vd.high:+.4f}] seeds "
                   + ", ".join(f"{x:+.4f}" for x in vd.seeds) + f", {sum(len(d) for d in per_seed)} fold pairs -> {mark}")
         print()
+    if STUDY == "e120":
+        print(f"Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): {primary}")
 
 
 def tally() -> None:
@@ -394,7 +403,7 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107", "e111", "e115"):
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107", "e111", "e115", "e120"):
         _use(argv[1])
         argv = argv[2:]
     if argv[:1] == ["--state"] and len(argv) >= 2:
@@ -403,7 +412,7 @@ if __name__ == "__main__":
     if argv[:1] == ["--deal"] and len(argv) == 2:
         deal(argv[1])
     elif argv == ["--tally"]:
-        tally_e115() if STUDY == "e115" else tally()
+        tally_e115() if STUDY in ("e115", "e120") else tally()
     elif len(argv) == 3 and argv[0] in ("run", "probe") and argv[1] in MODELS and argv[2] in VARIANTS:
         probe(argv[1], argv[2]) if argv[0] == "probe" else run(argv[1], argv[2], STATE)
     else:

@@ -43,7 +43,7 @@ from generate_mar import DRIVER_SHARE, MAX_CONTROL_SHIFT, MIN_SHIFT, TARGET, _ca
 ROOT = HERE / "processed_datasets"
 SEED = 4060
 SLOPE = 1.5
-BASES = ("biodeg", "kc2", "vehicle", "kr-vs-kp", "spambase", "credit-g")
+BASES = ("biodeg", "kc2", "vehicle", "kr-vs-kp", "spambase", "credit-g", "pendigits", "letter")  # the last two added for E119
 RATES = (0.2, 0.4, 0.6)  # 0.4 added for E105; each rate has its own streams, so 0.2 and 0.6 are unchanged
 DIAL_BASES, DIAL_RATE, DIAL_SLOPES = ("biodeg",), 0.6, (0.75, 3.0)
 
