@@ -142,7 +142,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E113 | Does the bigger encoder still help pendigits and letter at 40–60nan on today's defaults? (T32) | 2026-11-02 – 2026-11-03 | supported | better on 4 of 4: pendigits −6.0%/−3.1%, letter −5.5%/−1.1% |
 | E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – 2026-11-03 | partial | E higher at 60nan (+0.008), no verdict at 40nan (+0.009, one seed below zero); below the SESOI; T13 closes |
 | E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
-| E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 – | in progress | |
+| E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 | replicated | better on 4 of 4 at E113's sizes (−6.3%, −3.1%, −5.5%, −1.2%); ADR 0037 proposed |
 
 ## Entries
 
@@ -3399,12 +3399,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Results (2026-11-03 01:19 GMT-3):** TRIDENT − SAINT +0.045 (MNAR), +0.043 (MAR), TRIDENT higher; − MLP +0.011 (MAR, TRIDENT
   higher), +0.006 (MNAR, no verdict: one seed below zero).
 
-### E116 · Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? (2026-11-03 – )
+### E116 · Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** replicated
 - **Hypothesis:** E113's BIG − M gains hold on seeds 6161/7171/8181.
 - **Scenarios:** the 4 variants × 3 seeds × arms M and BIG, five folds, MLflow off; 6161 on gorgona8,
   7171/8181 on medusa1.
 - **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; replicated if better on 3 or
   more of 4 and worse on none.
 - **Sources:** [imputation-protocol/47](tickets/imputation-protocol/47-bigger-encoder-confirmation.md).
+- **Results (2026-11-03 04:37 GMT-3):** BIG − M pendigits_40nan −6.26%, pendigits_60nan −3.09%, letter_40nan −5.45%, letter_60nan
+  −1.23%, all better, every seed below zero.
+- **Conclusion:** replicated; ADR 0037 is proposed for the user.
