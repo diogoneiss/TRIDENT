@@ -3450,6 +3450,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; per mechanism, holds if better on
   3 or more of 4 and worse on none, does not hold if better on 1 or fewer or worse on any.
 - **Sources:** [imputation-protocol/49](tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md).
+- **Amendment (2026-11-03 18:56 GMT-3):** the pair `letter_probit_60nan` seed 42 moved from gorgona8 to medusa1
+  (both arms there) to finish sooner; same cells and rule.
 
 ### E120 · Does TRIDENT lead MLP under MNAR on fresh seeds? (2026-11-03)
 

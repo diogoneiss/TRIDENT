@@ -46,6 +46,7 @@ VARIANTS: tuple[str, ...] = tuple(f"pendigits_{r}nan" for r in (20, 40, 60, 80))
 STUDY = "e101"
 SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}  # ADR 0035: split by seed, both arms of a pair on one machine
 ARMS: tuple[str, ...] = ("M", "P", "P600")
+MOVED: set[tuple[str, int]] = set()  # (variant, seed) pairs run on medusa1 off their seed's machine, both arms
 
 
 def _use_e102() -> None:
@@ -115,6 +116,8 @@ def _use_e119() -> None:
     STATE = STATE.parent / "trident-2026-10-30-large-batch-e119"
     VARIANTS = tuple(f"{b}_{m}_{r}nan" for m in ("marf", "probit") for b in ("pendigits", "letter") for r in (40, 60))
     SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}
+    global MOVED
+    MOVED = {("letter_probit_60nan", 42)}  # amendment 2026-11-03: moved from gorgona8 to speed the end
     ARMS, STUDY = ("M", "BIG"), "e119"
 
 
@@ -191,6 +194,7 @@ def tally() -> None:
             per_seed: list[np.ndarray] = []
             extra: dict[str, list[float]] = {m: [] for m in SECONDARY}
             for seed, root in roots.items():
+                root = STATE / "medusa" if (variant, seed) in MOVED else root
                 m, s = folds(root, "M", variant, seed), folds(root, arm, variant, seed)
                 if m is None or s is None:
                     missing.append(f"{variant} s{seed}")

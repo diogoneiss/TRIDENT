@@ -42,3 +42,11 @@ This ticket was written and committed before the study's first cell (15:20 GMT-3
 - **What follows:** the result goes to the user, who decides whether ADR 0037 states its scope as MCAR only
   or as all three mechanisms. Nothing changes on its own.
 - **Read only with every cell done**; a cut stays partial.
+
+## Amendment 2026-11-03 18:56 GMT-3 (the user's decision)
+
+gorgona8 ran slower than planned (20–40 minutes a cell), and medusa1's GPU 1 fell idle at 18:35. To finish
+sooner, gorgona8's one unstarted pair, `letter_probit_60nan` seed 42, runs on medusa1's GPU 1 instead, both
+arms there (ADR 0035's pairing holds; seed 42 is now split between machines on this one variant). gorgona8 stops
+between cells once queue 1 starts its last cell, so it never starts that pair. `--tally` reads the pair from
+medusa1's directory (`MOVED` in `large_batch.py`). Nothing else changes: same cells, seeds, rule.
