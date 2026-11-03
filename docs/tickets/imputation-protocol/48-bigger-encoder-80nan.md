@@ -19,4 +19,18 @@ This ticket was written and committed before the study's first cell. No cell has
 
 ## Outcome
 
-(open)
+**Written 2026-11-03 06:09 GMT-3. Mixed: BIG is better on pendigits_80nan (−0.39%) and worse on letter_80nan (+0.37%)**,
+both under the 1% SESOI, every seed agreeing in each. At 80nan the bigger encoder neither helps nor
+costs anything that matters; ADR 0037's proposal rightly stops at 60nan.
+
+- **Complete:** all 12 cells, 04:38–06:09 GMT-3, no failure.
+
+### The tally, unedited (`large_batch.py --study e117 --tally`, 2026-11-03 06:09 GMT-3)
+
+```
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_80nan: -0.39% [-0.62%, -0.15%] seeds -0.22%, -0.54%, -0.39% -> better; masked +0.26%
+- letter_80nan: +0.37% [+0.26%, +0.48%] seeds +0.41%, +0.30%, +0.40% -> worse; masked +0.31%
+
+Primary (E117, BIG − M at 80nan): better 1 / no difference 0 / worse 1 (fold-pair t, seed agreement) of 2 -> mixed
+```

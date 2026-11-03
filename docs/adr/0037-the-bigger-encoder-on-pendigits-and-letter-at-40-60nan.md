@@ -32,8 +32,9 @@
    - Through their promoted files: pendigits_40nan, pendigits_60nan and letter_40nan already have one
      (ADR 0036), which gains the three keys; letter_60nan gets a new file with today's complete
      configuration and the three keys. No code change.
-2. **No other variant changes.** The 80nan variants were not tested here (E59: nothing at 80nan);
-   electricity gained nothing from the bigger encoder in E38.
+2. **No other variant changes.** At 80nan E117 ([48](../tickets/imputation-protocol/48-bigger-encoder-80nan.md))
+   was mixed and under the SESOI (pendigits −0.39%, letter +0.37%); electricity gained nothing from the
+   bigger encoder in E38.
 
 ## Verification (on acceptance)
 

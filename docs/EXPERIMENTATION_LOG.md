@@ -143,7 +143,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E114 | Does the EMA target's gain at 40–60nan replicate on fresh seeds? | 2026-11-02 – 2026-11-03 | partial | E higher at 60nan (+0.008), no verdict at 40nan (+0.009, one seed below zero); below the SESOI; T13 closes |
 | E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
 | E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 | replicated | better on 4 of 4 at E113's sizes (−6.3%, −3.1%, −5.5%, −1.2%); ADR 0037 proposed |
-| E117 | Does the bigger encoder help pendigits and letter at 80nan? | 2026-11-03 – | in progress | |
+| E117 | Does the bigger encoder help pendigits and letter at 80nan? | 2026-11-03 | mixed | pendigits −0.39% better, letter +0.37% worse, both under the SESOI; ADR 0037 stops at 60nan |
 
 ## Entries
 
@@ -3413,12 +3413,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   −1.23%, all better, every seed below zero.
 - **Conclusion:** replicated; ADR 0037 is proposed for the user.
 
-### E117 · Does the bigger encoder help pendigits and letter at 80nan? (2026-11-03 – )
+### E117 · Does the bigger encoder help pendigits and letter at 80nan? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** mixed
 - **Hypothesis:** BIG beats today's default at 80nan too (ADR 0037's proposal stops at 60nan).
 - **Scenarios:** pendigits_80nan and letter_80nan × seeds 42/7/13 × M and BIG, five folds; 42 on gorgona8,
   7/13 on medusa1.
 - **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; supported if better on both,
   refuted if on neither.
 - **Sources:** [imputation-protocol/48](tickets/imputation-protocol/48-bigger-encoder-80nan.md).
+- **Results (2026-11-03 06:09 GMT-3):** BIG − M pendigits_80nan −0.39% (better), letter_80nan +0.37% (worse).
+- **Conclusion:** mixed, both under the SESOI; ADR 0037 keeps its 40–60nan scope.
