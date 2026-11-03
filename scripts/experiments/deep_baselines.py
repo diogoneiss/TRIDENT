@@ -224,7 +224,9 @@ def run(model: str, variant: str, state: Path) -> None:
     dataset = _dataset(variant)
     started = time.time()
     folds = _folds(dataset, TUNING_SEED)
-    if STUDY in ("e106", "e111"):
+    if STUDY == "e115":
+        tuned = json.loads((STATE / "e99_json" / f"{model}_{sibling(variant)}.json").read_text())
+    elif STUDY in ("e106", "e111"):
         # E106 retrains E99's tuned configuration with the bigger budget; no new search (the user, 2026-11-01).
         tuned = json.loads((STATE / "e99_json" / f"{model}_{variant}.json").read_text())
     elif js.exists():
@@ -253,15 +255,28 @@ def run(model: str, variant: str, state: Path) -> None:
     print(f"DONE {model} {variant}: {time.time() - started:.0f} s", flush=True)
 
 
+# E115: the MAR and MNAR variants at 60nan; each borrows its MCAR sibling's tuned configuration.
+E115_VARIANTS = (*(f"{t}_probit_60nan" for t in ("biodeg", "kc2", "vehicle", "spambase")),
+                 *(f"{t}_marf_60nan" for t in ("biodeg", "kc2", "vehicle", "spambase", "credit-g", "kr-vs-kp")))
+
+
+def sibling(variant: str) -> str:
+    """The MCAR variant whose study gives an E115 variant its configuration."""
+    base, *_, level = variant.split("_")
+    return f"{base}_{level}"
+
+
 def _use(study: str) -> None:
     """E106 and E107: the same driver with another scope or budget, in their own state."""
-    global STATE, LEVELS, MODELS, EPOCHS, PATIENCE, STUDY, SEEDS
+    global STATE, LEVELS, MODELS, EPOCHS, PATIENCE, STUDY, SEEDS, VARIANTS
     STATE, STUDY = STATE.parent / f"trident-2026-11-01-deep-{study}", study
     if study == "e106":
         MODELS, EPOCHS, PATIENCE = ("tabnet",), 400, 50
         BATCH["tabnet"] = 256
     elif study == "e111":
         MODELS, SEEDS = ("mlp", "saint"), (5151, 6262, 7373)
+    elif study == "e115":
+        MODELS, LEVELS, VARIANTS = ("mlp", "saint"), ("60",), E115_VARIANTS
     else:
         LEVELS = ("00", "20")
 
@@ -271,11 +286,49 @@ def deal(machine: str) -> None:
     units = sorted(((COST[m][v.split("_")[0]], m, v) for m in MODELS for v in VARIANTS if v.rsplit("_", 1)[1][:2] in LEVELS),
                    key=lambda u: (-u[0], u[1], u[2]))
     load = {k: 0.0 for k in CAPACITY}
+    if STUDY == "e115":  # all on medusa1, beside TRIDENT's evaluations and its E98 studies
+        load["gorgona8"] = float("inf")
     for cost, model, variant in units:
         target = min(load, key=lambda k: load[k] / CAPACITY[k])
         load[target] += cost
         if target == machine:
             print(model, variant)
+
+
+def tally_e115() -> None:
+    """E115 (descriptive): per mechanism, TRIDENT − baseline pooled over its variants, one array per
+    seed. Runs on medusa1, where both sides' folds live."""
+    from scripts.experiments import report_common as common
+    from scripts.experiments import stage4_trident as t
+    from scripts.experiments.cls_stage2_run import fold_metrics
+
+    groups = {"MNAR (probit)": [v for v in VARIANTS if "_probit_" in v], "MAR (marf)": [v for v in VARIANTS if "_marf_" in v]}
+    for name, variants in groups.items():
+        print(f"## {name}: {', '.join(v.split('_')[0] for v in variants)}")
+        for model in MODELS:
+            per_seed: list[np.ndarray] = []
+            missing = []
+            for seed in SEEDS:
+                diffs = []
+                for v in variants:
+                    ours = fold_metrics(t.eval_dir(v, seed))
+                    path = STATE / "csv" / f"{model}_{v}.csv"
+                    if ours is None or not path.exists():
+                        missing.append(f"{v} s{seed}")
+                        continue
+                    theirs = pd.read_csv(path)
+                    theirs = theirs[theirs.seed == seed].sort_values("fold")
+                    diffs.append(ours.sort_values("fold")["f1_macro"].to_numpy(dtype=float) - theirs["f1_macro"].to_numpy(dtype=float))
+                if diffs:
+                    per_seed.append(np.concatenate(diffs))
+            if missing:
+                print(f"- TRIDENT − {model}: incomplete ({len(missing)} missing, e.g. {missing[0]})")
+                continue
+            vd = common.verdict(per_seed)
+            mark = {"worse": "TRIDENT higher", "better": "baseline higher", "none": "no verdict"}[vd.call]
+            print(f"- TRIDENT − {model}: {vd.mean:+.4f} [{vd.low:+.4f}, {vd.high:+.4f}] seeds "
+                  + ", ".join(f"{x:+.4f}" for x in vd.seeds) + f", {sum(len(d) for d in per_seed)} fold pairs -> {mark}")
+        print()
 
 
 def tally() -> None:
@@ -341,7 +394,7 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
-    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107", "e111"):
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in ("e106", "e107", "e111", "e115"):
         _use(argv[1])
         argv = argv[2:]
     if argv[:1] == ["--state"] and len(argv) >= 2:
@@ -350,7 +403,7 @@ if __name__ == "__main__":
     if argv[:1] == ["--deal"] and len(argv) == 2:
         deal(argv[1])
     elif argv == ["--tally"]:
-        tally()
+        tally_e115() if STUDY == "e115" else tally()
     elif len(argv) == 3 and argv[0] in ("run", "probe") and argv[1] in MODELS and argv[2] in VARIANTS:
         probe(argv[1], argv[2]) if argv[0] == "probe" else run(argv[1], argv[2], STATE)
     else:

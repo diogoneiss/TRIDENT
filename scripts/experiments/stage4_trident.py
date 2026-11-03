@@ -83,11 +83,13 @@ def study(variant: str) -> None:
     print("CELL_DONE study", variant, json.dumps(best_config(variant)), flush=True)
 
 
-def evaluate(variant: str, seed: int, experiment: str = EXPERIMENT) -> None:
+def evaluate(variant: str, seed: int, experiment: str = EXPERIMENT, config_variant: str | None = None) -> None:
     from train import main as train_main
 
-    config = best_config(variant)
-    if config is None or not retrained(variant):
+    # E115 evaluates a MAR or MNAR variant with its MCAR sibling's tuned configuration.
+    source = config_variant or variant
+    config = best_config(source)
+    if config is None or not retrained(source):
         sys.exit(f"{variant}: no finished study yet")
     if fold_metrics(eval_dir(variant, seed)) is not None or not claim(f"eval_{variant}_s{seed}"):
         print("CELL_DONE eval", variant, seed, "skipped: finished or claimed by another queue", flush=True)
@@ -121,8 +123,9 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:1] == ["study"] and len(argv) == 2:
         study(argv[1])
-    elif argv[:1] == ["eval"] and len(argv) in (3, 4):
-        # E111 (classification-step-zero/11) evaluates at fresh seeds under its own experiment tag.
+    elif argv[:1] == ["eval"] and len(argv) in (3, 4, 5):
+        # E111 (classification-step-zero/11) evaluates at fresh seeds under its own experiment tag;
+        # E115 (14) also names the variant whose study gives the configuration.
         evaluate(argv[1], int(argv[2]), *argv[3:])
     elif argv[:1] == ["--todo"] and len(argv) == 3:
         todo(int(argv[1]), int(argv[2]))
