@@ -38,3 +38,7 @@ This ticket was written and committed before the stage's first cell (00:31 GMT-3
   s_A2 − s_A4 > 0 (Holm); refuted if both upper bounds are below +0.02; inconclusive otherwise. D2, D3, D5 and the
   α = 0 row are reported as diagnostics.
 - **Read only with every cell of a block done.**
+
+## Withdrawn unrun (2026-11-04 01:16 GMT-3)
+
+G1 failed (E124, [03](03-stage1.md), 1 of 3), so by the rule this stage does not run. No cell of it ran.

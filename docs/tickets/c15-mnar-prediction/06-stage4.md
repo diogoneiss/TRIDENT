@@ -35,3 +35,7 @@ This ticket was written and committed before the stage's first cell (01:07 GMT-3
 - **A3:** A2 − A3 on macro-F1 and relative log loss, per variant, the corrected interval.
 - **A5:** A1's contrast on the blocked column, computed on A5's kept models, must be exactly 0 (an integrity check of
   the contrast code; if not, every H2.2 reading is suspect and that is reported first).
+
+## Withdrawn unrun (2026-11-04 01:16 GMT-3)
+
+G1 failed (E124, [03](03-stage1.md), 1 of 3), so by the rule this stage does not run. No cell of it ran.

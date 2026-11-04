@@ -34,3 +34,7 @@ This ticket was written and committed before the stage's first cell (00:31 GMT-3
   (c) lies within ±0.1 logit.
 - **Read once, only with all 54 cells done.** The sensitivity reads of the protocol (count rule, random effects,
   per-table means, fork tallies) are reported, never deciding.
+
+## Withdrawn unrun (2026-11-04 01:16 GMT-3)
+
+G1 failed (E124, [03](03-stage1.md), 1 of 3), so by the rule this stage does not run. No cell of it ran.

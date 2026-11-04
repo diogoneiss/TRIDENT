@@ -54,3 +54,28 @@ Only spambase's seed-42 pairs had started on gorgona8 (A1, then A2), and they st
 between cells on their STOP file and were relaunched on the new deal. Same cells, seeds and rules; tickets 04 and 06
 follow the same rule.
 
+## G1's reading (2026-11-04 01:16 GMT-3): fails, 1 of 3; by the rule, C15 stops before Stage 2
+
+All 21 short-mode cells on F5 done on medusa1 (00:25–01:08 GMT-3, none failed). The unedited
+`c15_report.py --g1` (the contrast with one MICE fit per fold and 20 posterior draws, as committed in ec7a1d5):
+
+```
+## G1 (F5, seed 42, 5 folds): (1) A2 − A4 relative test log loss below 0; (2) A1's noise-column contrast above 0; Nadeau–Bengio corrected 95% t intervals; passes if both hold on >= 2 of 3
+- biodeg_noise3p0_s2060_60nan: A2 − A4 -0.0041 [-0.1805, +0.1723] (plain -0.1173); A1 contrast +1.778 [+1.072, +2.483] logit -> fail
+- kc2_noise3p0_s2060_60nan: A2 − A4 +0.1544 [-0.3787, +0.6875] (plain -0.1876); A1 contrast +3.800 [-0.530, +8.129] logit -> fail
+- spambase_noise3p0_s2060_60nan: A2 − A4 -0.3278 [-0.3688, -0.2869] (plain -0.3541); A1 contrast +1.747 [+1.238, +2.257] logit -> pass
+
+Primary (G1): 1 of 3 -> fails
+```
+
+- **Condition 2 (A1 reads the informative gap):** positive on all three controls (+1.78, +3.80, +1.75 logit), its
+  corrected interval above 0 on biodeg and spambase; kc2's reaches −0.53.
+- **Condition 1 (A2 beats A4 on log loss):** only on spambase (−0.33 [−0.37, −0.29]). On biodeg and kc2 the corrected
+  intervals over 5 cells span about ±0.2 and ±0.5; the plain intervals' lower ends sit below 0 too.
+- **What follows, as fixed above:** C15 stops before Stage 2; tickets 04, 05 and 06 (E125–E127) are withdrawn unrun.
+  Stage 1b (A1 − A2 on the development set) finishes as pre-registered and is read descriptively. Whether a G1 with more
+  power (the decision mode's 15 cells on F5) is worth a new pre-registration is the user's decision; this reading
+  stays recorded as a failure, and the reading is post hoc: condition 1's arms differ in the imputer as well as the
+  indicator (the protocol's Open decision 14a), and five cells under the Nadeau–Bengio factor (0.2 + 0.286) leave
+  biodeg's and kc2's intervals wide.
+
