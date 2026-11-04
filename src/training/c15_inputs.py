@@ -8,7 +8,8 @@ how a gap is shown:
 - ``A2``: missForest's fill plus a gap indicator the column's value MLP reads, (fill, 1) at a gap and
   (value, 0) elsewhere; pre-training never hides a gap, so its holes are A1's;
 - ``A3``: missForest's fill, no indicator;
-- ``A4:<k>``: the k-th MICE draw (``IterativeImputer(sample_posterior=True)``, seed k), no indicator.
+- ``A4:<k>``: the k-th MICE draw (``IterativeImputer(sample_posterior=True)``, seed k), no indicator;
+- ``A5:<column>``: A1 with that column's token blocked as a key in every layer (a null model that cannot read it).
 
 The imputer is fitted on the fold's training rows' features, never the label, and fills every row of
 the fold. Numerical tables only, as C15's are.
@@ -26,16 +27,23 @@ from .missforest import MissForestImputer
 from .types import FoldSplit, PreparedDataset
 
 GAP_PREFIX = "__gap__"
-ARM_PATTERN = re.compile(r"^(off|A1|A2|A3|A4:\d+)$")
+ARM_PATTERN = re.compile(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$")
 
 
 def has_indicator(arm: str) -> bool:
     return arm == "A2"
 
 
+def blocked_position(arm: str, categorical: list[str], numerical: list[str]) -> int | None:
+    """A5's blocked sequence position: 1 for [CLS] plus the column's token index; None for every other arm."""
+    if not arm.startswith("A5:"):
+        return None
+    return 1 + (list(categorical) + list(numerical)).index(arm.split(":", 1)[1])
+
+
 def fold_dataset(dataset: PreparedDataset, fold: FoldSplit, arm: str) -> PreparedDataset:
     """``dataset`` as this fold's arm shows it: A1 unchanged, the others filled from the training rows."""
-    if arm in ("off", "A1"):
+    if arm in ("off", "A1") or arm.startswith("A5:"):
         return dataset
     if dataset.categorical_columns:
         raise ValueError(f"C15_ARM {arm} takes numerical tables only")

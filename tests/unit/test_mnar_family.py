@@ -73,3 +73,12 @@ def test_mcar_hides_the_matched_count_without_regard_to_class() -> None:
     for column in ("a", "b"):
         gaps = variant[column].isna().to_numpy()
         assert gaps.sum() == round(len(complete) * 0.6) and abs(gaps[y == 1].mean() - gaps[y == 0].mean()) < 0.05
+
+
+def test_sign_hides_the_tail_that_raises_class_one_or_the_one_that_lowers_it() -> None:
+    stream = np.random.default_rng(1)
+    a = stream.normal(size=4000)
+    complete = pd.DataFrame({"a": a, "class": np.where(a + stream.normal(size=4000) > 0, "yes", "no")})
+    plus = mnar_family.sign(complete, 0.6, "plus", seed=5)["a"].isna().to_numpy()
+    minus = mnar_family.sign(complete, 0.6, "minus", seed=5)["a"].isna().to_numpy()
+    assert a[plus].mean() > a[~plus].mean() and a[minus].mean() < a[~minus].mean()

@@ -105,10 +105,16 @@ class TabularTransformerEncoder(nn.Module):
         # whatever reads it. ``none``, every run before the choice, is an Identity: no parameter,
         # no draw, the same outputs; a LayerNorm draws nothing either.
         self.final_norm: nn.Module = nn.LayerNorm(d_model) if final_norm == "layer" else nn.Identity()
+        # C15's A5 (null model): one sequence position no query may attend to, in every layer. None, the
+        # default, masks nothing; it is not a parameter and draws nothing.
+        self.blocked_key: int | None = None
 
     def forward(self, x, src_key_padding_mask=None):
         # x: B, T, d_model
         mask = src_key_padding_mask  # True for pads
+        if mask is None and self.blocked_key is not None:
+            mask = torch.zeros(x.shape[0], x.shape[1], dtype=torch.bool, device=x.device)
+            mask[:, self.blocked_key] = True
         x = self.pre_norm(x)
         for layer in self.layers:
             x = layer(x, mask)

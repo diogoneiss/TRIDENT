@@ -3549,3 +3549,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   in [c15-mnar-prediction/05](tickets/c15-mnar-prediction/05-stage3.md).
 - **Sources:** [c15-mnar-prediction/05](tickets/c15-mnar-prediction/05-stage3.md).
 
+### E127 · C15 Stage 4 (optional): A4 on the dial, the sign arm, A3 and the null model A5 (2026-11-04)
+
+- **Status:** pre-registered; runs on idle GPUs only if G1 (E124) passes; descriptive
+- **Hypothesis:** none decides H2; H2-dial (A4's loss against A1's grows along the tilt), the sign arm's contrast
+  signs, what the indicator adds over the same fill (A2 − A3), and the null model's exact-zero contrast.
+- **Scenarios:** A4 on F2 (45 cells), A1/A2 on F4 (36), A3 on the 60nan self-masking and MCAR pairs (24), A5 on the
+  four self-masking 60nan variants (12); seeds 42/7/13.
+- **Measures and decision rule:** descriptive, in [c15-mnar-prediction/06](tickets/c15-mnar-prediction/06-stage4.md).
+- **Sources:** [c15-mnar-prediction/06](tickets/c15-mnar-prediction/06-stage4.md).
+

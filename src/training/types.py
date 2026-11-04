@@ -323,8 +323,8 @@ class Hyperparameters:
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
-        if not re.match(r"^(off|A1|A2|A3|A4:\d+)$", self.c15_arm):
-            raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3 or A4:<draw>")
+        if not re.match(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$", self.c15_arm):
+            raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3, A4:<draw> or A5:<column>")
         if self.min_steps_per_epoch < 0:
             raise ValueError(f"The minimum steps an epoch counts steps, so it cannot be {self.min_steps_per_epoch}")
         if self.decode_freeze_epochs < 0:

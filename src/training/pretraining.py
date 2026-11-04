@@ -11,7 +11,7 @@ from src.models import EmaTargetPretrainer, NormalizedEmbeddingPretrainer, Tride
 from src.transformer import TabularTransformerEncoder
 
 from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
-from .c15_inputs import has_indicator
+from .c15_inputs import blocked_position, has_indicator
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
@@ -71,6 +71,10 @@ def train_pretrainer(
         dim_feedforward=hyperparameters.feedforward_dimension,
         dropout=hyperparameters.dropout,
         final_norm=hyperparameters.encoder_final_norm,
+    )
+    # C15's A5: the transformer object carries the block into fine-tuning, which reuses it.
+    transformer.blocked_key = blocked_position(
+        hyperparameters.c15_arm, list(dataset.categorical_columns), list(dataset.numerical_columns)
     )
     model = _stage_model(embedder, transformer, hyperparameters).to(device)
 

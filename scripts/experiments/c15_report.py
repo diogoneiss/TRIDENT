@@ -13,8 +13,8 @@ plain one is printed beside it.
 
 **G1's contrast:** for each test row whose noise cell (``c15_noise``) is a gap, A1's logit P(y = 1) with the
 gap as ``[NULL]`` minus the logit of the mean P(y = 1) over K = 20 MICE draws of that cell given the row (an
-``IterativeImputer(sample_posterior=True)`` fitted on the fold's training rows' features, one fit per draw,
-seeds 0-19), the row's other gaps left ``[NULL]``; averaged over the fold's gap cells.
+``IterativeImputer(sample_posterior=True)`` fitted once, seed 0, on the fold's training rows' features, then K
+posterior draws by K transforms), the row's other gaps left ``[NULL]``; averaged over the fold's gap cells.
 """
 
 from __future__ import annotations
@@ -95,6 +95,9 @@ def model_for(variant: str, seed: int, arm: str, state: dict[str, torch.Tensor])
         d_model=embedder.dimensao, nhead=h.heads, num_layers=h.layers,
                                             dim_feedforward=h.feedforward_dimension, dropout=h.dropout,
                                             final_norm=h.encoder_final_norm)
+    from src.training.c15_inputs import blocked_position
+
+    transformer.blocked_key = blocked_position(arm, list(data.categorical_columns), list(data.numerical_columns))
     model = TridentModel(  # type: ignore[no-untyped-call]
         embedder=embedder, transformer=transformer, num_labels=len(data.label_classes),
                          class_weights=torch.ones(len(data.label_classes)))
@@ -134,6 +137,7 @@ def contrast(variant: str, fold_number: int, fold: dict[str, Any]) -> float:
 
     model, data = model_for(variant, 42, "A1", fold["state_dict"])
     split = build_folds(data.frame, data.label_column, 5, 42)[fold_number - 1]
+    torch.set_num_threads(1)
     assert np.array_equal(np.asarray(split.test_indices), fold["test_indices"])
     columns = list(data.numerical_columns)
     features = data.frame[columns]
@@ -145,9 +149,9 @@ def contrast(variant: str, fold_number: int, fold: dict[str, Any]) -> float:
     j = columns.index(NOISE)
     p_null = probabilities(model, test.iloc[rows].reset_index(drop=True))[:, 1]
     drawn = np.zeros((K, len(rows)))
+    imputer = IterativeImputer(sample_posterior=True, random_state=0).fit(train)
     for k in range(K):
-        imputer = IterativeImputer(sample_posterior=True, random_state=k).fit(train)
-        filled = imputer.transform(test.iloc[rows].to_numpy(dtype=float))
+        filled = imputer.transform(test.iloc[rows].to_numpy(dtype=float))  # a fresh posterior draw each call
         frame = test.iloc[rows].reset_index(drop=True).copy()
         frame[NOISE] = filled[:, j]
         drawn[k] = probabilities(model, frame)[:, 1]

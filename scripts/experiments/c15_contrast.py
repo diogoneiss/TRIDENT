@@ -5,7 +5,8 @@
 
 **H2.2's direct contrast** (A1) for column j on a fold's test rows whose j is a gap: the logit of P(y = 1) with
 every gap ``[NULL]``, minus the logit of the mean P(y = 1) over K = 20 MICE draws of x_ij given the row
-(``IterativeImputer(sample_posterior=True)``, seeds 0-19, fitted on the fold's training rows' features), the row's
+(``IterativeImputer(sample_posterior=True)``, fitted once, seed 0, on the fold's training rows' features, then K
+posterior draws by K transforms), the row's
 other gaps left ``[NULL]``; on vehicle, the total variation between the two class distributions. C_j is its mean
 over the column's gap cells; U_drive and U_nondrive are mean |C_j| over E122's driving columns and the rest
 (an outcome-dependent variant: every masked column). Cached per fold under ``<state>/h22``.
@@ -49,7 +50,8 @@ def _draws(train: np.ndarray, rows: np.ndarray) -> np.ndarray:
     from sklearn.experimental import enable_iterative_imputer  # type: ignore[import-untyped]  # noqa: F401
     from sklearn.impute import IterativeImputer  # type: ignore[attr-defined]
 
-    return np.stack([IterativeImputer(sample_posterior=True, random_state=k).fit(train).transform(rows) for k in range(K)])
+    imputer = IterativeImputer(sample_posterior=True, random_state=0).fit(train)
+    return np.stack([imputer.transform(rows) for _ in range(K)])  # each transform draws afresh from the posterior
 
 
 def column_contrasts(variant: str, seed: int, fold_number: int) -> dict[str, float]:
@@ -59,6 +61,9 @@ def column_contrasts(variant: str, seed: int, fold_number: int) -> dict[str, flo
     cache = OUT / f"{variant}_s{seed}_f{fold_number}.json"
     if cache.exists():
         return dict(json.loads(cache.read_text()))
+    import torch
+
+    torch.set_num_threads(1)
     folds = rep.readouts("A1", variant, seed)
     assert folds is not None, f"A1 {variant} s{seed} missing"
     fold = folds[fold_number - 1]

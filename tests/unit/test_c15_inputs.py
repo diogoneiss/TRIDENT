@@ -72,3 +72,26 @@ def test_the_indicator_reaches_the_token() -> None:
 def test_an_unknown_arm_is_refused() -> None:
     with pytest.raises(ValueError):
         Hyperparameters.from_mapping({"C15_ARM": "A9"})
+
+
+def test_a5_cannot_read_its_blocked_column() -> None:
+    from src.models import TridentModel
+    from src.training.c15_inputs import blocked_position
+    from src.transformer import TabularTransformerEncoder
+
+    data = _dataset()
+    features = data.frame.drop(columns="class")
+    torch.manual_seed(0)
+    embedder = TabularEmbedder(features, [], ["a", "b"], dimensao=8, hidden_dim=16)
+    transformer = TabularTransformerEncoder(d_model=8, nhead=2, num_layers=2, dim_feedforward=16, dropout=0.0)
+    transformer.blocked_key = blocked_position("A5:a", [], ["a", "b"])
+    model = TridentModel(embedder, transformer, num_labels=2).eval()
+    shifted = features.assign(a=features["a"] * 7 + 3)
+    from src.utils import preprocess_table
+
+    with torch.no_grad():
+        one = model(embedder.encode(preprocess_table(features, p_base=0.0, fine_tunning=True)))
+        two = model(embedder.encode(preprocess_table(shifted, p_base=0.0, fine_tunning=True)))
+        transformer.blocked_key = None
+        three = model(embedder.encode(preprocess_table(shifted, p_base=0.0, fine_tunning=True)))
+    assert torch.equal(one, two) and not torch.allclose(one, three)

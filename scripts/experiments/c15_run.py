@@ -54,7 +54,18 @@ P_FRESH = ("biodeg_probit0p5_s4848_60nan", "vehicle_probit0p5_s4848_60nan",
            *(f"{b}_outcome3p0_s4848_60nan" for b in ("biodeg", "kc2", "spambase")))
 SIBLINGS_FRESH = tuple(f"{b}_mcar_s4848_60nan" for b in ("biodeg", "vehicle", "kc2", "spambase"))
 STAGE3: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1", "A2") for v in P_FRESH + SIBLINGS_FRESH for s in CONFIRMATION_SEEDS}
-STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "2": STAGE2, "3": STAGE3}
+# Stage 4 (ticket 06, the user's go if the GPUs fall idle): A4 on F2; A1, A2 on F4 (the sign arm); A3 on the four
+# 60nan self-masking pairs and their MCAR siblings; A5 (the top driving column of E122's table blocked) on F1 at 60nan.
+F4 = tuple(f"{b}_sign{d}_s2060_60nan" for b in ("biodeg", "kc2", "spambase") for d in ("plus", "minus"))
+SIXTY = ("biodeg", "kc2", "vehicle", "spambase")
+BLOCKED = {"biodeg": "V36", "kc2": "total_Opnd", "vehicle": "PR.AXIS_ASPECT_RATIO", "spambase": "word_freq_george"}
+STAGE4: dict[tuple[str, int], tuple[str, ...]] = {
+    **{(v, s): A4 for v in F2 for s in SEEDS},
+    **{(v, s): ("A1", "A2") for v in F4 for s in SEEDS},
+    **{(f"{b}_60nan", s): ("A3",) for b in SIXTY for s in SEEDS},
+    **{(f"{b}_probit_60nan", s): ("A3", f"A5:{BLOCKED[b]}") for b in SIXTY for s in SEEDS},
+}
+STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "2": STAGE2, "3": STAGE3, "4": STAGE4}
 
 
 def machine(pair: tuple[str, int]) -> str:

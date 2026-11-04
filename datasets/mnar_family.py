@@ -17,6 +17,10 @@ reproduce.
 - ``noise`` (F5, the positive control): the MCAR file ``<base>_<pp>nan`` plus one N(0, 1) column,
   ``c15_noise``, whose ``round(n * pct)`` gaps follow ``odds ** y``; the other columns are the MCAR
   file's. Writes ``<base>_noise<odds>_s<seed>_<pp>nan``. Its gap is the column's only signal.
+- ``sign`` (C15's F4): self-masking with column j's slope ``+0.5 * sign_j`` (``--direction plus``) or
+  ``-0.5 * sign_j`` (``minus``), sign_j the sign of j's coefficient in an L2 logistic regression on the
+  standardised complete table, so the hidden tail is the one that raises (plus) or lowers (minus) P(y = 1).
+  Binary tables only. Writes ``<base>_sign<direction>_s<seed>_<pp>nan``.
 - ``mcar`` (fresh MCAR siblings for confirmation): uniform weights, ``<base>_mcar_s<seed>_<pp>nan``.
 - ``probit`` (fresh self-masking draws for confirmation): weights Phi(slope * z), z the column
   standardised on the complete table, as ``generate_mnar.py`` but seeded per column. Writes
@@ -100,6 +104,29 @@ def probit(complete: pd.DataFrame, pct: float, slope: float, seed: int) -> pd.Da
     return hide(complete, [c for c in complete.columns if c != TARGET], pct, seed, weights)
 
 
+def signs(complete: pd.DataFrame) -> dict[str, float]:
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.preprocessing import StandardScaler
+
+    y = labels(complete)
+    if len(np.unique(y)) != 2:
+        raise ValueError("the sign family needs a binary label")
+    features = [c for c in complete.columns if c != TARGET]
+    coef = LogisticRegression(max_iter=5000).fit(StandardScaler().fit_transform(complete[features]), y).coef_[0]
+    return {c: float(np.sign(v)) or 1.0 for c, v in zip(features, coef)}
+
+
+def sign(complete: pd.DataFrame, pct: float, direction: str, seed: int) -> pd.DataFrame:
+    s = signs(complete)
+    flip = 1.0 if direction == "plus" else -1.0
+
+    def weights(column: str, values: NDArray[np.float64]) -> NDArray[np.float64]:
+        spread = values.std()
+        z = (values - values.mean()) / spread if spread > 0 else np.zeros_like(values)
+        return np.asarray(norm.cdf(flip * 0.5 * s[column] * z), dtype=float)
+    return hide(complete, [c for c in complete.columns if c != TARGET], pct, seed, weights)
+
+
 def mcar(complete: pd.DataFrame, pct: float, seed: int) -> pd.DataFrame:
     return hide(complete, [c for c in complete.columns if c != TARGET], pct, seed, lambda _c, v: np.ones(len(v)))
 
@@ -139,7 +166,8 @@ def report(frame: pd.DataFrame, reference: pd.DataFrame | None, name: str) -> No
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("family", choices=["outcome", "noise", "probit", "mcar"])
+    parser.add_argument("family", choices=["outcome", "noise", "probit", "mcar", "sign"])
+    parser.add_argument("--direction", choices=["plus", "minus"], default="plus")
     parser.add_argument("--bases", nargs="+", required=True)
     parser.add_argument("--pct", type=float, required=True)
     parser.add_argument("--seed", type=int, required=True)
@@ -154,6 +182,8 @@ def main(argv: list[str]) -> int:
         elif o.family == "noise":
             frame = noise(pd.read_csv(ROOT / base / f"{base}_{level}.csv"), o.pct, o.odds, o.seed)
             name = f"{base}_noise{dial(o.odds)}_s{o.seed}_{level}"
+        elif o.family == "sign":
+            frame, name = sign(complete, o.pct, o.direction, o.seed), f"{base}_sign{o.direction}_s{o.seed}_{level}"
         elif o.family == "mcar":
             frame, name = mcar(complete, o.pct, o.seed), f"{base}_mcar_s{o.seed}_{level}"
         else:
