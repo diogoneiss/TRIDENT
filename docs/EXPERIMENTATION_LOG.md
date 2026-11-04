@@ -3655,7 +3655,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E133 · C1's fine-tuning fix: encoder at a tenth of the rate, or frozen for 50 epochs, against S; the probe with a converging head (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done: neither arm helps (no verdict, means negative)
 - **Hypothesis:** a gentler fine-tuning keeps what pre-training left (E132: about +0.01 to a frozen head) without losing
   what full fine-tuning adds, so LRS or FRZ beats S on macro-F1; the ceiling is about +0.01.
 - **Scenarios:** LRS (`FINETUNE_ENCODER_LR_SCALE 0.1`) and FRZ (`FINETUNE_FREEZE_EPOCHS 50`) on
@@ -3664,3 +3664,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** X − S macro-F1 pooled over the four MNAR files, plain 95% t interval, Holm over the
   two arms: helps / hurts / no verdict; MCAR second step, X − B and FP10 − FR10 descriptive.
 - **Sources:** [c1-split/05](tickets/c1-split/05-finetuning-fix.md).
+- **Results (2026-11-04 19:31 GMT-3):** LRS − S −0.0013 [−0.0067, +0.0041], FRZ − S −0.0027 [−0.0142, +0.0088] on the MNAR files
+  (Holm p 1.0); MCAR +0.003 / +0.000; X − B within +0.013 everywhere. Kept epochs move from 14–25 (S) to 52–137 (LRS)
+  and 74–109 (FRZ) at the same scores. FP10/FR10 diverged at the higher head rate (spambase at chance): no reading.
+- **Conclusion:** a gentler fine-tuning keeps nothing measurable of pre-training; the fine-tuning side of C1's channel is
+  closed, and the +0.01 ceiling from E132 was not reached. E131 stays Inconclusive.
