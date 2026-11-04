@@ -3528,3 +3528,24 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   and A1's noise-column contrast above 0 (Nadeau–Bengio corrected intervals); 1b descriptive.
 - **Sources:** [c15-mnar-prediction/03](tickets/c15-mnar-prediction/03-stage1.md).
 
+### E125 · C15 Stage 2: A4 (MICE, no indicator), the complete and MAR tables; H2-c2, H2.2 and H2b on development (2026-11-04)
+
+- **Status:** pre-registered; runs only if G1 (E124) passes
+- **Hypothesis:** A1 beats A4 on P's development counterparts (H2-c2); the direct contrast grows on driving columns
+  under MNAR (H2.2 dry run, E63's MAR the negative control); mask-reading arms lose more than A4 under shifted test
+  patterns (H2b).
+- **Scenarios:** A4:0–4 on F0, F1, F3 × seeds 42/7/13 (300 cells); A1 on F7 (12) and F6 (18).
+- **Measures and decision rule:** the protocol's, in [c15-mnar-prediction/04](tickets/c15-mnar-prediction/04-stage2.md).
+- **Sources:** [c15-mnar-prediction/04](tickets/c15-mnar-prediction/04-stage2.md).
+
+### E126 · C15 Stage 3: H2's confirmation, A1 against A2 on fresh draws of P (2026-11-04)
+
+- **Status:** pre-registered; runs only if G1 (E124) passes; read once
+- **Hypothesis (H2):** `[NULL]` tokens are non-inferior to missForest + indicator, pooled over P (−0.01 macro-F1,
+  +2% relative log loss), and inferior on no variant.
+- **Scenarios:** A1, A2 on P's fresh draws (5) and their MCAR siblings (4), data seed 4848, model seeds 1515/2626/3737,
+  54 cells on medusa1.
+- **Measures and decision rule:** pooled D_c over P, Nadeau–Bengio corrected; supported / reversed / inconclusive as
+  in [c15-mnar-prediction/05](tickets/c15-mnar-prediction/05-stage3.md).
+- **Sources:** [c15-mnar-prediction/05](tickets/c15-mnar-prediction/05-stage3.md).
+
