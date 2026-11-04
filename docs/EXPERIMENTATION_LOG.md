@@ -3652,3 +3652,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** pre-training leaves label-relevant structure worth about one macro-F1 point to a frozen head, and
   full fine-tuning adds ten times that from either start: washout, the imputation side's diagnosis. A fine-tuning-side
   fix is bounded near +0.01; the user decides whether to run it.
+
+### E133 · C1's fine-tuning fix: encoder at a tenth of the rate, or frozen for 50 epochs, against S; the probe with a converging head (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** a gentler fine-tuning keeps what pre-training left (E132: about +0.01 to a frozen head) without losing
+  what full fine-tuning adds, so LRS or FRZ beats S on macro-F1; the ceiling is about +0.01.
+- **Scenarios:** LRS (`FINETUNE_ENCODER_LR_SCALE 0.1`) and FRZ (`FINETUNE_FREEZE_EPOCHS 50`) on
+  `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (48 cells); FP10 and FR10 (E132's
+  frozen arms with the head at ten times the rate) on the four MNAR files (24 cells).
+- **Measures and decision rule:** X − S macro-F1 pooled over the four MNAR files, plain 95% t interval, Holm over the
+  two arms: helps / hurts / no verdict; MCAR second step, X − B and FP10 − FR10 descriptive.
+- **Sources:** [c1-split/05](tickets/c1-split/05-finetuning-fix.md).

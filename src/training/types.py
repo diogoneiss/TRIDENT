@@ -283,6 +283,13 @@ class Hyperparameters:
     # transformer through fine-tuning (eval mode, out of the optimizer), so only the head trains; ``off``,
     # every run before it, changes nothing.
     finetune_freeze_encoder: str = "off"
+    # C1's fix arms (docs/tickets/c1-split/05-finetuning-fix.md), the fine-tuning analogues of the decode
+    # stage's: the first ``finetune_freeze_epochs`` epochs train the head only; the encoder trains at
+    # ``finetune_encoder_lr_scale`` times the base rate and the head at ``finetune_head_lr_scale`` times it.
+    # The defaults (0, 1.0, 1.0) keep one optimizer group at one rate, as every run before them.
+    finetune_freeze_epochs: int = 0
+    finetune_encoder_lr_scale: float = 1.0
+    finetune_head_lr_scale: float = 1.0
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -333,6 +340,10 @@ class Hyperparameters:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
         if not re.match(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$", self.c15_arm):
             raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3, A4:<draw> or A5:<column>")
+        if self.finetune_freeze_epochs < 0:
+            raise ValueError(f"The fine-tuning freeze counts epochs, so it cannot be {self.finetune_freeze_epochs}")
+        if not self.finetune_encoder_lr_scale > 0 or not self.finetune_head_lr_scale > 0:
+            raise ValueError("The fine-tuning learning-rate scales must be positive")
         if self.finetune_freeze_encoder not in ("off", "all"):
             raise ValueError(f"Unknown fine-tuning freeze {self.finetune_freeze_encoder!r}; expected off or all")
         if self.pretrain_hole_token not in ("mask", "null"):
@@ -405,6 +416,9 @@ class Hyperparameters:
             c15_arm=str(values.get("C15_ARM", values.get("c15_arm", "off"))),
             pretrain_hole_token=str(values.get("PRETRAIN_HOLE_TOKEN", values.get("pretrain_hole_token", "mask"))),
             finetune_freeze_encoder=str(values.get("FINETUNE_FREEZE_ENCODER", values.get("finetune_freeze_encoder", "off"))),
+            finetune_freeze_epochs=int(values.get("FINETUNE_FREEZE_EPOCHS", values.get("finetune_freeze_epochs", 0))),
+            finetune_encoder_lr_scale=float(values.get("FINETUNE_ENCODER_LR_SCALE", values.get("finetune_encoder_lr_scale", 1.0))),
+            finetune_head_lr_scale=float(values.get("FINETUNE_HEAD_LR_SCALE", values.get("finetune_head_lr_scale", 1.0))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

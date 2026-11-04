@@ -87,3 +87,29 @@ def test_a_frozen_encoder_does_not_move_while_the_head_does() -> None:
     encoder_keys = [k for k in before if k.startswith(("embedder.", "transformer."))]
     assert encoder_keys and all(torch.equal(before[k], after[k]) for k in encoder_keys)
     assert any(not torch.equal(before[k], after[k]) for k in before if k.startswith("classifier."))
+
+
+def test_the_fix_flags_build_the_optimizer_groups_they_name() -> None:
+    from src.models import TridentModel
+    from src.training.finetuning import _finetune_parameters
+    from src.training.types import Hyperparameters
+    from src.transformer import TabularTransformerEncoder
+
+    frame = _frame()
+    embedder = TabularEmbedder(frame, ["c"], ["a", "b"], dimensao=8, hidden_dim=16)
+    model = TridentModel(embedder, TabularTransformerEncoder(d_model=8, nhead=2, num_layers=1, dim_feedforward=16, dropout=0.0), num_labels=2)
+    plain = Hyperparameters.from_mapping({})
+    assert plain.finetune_freeze_epochs == 0 and plain.finetune_encoder_lr_scale == 1.0 and plain.finetune_head_lr_scale == 1.0
+    assert not isinstance(_finetune_parameters(model, plain), list)  # one group, every run before the arms
+    scaled = Hyperparameters.from_mapping({"FINETUNE_ENCODER_LR_SCALE": 0.1})
+    head, encoder = _finetune_parameters(model, scaled)
+    assert head["lr"] == pytest.approx(0.001) and encoder["lr"] == pytest.approx(0.0001)
+    assert len(head["params"]) + len(encoder["params"]) == len(list(model.parameters()))
+    frozen = Hyperparameters.from_mapping({"FINETUNE_FREEZE_ENCODER": "all", "FINETUNE_HEAD_LR_SCALE": 10})
+    (only,) = _finetune_parameters(model, frozen)
+    assert only["lr"] == pytest.approx(0.01) and len(only["params"]) == len(list(model.classifier.parameters()))
+    assert Hyperparameters.from_mapping({"FINETUNE_FREEZE_EPOCHS": 50}).finetune_freeze_epochs == 50
+    with pytest.raises(ValueError):
+        Hyperparameters.from_mapping({"FINETUNE_FREEZE_EPOCHS": -1})
+    with pytest.raises(ValueError):
+        Hyperparameters.from_mapping({"FINETUNE_ENCODER_LR_SCALE": 0})

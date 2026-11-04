@@ -5,6 +5,7 @@
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --anchor    # S(normalized) − S(embedding)
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --cosine    # [MASK]_j · [NULL]_j in S
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --channel   # E132: frozen pre-trained vs frozen random
+    uv run --python 3.11 python -B scripts/experiments/c1_report.py --fix       # E133: LRS and FRZ against S, Holm over the two
 
 Cells come from both machines' state directories (medusa1's copied under ``<state>/medusa``); S's decision-mode
 cells are E124's A1 cells (``c15_report.readouts``). Macro-F1 is recomputed from each fold's test probabilities,
@@ -202,6 +203,47 @@ def channel() -> None:
               f"B − FR: {c15.interval(np.mean(b_fr, axis=0), False)[0]:+.4f}")
 
 
+def fix() -> None:
+    """E133: LRS and FRZ against S on the four MNAR files (Holm over the two arms), then the MCAR files; FP10 − FR10 beside."""
+    from scipy import stats
+
+    print("## Fix (E133): X − S macro-F1 for X in LRS (encoder LR x0.1) and FRZ (head alone for 50 epochs), 15 paired "
+          "replicates a file, pooled over the four MNAR files; plain 95% t intervals, Holm over the two arms; MCAR second")
+    for label, files in (("MNAR", run.MNAR), ("MCAR", run.MCAR)):
+        print(f"\n### {label}")
+        pooled: dict[str, np.ndarray] = {}
+        for arm in ("LRS", "FRZ"):
+            ds, bs = [], []
+            for v in files:
+                d, b = paired(arm, "S", v), paired(arm, "B", v)
+                if d is None or b is None:
+                    print(f"- {arm} {v}: missing\n\nPrimary (E133): incomplete")
+                    return
+                ds.append(d[0]); bs.append(b[0])
+                print(f"- {arm} − S {v}: F1 {line('', d[0], MARGIN)}; LL(S) − LL({arm}) {c15.interval(d[1], False)[0]:+.4f}; "
+                      f"{arm} − B {c15.interval(b[0], False)[0]:+.4f}")
+            pooled[arm] = np.mean(ds, axis=0)
+        p = {arm: float(stats.ttest_1samp(pooled[arm], 0).pvalue) for arm in pooled}
+        order = sorted(p, key=lambda arm: p[arm])
+        holm = {order[0]: min(1.0, 2 * p[order[0]]), order[1]: min(1.0, max(2 * p[order[0]], p[order[1]]))}
+        for arm in ("LRS", "FRZ"):
+            m, lo, hi = c15.interval(pooled[arm], False)
+            _, nlo, nhi = c15.interval(pooled[arm])
+            verdict = ("helps" if m > 0 else "hurts") if holm[arm] < 0.05 else "no verdict"
+            print(f"\nPooled {arm} − S ({label}): {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); "
+                  f"p {p[arm]:.4f}, Holm {holm[arm]:.4f} -> {verdict}")
+    print("\n### The probe with a converging head (descriptive): FP10 − FR10 on the MNAR files, against E132's FP − FR")
+    ds, old = [], []
+    for v in run.MNAR:
+        d, e = paired("FP10", "FR10", v), paired("FP", "FR", v)
+        if d is None or e is None:
+            print(f"- {v}: missing")
+            return
+        ds.append(d[0]); old.append(e[0])
+        print(f"- {v}: FP10 − FR10 {line('', d[0], MARGIN)}; FP − FR was {c15.interval(e[0], False)[0]:+.4f}")
+    print(f"Pooled FP10 − FR10: {line('', np.mean(ds, axis=0), MARGIN)}; FP − FR was {c15.interval(np.mean(old, axis=0), False)[0]:+.4f}")
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -224,7 +266,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

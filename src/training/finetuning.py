@@ -1,7 +1,7 @@
 """Classifier fine-tuning and fold metric calculation."""
 
 from dataclasses import replace
-from typing import Sequence
+from typing import Any, Sequence
 
 import numpy as np
 import torch
@@ -15,6 +15,21 @@ from src.utils import preprocess_table
 
 from .schedulers import StageScheduler, batches_per_epoch
 from .types import FinetuningOutcome, FoldResult, FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
+
+
+def _finetune_parameters(model: Any, hyperparameters: Hyperparameters) -> Any:
+    """What fine-tuning's optimizer trains: every parameter at one rate, as every run before C1's arms;
+    the head alone under ``FINETUNE_FREEZE_ENCODER all``; or two groups, the head at
+    ``finetune_head_lr_scale`` and the encoder at ``finetune_encoder_lr_scale`` times the base rate."""
+    base = hyperparameters.finetuning_learning_rate
+    head = list(model.classifier.parameters())
+    if hyperparameters.finetune_freeze_encoder == "all":
+        return head if hyperparameters.finetune_head_lr_scale == 1.0 else [{"params": head, "lr": base * hyperparameters.finetune_head_lr_scale}]
+    if hyperparameters.finetune_encoder_lr_scale == 1.0 and hyperparameters.finetune_head_lr_scale == 1.0:
+        return model.parameters()
+    encoder = [*model.embedder.parameters(), *model.transformer.parameters()]
+    return [{"params": head, "lr": base * hyperparameters.finetune_head_lr_scale},
+            {"params": encoder, "lr": base * hyperparameters.finetune_encoder_lr_scale}]
 
 
 def build_fold_result(
@@ -108,11 +123,12 @@ def train_and_evaluate_classifier(
     # C1's channel probe (``FINETUNE_FREEZE_ENCODER all``): the encoder stays as pre-training left it,
     # in eval mode (no dropout) and out of the optimizer; the head alone trains.
     frozen = hyperparameters.finetune_freeze_encoder == "all"
+    encoder = [*model.embedder.parameters(), *model.transformer.parameters()]
     if frozen:
-        for parameter in list(model.embedder.parameters()) + list(model.transformer.parameters()):
+        for parameter in encoder:
             parameter.requires_grad_(False)
     optimizer = optim.AdamW(
-        model.classifier.parameters() if frozen else model.parameters(),
+        _finetune_parameters(model, hyperparameters),
         lr=hyperparameters.finetuning_learning_rate,
         weight_decay=hyperparameters.finetuning_weight_decay,
     )
@@ -139,7 +155,13 @@ def train_and_evaluate_classifier(
     print("\n=== Starting Fine-Tuning (Classification) ===")
     for epoch in tqdm(range(hyperparameters.finetuning_epochs), desc="Fine-tuning epochs"):
         model.train()
-        if frozen:
+        # C1's fix arm: the first ``finetune_freeze_epochs`` epochs train the head on a fixed encoder
+        # (a frozen parameter gets no gradient, so AdamW leaves it alone, weight decay included).
+        held = frozen or epoch < hyperparameters.finetune_freeze_epochs
+        if hyperparameters.finetune_freeze_epochs and not frozen:
+            for parameter in encoder:
+                parameter.requires_grad_(not held)
+        if held:
             model.embedder.eval()
             model.transformer.eval()
         # Drawn on the CPU generator, then moved once so batch slicing stays on device.
