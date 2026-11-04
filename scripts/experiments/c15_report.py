@@ -1,6 +1,7 @@
 """C15 Stage 1's readers (docs/tickets/c15-mnar-prediction/03-stage1.md): gate G1 and the development tally.
 
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --g1      # on F5, short mode
+    uv run --python 3.11 python -B scripts/experiments/c15_report.py --g1c     # G1 again, A2 − A3, decision mode
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --tally   # Stage 1b, descriptive
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --check   # reloaded models equal their readouts
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --h2      # Stage 3: H2, read once (ticket 05)
@@ -128,15 +129,15 @@ def check() -> None:
         print(f"- {variant}: largest |reloaded - written| test probability {worst:.2e}")
 
 
-def contrast(variant: str, fold_number: int, fold: dict[str, Any]) -> float:
+def contrast(variant: str, fold_number: int, fold: dict[str, Any], seed: int = 42) -> float:
     """G1's direct contrast on the noise column for one A1 fold (module docstring)."""
     from sklearn.experimental import enable_iterative_imputer  # type: ignore[import-untyped]  # noqa: F401
     from sklearn.impute import IterativeImputer  # type: ignore[attr-defined]
 
     from src.training.data import build_folds
 
-    model, data = model_for(variant, 42, "A1", fold["state_dict"])
-    split = build_folds(data.frame, data.label_column, 5, 42)[fold_number - 1]
+    model, data = model_for(variant, seed, "A1", fold["state_dict"])
+    split = build_folds(data.frame, data.label_column, 5, seed)[fold_number - 1]
     torch.set_num_threads(1)
     assert np.array_equal(np.asarray(split.test_indices), fold["test_indices"])
     columns = list(data.numerical_columns)
@@ -184,6 +185,36 @@ def g1() -> None:
         print(f"- {variant}: A2 − A4 {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (plain {interval(rel, False)[1]:+.4f}); "
               f"A1 contrast {cm:+.3f} [{clo:+.3f}, {chi:+.3f}] logit -> {'pass' if ok else 'fail'}")
     print(f"\nPrimary (G1): {passes} of {len(run.F5)} -> {'passes' if passes >= 2 else 'fails'}")
+
+
+def g1c() -> None:
+    """G1 again (ticket 07, E128): A2 against A3 and A1's contrast, each over 15 cells (seeds 42/7/13 x 5 folds)."""
+    print("## G1 again (E128, F5, seeds 42/7/13 x 5 folds): (1) A2 − A3 relative test log loss below 0; (2) A1's "
+          "noise-column contrast above 0; Nadeau–Bengio corrected 95% t intervals over 15 cells; passes if both "
+          "hold on >= 2 of 3")
+    passes = 0
+    for variant in run.F5:
+        rel: list[np.ndarray] = []
+        c: list[float] = []
+        seeds: list[str] = []
+        for seed in run.SEEDS:
+            a1, a2, a3 = (readouts(arm, variant, seed) for arm in ("A1", "A2", "A3"))
+            if a1 is None or a2 is None or a3 is None:
+                print(f"- {variant} s{seed}: missing\n\nPrimary (G1 again): incomplete")
+                return
+            (_, ll_a2), (_, ll_a3) = scores(a2), scores(a3)
+            r = (ll_a2 - ll_a3) / ll_a3
+            rel.append(r)
+            seeds.append(f"s{seed} {r.mean():+.4f}")
+            c.extend(contrast(variant, k + 1, f, seed) for k, f in enumerate(a1))
+        m, lo, hi = interval(np.concatenate(rel))
+        cm, clo, chi = interval(np.asarray(c))
+        _, plo, phi = interval(np.concatenate(rel), False)
+        ok = hi < 0 and clo > 0
+        passes += ok
+        print(f"- {variant}: A2 − A3 {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (plain [{plo:+.4f}, {phi:+.4f}]; "
+              f"{', '.join(seeds)}); A1 contrast {cm:+.3f} [{clo:+.3f}, {chi:+.3f}] logit -> {'pass' if ok else 'fail'}")
+    print(f"\nPrimary (G1 again): {passes} of {len(run.F5)} -> {'passes' if passes >= 2 else 'fails'}")
 
 
 def tally() -> None:
@@ -285,6 +316,8 @@ def h2() -> None:
 if __name__ == "__main__":
     if sys.argv[1:] == ["--g1"]:
         g1()
+    elif sys.argv[1:] == ["--g1c"]:
+        g1c()
     elif sys.argv[1:] == ["--tally"]:
         tally()
     elif sys.argv[1:] == ["--h2"]:

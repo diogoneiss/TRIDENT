@@ -3565,3 +3565,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** descriptive, in [c15-mnar-prediction/06](tickets/c15-mnar-prediction/06-stage4.md).
 - **Sources:** [c15-mnar-prediction/06](tickets/c15-mnar-prediction/06-stage4.md).
 
+### E128 · C15's gate G1 again: A2 against A3 in decision mode (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** on F5 the indicator arm beats the same missForest fill without one (A2 − A3 below 0) and A1's direct
+  contrast on the noise column is positive, now over 15 cells. A deviation after E124's failure (the user's choice);
+  if it fails, C15 stops for good.
+- **Scenarios:** A3 at seeds 42/7/13 and A1, A2 at seeds 7/13 on F5's three controls (21 cells; E124's seed-42 A1 and
+  A2 reused), five folds, `embedding_normalized`; gorgona8 biodeg's and kc2's seed 13, medusa1 the rest.
+- **Measures and decision rule:** passes if, on at least 2 of 3 controls, A2 − A3 relative log loss is below 0 and
+  A1's contrast above 0 (Nadeau–Bengio corrected intervals over 15 cells).
+- **Sources:** [c15-mnar-prediction/07](tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md).

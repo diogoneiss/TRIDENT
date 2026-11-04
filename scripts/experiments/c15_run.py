@@ -3,6 +3,7 @@
     uv run --python 3.11 python -B scripts/experiments/c15_run.py train <arm> <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/c15_run.py --todo <n> <queues>
     C15_STAGE=2 ... --todo <n> <queues>    # Stage 2's cells (ticket 04); 3 for confirmation (ticket 05)
+    C15_STAGE=1c ... --todo <n> <queues>   # G1 again, A2 against A3 in decision mode (ticket 07)
 
 A cell is one (arm, variant, seed) at ``--cv_folds 5``; the arm is ``C15_ARM`` (``src/training/c15_inputs.py``)
 over the variant's resolved classification configuration with ``PRETRAIN_OBJECTIVE embedding_normalized``
@@ -68,11 +69,21 @@ STAGE4: dict[tuple[str, int], tuple[str, ...]] = {
     **{(f"{b}_60nan", s): ("A3",) for b in SIXTY for s in SEEDS},
     **{(f"{b}_probit_60nan", s): ("A3", f"A5:{BLOCKED[b]}") for b in SIXTY for s in SEEDS},
 }
-STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "2": STAGE2, "3": STAGE3, "4": STAGE4}
+# G1 again (ticket 07, E128, a deviation after E124's failure): A2 against A3 on F5 in decision mode. Seed 42's A1 and
+# A2 are E124's cells (medusa1); gorgona8 takes biodeg's and kc2's seed-13 pairs, medusa1 the rest.
+STAGE1C: dict[tuple[str, int], tuple[str, ...]] = {
+    **{(v, 42): ("A3",) for v in F5},
+    **{(v, s): ("A1", "A2", "A3") for v in F5 for s in (7, 13)},
+}
+STAGE1C_GORGONA8 = {(f"{b}_noise3p0_s2060_60nan", 13) for b in ("biodeg", "kc2")}
+STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "1c": STAGE1C, "2": STAGE2, "3": STAGE3,
+                                                             "4": STAGE4}
 
 
 def machine(pair: tuple[str, int]) -> str:
     """ADR 0035: every arm of a (variant, seed) pair, across stages, on one machine."""
+    if pair in STAGE1C_GORGONA8:
+        return "gorgona8"
     if pair in MACHINE:
         return MACHINE[pair]
     if pair[1] == 42 and pair[0].split("_")[0] in G8_TABLES:
