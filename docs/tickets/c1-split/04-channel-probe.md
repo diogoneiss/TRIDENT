@@ -83,3 +83,24 @@ Pooled S − FP (MCAR): +0.1109; B − FR: +0.1235
   fine-tuning adds; E50 found both fixes made pendigits worse on imputation. The paper's +1.7 points (Table 4) sits at
   the top of that bound. Whether a fix ticket is worth its cells is the user's decision; by this ticket's rule it is
   the branch that follows.
+
+## Addendum (2026-11-04 18:52 GMT-3): the loss curves, read before the fix ticket (the user's request)
+
+S and B were rerun on the four MNAR files at seed 42 with MLflow on (medusa1, tags `study=c1_diag_e132`, 18:43–18:50
+GMT-3; `scripts/experiments/c1_diag.py`), so both stages' per-epoch losses are in the store; the figure
+`figures/e132_loss_curves.png` (`c1_diag_extract.py`, `c1_diag_plot.py`) shows the 5-fold means with the 95% band on
+validation. Test is scored once, at the kept epoch, so there is no per-epoch test curve by design.
+
+- **Pre-training (300 epochs, `embedding_normalized`):** validation tracks training throughout and sits slightly below
+  it (dropout), no overfitting; the loss falls from about 1.5 to 0.02–0.08, with a plateau around epochs 60–130 and a
+  second descent under the cosine schedule; the minimum sits at epoch 260–295, still edging down at 300.
+- **Fine-tuning (150 epochs, LR 0.001 on every parameter):** training loss goes to 0.02–0.10 while validation loss
+  reaches its minimum at epoch 13–24 (0.37–0.98) and then rises two to three fold (last epoch 1.0–2.0). Strong
+  overfitting after about epoch 20, identical in shape for S and B; the kept-epoch rule (lowest class-weighted
+  validation cross-entropy) is what protects the test score, and it keeps a model that has been fine-tuned for only
+  about 15–25 epochs. In the reused cells (E124/E131, seed 42) the kept epochs are 9–76 for S, B and T, consistent.
+- **The frozen arms (E132):** FP's and FR's kept epochs are 132–149 of 150: the head alone had not converged at LR
+  0.001, so FP − FR was read on heads still improving; its +0.009 is a lower bound on the frozen advantage.
+- **What this says for the fix:** nothing is broken; the fine-tuning budget is tuned for a full fine-tune that peaks
+  at about epoch 20 and overfits after. A reduced encoder learning rate or an initial freeze acts on exactly that
+  window, and the frozen head needs a larger budget or rate before a frozen reading is fair.
