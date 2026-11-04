@@ -71,6 +71,14 @@ electricity_20nan (+0.3%), the largest table but one with 8 columns.
 - **Tests:** both regression fixtures and the unit suite (346 tests, mypy included) pass; no code
   changed.
 
+## Verification of decision 4 (2026-11-03 23:05 GMT-3)
+
+- **The files** (92a5ce9) resolve, for all four variants, to the same configuration as their MCAR sibling, with
+  the bigger encoder.
+- **Default run matches E121's BIG:** a plain run of pendigits_marf_20nan at seed 7 on medusa1, no override,
+  MLflow off, five folds, equals E121's BIG cell of that seed and machine on all 68 numeric fold-metric
+  columns, none differing.
+
 ## Consequences
 
 - **Cost:** a run of either variant costs about 1.9x what it did (pendigits about 73 against 38
