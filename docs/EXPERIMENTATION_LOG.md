@@ -3489,7 +3489,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E122 · C15 Stage 0: which MNAR variants carry informative missingness (gate G2)? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** invalid (G2's positive controls fail on 2 of 3)
 - **Hypothesis:** the indicators lower a GBDT's validation log loss by at least 2% on the positive controls (F5)
   and on some self-masking (F1) and outcome-dependent (F3) variants, which then form C15's primary set P.
 - **Scenarios:** 19 candidates (F1 7, F2 3, F3 6, F5 3) × 15 cells (seeds 42/7/13 × 5 folds, the decision mode's
@@ -3498,4 +3498,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   mean is ≥ 0.02 with the 95% t interval above 0; every F5 must pass or C15 stops.
 - **Sources:** [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md),
   [plan](plans/2026-11-03-c15-mnar-prediction.md).
+- **Results (2026-11-03 23:45 GMT-3):** F5 controls: spambase passes, biodeg (+0.038 [−0.022, +0.097]) and kc2 (+0.102
+  [−0.020, +0.224]) do not; F1 passes on biodeg_probit_60nan only; F3 and F2 all pass (descriptive, since G2 is invalid).
+- **Conclusion:** by the pre-registered rule C15 stops at Stage 0; a continuation needs a new pre-registration.
 

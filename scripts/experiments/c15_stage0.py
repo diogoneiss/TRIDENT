@@ -77,6 +77,7 @@ def drivers() -> dict[str, dict[str, dict[str, object]]]:
     out: dict[str, dict[str, dict[str, object]]] = {}
     for table in TABLES:
         x, y = load(f"{table}_00nan")
+        x = x.astype(float)  # partial_dependence refuses integer columns (spambase)
         classes = np.unique(y)
         rises: dict[str, list[float]] = {c: [] for c in x.columns}
         for train, test in StratifiedKFold(FOLDS, shuffle=True, random_state=42).split(x, y):
