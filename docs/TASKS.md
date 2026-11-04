@@ -777,6 +777,13 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     qualquer maquina ... nao precisamos testar em mais datasets". T42 is done.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
+- **T45 · C15: `[NULL]` tokens against missForest + indicator under informative missingness** (the user's
+  choice, 2026-11-03: "prefiro começar pelo c15"; the wiki's protocol C15, H2 and H2.2 of the thesis).
+  [Plan](plans/2026-11-03-c15-mnar-prediction.md): Stages 0–3 approved (Stage 4 optional), objective
+  `embedding_normalized` by explicit flag, GBDT internal only, margins fixed (−0.01 macro-F1, +2% log loss).
+  **Stage 0 (E122, [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md)), from 2026-11-03:** the
+  driving columns and gate G2 (CPU), which define the primary set P.
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.

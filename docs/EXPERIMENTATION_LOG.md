@@ -3486,3 +3486,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   worse on none; every seed mean negative.
 - **Conclusion:** ADR 0018's encoder helps pendigits and letter at 20nan under MAR and MNAR as under MCAR; the
   ADR's scope is the user's decision.
+
+### E122 · C15 Stage 0: which MNAR variants carry informative missingness (gate G2)? (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** the indicators lower a GBDT's validation log loss by at least 2% on the positive controls (F5)
+  and on some self-masking (F1) and outcome-dependent (F3) variants, which then form C15's primary set P.
+- **Scenarios:** 19 candidates (F1 7, F2 3, F3 6, F5 3) × 15 cells (seeds 42/7/13 × 5 folds, the decision mode's
+  folds), missForest fills fitted on training rows, CPU on gorgona8; plus the driving-column table.
+- **Measures and decision rule:** relative drop in validation log loss with the indicators; informative if the
+  mean is ≥ 0.02 with the 95% t interval above 0; every F5 must pass or C15 stops.
+- **Sources:** [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md),
+  [plan](plans/2026-11-03-c15-mnar-prediction.md).
+
