@@ -47,3 +47,26 @@ too before its pair's last arm, `BIG_pendigits_probit_20nan_s42` runs on gorgona
 pair stays on gorgona8. `--tally` reads the moved pair from medusa1's directory (`MOVED`). Same cells, seeds and
 rule.
 
+## Outcome (2026-11-03 22:47 GMT-3): holds under MAR and under MNAR
+
+All 24 cells done, none failed (the moved pair on medusa1 and gorgona8's one-cell runner as amended). The
+unedited `large_batch.py --study e121 --tally`:
+
+```
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_marf_20nan: -4.59% [-5.56%, -3.62%] seeds -5.58%, -4.15%, -4.05% -> better; masked -5.96%
+- letter_marf_20nan: -5.81% [-6.25%, -5.37%] seeds -5.51%, -5.85%, -6.06% -> better; masked -6.37%
+- pendigits_probit_20nan: -5.00% [-5.61%, -4.39%] seeds -4.97%, -4.70%, -5.33% -> better; masked -5.71%
+- letter_probit_20nan: -6.50% [-6.98%, -6.02%] seeds -6.70%, -6.11%, -6.69% -> better; masked -5.83%
+
+Primary (E121, BIG − M), MAR (marf): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
+
+Primary (E121, BIG − M), MNAR (probit): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
+```
+
+- **MAR (marf): holds**, BIG better on 2 of 2 (−4.6%, −5.8%), worse on none.
+- **MNAR (probit): holds**, BIG better on 2 of 2 (−5.0%, −6.5%), worse on none.
+- All 12 seed means negative; masked better on 4 of 4.
+- **What follows:** the user decides whether ADR 0018 states its scope as all three mechanisms; until then it
+  stays as written (MCAR evidence).
+

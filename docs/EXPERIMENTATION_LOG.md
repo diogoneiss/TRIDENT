@@ -3472,7 +3472,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E121 · Does ADR 0018's bigger encoder help pendigits and letter at 20nan under MAR and MNAR? (2026-11-03)
 
-- **Status:** in progress
+- **Status:** holds (MAR and MNAR)
 - **Hypothesis:** the bigger encoder's MCAR gain at 20nan (E38) holds on MAR (`marf`) and MNAR (`probit`), as
   E119 found at 40–60nan.
 - **Scenarios:** 4 variants × arms M (sibling's configuration, encoder undone) and BIG × seeds 42 (gorgona8),
@@ -3482,3 +3482,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/50](tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md).
 - **Amendment (2026-11-03 22:03 GMT-3):** the pair `letter_probit_20nan` seed 42 moved from gorgona8 to medusa1
   (both arms there) to finish sooner; same cells and rule.
+- **Results (2026-11-03 22:47 GMT-3):** BIG − M better on 2 of 2 MAR variants (−4.6%, −5.8%) and 2 of 2 MNAR (−5.0%, −6.5%),
+  worse on none; every seed mean negative.
+- **Conclusion:** ADR 0018's encoder helps pendigits and letter at 20nan under MAR and MNAR as under MCAR; the
+  ADR's scope is the user's decision.
