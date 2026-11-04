@@ -3,6 +3,7 @@
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --g1      # on F5, short mode
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --tally   # Stage 1b, descriptive
     uv run --python 3.11 python -B scripts/experiments/c15_report.py --check   # reloaded models equal their readouts
+    uv run --python 3.11 python -B scripts/experiments/c15_report.py --h2      # Stage 3: H2, read once (ticket 05)
 
 Cells come from both machines' state directories (medusa1's copied under ``<state>/medusa``). A fold's
 readout holds its test rows' probabilities and its kept state; macro-F1 is recomputed from the
@@ -215,11 +216,75 @@ def tally() -> None:
         print(f"\n- missing: {missing} (variant, seed) pairs\n\nPrimary: incomplete")
 
 
+def h2() -> None:
+    """Ticket 05's rule: per-variant calls over P's fresh draws, then the pooled D_c, the guard and the call."""
+    print("## H2 (E126, confirmation, read once): A1 − A2 on P's fresh draws, 15 cells (seeds 1515/2626/3737 x 5 "
+          "folds), Nadeau–Bengio corrected 95% t; margins −0.01 macro-F1, +0.02 relative log loss")
+    per_f1: dict[str, np.ndarray] = {}
+    per_ll: dict[str, np.ndarray] = {}
+    calls: dict[str, str] = {}
+    for variant in run.P_FRESH:
+        f1d, lld = [], []
+        for seed in run.CONFIRMATION_SEEDS:
+            a1, a2 = readouts("A1", variant, seed), readouts("A2", variant, seed)
+            if a1 is None or a2 is None:
+                print(f"- {variant} s{seed}: missing\n\nPrimary (H2): incomplete")
+                return
+            f1_1, ll_1 = scores(a1)
+            f1_2, ll_2 = scores(a2)
+            f1d.append(f1_1 - f1_2)
+            lld.append((ll_1 - ll_2) / ll_2)
+        f, ll = np.concatenate(f1d), np.concatenate(lld)
+        per_f1[variant], per_ll[variant] = f, ll
+        fm, flo, fhi = interval(f)
+        lm, llo, lhi = interval(ll)
+        agree = all(x.mean() > F1_MARGIN for x in f1d) and all(x.mean() < LL_MARGIN for x in lld)
+        if flo > F1_MARGIN and lhi < LL_MARGIN and agree:
+            calls[variant] = "non-inferior"
+        elif fhi < F1_MARGIN or llo > LL_MARGIN:
+            calls[variant] = "inferior"
+        else:
+            calls[variant] = "inconclusive"
+        print(f"- {variant}: F1 {fm:+.4f} [{flo:+.4f}, {fhi:+.4f}]; LL {lm:+.4f} [{llo:+.4f}, {lhi:+.4f}]; seeds F1 "
+              + ", ".join(f"{x.mean():+.4f}" for x in f1d) + "; LL " + ", ".join(f"{x.mean():+.4f}" for x in lld)
+              + f" -> {calls[variant]}")
+    pooled_f1 = np.mean(list(per_f1.values()), axis=0)
+    pooled_ll = np.mean(list(per_ll.values()), axis=0)
+    fm, flo, fhi = interval(pooled_f1)
+    lm, llo, lhi = interval(pooled_ll)
+    inferior = [v for v, c in calls.items() if c == "inferior"]
+    if flo > F1_MARGIN and lhi < LL_MARGIN and not inferior:
+        verdict = "supported"
+        if flo > 0 and lhi < 0:
+            verdict += "; H2-sup: superior on both"
+    elif fhi < F1_MARGIN or llo > LL_MARGIN:
+        verdict = "reversed"
+    else:
+        verdict = "inconclusive" + (f" (guard: inferior on {', '.join(inferior)})" if inferior else "")
+    print(f"\nPooled over P ({len(per_f1)} variants): F1 {fm:+.4f} [{flo:+.4f}, {fhi:+.4f}] (plain "
+          f"[{interval(pooled_f1, False)[1]:+.4f}, {interval(pooled_f1, False)[2]:+.4f}]); LL {lm:+.4f} [{llo:+.4f}, {lhi:+.4f}] "
+          f"(plain [{interval(pooled_ll, False)[1]:+.4f}, {interval(pooled_ll, False)[2]:+.4f}])")
+    print(f"Primary (H2): {verdict}")
+    n = len(calls)
+    noninf = sum(c == "non-inferior" for c in calls.values())
+    count = ("supported" if noninf >= -(-2 * n // 3) and not inferior else
+             "reversed" if len(inferior) >= -(-n // 3) else "inconclusive")
+    print(f"- sensitivity, count rule: non-inferior on {noninf} of {n}, inferior on {len(inferior)} -> {count}")
+    tables: dict[str, list[str]] = {}
+    for v in per_f1:
+        tables.setdefault(v.split("_")[0], []).append(v)
+    print("- sensitivity, per table: " + "; ".join(
+        f"{t} F1 {np.mean([per_f1[v].mean() for v in vs]):+.4f}, LL {np.mean([per_ll[v].mean() for v in vs]):+.4f}"
+        for t, vs in tables.items()))
+
+
 if __name__ == "__main__":
     if sys.argv[1:] == ["--g1"]:
         g1()
     elif sys.argv[1:] == ["--tally"]:
         tally()
+    elif sys.argv[1:] == ["--h2"]:
+        h2()
     elif sys.argv[1:] == ["--check"]:
         check()
     else:
