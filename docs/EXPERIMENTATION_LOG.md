@@ -3637,7 +3637,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E132 · C1's channel probe: a frozen pre-trained encoder against a frozen random one, head only (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done: content present, small (washout)
 - **Hypothesis:** none directional. If pre-training leaves label-relevant structure (FP − FR above 0), E131's S ≈ B is
   washout and the fix is on the fine-tuning side; if a random frozen encoder serves the head as well (inside ±0.010),
   the lever is pre-training itself.
@@ -3647,3 +3647,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** FP − FR macro-F1 pooled over the four MNAR files, plain 95% t interval: content
   present above 0, absent inside ±0.010, no verdict otherwise; MCAR second step, S − FP and B − FR descriptive.
 - **Sources:** [c1-split/04](tickets/c1-split/04-channel-probe.md).
+- **Results (2026-11-04 18:34 GMT-3):** FP − FR pooled over the MNAR files +0.0092 [+0.0013, +0.0171] (NB reaches −0.009); MCAR
+  +0.0160 [+0.0043, +0.0277], *better* on kc2 and spambase; S − FP +0.098 and B − FR +0.103 pooled.
+- **Conclusion:** pre-training leaves label-relevant structure worth about one macro-F1 point to a frozen head, and
+  full fine-tuning adds ten times that from either start: washout, the imputation side's diagnosis. A fine-tuning-side
+  fix is bounded near +0.01; the user decides whether to run it.
