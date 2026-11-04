@@ -3615,7 +3615,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E131 · C1 cut 3: S against T on the four MNAR 60nan files and their MCAR siblings; G2; the anchor (2026-11-04)
 
-- **Status:** in progress (cells start after E130 passes)
+- **Status:** done: Inconclusive (G2 fails, no pre-training channel)
 - **Hypothesis (C1):** per-column `[NULL]` apart from `[MASK]` (S) beats one tied token per column (T) on macro-F1,
   pooled over the four MNAR files; the MCAR files, read second, say whether the gain is specific to informative
   missingness.
@@ -3628,3 +3628,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Inconclusive otherwise; per-file verdicts are flags; G2 = S − B interval off 0; Nadeau–Bengio beside; log loss the
   same rule without a margin; anchor and token cosines descriptive.
 - **Sources:** [c1-split/03](tickets/c1-split/03-primary.md); [plan](plans/2026-11-04-c1-split.md).
+- **Results (2026-11-04 13:26 GMT-3):** pooled S − T on the MNAR files −0.0034 [−0.0110, +0.0042] macro-F1 (no per-file verdict,
+  no flags); G2 S − B +0.0040 [−0.0077, +0.0157] fails; MCAR −0.0024 [−0.0107, +0.0060], interaction 0 on every table;
+  anchor +0.005 [−0.003, +0.013]; token cosines at the initialisation reference (|median| ≤ 0.02).
+- **Conclusion:** Inconclusive, reason "no pre-training channel": with S ≈ B (E71 again), the split, which acts only in
+  pre-training, has nowhere to act; S and T tie within about ±0.01 on every file and the model does not tie the
+  tokens itself. The reserve and cut 4 are not proposed; the next step is the user's.
