@@ -3567,7 +3567,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E128 · C15's gate G1 again: A2 against A3 in decision mode (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done: G1 failed again (1 of 3); C15 stopped for good
 - **Hypothesis:** on F5 the indicator arm beats the same missForest fill without one (A2 − A3 below 0) and A1's direct
   contrast on the noise column is positive, now over 15 cells. A deviation after E124's failure (the user's choice);
   if it fails, C15 stops for good.
@@ -3576,3 +3576,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** passes if, on at least 2 of 3 controls, A2 − A3 relative log loss is below 0 and
   A1's contrast above 0 (Nadeau–Bengio corrected intervals over 15 cells).
 - **Sources:** [c15-mnar-prediction/07](tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md).
+- **Results (2026-11-04 08:26 GMT-3):** A1's noise-column contrast above 0 on 3 of 3 (+1.78, +2.89, +1.68 logit, every
+  interval above 0); A2 beats A3 on log loss only on spambase (−0.098 [−0.153, −0.044]); biodeg (−0.045) and kc2
+  (−0.021) below 0 in point but their corrected intervals (about ±0.14) include 0. G1 passes on 1 of 3: fails.
+- **Conclusion:** by the binding clause C15 stops for good before Stage 2 (E125–E127 stay withdrawn, T45 closed), H2
+  undecided. Descriptively, `[NULL]` reads an informative gap on every control; the indicator's gain over the same fill
+  is measurable only on the largest table.

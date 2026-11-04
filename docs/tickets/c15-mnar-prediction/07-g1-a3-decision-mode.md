@@ -43,3 +43,29 @@ This ticket was written and committed before the gate's first cell (07:51 GMT-3)
 - **A threat stated before the reading:** missForest's fill of a pure-noise column may sit near the column's mean, so
   A3 could read part of the gap from the filled value; that would shrink A2 − A3 for a reason other than the
   pipeline's blindness. It is not measured, and the reading is not adjusted for it.
+
+## Outcome (2026-11-04 08:26 GMT-3): G1 fails again, 1 of 3; by the binding clause, C15 stops for good
+
+All 21 cells done (07:52–08:15 GMT-3; gorgona8 6, medusa1 15; none failed). The unedited `c15_report.py --g1c` at
+e143137, read 08:25 GMT-3 (only `prepare_dataset`'s label-mapping lines dropped):
+
+```
+## G1 again (E128, F5, seeds 42/7/13 x 5 folds): (1) A2 − A3 relative test log loss below 0; (2) A1's noise-column contrast above 0; Nadeau–Bengio corrected 95% t intervals over 15 cells; passes if both hold on >= 2 of 3
+- biodeg_noise3p0_s2060_60nan: A2 − A3 -0.0453 [-0.1862, +0.0957] (plain [-0.1066, +0.0161]; s42 -0.0716, s7 -0.0069, s13 -0.0573); A1 contrast +1.775 [+1.464, +2.087] logit -> fail
+- kc2_noise3p0_s2060_60nan: A2 − A3 -0.0208 [-0.1600, +0.1184] (plain [-0.0813, +0.0398]; s42 +0.0637, s7 -0.0734, s13 -0.0526); A1 contrast +2.889 [+0.578, +5.201] logit -> fail
+- spambase_noise3p0_s2060_60nan: A2 − A3 -0.0983 [-0.1527, -0.0440] (plain [-0.1220, -0.0747]; s42 -0.1211, s7 -0.0909, s13 -0.0830); A1 contrast +1.680 [+1.457, +1.904] logit -> pass
+Primary (G1 again): 1 of 3 -> fails
+```
+
+- **Condition 2 (A1 reads the informative gap):** holds on all three controls over 15 cells (+1.78 [+1.46, +2.09],
+  +2.89 [+0.58, +5.20], +1.68 [+1.46, +1.90] logit); kc2's, which included 0 over E124's 5 cells, now excludes it.
+- **Condition 1 (A2 beats A3 on log loss):** only on spambase (−0.098 [−0.153, −0.044]). On biodeg (−0.045) and kc2
+  (−0.021) the point estimates are below 0 but the corrected intervals span about ±0.14 and include 0, as do the plain
+  ones. The seed means agree in sign on biodeg and spambase (3 of 3), on kc2 2 of 3.
+- **What follows, as fixed above:** C15 stops for good before Stage 2; no third form of G1 is tried; E125–E127 stay
+  withdrawn; T45 closes. H2 is decided neither way.
+- **What can be said, descriptively (it decides nothing):** on every control the shipped `[NULL]` arm reads a gap
+  that is informative; the indicator's gain over the same missForest fill is measurable only on spambase, the largest
+  of the three tables. Over 15 cells the correction's 0.286 term outweighs 1/15, so more seeds of the same five-fold
+  design narrow the intervals little. The threat stated above (A3 reading the gap from missForest's fill) was not
+  measured.
