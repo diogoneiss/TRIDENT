@@ -3,6 +3,7 @@
     uv run --python 3.11 python -B scripts/experiments/c15_stage0.py --drivers   # the driving-column table
     uv run --python 3.11 python -B scripts/experiments/c15_stage0.py --g2 [jobs]  # G2's 285 cells, resumable
     uv run --python 3.11 python -B scripts/experiments/c15_stage0.py --tally      # G2's rule and the set P
+    ... --g2 [jobs] --oof / --tally --oof                                        # E123's G2, read out of fold
 
 **Driving columns**, per table on its complete ``_00nan`` file: one HistGradientBoosting classifier at fixed
 defaults, 5 folds (StratifiedKFold, seed 42); a column drives if dropping it raises held-out log loss, with
@@ -18,6 +19,12 @@ validation log loss, (LL_without - LL_with) / LL_without. An indicators-only log
 it, against the training class frequencies. A variant is informative if the mean drop over the 15 cells is
 at least 0.02 with its 95% t interval above 0. P is the self-masking (F1) and odds-3 outcome (F3) variants
 that pass; every positive control (F5) must pass, or G2 is invalid and the study stops.
+
+**E123's G2** (``--oof``, docs/tickets/c15-mnar-prediction/02-g2-out-of-fold.md), decided after E122's controls
+failed for want of power: the same cells, threshold and rule, but each cell reads every training and
+validation row out of fold. missForest is fitted once on those rows' features (never the label) and fills
+them; the GBDT pair is then read on 5 inner folds (StratifiedKFold, the cell's seed), its held-out
+probabilities pooled over all the rows. The test rows stay unread.
 """
 
 from __future__ import annotations
@@ -106,6 +113,29 @@ def drivers() -> dict[str, dict[str, dict[str, object]]]:
     return out
 
 
+def g2_oof_cell(variant: str, seed: int, fold: int) -> dict[str, float]:
+    x, y = load(variant)
+    split = build_folds(pd.DataFrame({TARGET: y}), TARGET, FOLDS, seed)[fold - 1]
+    rows = np.concatenate([np.asarray(split.train_indices), np.asarray(split.validation_indices)])
+    xs, ys = x.iloc[rows], y[rows]
+    imputer = MissForestImputer(list(x.columns), [])
+    imputer.fit(xs)
+    filled = imputer.impute(xs, np.zeros(xs.shape, dtype=bool)).to_numpy(dtype=float)
+    gapped = [c for c in x.columns if x[c].isna().any()]
+    indicators = xs[gapped].isna().to_numpy(dtype=float)
+    classes = np.unique(y)
+    p_without, p_with, p_probe, p_base = (np.zeros((len(rows), len(classes))) for _ in range(4))
+    for inner_train, held in StratifiedKFold(FOLDS, shuffle=True, random_state=seed).split(filled, ys):
+        p_without[held] = gbdt().fit(filled[inner_train], ys[inner_train]).predict_proba(filled[held])
+        both = np.hstack([filled, indicators])
+        p_with[held] = gbdt().fit(both[inner_train], ys[inner_train]).predict_proba(both[held])
+        p_probe[held] = LogisticRegression(max_iter=5000).fit(indicators[inner_train], ys[inner_train]).predict_proba(indicators[held])
+        p_base[held] = np.bincount(ys[inner_train], minlength=len(classes)) / len(inner_train)
+    without, with_ = log_loss(ys, p_without, labels=classes), log_loss(ys, p_with, labels=classes)
+    probe, base = log_loss(ys, p_probe, labels=classes), log_loss(ys, p_base, labels=classes)
+    return {"without": without, "with": with_, "drop": (without - with_) / without, "probe_drop": (base - probe) / base}
+
+
 def g2_cell(variant: str, seed: int, fold: int) -> dict[str, float]:
     x, y = load(variant)
     folds = build_folds(pd.DataFrame({TARGET: y}), TARGET, FOLDS, seed)
@@ -129,27 +159,31 @@ def g2_cell(variant: str, seed: int, fold: int) -> dict[str, float]:
     return {"without": without, "with": with_, "drop": (without - with_) / without, "probe_drop": (base - probe) / base}
 
 
-def g2(jobs: int) -> None:
+def g2(jobs: int, oof: bool = False) -> None:
     from joblib import Parallel, delayed  # type: ignore[import-untyped]
 
-    (STATE / "g2").mkdir(parents=True, exist_ok=True)
+    out = STATE / ("g2_oof" if oof else "g2")
+    cell = g2_oof_cell if oof else g2_cell
+    out.mkdir(parents=True, exist_ok=True)
     todo = [(v, s, f) for v in CANDIDATES for s in SEEDS for f in range(1, FOLDS + 1)
-            if not (STATE / "g2" / f"{v}_s{s}_f{f}.json").exists()]
+            if not (out / f"{v}_s{s}_f{f}.json").exists()]
     print(f"{len(todo)} of {len(CANDIDATES) * len(SEEDS) * FOLDS} cells to run", flush=True)
 
     def one(v: str, s: int, f: int) -> None:
-        (STATE / "g2" / f"{v}_s{s}_f{f}.json").write_text(json.dumps(g2_cell(v, s, f)))
+        (out / f"{v}_s{s}_f{f}.json").write_text(json.dumps(cell(v, s, f)))
 
     Parallel(n_jobs=jobs, verbose=5)(delayed(one)(*t) for t in todo)
 
 
-def tally() -> None:
+def tally(oof: bool = False) -> None:
+    out = STATE / ("g2_oof" if oof else "g2")
     passed: dict[str, bool] = {}
     missing = 0
-    print(f"## G2: relative drop in validation log loss from the indicators, 15 cells (seeds {SEEDS} x {FOLDS} folds); "
+    where = "out-of-fold log loss over the training and validation rows (E123)" if oof else "validation log loss"
+    print(f"## G2: relative drop in {where} from the indicators, 15 cells (seeds {SEEDS} x {FOLDS} folds); "
           f"informative if the mean is >= {THRESHOLD} with the 95% t interval above 0")
     for v in CANDIDATES:
-        cells = [STATE / "g2" / f"{v}_s{s}_f{f}.json" for s in SEEDS for f in range(1, FOLDS + 1)]
+        cells = [out / f"{v}_s{s}_f{f}.json" for s in SEEDS for f in range(1, FOLDS + 1)]
         if not all(c.exists() for c in cells):
             missing += sum(not c.exists() for c in cells)
             continue
@@ -178,8 +212,9 @@ if __name__ == "__main__":
     if sys.argv[1:2] == ["--drivers"]:
         drivers()
     elif sys.argv[1:2] == ["--g2"]:
-        g2(int(sys.argv[2]) if len(sys.argv) > 2 else 24)
-    elif sys.argv[1:] == ["--tally"]:
-        tally()
+        numbers = [a for a in sys.argv[2:] if a.isdigit()]
+        g2(int(numbers[0]) if numbers else 24, oof="--oof" in sys.argv)
+    elif sys.argv[1:2] == ["--tally"]:
+        tally(oof="--oof" in sys.argv)
     else:
         sys.exit(__doc__)

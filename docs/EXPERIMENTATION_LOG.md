@@ -3502,3 +3502,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   [−0.020, +0.224]) do not; F1 passes on biodeg_probit_60nan only; F3 and F2 all pass (descriptive, since G2 is invalid).
 - **Conclusion:** by the pre-registered rule C15 stops at Stage 0; a continuation needs a new pre-registration.
 
+### E123 · C15's gate G2 again, read out of fold over every training and validation row (2026-11-03)
+
+- **Status:** in progress
+- **Hypothesis:** with about 8 times the rows per cell, the positive controls (F5) clear G2's rule, and the gate
+  defines C15's primary set P.
+- **Scenarios:** E122's 19 candidates × 15 cells; per cell, missForest fitted on the training and validation rows'
+  features, the GBDT pair and the probe read on 5 inner folds, test rows unread. A deviation chosen after E122.
+- **Measures and decision rule:** as E122 (mean drop ≥ 0.02, 95% t interval above 0; every F5 must pass); if the
+  controls fail again, C15 stops at Stage 0 for good.
+- **Sources:** [c15-mnar-prediction/02](tickets/c15-mnar-prediction/02-g2-out-of-fold.md).
+
