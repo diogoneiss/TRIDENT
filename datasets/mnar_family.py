@@ -17,6 +17,7 @@ reproduce.
 - ``noise`` (F5, the positive control): the MCAR file ``<base>_<pp>nan`` plus one N(0, 1) column,
   ``c15_noise``, whose ``round(n * pct)`` gaps follow ``odds ** y``; the other columns are the MCAR
   file's. Writes ``<base>_noise<odds>_s<seed>_<pp>nan``. Its gap is the column's only signal.
+- ``mcar`` (fresh MCAR siblings for confirmation): uniform weights, ``<base>_mcar_s<seed>_<pp>nan``.
 - ``probit`` (fresh self-masking draws for confirmation): weights Phi(slope * z), z the column
   standardised on the complete table, as ``generate_mnar.py`` but seeded per column. Writes
   ``<base>_probit<slope>_s<seed>_<pp>nan``.
@@ -99,6 +100,10 @@ def probit(complete: pd.DataFrame, pct: float, slope: float, seed: int) -> pd.Da
     return hide(complete, [c for c in complete.columns if c != TARGET], pct, seed, weights)
 
 
+def mcar(complete: pd.DataFrame, pct: float, seed: int) -> pd.DataFrame:
+    return hide(complete, [c for c in complete.columns if c != TARGET], pct, seed, lambda _c, v: np.ones(len(v)))
+
+
 def write(frame: pd.DataFrame, path: Path) -> None:
     """Write ``frame``; an existing file with the same contents is kept, one with others is refused."""
     text = frame.to_csv(index=False)
@@ -134,7 +139,7 @@ def report(frame: pd.DataFrame, reference: pd.DataFrame | None, name: str) -> No
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("family", choices=["outcome", "noise", "probit"])
+    parser.add_argument("family", choices=["outcome", "noise", "probit", "mcar"])
     parser.add_argument("--bases", nargs="+", required=True)
     parser.add_argument("--pct", type=float, required=True)
     parser.add_argument("--seed", type=int, required=True)
@@ -149,6 +154,8 @@ def main(argv: list[str]) -> int:
         elif o.family == "noise":
             frame = noise(pd.read_csv(ROOT / base / f"{base}_{level}.csv"), o.pct, o.odds, o.seed)
             name = f"{base}_noise{dial(o.odds)}_s{o.seed}_{level}"
+        elif o.family == "mcar":
+            frame, name = mcar(complete, o.pct, o.seed), f"{base}_mcar_s{o.seed}_{level}"
         else:
             frame, name = probit(complete, o.pct, o.slope, o.seed), f"{base}_probit{dial(o.slope)}_s{o.seed}_{level}"
         write(frame, ROOT / base / f"{name}.csv")

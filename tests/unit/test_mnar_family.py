@@ -64,3 +64,12 @@ def test_write_keeps_an_equal_file_and_refuses_a_different_one(tmp_path: Path) -
     mnar_family.write(frame, path)
     with pytest.raises(SystemExit):
         mnar_family.write(frame.assign(a=0.0), path)
+
+
+def test_mcar_hides_the_matched_count_without_regard_to_class() -> None:
+    complete = _complete(6000)
+    variant = mnar_family.mcar(complete, 0.6, seed=5)
+    y = mnar_family.labels(complete)
+    for column in ("a", "b"):
+        gaps = variant[column].isna().to_numpy()
+        assert gaps.sum() == round(len(complete) * 0.6) and abs(gaps[y == 1].mean() - gaps[y == 0].mean()) < 0.05
