@@ -3585,7 +3585,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E129 · C1 cut 1: gate G1, the indicators-only probe on the primary MNAR files and their MCAR siblings (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done: G1 passes (4 of 4)
 - **Hypothesis:** the gaps of the four MNAR 60nan files carry outcome information their MCAR siblings' gaps do not
   (the manipulation check; it conditions only C1's Null row).
 - **Scenarios:** logistic regression on the 0/1 gap matrix, fitted on the training rows and scored on the validation
@@ -3594,6 +3594,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** MNAR − MCAR validation AUROC, pooled over the four tables per replicate; passes if
   the plain 95% t interval is above 0 and no table's mean is negative.
 - **Sources:** [c1-split/01](tickets/c1-split/01-g1-probe.md); [plan](plans/2026-11-04-c1-split.md).
+- **Results (2026-11-04 12:50 GMT-3):** MNAR − MCAR validation AUROC above 0 on every table (biodeg +0.16, kc2 +0.11,
+  vehicle +0.10, spambase +0.13; MCAR probes at chance); pooled +0.126 [+0.107, +0.144].
+- **Conclusion:** G1 passes; the primary files' gap patterns carry outcome information their MCAR siblings' do not,
+  kc2 and spambase included (E123's GBDT gain measured something else: the indicators' value beyond a fill).
 
 ### E130 · C1 cut 2: the integrity smoke, S, T, B and BT on biodeg_probit_60nan, deterministic (2026-11-04)
 
