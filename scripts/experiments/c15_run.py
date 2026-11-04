@@ -38,8 +38,11 @@ PAIRS: dict[tuple[str, int], tuple[str, ...]] = {
     **{(v, 42): ("A1", "A2", *A4) for v in F5},  # short mode for G1
     **{(v, s): ("A1", "A2") for v in DEVELOPMENT for s in SEEDS},
 }
-# gorgona8 takes seed 42 of the development set; medusa1 takes seeds 7 and 13 and F5.
-MACHINE = {pair: ("gorgona8" if pair[1] == 42 and pair[0] in DEVELOPMENT else "medusa") for pair in PAIRS}
+# gorgona8 takes seed 42 of the development set's spambase and kc2 variants; medusa1 everything else (amendment of
+# 2026-11-04 01:10 GMT-3, ticket 03: gorgona8 first took all of seed 42; no pair moved after any of its cells ran).
+G8_TABLES = ("spambase", "kc2")
+MACHINE = {pair: ("gorgona8" if pair[1] == 42 and pair[0] in DEVELOPMENT and pair[0].split("_")[0] in G8_TABLES
+                  else "medusa") for pair in PAIRS}
 
 # Stage 2 (ticket 04): A4 on F0, F1 and F3; A1 on F7 (the complete tables) and F6 (E63's MAR files and controls).
 F6 = tuple(f"{b}_{m}_60nan" for b in ("biodeg", "kc2", "vehicle") for m in ("mar", "marctl"))
@@ -72,7 +75,7 @@ def machine(pair: tuple[str, int]) -> str:
     """ADR 0035: every arm of a (variant, seed) pair, across stages, on one machine."""
     if pair in MACHINE:
         return MACHINE[pair]
-    if pair[1] == 42:
+    if pair[1] == 42 and pair[0].split("_")[0] in G8_TABLES:
         return "gorgona8"
     return "medusa"
 

@@ -3527,6 +3527,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** G1 passes if, on at least 2 of 3 controls, A2 − A4 relative log loss is below 0
   and A1's noise-column contrast above 0 (Nadeau–Bengio corrected intervals); 1b descriptive.
 - **Sources:** [c15-mnar-prediction/03](tickets/c15-mnar-prediction/03-stage1.md).
+- **Amendment (2026-11-04 01:10 GMT-3):** seed 42 of the development set moves to medusa1 except spambase and kc2 (whole pairs, every stage), to balance the machines.
 
 ### E125 · C15 Stage 2: A4 (MICE, no indicator), the complete and MAR tables; H2-c2, H2.2 and H2b on development (2026-11-04)
 

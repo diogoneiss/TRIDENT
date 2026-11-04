@@ -44,3 +44,13 @@ This ticket was written and committed before the stage's first cell (00:25 GMT-3
   cells, Nadeau–Bengio corrected and plain intervals, with seed agreement, and the H2 per-variant call against the
   fixed margins (−0.01, +2%). Nothing is decided on it; H2 is decided in Stage 3 on fresh draws of P.
 - **Read only with every cell of a block done.** GBDT stays internal.
+
+## Amendment 2026-11-04 01:10 GMT-3 (machines only; the user's "utilize as gpus o melhor possivel")
+
+medusa1 finished 102 of its 113 cells by 01:08, gorgona8 4 of its 46 (spambase cells take about 17 minutes there). To
+keep both GPUs busy, whole (variant, seed 42) pairs move to medusa1 with every arm of every stage (ADR 0035's pairing
+holds): gorgona8 keeps seed 42 of the spambase and kc2 development variants, medusa1 takes the rest of seed 42.
+Only spambase's seed-42 pairs had started on gorgona8 (A1, then A2), and they stay there. gorgona8's queues stopped
+between cells on their STOP file and were relaunched on the new deal. Same cells, seeds and rules; tickets 04 and 06
+follow the same rule.
+
