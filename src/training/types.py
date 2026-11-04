@@ -275,6 +275,10 @@ class Hyperparameters:
     # C15 (docs/plans/2026-11-03-c15-mnar-prediction.md): which arm shows the gaps, and the readouts
     # it writes; ``off``, every run before it, changes nothing (``src/training/c15_inputs.py``).
     c15_arm: str = "off"
+    # C1 (docs/plans/2026-11-04-c1-split.md): the token a pre-training hole shows. ``mask``, every run
+    # before it, is the column's [MASK]; ``null`` ties the hole to the gap's [NULL] (arm T), the loss
+    # still at ``masked_positions``.
+    pretrain_hole_token: str = "mask"
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -325,6 +329,10 @@ class Hyperparameters:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
         if not re.match(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$", self.c15_arm):
             raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3, A4:<draw> or A5:<column>")
+        if self.pretrain_hole_token not in ("mask", "null"):
+            raise ValueError(f"Unknown pre-training hole token {self.pretrain_hole_token!r}; expected mask or null")
+        if self.pretrain_hole_token == "null" and self.pretrain_gap_token != "null":
+            raise ValueError("PRETRAIN_HOLE_TOKEN null ties holes to the gaps' [NULL], so PRETRAIN_GAP_TOKEN must stay null")
         if self.min_steps_per_epoch < 0:
             raise ValueError(f"The minimum steps an epoch counts steps, so it cannot be {self.min_steps_per_epoch}")
         if self.decode_freeze_epochs < 0:
@@ -389,6 +397,7 @@ class Hyperparameters:
             embedding_lookup=str(values.get("EMBEDDING_LOOKUP", values.get("embedding_lookup", DEFAULT_EMBEDDING_LOOKUP))),
             min_steps_per_epoch=int(values.get("MIN_STEPS_PER_EPOCH", values.get("min_steps_per_epoch", 0))),
             c15_arm=str(values.get("C15_ARM", values.get("c15_arm", "off"))),
+            pretrain_hole_token=str(values.get("PRETRAIN_HOLE_TOKEN", values.get("pretrain_hole_token", "mask"))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

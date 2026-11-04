@@ -196,6 +196,12 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     fold_data, fold, request.hyperparameters, device, fold_tracker
                 )
                 pretraining_seconds = time.perf_counter() - pretraining_started
+                if request.hyperparameters.c15_arm != "off" and request.hyperparameters.pretraining_epochs > 0:
+                    # C1's token geometry: the special tokens as pre-training left them (the readout
+                    # below holds them as fine-tuning left them).
+                    artifacts.metrics_dir.mkdir(parents=True, exist_ok=True)
+                    tokens = {k: v.detach().cpu() for k, v in pretraining.model.embedder.special_embeddings.state_dict().items()}
+                    torch.save(tokens, artifacts.metrics_dir / f"c1_tokens_pretrained_fold_{ordinal}.pt")
                 finetuning_started = time.perf_counter()
                 # The two tasks produce different outcomes; the union states the contract
                 # that already holds at runtime. Exhaustiveness (``assert_never``) waits on

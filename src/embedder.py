@@ -247,16 +247,8 @@ class TabularEmbedder(nn.Module):
         self.n_tokens = len(self.categorical_columns) + len(self.numerical_columns)
         self.pos_embedding_layer = nn.Embedding(self.n_tokens + 1, self.dimensao)
 
-    def gaps_as_mask(self, encoded: "EncodedTable") -> "EncodedTable":
-        """The same table with every real gap shown as its column's ``[MASK]``.
-
-        ADR 0004 shows a gap as ``[NULL]``; the decode stage may show it as ``[MASK]`` instead,
-        the token the induced scoring presents every gap as, so that it trains on the row shape
-        it is scored in (``DECODE_GAP_TOKEN``). Only what the model sees changes: a categorical
-        gap takes the column's ``[MASK]`` id, a numerical one its mask flag. ``masked_positions``
-        is left alone, because a gap has no truth and must never enter the loss.
-        """
-        device = encoded.cat_indices.device
+    def _gap_ids(self, device) -> tuple[torch.Tensor, torch.Tensor]:
+        """Per device, the (``[NULL]``, ``[MASK]``) ids of every categorical column, as (n_cat, 1) columns."""
         if str(device) not in self._gap_token_ids:
             null_token, mask_token = (
                 torch.tensor(
@@ -267,7 +259,18 @@ class TabularEmbedder(nn.Module):
                 for token in ("[NULL]", "[MASK]")
             )
             self._gap_token_ids[str(device)] = (null_token, mask_token)
-        null_ids, mask_ids = self._gap_token_ids[str(device)]
+        return self._gap_token_ids[str(device)]
+
+    def gaps_as_mask(self, encoded: "EncodedTable") -> "EncodedTable":
+        """The same table with every real gap shown as its column's ``[MASK]``.
+
+        ADR 0004 shows a gap as ``[NULL]``; the decode stage may show it as ``[MASK]`` instead,
+        the token the induced scoring presents every gap as, so that it trains on the row shape
+        it is scored in (``DECODE_GAP_TOKEN``). Only what the model sees changes: a categorical
+        gap takes the column's ``[MASK]`` id, a numerical one its mask flag. ``masked_positions``
+        is left alone, because a gap has no truth and must never enter the loss.
+        """
+        null_ids, mask_ids = self._gap_ids(encoded.cat_indices.device)
         cat_indices = encoded.cat_indices
         if len(self.categorical_columns):
             cat_indices = torch.where(cat_indices == null_ids, mask_ids, cat_indices)
@@ -276,6 +279,26 @@ class TabularEmbedder(nn.Module):
             num_values=encoded.num_values,
             mask_flags=encoded.mask_flags | encoded.null_flags,
             null_flags=torch.zeros_like(encoded.null_flags),
+            masked_positions=encoded.masked_positions,
+            fill_flags=encoded.fill_flags,
+        )
+
+    def holes_as_null(self, encoded: "EncodedTable") -> "EncodedTable":
+        """C1's arm T: the same table with every pre-training hole shown as its column's ``[NULL]``.
+
+        The mirror of ``gaps_as_mask``: a categorical hole takes the column's ``[NULL]`` id, a
+        numerical one its null flag, and ``masked_positions`` is left alone, so the loss still
+        reads exactly the holes (the hole record stays apart from the token shown).
+        """
+        null_ids, mask_ids = self._gap_ids(encoded.cat_indices.device)
+        cat_indices = encoded.cat_indices
+        if len(self.categorical_columns):
+            cat_indices = torch.where(cat_indices == mask_ids, null_ids, cat_indices)
+        return EncodedTable(
+            cat_indices=cat_indices,
+            num_values=encoded.num_values,
+            mask_flags=torch.zeros_like(encoded.mask_flags),
+            null_flags=encoded.null_flags | encoded.mask_flags,
             masked_positions=encoded.masked_positions,
             fill_flags=encoded.fill_flags,
         )

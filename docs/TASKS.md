@@ -784,6 +784,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **Stage 0 (E122, [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md)), from 2026-11-03:** the
   driving columns and gate G2 (CPU), which define the primary set P. **Done 2026-11-03: G2 invalid** (positive controls fail on biodeg and kc2, intervals below 0); by the rule C15 stops; the next step is the user's. **E123 ([02](tickets/c15-mnar-prediction/02-g2-out-of-fold.md)), from 2026-11-03: G2 read out of fold over the training and validation rows (the user's "opção 1"); if the controls fail again, C15 stops for good.** **Done 2026-11-04: G2 valid, P = 5** (biodeg_probit_60nan, vehicle_probit_60nan, the odds-3 outcome variants of biodeg, kc2, spambase). **Stage 1 (E124, [03](tickets/c15-mnar-prediction/03-stage1.md)), from 2026-11-04:** `C15_ARM` behind a default-off setting; G1 on F5 and A1 − A2 on the development set. **G1 failed 2026-11-04 (1 of 3): C15 stops before Stage 2; E125–E127 withdrawn unrun; Stage 1b finishes descriptively.** **E128 ([07](tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md)), from 2026-11-04: G1 again, A2 against A3 in decision mode (the user's option 4, a deviation); if it fails, C15 stops for good.** **Done 2026-11-04: G1 fails again (1 of 3: A1's contrast holds on 3 of 3, A2 beats A3 only on spambase); by the binding clause C15 stops for good. T45 closed.**
 
+- **T46 · C1: does the `[NULL]`/`[MASK]` split earn its place?** (the user's choice after C15 closed,
+  2026-11-04: "vamos trabalhar no c1"; the wiki's protocol C1, the thesis's main claim). [Plan](plans/2026-11-04-c1-split.md):
+  `embedding_normalized` by explicit override (no ADR), gates condition only the Null row, G2 by interval, cosine
+  threshold 0.9, scope cuts 1–3 and the anchor. S reuses E124's A1 cells. **Cut 1 (E129, [c1-split/01](tickets/c1-split/01-g1-probe.md)),
+  cut 2 (E130, [02](tickets/c1-split/02-integrity-smoke.md)) and cut 3 (E131, [03](tickets/c1-split/03-primary.md)), from 2026-11-04.**
+
 ### Process
 
 - **T16 · One configuration-driven study report** instead of a copied report script per study.

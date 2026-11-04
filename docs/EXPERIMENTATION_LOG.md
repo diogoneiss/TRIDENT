@@ -3582,3 +3582,42 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** by the binding clause C15 stops for good before Stage 2 (E125–E127 stay withdrawn, T45 closed), H2
   undecided. Descriptively, `[NULL]` reads an informative gap on every control; the indicator's gain over the same fill
   is measurable only on the largest table.
+
+### E129 · C1 cut 1: gate G1, the indicators-only probe on the primary MNAR files and their MCAR siblings (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** the gaps of the four MNAR 60nan files carry outcome information their MCAR siblings' gaps do not
+  (the manipulation check; it conditions only C1's Null row).
+- **Scenarios:** logistic regression on the 0/1 gap matrix, fitted on the training rows and scored on the validation
+  rows of the decision mode's 15 folds (seeds 42/7/13 × 5), on `{biodeg,kc2,vehicle,spambase}_probit_60nan` and
+  `_60nan`; CPU only.
+- **Measures and decision rule:** MNAR − MCAR validation AUROC, pooled over the four tables per replicate; passes if
+  the plain 95% t interval is above 0 and no table's mean is negative.
+- **Sources:** [c1-split/01](tickets/c1-split/01-g1-probe.md); [plan](plans/2026-11-04-c1-split.md).
+
+### E130 · C1 cut 2: the integrity smoke, S, T, B and BT on biodeg_probit_60nan, deterministic (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** under no pre-training, S's and T's code paths give bit-identical results (integrity check 1), so
+  the tied arm differs from S only through pre-training.
+- **Scenarios:** S, T, B and BT (B through T's path) on `biodeg_probit_60nan`, seed 42, five folds, deterministic
+  algorithms forced; gorgona8.
+- **Measures and decision rule:** B's and BT's test probabilities and kept states identical on all five folds; no S − T
+  contrast is read.
+- **Sources:** [c1-split/02](tickets/c1-split/02-integrity-smoke.md).
+
+### E131 · C1 cut 3: S against T on the four MNAR 60nan files and their MCAR siblings; G2; the anchor (2026-11-04)
+
+- **Status:** in progress (cells start after E130 passes)
+- **Hypothesis (C1):** per-column `[NULL]` apart from `[MASK]` (S) beats one tied token per column (T) on macro-F1,
+  pooled over the four MNAR files; the MCAR files, read second, say whether the gain is specific to informative
+  missingness.
+- **Scenarios:** S reused from E124's A1 cells; T (`PRETRAIN_HOLE_TOKEN null`) and B (`EPOCHS_PRE 0`) on
+  `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (48 cells); ANCHOR (S with
+  `embedding`) on the four MNAR files (12); S_GEOM at seed 42 for the token dump (4). `embedding_normalized` by
+  override; gorgona8 seed 42 of kc2 and spambase, medusa1 the rest (ADR 0035).
+- **Measures and decision rule:** pooled S − T macro-F1 over the 15 replicates, plain 95% t interval: Supported above
+  0 (relevant at ≥ +0.010, real but small below), Reversed below 0, Null inside ±0.010 with G1 and G2 passing,
+  Inconclusive otherwise; per-file verdicts are flags; G2 = S − B interval off 0; Nadeau–Bengio beside; log loss the
+  same rule without a margin; anchor and token cosines descriptive.
+- **Sources:** [c1-split/03](tickets/c1-split/03-primary.md); [plan](plans/2026-11-04-c1-split.md).

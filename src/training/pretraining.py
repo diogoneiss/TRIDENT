@@ -114,6 +114,8 @@ def train_pretrainer(
     # or [MASK] as the decode stage shows it since ADR 0014. Applied to the corrupted inputs
     # only; the targets and the loss positions do not move, and nothing is drawn.
     shown = embedder.gaps_as_mask if hyperparameters.pretrain_gap_token == "mask" else _as_is
+    if hyperparameters.pretrain_hole_token == "null":  # C1's arm T: holes tied to the gaps' [NULL]
+        shown = embedder.holes_as_null
     if ema is not None:
         # T13: the teacher reads the clean row as the student reads its rows, a gap as [NULL]. The
         # raw encoding holds NaN at a numerical gap, which the transformer would spread to every
