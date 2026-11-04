@@ -1,12 +1,16 @@
-# What the imputation studies support, as of 2026-10-28 (consolidated)
+# What the imputation studies support, as of 2026-11-03 (consolidated)
 
-This report gathers E44–E85 into one statement for the thesis. It was updated 2026-10-28, 12:47 GMT-3 with E84 and
+This report gathers E44–E85 and E118–E120 into one statement for the thesis. It was updated 2026-11-03 21:10 GMT-3 with E118–E120
+and ADR 0037's extension, updated 2026-10-28, 12:47 GMT-3 with E84 and
 E85, and rebuilt 2026-10-28, 00:39 GMT-3 to add
 E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
 new analysis.
 
-- **E84 and E85 are in** (both complete, 2026-10-28). ADR 0030's extension to MAR and MNAR, which
-  E84 supports, is still the user's decision.
+- **E118–E120 are in** (all complete, 2026-11-03), with ADR 0037 extended to MAR and MNAR (decision 3).
+- **E86–E117 are not consolidated here.** They are in the experimentation log and their tickets. Where one of
+  them makes a line of this report false, the line is corrected and cites it: E108 (the thesis tables read
+  ADR 0036's reruns), E113/E116/E117 (ADR 0037), E90/E91/E95 (ADR 0031 decision 6), E105/E110 (ADR 0030
+  decision 7), E99 and E115 (classification against the deep baselines).
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
     runs each reader unchanged.
@@ -30,11 +34,13 @@ new analysis.
 1. **TRIDENT beats the bar on most variants and seed sets,** and that holds across fresh seeds
    (E51) and fresh MCAR draws (E62).
 2. **Against the strong tier with TabPFN, the result is mixed and table-dependent.**
-   - K − strong is 5 / 9 / 7 on development (101/202/303) and 6 / 4 / 5 on confirmation.
+   - K − strong is 6 / 9 / 6 on development (101/202/303; 5 / 9 / 7 before E108 read ADR 0036's reruns)
+     and 6 / 4 / 5 on confirmation.
    - Without TabPFN it would read 13 / 7 / 1 and 12 / 1 / 2.
 3. **TRIDENT leads TabPFN by table and rate:** spambase at every rate, letter and pendigits at
-   20–60nan (pendigits_20nan excepted), biodeg below 80nan, and kc2 at 60–80nan. This is the
-   thesis table report's reading.
+   20–60nan, biodeg below 80nan, and kc2 at 60–80nan. This is the thesis table report's reading, with
+   E108: pendigits_20nan, worse before, is better since the tables read ADR 0036's reruns
+   ([imputation-protocol/43](../tickets/imputation-protocol/43-adr36-thesis-cells.md)).
    - **TabPFN leads at 80nan, and on kr-vs-kp and credit-g from 40nan.**
    - At 80nan, TabPFN's wins come with more shrunk fills: TRIDENT's dispersion is closer to the
      truth on 14 of 15 confirmation variants (E56).
@@ -45,8 +51,13 @@ new analysis.
 5. **Where TabPFN wins on the categorical tables, the deficit is uniform (E61).** TRIDENT learns
    every column TabPFN learns, a few points less. No column is stuck at the marginal, so no
    per-column loss weighting has a target.
-6. **Capacity does not close the 80nan gap (E59).** The bigger encoder gains about 4% at 40nan,
-   less at 60nan and nothing at 80nan. ADR 0018 stays at 20nan, and the rest is T32.
+6. **The bigger encoder helps the large tables up to 60nan, under every mechanism, and does not close the
+   80nan gap.**
+   - On pendigits and letter at 40–60nan, on today's defaults: −1.1% to −6.0% (E113), replicated on fresh
+     seeds (E116); under MAR and MNAR, −1.8% to −6.9%, better on 8 of 8 (E119).
+   - ADR 0037 adopts it there for MCAR, MAR and MNAR (decision 3, 2026-11-03). ADR 0018 covers 20nan under
+     MCAR; E121 asks the same at 20nan under MAR and MNAR (running).
+   - At 80nan it is mixed and under the SESOI (E117), as E59 found.
 7. **The standing holds across MCAR draws, under MNAR and under MAR.**
    - **Under MNAR (E45, E46, E58),** H is never worse than TabPFN (6 better, 4 no difference), and
      TabPFN gains no ground over MCAR.
@@ -66,7 +77,8 @@ new analysis.
    - It runs the wrong way along a row's missingness (E80): it falls as the row has more gaps,
      while the error rises.
    - Under self-masking MNAR and one MAR draw at 60nan it still ranks: 12 of 12 under K and H
-     (E84). On biodeg it weakens as the tilt grows. ADR 0030 is not yet extended.
+     (E84). On biodeg it weakens as the tilt grows. ADR 0030's decision 7 extends it to MAR and
+     self-masking MNAR at 20–60nan (E84, E105, E110).
 10. **The decoder's column dependencies can be read, and from 20 to 60nan they are faithful (E78,
     E79, E85).**
     - Hiding each source column as `[MASK]` gives a map.
@@ -80,12 +92,21 @@ new analysis.
     - The KC + TabPFN hybrid is never worse than KC on the 10 hard variants (E74, mixed).
     - Its deployable form, with weights chosen without the complete table, beats H on 10 of 10
       and KC on 7, and trails TabPFN on 5 (E82, refuted).
-    - On those variants the order is TabPFN ≳ deployable hybrid > KC > H.
+    - On those variants the order is TabPFN ≳ E82's deployable hybrid > KC > H.
+    - One weight and one categorical pick per table (`table`) is never worse than H or TabPFN on the
+      10 hard variants on fresh seeds (E90), costs nothing on 7 others (E91) and at 20nan (E95). ADR
+      0031's decision 6 makes it the deployable output (accepted 2026-10-29; 20nan 2026-10-31).
 12. **On classification, untuned TabPFN v2 leads TRIDENT under the fork's defaults (E83; ADR
-    0032).**
-    - The lead is +0.017 to +0.024 macro-F1 at every level.
-    - Pre-training buys no detectable gain there (E71).
-    - TabPFN is a separate strong tier; H1c's bar stays the best GBDT.
+    0032); TRIDENT leads the deep baselines, except MLP under MNAR.**
+    - TabPFN's lead is +0.017 to +0.024 macro-F1 at every level. TabPFN is a separate strong tier.
+    - At 40–80nan under MCAR, TRIDENT leads MLP, SAINT and TabNet by the majority rule (E99); over MLP
+      by +0.013 and +0.008 at 40 and 60nan, no verdict at 80nan.
+    - At 60nan, TRIDENT leads MLP and SAINT under MCAR and MAR, and SAINT under MNAR; against MLP under
+      MNAR the two are not separable (E115; E120 on fresh seeds, +0.0025 [−0.0090, +0.0141], no
+      verdict). No lead over MLP is claimed under MNAR.
+    - Pre-training buys no detectable gain, under the fork's sweep (E71) or the upstream defaults
+      (E118, 40 and 40 epochs). The paper's own tuned per-pair values are not in the repository and stay
+      untested, so this is not a failed replication of the paper.
 
 ## 1. Against the baselines
 
@@ -169,6 +190,8 @@ new analysis.
 - **Capacity (E59,** [14](../tickets/imputation-protocol/14-large-encoder.md)**):**
   - The bigger encoder costs about 2× the training time.
   - It does not move pendigits_80nan's gap to TabPFN (+0.0121 → +0.0104, still worse).
+  - Since then: on today's defaults it helps pendigits and letter at 40–60nan (E113, E116), under MAR
+    and MNAR too (E119), and not at 80nan (E117); ADR 0037.
 
 ## 3b. Since 2026-10-23: E67–E85
 
@@ -217,6 +240,18 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   - ADR 0032: TabPFN is a separate strong tier.
   - Step zero itself waits on ADR 0029's eight decisions.
 
+## 3c. 2026-11-03: E118–E120
+
+- **E118, classification:** the paper's pre-training gain under the upstream defaults (40 pre-training and
+  40 fine-tuning epochs): refuted, B − A equivalent at every level. T41 closed
+  ([classification-step-zero/15](../tickets/classification-step-zero/15-upstream-defaults-pretraining.md)).
+- **E119, ADR 0037's encoder under MAR and MNAR at 40–60nan:** holds under both, better on 4 of 4 each,
+  worse on none ([imputation-protocol/49](../tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md)).
+  ADR 0037's decision 3, accepted by the user, extends it to all three mechanisms; a default run was
+  checked identical to E119's BIG cell.
+- **E120, classification, TRIDENT against MLP under MNAR on fresh seeds:** no verdict, as E115
+  ([classification-step-zero/16](../tickets/classification-step-zero/16-trident-mlp-mnar-fresh-seeds.md)).
+
 ## 4. Limits the thesis states
 
 - **electricity:** the boosters lead because they look values up by `date`, a 933-level key.
@@ -225,37 +260,42 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   [T29 report](2026-10-20-t29-electricity.md)).
   - A model-side date encoding was set aside by the user (2026-10-21).
 - **80nan and the categorical tables:** TabPFN leads there, with no lever found:
-  - not capacity (E59);
+  - not capacity (E59, E117);
   - not a column weighting (E61);
   - not the washout levers (E50).
 - **Oracle readouts:** K and KC choose and calibrate on the validation gaps' truth, which only a
   benchmark with complete tables has. H is the deployable readout and reads a little weaker
   (E57: H − TabPFN 5 / 5 / 5).
 - **Pre-training:** washed out by the decode stage (T28,
-  [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53).
+  [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53). On classification no gain is
+  detected under the fork's sweep or the upstream defaults (E71, E118); the paper's tuned values are untested.
+- **Classification against MLP under MNAR:** not separable on two seed sets (E115, E120); no lead claim.
+- **The bigger encoder's scope:** pendigits and letter only, 20–60nan; off MCAR at 20nan it is E121's
+  question (running).
 - **One seed set or one draw:** E61 (the per-column read) rests on one seed set. The blend's
   complementarity (E60, E66) holds on two, narrower on the second. Every per-variant interval is conditional on the MCAR draw (E62).
 - **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
   exception on two draws. The bar gains at 60nan on the small numerical tables.
 - **The spread (ADR 0030)** is a rank within a column, not an interval (E77). It falls along a row's
   missingness (E80). Under one MAR draw and self-masking MNAR at 60nan it ranks too (E84, 12 of 12), weakening as the
-  tilt grows; ADR 0030 is not yet extended.
+  tilt grows; ADR 0030's decision 7 covers MAR and MNAR at 20–60nan.
 - **The occlusion map** is read on K only, under MCAR. It is faithful from 20 to 60nan and fails at
   80nan beyond pendigits, letter, electricity and vehicle. Its effects shrink with missingness, and
   kc2 is the weakest table from 20 to 60nan.
-- **The hybrid's deployable form** does not reach TabPFN on the small and categorical tables (E82).
+- **The hybrid's deployable form:** E82's per-column weights do not reach TabPFN on the small and categorical
+  tables; the `table` rule (ADR 0031 decision 6) is never worse than TabPFN on the 10 hard variants (E90).
 - **Torch:** every run up to 2026-10-27 used torch 2.5.1. From 2026-10-28 runs use 2.11.0 (ADR 0033's
   preparation), which draws other numbers from the same seed. Studies that span the change say so.
 
 ## 5. Open
 
-- **ADR 0030's extension to MAR and MNAR** (E84, supported) is the user's decision.
-- **T27's classification step zero:** ADR 0029 and its eight decisions, deferred by the user on
-  2026-10-27. T41: the paper's Table 4 with its parameters.
-- **The hybrid's selection:** one weight per table, or shrinkage toward the equal blend, which is
-  offline on E82's files; a claim needs fresh seeds.
-- **T32:** the bigger encoder at 40–60nan, kept for later by the user.
-- **The backlog:** T10's evaluation-mask half, T08, T09, T11, T14 and T15.
+- **E121:** ADR 0018's encoder under MAR and MNAR at 20nan, running from 2026-11-03 20:55 GMT-3
+  ([imputation-protocol/50](../tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md)).
+- **Decided since the last update:** ADR 0030's decision 7 (MAR and MNAR, 20–60nan), ADR 0031's decision 6
+  (the deployable `table` hybrid), ADR 0029 (classification step zero, accepted 2026-10-29), ADR 0036 (P600
+  on pendigits and letter at 20–40nan; T11 closed), ADR 0037 (T32 closed), T41 closed (E118), T14 refuted
+  (E100).
+- **The backlog:** T10's evaluation-mask half, T08, T09 and T15.
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)
 
@@ -263,13 +303,13 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 
 ```text
 ## Development set, seeds 101/202/303 (labelled variants: none on this set)
-  - K − tabpfn: better 8 / no difference 6 / worse 7 (fold-pair t, seed agreement)
+  - K − tabpfn: better 9 / no difference 6 / worse 6 (fold-pair t, seed agreement)
   - tabpfn − strong: better 11 / no difference 5 / equivalent 1 / worse 4 (fold-pair t, seed agreement)
   - tabpfn − bar: better 16 / no difference 1 / equivalent 1 / worse 3 (fold-pair t, seed agreement)
   - tabpfn − tuned: better 14 / no difference 1 / equivalent 1 / worse 5 (fold-pair t, seed agreement)
-  - K − best_of_all: better 5 / no difference 8 / worse 8 (fold-pair t, seed agreement)
+  - K − best_of_all: better 6 / no difference 8 / worse 7 (fold-pair t, seed agreement)
   - K − strong_live: better 13 / no difference 7 / worse 1 (fold-pair t, seed agreement)
-  - K − strong (ADR 0028): better 5 / no difference 9 / worse 7 (fold-pair t, seed agreement)
+  - K − strong (ADR 0028): better 6 / no difference 9 / worse 6 (fold-pair t, seed agreement)
 ## Confirmation set (E44), seeds 707/808/909
   - K − tabpfn: better 6 / no difference 4 / worse 5 (fold-pair t, seed agreement)
   - tabpfn − strong: better 11 / no difference 4 / worse 0 (fold-pair t, seed agreement)
@@ -729,4 +769,26 @@ Primary: signal on 12 (K) and 12 (H) of 12, against under K on none -> supported
   - descriptive: |Spearman| on the training split, same AUROC (numerical pairs only): 0.878 [0.861, 0.895]
 Primary (B) at 20nan: faithful on 8 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)
 Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_80nan', 'spambase_80nan', 'credit-g_80nan'] -> refuted (fold-pair t, seed agreement, SESOI 0.01)
+```
+
+### E118: classification, the paper's pre-training gain under the upstream defaults (classification-step-zero/15)
+
+```text
+Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-training gain (fold-pair t, seed agreement, SESOI 0.01)
+```
+
+### E119: ADR 0037's encoder under MAR and MNAR (imputation-protocol/49)
+
+```text
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+Primary (E119, BIG − M), MAR (marf): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds
+Primary (E119, BIG − M), MNAR (probit): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds
+```
+
+### E120: classification, TRIDENT against MLP under MNAR on fresh seeds (classification-step-zero/16)
+
+```text
+## MNAR (probit): biodeg, kc2, vehicle, spambase
+## MAR (marf): biodeg, kc2, vehicle, spambase, credit-g, kr-vs-kp
+Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict
 ```

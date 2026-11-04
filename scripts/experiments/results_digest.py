@@ -10,6 +10,7 @@ ticket's Outcome, which this digest points to. Run from the checkout root.
 from __future__ import annotations
 
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -61,12 +62,22 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E83: TabPFN v2's classifier", "classification-step-zero/03", [f"{E}/tabpfn_classification.py", "--tally"]),
     ("E84: the spread under MNAR and MAR", "imputation-protocol/32", [f"{E}/spread_mechanisms.py", "--tally"]),
     ("E85: the occlusion map at 20nan and 80nan", "imputation-interpretability/05", [f"{E}/occlusion_map.py", "--study", "e85", "--tally"]),
+    ("E118: classification, the paper's pre-training gain under the upstream defaults", "classification-step-zero/15",
+     [f"{E}/cls_tenfold.py", "--study", "e118", "--tally"]),
+    ("E119: ADR 0037's encoder under MAR and MNAR", "imputation-protocol/49", [f"{E}/large_batch.py", "--study", "e119", "--tally"]),
+    ("E120: classification, TRIDENT against MLP under MNAR on fresh seeds", "classification-step-zero/16",
+     [f"{E}/deep_baselines.py", "--study", "e120", "--tally"]),
 ]
+# Readers whose folds live only on medusa1 run there, unchanged, through ssh (its checkout pulled to this commit).
+ON_MEDUSA = {"E118", "E120"}
 
 
 def main() -> int:
     for label, ticket, command in READERS:
-        done = subprocess.run(["uv", "run", "--python", "3.11", "python", "-B", *command], capture_output=True, text=True)
+        call = ["uv", "run", "--python", "3.11", "python", "-B", *command]
+        if label.split(":")[0] in ON_MEDUSA:
+            call = ["ssh", "-o", "BatchMode=yes", "medusa1", "cd /scratch/diogoneiss/TRIDENT && " + shlex.join(call)]
+        done = subprocess.run(call, capture_output=True, text=True)
         kept = [line for line in done.stdout.splitlines() if SUMMARY.match(line)]
         print(f"### {label} ({ticket})\n\n```text")
         print("\n".join(kept) if kept else f"(no summary lines; exit {done.returncode})")
