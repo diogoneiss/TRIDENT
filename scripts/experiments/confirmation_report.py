@@ -94,10 +94,9 @@ def contrast(variant: str, readout: str, opponent: str) -> common.Verdict | None
         return None
     per_seed, scale = [], []
     for run, frame in found:
-        if readout == "KC":
-            mine = np.asarray(frame["impute/induced/calibrated/impute_score"], dtype=float)
-        else:
-            mine = common.model(frame, run, readout)
+        # readout_key finds KC on both layouts: the E44 cells' calibrated diagnostic, and the headline of a run
+        # ADR 0027 calibrated (E108's and ADR 0037's reruns at 40nan and above).
+        mine = common.model(frame, run, readout)
         if opponent in ("K", "H", "M"):
             theirs = common.model(frame, run, opponent)
         elif opponent == "tuned":

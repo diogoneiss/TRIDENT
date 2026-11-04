@@ -1,0 +1,12 @@
+- 00nan (A's mean 0.8516): B − A +0.0023 [-0.0000, +0.0046] seeds +0.0048, +0.0022, +0.0002, +0.0031, +0.0011, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0042; credit-g +0.0085; electricity +0.0088; kc2 -0.0060; kr-vs-kp -0.0005; letter +0.0099; pendigits +0.0000; spambase +0.0028; vehicle +0.0014
+- 20nan (A's mean 0.7965): B − A +0.0013 [-0.0014, +0.0041] seeds +0.0046, +0.0016, +0.0004, +0.0007, -0.0007, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0037; credit-g -0.0010; electricity +0.0039; kc2 -0.0000; kr-vs-kp +0.0022; letter +0.0113; pendigits +0.0003; spambase +0.0005; vehicle -0.0016
+- 40nan (A's mean 0.7444): B − A +0.0005 [-0.0028, +0.0037] seeds +0.0043, -0.0018, -0.0066, +0.0031, +0.0032, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0020; credit-g +0.0070; electricity +0.0030; kc2 -0.0015; kr-vs-kp -0.0024; letter +0.0083; pendigits -0.0007; spambase -0.0013; vehicle -0.0062
+- 60nan (A's mean 0.6683): B − A -0.0009 [-0.0045, +0.0027] seeds -0.0065, +0.0074, +0.0007, -0.0028, -0.0033, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg +0.0006; credit-g +0.0008; electricity +0.0011; kc2 -0.0049; kr-vs-kp +0.0038; letter +0.0037; pendigits +0.0007; spambase -0.0012; vehicle -0.0127
+- 80nan (A's mean 0.5555): B − A +0.0012 [-0.0036, +0.0060] seeds +0.0053, -0.0089, +0.0055, +0.0030, +0.0012, 450 fold pairs -> equivalent
+  - by table (mean over seeds): biodeg -0.0017; credit-g +0.0002; electricity +0.0020; kc2 +0.0072; kr-vs-kp -0.0014; letter +0.0007; pendigits -0.0007; spambase -0.0050; vehicle +0.0096
+
+Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-training gain (fold-pair t, seed agreement, SESOI 0.01)

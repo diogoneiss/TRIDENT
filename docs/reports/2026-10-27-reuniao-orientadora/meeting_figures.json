@@ -1063,120 +1063,120 @@
    }
   },
   "pendigits_20nan": {
-   "K": 0.3203,
+   "K": 0.3004,
    "K − bar": {
     "opponent": "knn10",
-    "d": -0.0307,
-    "lo": -0.0333,
-    "hi": -0.0281,
+    "d": -0.0506,
+    "lo": -0.0541,
+    "hi": -0.0472,
     "call": "better"
    },
    "K − tuned": {
     "opponent": "tuned_bar",
-    "d": -0.0236,
-    "lo": -0.0274,
-    "hi": -0.0199,
+    "d": -0.0436,
+    "lo": -0.0482,
+    "hi": -0.039,
     "call": "better"
    },
    "K − missforest": {
     "opponent": "missforest",
-    "d": -0.0138,
-    "lo": -0.0182,
-    "hi": -0.0094,
+    "d": -0.0337,
+    "lo": -0.0402,
+    "hi": -0.0272,
     "call": "better"
    },
    "K − tabpfn": {
     "opponent": "tabpfn",
-    "d": 0.0123,
-    "lo": 0.008,
-    "hi": 0.0165,
-    "call": "worse"
+    "d": -0.0077,
+    "lo": -0.013,
+    "hi": -0.0023,
+    "call": "better"
    },
    "K − strong": {
     "opponent": "tabpfn",
-    "d": 0.0123,
-    "lo": 0.008,
-    "hi": 0.0165,
-    "call": "worse"
+    "d": -0.0077,
+    "lo": -0.013,
+    "hi": -0.0023,
+    "call": "better"
    },
    "K − tuned_strong": {
     "opponent": "tabpfn",
-    "d": 0.0123,
-    "lo": 0.008,
-    "hi": 0.0165,
-    "call": "worse"
+    "d": -0.0077,
+    "lo": -0.013,
+    "hi": -0.0023,
+    "call": "better"
    },
    "K − best_of_all": {
     "opponent": "tabpfn",
-    "d": 0.0123,
-    "lo": 0.008,
-    "hi": 0.0165,
-    "call": "worse"
+    "d": -0.0077,
+    "lo": -0.013,
+    "hi": -0.0023,
+    "call": "better"
    },
    "K − per_type": {
     "opponent": "per_type",
-    "d": -0.0307,
-    "lo": -0.0333,
-    "hi": -0.0281,
+    "d": -0.0506,
+    "lo": -0.0541,
+    "hi": -0.0472,
     "call": "better"
    }
   },
   "letter_20nan": {
-   "K": 0.4331,
+   "K": 0.4206,
    "K − bar": {
     "opponent": "knn10",
-    "d": -0.0391,
-    "lo": -0.0419,
-    "hi": -0.0364,
+    "d": -0.0516,
+    "lo": -0.0548,
+    "hi": -0.0484,
     "call": "better"
    },
    "K − tuned": {
     "opponent": "tuned_bar",
-    "d": -0.0355,
-    "lo": -0.0376,
-    "hi": -0.0335,
+    "d": -0.048,
+    "lo": -0.0504,
+    "hi": -0.0456,
     "call": "better"
    },
    "K − missforest": {
     "opponent": "missforest",
-    "d": -0.0298,
-    "lo": -0.0335,
-    "hi": -0.0261,
+    "d": -0.0423,
+    "lo": -0.0457,
+    "hi": -0.0389,
     "call": "better"
    },
    "K − tabpfn": {
     "opponent": "tabpfn",
-    "d": -0.0209,
-    "lo": -0.024,
-    "hi": -0.0179,
+    "d": -0.0334,
+    "lo": -0.0365,
+    "hi": -0.0303,
     "call": "better"
    },
    "K − strong": {
     "opponent": "tabpfn",
-    "d": -0.0209,
-    "lo": -0.024,
-    "hi": -0.0179,
+    "d": -0.0334,
+    "lo": -0.0365,
+    "hi": -0.0303,
     "call": "better"
    },
    "K − tuned_strong": {
     "opponent": "tabpfn",
-    "d": -0.0209,
-    "lo": -0.024,
-    "hi": -0.0179,
+    "d": -0.0334,
+    "lo": -0.0365,
+    "hi": -0.0303,
     "call": "better"
    },
    "K − best_of_all": {
     "opponent": "tabpfn",
-    "d": -0.0209,
-    "lo": -0.024,
-    "hi": -0.0179,
+    "d": -0.0334,
+    "lo": -0.0365,
+    "hi": -0.0303,
     "call": "better"
    },
    "K − per_type": {
     "opponent": "per_type",
-    "d": -0.0391,
-    "lo": -0.0419,
-    "hi": -0.0364,
+    "d": -0.0516,
+    "lo": -0.0548,
+    "hi": -0.0484,
     "call": "better"
    }
   },
@@ -1605,41 +1605,41 @@
     },
     "pendigits_20nan": {
      "K − tabpfn": {
-      "d": 0.0123,
-      "lo": 0.008,
-      "hi": 0.0165,
-      "call": "worse"
+      "d": -0.0077,
+      "lo": -0.013,
+      "hi": -0.0023,
+      "call": "better"
      },
      "K − strong_live": {
-      "d": -0.0138,
-      "lo": -0.0182,
-      "hi": -0.0094,
+      "d": -0.0337,
+      "lo": -0.0402,
+      "hi": -0.0272,
       "call": "better"
      },
      "K − strong (ADR 0028)": {
-      "d": 0.0123,
-      "lo": 0.008,
-      "hi": 0.0165,
-      "call": "worse"
+      "d": -0.0077,
+      "lo": -0.013,
+      "hi": -0.0023,
+      "call": "better"
      }
     },
     "letter_20nan": {
      "K − tabpfn": {
-      "d": -0.0209,
-      "lo": -0.024,
-      "hi": -0.0179,
+      "d": -0.0334,
+      "lo": -0.0365,
+      "hi": -0.0303,
       "call": "better"
      },
      "K − strong_live": {
-      "d": -0.0298,
-      "lo": -0.0335,
-      "hi": -0.0261,
+      "d": -0.0423,
+      "lo": -0.0457,
+      "hi": -0.0389,
       "call": "better"
      },
      "K − strong (ADR 0028)": {
-      "d": -0.0209,
-      "lo": -0.024,
-      "hi": -0.0179,
+      "d": -0.0334,
+      "lo": -0.0365,
+      "hi": -0.0303,
       "call": "better"
      }
     },
@@ -1666,10 +1666,10 @@
    },
    "tallies": {
     "K − tabpfn": {
-     "better": 8,
+     "better": 9,
      "none": 6,
      "equivalent": 0,
-     "worse": 7
+     "worse": 6
     },
     "tabpfn − strong": {
      "better": 11,
@@ -1690,10 +1690,10 @@
      "worse": 5
     },
     "K − best_of_all": {
-     "better": 5,
+     "better": 6,
      "none": 8,
      "equivalent": 0,
-     "worse": 8
+     "worse": 7
     },
     "K − strong_live": {
      "better": 13,
@@ -1702,10 +1702,10 @@
      "worse": 1
     },
     "K − strong (ADR 0028)": {
-     "better": 5,
+     "better": 6,
      "none": 9,
      "equivalent": 0,
-     "worse": 7
+     "worse": 6
     }
    }
   },
@@ -1713,41 +1713,41 @@
    "variants": {
     "pendigits_40nan": {
      "K − tabpfn": {
-      "d": -0.0107,
-      "lo": -0.0137,
-      "hi": -0.0078,
+      "d": -0.0489,
+      "lo": -0.0536,
+      "hi": -0.0443,
       "call": "better"
      },
      "K − strong_live": {
-      "d": -0.0706,
-      "lo": -0.0756,
-      "hi": -0.0656,
+      "d": -0.1088,
+      "lo": -0.1149,
+      "hi": -0.1027,
       "call": "better"
      },
      "K − strong (ADR 0028)": {
-      "d": -0.0107,
-      "lo": -0.0137,
-      "hi": -0.0078,
+      "d": -0.0489,
+      "lo": -0.0536,
+      "hi": -0.0443,
       "call": "better"
      }
     },
     "pendigits_60nan": {
      "K − tabpfn": {
-      "d": -0.018,
-      "lo": -0.0202,
-      "hi": -0.0158,
+      "d": -0.0356,
+      "lo": -0.0385,
+      "hi": -0.0327,
       "call": "better"
      },
      "K − strong_live": {
-      "d": -0.1215,
-      "lo": -0.1267,
-      "hi": -0.1162,
+      "d": -0.1391,
+      "lo": -0.146,
+      "hi": -0.1322,
       "call": "better"
      },
      "K − strong (ADR 0028)": {
-      "d": -0.018,
-      "lo": -0.0202,
-      "hi": -0.0158,
+      "d": -0.0356,
+      "lo": -0.0385,
+      "hi": -0.0327,
       "call": "better"
      }
     },
@@ -1773,21 +1773,21 @@
     },
     "letter_40nan": {
      "K − tabpfn": {
-      "d": -0.0344,
-      "lo": -0.0369,
-      "hi": -0.0319,
+      "d": -0.0661,
+      "lo": -0.0692,
+      "hi": -0.0629,
       "call": "better"
      },
      "K − strong_live": {
-      "d": -0.0554,
-      "lo": -0.0589,
-      "hi": -0.0519,
+      "d": -0.0871,
+      "lo": -0.0909,
+      "hi": -0.0832,
       "call": "better"
      },
      "K − strong (ADR 0028)": {
-      "d": -0.0344,
-      "lo": -0.0369,
-      "hi": -0.0319,
+      "d": -0.0661,
+      "lo": -0.0692,
+      "hi": -0.0629,
       "call": "better"
      }
     },
@@ -2061,41 +2061,41 @@
    "variants": {
     "pendigits_40nan": {
      "K − tabpfn": {
-      "d": -0.0107,
-      "lo": -0.0137,
-      "hi": -0.0078,
+      "d": -0.0489,
+      "lo": -0.0536,
+      "hi": -0.0443,
       "call": "better"
      },
      "KC − tabpfn": {
-      "d": -0.0119,
-      "lo": -0.0148,
-      "hi": -0.0091,
+      "d": -0.0567,
+      "lo": -0.0612,
+      "hi": -0.0522,
       "call": "better"
      },
      "H − tabpfn": {
-      "d": -0.0096,
-      "lo": -0.0129,
-      "hi": -0.0064,
+      "d": -0.0446,
+      "lo": -0.0492,
+      "hi": -0.04,
       "call": "better"
      }
     },
     "pendigits_60nan": {
      "K − tabpfn": {
-      "d": -0.018,
-      "lo": -0.0202,
-      "hi": -0.0158,
+      "d": -0.0356,
+      "lo": -0.0385,
+      "hi": -0.0327,
       "call": "better"
      },
      "KC − tabpfn": {
-      "d": -0.0216,
-      "lo": -0.0238,
-      "hi": -0.0193,
+      "d": -0.0482,
+      "lo": -0.0509,
+      "hi": -0.0454,
       "call": "better"
      },
      "H − tabpfn": {
-      "d": -0.0143,
-      "lo": -0.0176,
-      "hi": -0.0109,
+      "d": -0.0262,
+      "lo": -0.0315,
+      "hi": -0.021,
       "call": "better"
      }
     },
@@ -2121,21 +2121,21 @@
     },
     "letter_40nan": {
      "K − tabpfn": {
-      "d": -0.0344,
-      "lo": -0.0369,
-      "hi": -0.0319,
+      "d": -0.0661,
+      "lo": -0.0692,
+      "hi": -0.0629,
       "call": "better"
      },
      "KC − tabpfn": {
-      "d": -0.0358,
-      "lo": -0.0382,
-      "hi": -0.0334,
+      "d": -0.0741,
+      "lo": -0.0772,
+      "hi": -0.071,
       "call": "better"
      },
      "H − tabpfn": {
-      "d": -0.0334,
-      "lo": -0.0357,
-      "hi": -0.0311,
+      "d": -0.0635,
+      "lo": -0.0663,
+      "hi": -0.0608,
       "call": "better"
      }
     },
@@ -2490,15 +2490,15 @@
  },
  "confirmation_bar": {
   "pendigits_40nan": {
-   "d": -0.0653,
-   "lo": -0.068,
-   "hi": -0.0627,
+   "d": -0.1035,
+   "lo": -0.1077,
+   "hi": -0.0994,
    "call": "better"
   },
   "pendigits_60nan": {
-   "d": -0.0568,
-   "lo": -0.0587,
-   "hi": -0.0549,
+   "d": -0.0744,
+   "lo": -0.0779,
+   "hi": -0.0709,
    "call": "better"
   },
   "pendigits_80nan": {
@@ -2508,9 +2508,9 @@
    "call": "better"
   },
   "letter_40nan": {
-   "d": -0.0555,
-   "lo": -0.0573,
-   "hi": -0.0538,
+   "d": -0.0872,
+   "lo": -0.0897,
+   "hi": -0.0847,
    "call": "better"
   },
   "letter_60nan": {
@@ -3820,6 +3820,16 @@
   "occlusion_e85": [
    "Primary (B) at 20nan: faithful on 8 of 9, not faithful on none -> supported (fold-pair t, seed agreement, SESOI 0.01)",
    "Primary (B) at 80nan: faithful on 4 of 9, not faithful on ['biodeg_80nan', 'kc2_80nan', 'spambase_80nan', 'credit-g_80nan'] -> refuted (fold-pair t, seed agreement, SESOI 0.01)"
+  ],
+  "cls_upstream_e118": [
+   "Primary: A higher at no level, B higher at no level of 5 -> refuted: no pre-training gain (fold-pair t, seed agreement, SESOI 0.01)"
+  ],
+  "encoder_e119": [
+   "Primary (E119, BIG − M), MAR (marf): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds",
+   "Primary (E119, BIG − M), MNAR (probit): better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 4 -> holds"
+  ],
+  "deep_mnar_e120": [
+   "Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict"
   ],
   "tabpfn_cls_e83": [
    "- 0nan: TabPFN − TRIDENT macro-F1 +0.0212 [+0.0136, +0.0288] seeds +0.0178, +0.0246, 48 fold pairs -> TabPFN ahead",

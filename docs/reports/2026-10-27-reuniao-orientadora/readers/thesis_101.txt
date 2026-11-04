@@ -20,8 +20,8 @@
 | `biodeg_60nan` | 0.7644 | hgb: -0.0978 [-0.1084, -0.0872] better | tuned_bar: -0.0813 [-0.0915, -0.0711] better | missforest: +0.0115 [-0.0024, +0.0255] none | tabpfn: -0.0200 [-0.0322, -0.0077] better | missforest: +0.0115 [-0.0024, +0.0255] none | missforest_tuned: +0.0083 [-0.0062, +0.0228] none | missforest: +0.0115 [-0.0024, +0.0255] none | per_type: -0.0978 [-0.1084, -0.0872] better |
 | `kc2_20nan` | 0.5363 | knn5: +0.0148 [-0.0840, +0.1136] none | tuned_bar: -0.0179 [-0.1091, +0.0733] none | missforest: -0.0354 [-0.1458, +0.0749] none | tabpfn: +0.0434 [-0.0570, +0.1437] none | tabpfn: +0.0434 [-0.0570, +0.1437] none | tabpfn: +0.0434 [-0.0570, +0.1437] none | tabpfn: +0.0434 [-0.0570, +0.1437] none | per_type: +0.0148 [-0.0840, +0.1136] none |
 | `kc2_60nan` | 0.5529 | knn5: -0.1713 [-0.2299, -0.1127] better | tuned_bar: -0.1922 [-0.2520, -0.1324] better | missforest: -0.1134 [-0.1505, -0.0763] better | tabpfn: -0.0684 [-0.1178, -0.0189] better | softimpute: -0.0378 [-0.0613, -0.0144] better | softimpute: -0.0378 [-0.0613, -0.0144] better | softimpute: -0.0378 [-0.0613, -0.0144] better | per_type: -0.1713 [-0.2299, -0.1127] better |
-| `pendigits_20nan` | 0.3203 | knn10: -0.0307 [-0.0333, -0.0281] better | tuned_bar: -0.0236 [-0.0274, -0.0199] better | missforest: -0.0138 [-0.0182, -0.0094] better | tabpfn: +0.0123 [+0.0080, +0.0165] worse | tabpfn: +0.0123 [+0.0080, +0.0165] worse | tabpfn: +0.0123 [+0.0080, +0.0165] worse | tabpfn: +0.0123 [+0.0080, +0.0165] worse | per_type: -0.0307 [-0.0333, -0.0281] better |
-| `letter_20nan` | 0.4331 | knn10: -0.0391 [-0.0419, -0.0364] better | tuned_bar: -0.0355 [-0.0376, -0.0335] better | missforest: -0.0298 [-0.0335, -0.0261] better | tabpfn: -0.0209 [-0.0240, -0.0179] better | tabpfn: -0.0209 [-0.0240, -0.0179] better | tabpfn: -0.0209 [-0.0240, -0.0179] better | tabpfn: -0.0209 [-0.0240, -0.0179] better | per_type: -0.0391 [-0.0419, -0.0364] better |
+| `pendigits_20nan` | 0.3004 | knn10: -0.0506 [-0.0541, -0.0472] better | tuned_bar: -0.0436 [-0.0482, -0.0390] better | missforest: -0.0337 [-0.0402, -0.0272] better | tabpfn: -0.0077 [-0.0130, -0.0023] better | tabpfn: -0.0077 [-0.0130, -0.0023] better | tabpfn: -0.0077 [-0.0130, -0.0023] better | tabpfn: -0.0077 [-0.0130, -0.0023] better | per_type: -0.0506 [-0.0541, -0.0472] better |
+| `letter_20nan` | 0.4206 | knn10: -0.0516 [-0.0548, -0.0484] better | tuned_bar: -0.0480 [-0.0504, -0.0456] better | missforest: -0.0423 [-0.0457, -0.0389] better | tabpfn: -0.0334 [-0.0365, -0.0303] better | tabpfn: -0.0334 [-0.0365, -0.0303] better | tabpfn: -0.0334 [-0.0365, -0.0303] better | tabpfn: -0.0334 [-0.0365, -0.0303] better | per_type: -0.0516 [-0.0548, -0.0484] better |
 | `electricity_20nan` | 0.6183 | hgb: +0.0161 [+0.0056, +0.0267] worse | tuned_bar: +0.0387 [+0.0288, +0.0487] worse | missforest: -0.0010 [-0.0093, +0.0074] none | tabpfn: -0.0116 [-0.0237, +0.0004] none | missforest: -0.0010 [-0.0093, +0.0074] none | missforest_tuned: +0.0025 [-0.0068, +0.0118] none | hgb: +0.0161 [+0.0056, +0.0267] worse | per_type: +0.0161 [+0.0056, +0.0267] worse |
 
 † ran a configuration that is no longer the default (removed file or old encoder); left out of the counts.
@@ -41,23 +41,23 @@
   - 40nan: better 3 / no difference 0 / worse 0 (fold-pair t, seed agreement)
   - 60nan: better 4 / no difference 2 / worse 0 (fold-pair t, seed agreement)
   - 80nan: better 3 / no difference 0 / worse 0 (fold-pair t, seed agreement)
-- K vs tabpfn on 21 variants: better 8 / no difference 6 / worse 7 (fold-pair t, seed agreement); tables below zero 6 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.4961)
-  - 20nan: better 3 / no difference 5 / worse 1 (fold-pair t, seed agreement)
+- K vs tabpfn on 21 variants: better 9 / no difference 6 / worse 6 (fold-pair t, seed agreement); tables below zero 7 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.1641)
+  - 20nan: better 4 / no difference 5 / worse 0 (fold-pair t, seed agreement)
   - 40nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
   - 60nan: better 3 / no difference 1 / worse 2 (fold-pair t, seed agreement)
   - 80nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
-- K vs strong on 21 variants: better 5 / no difference 9 / worse 7 (fold-pair t, seed agreement); tables below zero 5 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.9102)
-  - 20nan: better 1 / no difference 7 / worse 1 (fold-pair t, seed agreement)
+- K vs strong on 21 variants: better 6 / no difference 9 / worse 6 (fold-pair t, seed agreement); tables below zero 6 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.5703)
+  - 20nan: better 2 / no difference 7 / worse 0 (fold-pair t, seed agreement)
   - 40nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
   - 60nan: better 2 / no difference 2 / worse 2 (fold-pair t, seed agreement)
   - 80nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
-- K vs tuned_strong on 21 variants: better 6 / no difference 8 / worse 7 (fold-pair t, seed agreement); tables below zero 4 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.8203)
+- K vs tuned_strong on 21 variants: better 7 / no difference 8 / worse 6 (fold-pair t, seed agreement); tables below zero 5 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.6523)
+  - 20nan: better 3 / no difference 6 / worse 0 (fold-pair t, seed agreement)
+  - 40nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
+  - 60nan: better 2 / no difference 2 / worse 2 (fold-pair t, seed agreement)
+  - 80nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
+- K vs best_of_all on 21 variants: better 6 / no difference 8 / worse 7 (fold-pair t, seed agreement); tables below zero 5 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 1.0000)
   - 20nan: better 2 / no difference 6 / worse 1 (fold-pair t, seed agreement)
-  - 40nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
-  - 60nan: better 2 / no difference 2 / worse 2 (fold-pair t, seed agreement)
-  - 80nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
-- K vs best_of_all on 21 variants: better 5 / no difference 8 / worse 8 (fold-pair t, seed agreement); tables below zero 4 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.5703)
-  - 20nan: better 1 / no difference 6 / worse 2 (fold-pair t, seed agreement)
   - 40nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
   - 60nan: better 2 / no difference 2 / worse 2 (fold-pair t, seed agreement)
   - 80nan: better 1 / no difference 0 / worse 2 (fold-pair t, seed agreement)
@@ -66,5 +66,5 @@
   - 40nan: better 3 / no difference 0 / worse 0 (fold-pair t, seed agreement)
   - 60nan: better 5 / no difference 1 / worse 0 (fold-pair t, seed agreement)
   - 80nan: better 2 / no difference 0 / worse 1 (fold-pair t, seed agreement)
-- Holm across opponents: missforest 0.0312, bar 0.1367, per_type 0.1367, tuned 0.1367, tabpfn 1.0000, best_of_all 1.0000, tuned_strong 1.0000, strong 1.0000
+- Holm across opponents: missforest 0.0312, bar 0.1367, per_type 0.1367, tuned 0.1367, tabpfn 0.6562, strong 1.0000, tuned_strong 1.0000, best_of_all 1.0000
 - D4, a win needs K better than both the bar and the tuned bar: 13 wins of 21; worse than either on 3 (kr-vs-kp_60nan, credit-g_80nan, electricity_20nan)

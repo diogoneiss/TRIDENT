@@ -188,9 +188,9 @@ html { scroll-behavior: smooth; }
   <h2>O que já está demonstrado, e o que vem depois</h2>
   <ol class="statement">
     <li><p><b>O TRIDENT, com uma etapa de decode por coluna, é um imputador competitivo.</b> Contra o tier forte clássico (missForest, condexp, SoftImpute, ICE), K é melhor / sem diferença / pior em <span data-t="tabpfn.development.tallies.K − strong_live"></span> variantes no desenvolvimento e <span data-t="tabpfn.confirmation.tallies.K − strong_live"></span> na confirmação, lida uma única vez.</p></li>
-    <li><p><b>Contra o TabPFN v2, o oponente mais forte, o resultado depende da tabela e da taxa.</b> O TRIDENT lidera em spambase em todas as taxas, letter a 20–60nan, pendigits a 40–60nan, biodeg abaixo de 80nan e kc2 a 60–80nan; o TabPFN lidera a 80nan e nas tabelas categóricas (kr-vs-kp, credit-g) a partir de 40nan. A saída default (KC) contra o TabPFN na confirmação: <span data-t="tabpfn.e57_confirmation.tallies.KC − tabpfn"></span>.</p></li>
+    <li><p><b>Contra o TabPFN v2, o oponente mais forte, o resultado depende da tabela e da taxa.</b> O TRIDENT lidera em spambase em todas as taxas, letter e pendigits a 20–60nan (pendigits_20nan desde as reexecuções da ADR 0036, E108), biodeg abaixo de 80nan e kc2 a 60–80nan; o TabPFN lidera a 80nan e nas tabelas categóricas (kr-vs-kp, credit-g) a partir de 40nan. A saída default (KC) contra o TabPFN na confirmação: <span data-t="tabpfn.e57_confirmation.tallies.KC − tabpfn"></span>.</p></li>
     <li><p><b>A posição se mantém fora do MCAR.</b> Sob falta dependente do valor (MNAR), a vantagem sobre a barra se mantém e o TabPFN não ganha terreno; sob MAR, a posição contra o tier forte cai só em 1 de 12 variantes.</p></li>
-    <li><p><b>O pré-treino quase não contribui</b>, na imputação e (primeiro sinal) na classificação. A etapa de decode reconstrói, a partir de um encoder aleatório, um encoder tão bom quanto o pré-treinado.</p></li>
+    <li><p><b>O pré-treino quase não contribui</b>, na imputação e na classificação, tanto com o sweep do fork (E71) quanto com os defaults do código original, 40/40 épocas (E118). A etapa de decode reconstrói, a partir de um encoder aleatório, um encoder tão bom quanto o pré-treinado.</p></li>
     <li><p><b>O que vem a seguir:</b> a RQ2 (o token <code>[NULL]</code> contra imputação + indicador sob falta informativa), a RQ3 (alvo latente contra alvo em valor) e o teste do split <code>[NULL]</code>/<code>[MASK]</code>, cada um com protocolo desenhado (seção 10).</p></li>
   </ol>
   <div class="note"><b>Leituras usadas na página.</b> <b>K</b> escolhe a época do decode pelas lacunas de validação, usando a verdade delas: é uma leitura de benchmark. <b>KC</b> é o K calibrado, a saída default a partir de 40% de faltantes. <b>H</b> é o checkpoint da loss, a leitura implantável. <code>impute_score</code>: erro nas células escondidas relativo ao preenchimento por média/moda; menor é melhor, 1,0 é a média/moda. As contagens são <b>melhor / sem diferença / pior</b> por variante, pela regra do projeto (t pareado por fold, com concordância entre seeds).</div>
@@ -225,7 +225,7 @@ html { scroll-behavior: smooth; }
       <thead><tr><th>RQ / hipótese</th><th>Estado</th><th>Evidência no fork</th><th>Próximo passo</th></tr></thead>
       <tbody>
         <tr><td>RQ1 · imputação (H1d)</td><td><span class="pill done">respondida</span></td><td>MCAR em 21 + 15 variantes, cinco conjuntos de seeds, sorteios novos, MNAR, MAR (seções 4 e 6)</td><td>Fixar o escopo do H1d: qual barra, qual margem, se o TabPFN conta como imputador deep</td></tr>
-        <tr><td>RQ1 · classificação (H1, H1c)</td><td><span class="pill partial">primeiro passo</span></td><td>E70 (o sweep antigo não se reproduz fold a fold), E71 (pré-treino sem ganho detectável) · seção 5</td><td>T41 (replicar a Table 4 com os parâmetros do artigo), t3/t24 (Table 3 com ≥5 seeds), T40 (TabPFN)</td></tr>
+        <tr><td>RQ1 · classificação (H1, H1c)</td><td><span class="pill partial">primeiro passo</span></td><td>E70 (o sweep antigo não se reproduz fold a fold), E71 e E118 (pré-treino sem ganho detectável), E83 (TabPFN à frente), E99, E115 e E120 (contra MLP, SAINT e TabNet) · seção 5</td><td>t3/t24 (Table 3 com ≥5 seeds); os valores ajustados da Table 4 do artigo, que não estão no repositório</td></tr>
         <tr><td>RQ2 · <code>[NULL]</code> vs imputação + indicador (H2, H2b)</td><td><span class="pill plan">planejada</span></td><td>Nenhuma run</td><td>Protocolo C15: não-inferioridade a −0,01 de macro-F1 e +2% de log loss (margens já aceitas)</td></tr>
         <tr><td>RQ2.2 · o preditor usa a falta?</td><td><span class="pill partial">sinal inicial</span></td><td>E81: um decoder que distingue lacuna real de máscara lê o padrão de lacunas sob MNAR moderado, não sob MCAR · seção 7.4</td><td>Shapley por remoção de token no preditor (protocolo C15)</td></tr>
         <tr><td>RQ3 · latente vs valor (H3)</td><td><span class="pill partial">parcial</span></td><td>O alvo latente normalizado repara o objetivo original (E25, E30); o decode apaga o pré-treino (E49–E53) · seção 7.1</td><td>Contraste latente × valor com o encoder congelado, e na classificação</td></tr>
@@ -401,10 +401,26 @@ html { scroll-behavior: smooth; }
       <dt>Pergunta</dt><dd>Um modelo de fundação, sem ajuste, nos mesmos folds do E71: onde fica o TRIDENT de classificação?</dd>
       <dt>Desenho</dt><dd>O classificador do TabPFN v2, sem busca (8 estimadores, contexto de até 10.000 linhas), nos folds de 3 do E71, seeds 42 e 7, pareado fold a fold com o braço A. 8 tabelas × 0–80nan; letter fica de fora (26 classes, o v2 aceita 10).</dd>
       <dt>Resultado</dt><dd>TabPFN − TRIDENT em macro-F1: +0,021, +0,019, +0,017, +0,024 e +0,024 de 0 a 80nan, com as duas seeds concordando em todos os níveis. O TRIDENT só vence em credit-g (a partir de 20nan) e electricity (a partir de 60nan). Ali, numa leitura <i>post hoc</i>, o TabPFN prevê quase só a classe majoritária, e a perda ponderada por classe do TRIDENT troca acurácia por macro-F1.</dd>
-      <dt>Conclusão</dt><dd><span class="verdict bad">O TabPFN sem ajuste está à frente por cerca de 2 pontos.</span> Decisão (ADR 0032): ele entra como <b>tier forte separado</b>, como na imputação; a H1c continua contra o melhor GBDT. Um braço do TabPFN balanceado por classe fica para o desenho do passo zero.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict bad">O TabPFN sem ajuste está à frente por cerca de 2 pontos.</span> Decisão (ADR 0032): ele entra como <b>tier forte separado</b>, como na imputação. Um braço do TabPFN balanceado por classe fica para o desenho do passo zero.</dd>
     </dl>
   </div>
-  <div class="note"><b>Trabalho futuro, T41.</b> Replicar o ganho da Table 4 com os parâmetros do artigo (40/40 épocas, hiperparâmetros por dataset, split 80/10/10) e, em separado, com os do sweep antigo a 10 folds e ≥5 seeds. Para isso faltam os hiperparâmetros por dataset do artigo e o commit que representa "o código do artigo"; nenhum dos dois está no repositório.</div>
+  <div class="card">
+    <header><h3>Pré-treino com os defaults do código original</h3><span class="tag">E118 · T41</span></header>
+    <dl class="steps">
+      <dt>Pergunta</dt><dd>O ganho de cerca de +1,7 de macro-F1 da Table 4 aparece com os defaults do código original (40 épocas de pré-treino e 40 de fine-tuning), a 10 folds?</dd>
+      <dt>Desenho</dt><dd>A: 40/40 épocas; B: sem pré-treino (<code>EPOCHS_PRE 0</code>), 40 de fine-tuning. As 9 tabelas do E71, 0–80nan, 10 folds, seeds 42/7/13/101/202, divididas por seed entre os dois servidores (ADR 0035).</dd>
+      <dt>Resultado</dt><dd>B − A equivalente em todos os níveis (−0,0009 a +0,0023), sem nível em que o pré-treino ajude.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict bad">Refutado: nenhum ganho de pré-treino.</span> Nem o sweep antigo (E71) nem os defaults do código original mostram o ganho. Os valores ajustados por par do artigo não estão no repositório e ficam sem teste, então isto não é uma falha de replicação do artigo. T41 encerrado.</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <header><h3>Contra MLP, SAINT e TabNet</h3><span class="tag">E99 · E115 · E120</span></header>
+    <dl class="steps">
+      <dt>Pergunta</dt><dd>Com cada baseline ajustado na validação, o TRIDENT de classificação lidera os baselines profundos?</dd>
+      <dt>Resultado</dt><dd>Sob MCAR a 40–80nan (E99), TRIDENT − MLP +0,013 e +0,008 a 40 e 60nan, sem veredito a 80nan; − SAINT +0,029 a +0,036; − TabNet +0,09 a +0,11. A 60nan sob MAR e MNAR (E115, e E120 com seeds novas): TRIDENT − MLP sob MNAR +0,0025 [−0,0090, +0,0141], sem veredito.</dd>
+      <dt>Conclusão</dt><dd><span class="verdict mixed">O TRIDENT lidera MLP e SAINT sob MCAR e MAR, e o SAINT sob MNAR; contra o MLP sob MNAR os dois não se separam</span>, em dois conjuntos de seeds. Nenhuma liderança sobre o MLP é afirmada sob MNAR.</dd>
+    </dl>
+  </div>
 </section>
 
 <section class="block" id="robustez">
@@ -449,16 +465,18 @@ html { scroll-behavior: smooth; }
   <div class="card">
     <header><h3>7.2 · Onde perde para o TabPFN, e o que não resolveu</h3><span class="tag">E54 · E59 · E61 · E50</span></header>
     <ul class="points">
-      <li><b>80nan e tabelas categóricas:</b> nem capacidade (o encoder maior ganha ~4% a 40nan e nada a 80nan, a 2× o custo), nem ponderação por coluna (o déficit categórico é uniforme: o TRIDENT aprende cada coluna que o TabPFN aprende, alguns pontos a menos), nem as alavancas contra o washout.</li>
+      <li><b>Capacidade:</b> o encoder maior (ADR 0018) ajuda pendigits e letter de 40 a 60nan sobre os defaults atuais (−1,1% a −6,0%, E113; replicado no E116), também sob MAR e MNAR (−1,8% a −6,9%, melhor em 8 de 8, E119). A ADR 0037 o adota ali para os três mecanismos. A 80nan fica misto e abaixo da SESOI (E117).</li>
+      <li><b>80nan e tabelas categóricas:</b> nem capacidade (E59, E117), nem ponderação por coluna (o déficit categórico é uniforme: o TRIDENT aprende cada coluna que o TabPFN aprende, alguns pontos a menos), nem as alavancas contra o washout.</li>
       <li><b>electricity:</b> os boosters buscam o valor pela coluna <code>date</code>, uma chave de 933 níveis; sem a data da linha, o TRIDENT nunca é pior que a barra.</li>
     </ul>
   </div>
   <div class="card">
-    <header><h3>7.3 · Erros complementares e um híbrido</h3><span class="tag">E60 · E66 · E69 · E74 · E82</span></header>
+    <header><h3>7.3 · Erros complementares e um híbrido</h3><span class="tag">E60 · E66 · E69 · E74 · E82 · E90 · E91 · E95</span></header>
     <ul class="points">
       <li><b>A média simples</b> dos preenchimentos numéricos do TRIDENT e do TabPFN vence os dois em 10 de 15 variantes de confirmação; num segundo conjunto de tabelas e seeds, em 3 de 9.</li>
       <li><b>Um híbrido por coluna</b> (peso escolhido nos outros folds) nunca é pior que o default, mas não bateu a regra pré-registrada (7 de 10, a regra pedia 8); boa parte do ganho é do próprio TabPFN. Ficou como saída opcional, offline, de benchmark (ADR 0031): os pesos usam a tabela completa, como o KC.</li>
       <li><b>A versão implantável</b> (E82): H, que não lê a tabela completa, com os pesos escolhidos em células observadas da validação escondidas de propósito. Melhor que o H em 10 de 10 e que o KC em 7 de 10, sem perder para ele; pior que o TabPFN em 5 e que os pesos "oráculo" em 6. A perda vem da escolha dos pesos (colunas com poucas células e colunas categóricas), não do H. Ordem nas 10 variantes difíceis: TabPFN ≳ híbrido implantável &gt; KC &gt; H.</li>
+      <li><b>Um peso e uma escolha categórica por tabela</b> (regra <code>table</code>): com seeds novas, nunca pior que o H nem que o TabPFN nas 10 variantes difíceis (E90), sem custo nas outras 7 (E91) e a 20nan (E95). A ADR 0031 (decisão 6) a adota como a saída implantável.</li>
     </ul>
   </div>
   <div class="card">
@@ -490,7 +508,7 @@ html { scroll-behavior: smooth; }
     <ul class="points">
       <li><b>O que é:</b> repetir a imputação com diferentes células observadas re-mascaradas e medir a dispersão dos preenchimentos.</li>
       <li><b>Ordena erros:</b> dentro de uma coluna, o spread separa células de erro maior de menor em <span id="remask-e76"></span> variantes até 60nan (E76, replicado).</li>
-      <li><b>Sob MNAR e MAR (E84):</b> ordena os erros em <span id="spread-e84"></span> variantes a 60nan (MNAR por auto-mascaramento e um sorteio MAR), no K e no H. No biodeg a ordenação enfraquece conforme a inclinação do MNAR cresce. A extensão da ADR 0030 espera decisão.</li>
+      <li><b>Sob MNAR e MAR (E84):</b> ordena os erros em <span id="spread-e84"></span> variantes a 60nan (MNAR por auto-mascaramento e um sorteio MAR), no K e no H. No biodeg a ordenação enfraquece conforme a inclinação do MNAR cresce. A ADR 0030 (decisão 7) cobre MAR e MNAR de 20 a 60nan (E84, E105, E110).</li>
       <li><b>Não faz intervalos melhores:</b> intervalos adaptados pelo spread não ficam mais estreitos com a mesma cobertura (E77, refutado).</li>
       <li><b>Limite:</b> o spread cai quando a linha tem mais lacunas, embora o erro suba (E80). É um sinal de ordenação, não de calibração.</li>
     </ul>
@@ -504,7 +522,9 @@ html { scroll-behavior: smooth; }
     <li><b>Benchmarks:</b> tabelas OpenML com mecanismos injetados; nenhum dado clínico rodou ainda.</li>
     <li><b>K e KC são leituras de benchmark:</b> usam a verdade das lacunas de validação. H, a implantável, lê um pouco mais fraco.</li>
     <li><b>80nan e tabelas categóricas</b> ficam com o TabPFN, sem alavanca encontrada.</li>
-    <li><b>Pré-treino</b> apagado pelo decode; na classificação, só o primeiro passo.</li>
+    <li><b>Pré-treino</b> apagado pelo decode; na classificação, nenhum ganho com o sweep do fork nem com os defaults do código original (E71, E118). Os valores ajustados do artigo ficam sem teste.</li>
+    <li><b>Classificação contra o MLP sob MNAR:</b> os dois não se separam (E115, E120); nenhuma liderança afirmada ali.</li>
+    <li><b>Encoder maior:</b> só pendigits e letter, de 20 a 60nan; fora do MCAR a 20nan é a pergunta do E121, em andamento.</li>
     <li><b>Mapa de oclusão:</b> fiel de 20 a 60nan, sob MCAR, lido no K; a 80nan não se sustenta nas tabelas pequenas.</li>
     <li><b>Torch:</b> as runs até 27/10 usaram o torch 2.5.1; a partir de 28/10, o 2.11.0 (preparação da ADR 0033), que sorteia outros números com a mesma seed. O E84 e o E85 registram isso.</li>
     <li><b>Um sorteio, um conjunto de seeds:</b> todo intervalo por variante vale para um sorteio MCAR fixo; algumas leituras (por coluna, híbrido) se apoiam num só conjunto de seeds.</li>
@@ -518,12 +538,13 @@ html { scroll-behavior: smooth; }
     <table class="wide">
       <thead><tr><th>Frente</th><th>O que é</th><th>Estado</th></tr></thead>
       <tbody>
-        <tr><td>RQ1 · classificação</td><td>T41 (Table 4 com os parâmetros do artigo), t3/t24 (Table 3 com ≥5 seeds e orçamentos iguais), T40 (TabPFN v2 como baseline de classificação)</td><td>T40 feito (E83, ADR 0032: tier forte separado); T41 precisa dos hiperparâmetros do artigo; o passo zero espera as 8 decisões da ADR 0029</td></tr>
+        <tr><td>RQ1 · classificação</td><td>T41 (Table 4 com os parâmetros do artigo), t3/t24 (Table 3 com ≥5 seeds e orçamentos iguais), T40 (TabPFN v2 como baseline de classificação)</td><td>T40 feito (E83, ADR 0032: tier forte separado); T41 encerrado (E118: sem ganho com os defaults do código original; os valores ajustados do artigo não estão no repositório); ADR 0029 aceita em 29/10</td></tr>
         <tr><td>RQ2 / RQ2.2</td><td>Protocolo C15: <code>[NULL]</code> por coluna contra missForest + indicador no mesmo encoder, sob uma família MNAR controlada; contraste direto e Shapley por remoção de token</td><td>Rascunho na wiki; margens aceitas</td></tr>
         <tr><td>RQ3</td><td>Latente × valor num 2 × 2 (alvo × onde a loss incide), com o encoder congelado para escapar do washout</td><td>Desenhado</td></tr>
         <tr><td>RQ4 / C1</td><td>A ablação tied vs untied do split, na classificação</td><td>Protocolo C1 na wiki</td></tr>
-        <tr><td>Concluídos 27–28/10</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>E84 sustentado (estender a ADR 0030 é decisão); E85: 20nan sustentado, 80nan refutado</td></tr>
-        <tr><td>Híbrido implantável</td><td>Escolha de pesos mais robusta: um peso por tabela, ou encolher em direção ao 50/50 em colunas com poucas células</td><td>Candidato após o E82</td></tr>
+        <tr><td>Concluídos 27–28/10</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>E84 sustentado, e a ADR 0030 estendida a MAR e MNAR (decisão 7); E85: 20nan sustentado, 80nan refutado</td></tr>
+        <tr><td>Concluídos 03/11</td><td>E118: pré-treino com os defaults do código original. E119: o encoder maior sob MAR e MNAR. E120: TRIDENT contra MLP sob MNAR com seeds novas</td><td>E118 refutado; E119 se sustenta nos dois (ADR 0037, decisão 3); E120 sem veredito. Em andamento: E121, o mesmo do E119 a 20nan</td></tr>
+        <tr><td>Híbrido implantável</td><td>Escolha de pesos mais robusta: um peso por tabela, ou encolher em direção ao 50/50 em colunas com poucas células</td><td>Feito: a regra <code>table</code> (E90, E91, E95), ADR 0031, decisão 6</td></tr>
         <tr><td>Dados clínicos</td><td>PhysioNet 2012/2019 (acesso aberto) para uma primeira célula com falta natural</td><td>Decisão em aberto</td></tr>
       </tbody>
     </table>
@@ -542,7 +563,7 @@ html { scroll-behavior: smooth; }
       <li>Como avaliar sem a verdade dos valores faltantes, por exemplo preenchendo e apagando de novo sob um mecanismo conhecido (Digitale et al. 2025).</li></ul></div>
     <div class="card"><h4>Riscos a levar antes da banca</h4><ul class="points">
       <li>Mazrouei 2026: o pré-treino auto-supervisionado ajuda menos nas tabelas com falta nativa.</li>
-      <li>O próprio E71, que ainda não reproduz o ganho da Table 4.</li></ul></div>
+      <li>O E71 e o E118, que não reproduzem o ganho da Table 4; os valores ajustados do artigo seguem sem teste.</li></ul></div>
   </div>
 </section>
 
@@ -562,13 +583,15 @@ html { scroll-behavior: smooth; }
         <tr><td>Checkpoint pelas lacunas de validação (K)</td><td class="num">0015</td><td>E34, E35</td></tr>
         <tr><td>missForest e os dois tiers; orçamento de tuning</td><td class="num">0016, 0017, 0021, 0022</td><td>E41, E42</td></tr>
         <tr><td>Encoder maior nas tabelas grandes</td><td class="num">0018</td><td>E37, E38</td></tr>
+        <tr><td>Batch 1024, LR ×4 e 600 épocas de decode (P600) em pendigits e letter a 20–40nan</td><td class="num">0036</td><td>E101–E104, E108</td></tr>
+        <tr><td>Encoder maior em pendigits e letter a 40–60nan, sob MCAR, MAR e MNAR</td><td class="num">0037</td><td>E113, E116, E117, E119</td></tr>
         <tr><td>Uma leitura das comparações; painel secundário</td><td class="num">0020, 0025</td><td>E56</td></tr>
         <tr><td>Leitura implantável (H)</td><td class="num">0024</td><td>E43</td></tr>
         <tr><td>Saída calibrada a partir de 40nan (KC)</td><td class="num">0027</td><td>E40, E47</td></tr>
         <tr><td>TabPFN no tier forte, offline</td><td class="num">0028</td><td>E55</td></tr>
-        <tr><td>Busca de classificação na validação (proposto)</td><td class="num">0029</td><td>E70, E71</td></tr>
-        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80 (limite do E80 registrado), E84</td></tr>
-        <tr><td>Híbrido KC + TabPFN, opt-in e offline; a versão implantável não chega ao TabPFN</td><td class="num">0031</td><td>E69, E74, E82</td></tr>
+        <tr><td>Busca de classificação na validação</td><td class="num">0029</td><td>E70, E71</td></tr>
+        <tr><td>Spread de re-mascaramento, opt-in</td><td class="num">0030</td><td>E75–E77, E80 (limite do E80 registrado), E84, E105, E110 (MAR e MNAR, 20–60nan)</td></tr>
+        <tr><td>Híbrido KC + TabPFN, opt-in e offline; a versão implantável por tabela (decisão 6)</td><td class="num">0031</td><td>E69, E74, E82, E90, E91, E95</td></tr>
         <tr><td>TabPFN v2 como tier forte separado na classificação</td><td class="num">0032</td><td>E83</td></tr>
       </tbody>
     </table>
@@ -578,7 +601,7 @@ html { scroll-behavior: smooth; }
 </section>
 
 <footer>
-  <span>As figuras e as contagens marcadas na página vêm de <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados. As demais contagens no texto (por exemplo E56, E60, E66, E70, E74, E82, E83) citam o log de experimentos e os Outcomes dos tickets.</span>
+  <span>As figuras e as contagens marcadas na página vêm de <code>docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json</code>, gerado por <code>scripts/experiments/meeting_figures.py</code> a partir do store e dos leitores pré-registrados. As demais contagens no texto (por exemplo E56, E60, E66, E70, E74, E82, E83, E90, E99, E113, E118–E120) citam o log de experimentos e os Outcomes dos tickets.</span>
   <span>Rascunho e decisões de conteúdo: <code>docs/reports/2026-10-27-reuniao-orientadora-rascunho.md</code>.</span>
 </footer>
 </main>
@@ -914,7 +937,7 @@ html { scroll-behavior: smooth; }
   // ---------- raw ----------
   (function () {
     const raw = document.getElementById("raw");
-    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)", spread_e84: "E84 · spread sob MNAR e MAR", occlusion_e85: "E85 · mapa de oclusão a 20nan e 80nan" };
+    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)", spread_e84: "E84 · spread sob MNAR e MAR", occlusion_e85: "E85 · mapa de oclusão a 20nan e 80nan", cls_upstream_e118: "E118 · pré-treino com os defaults do código original", encoder_e119: "E119 · encoder maior sob MAR e MNAR", deep_mnar_e120: "E120 · TRIDENT contra MLP sob MNAR, seeds novas" };
     for (const k in names) {
       const d = document.createElement("details"); d.className = "raw";
       const lines = D.primary[k] || [];

@@ -66,7 +66,7 @@
 - num_rank, H: signal on 15 of 17 variants with the kind
 - cat_rank, H: signal on 9 of 9 variants with the kind
 - dispersion, remask − K: lower 17, higher 0, of 17
-- K against the earlier run of the same cell, largest fold difference: 0.00e+00 over 63 cells
+- K against the earlier run of the same cell, largest fold difference: 2.75e-02 over 63 cells
 
 - `kr-vs-kp_20nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)
 - `kr-vs-kp_40nan`: K within +nan [+nan, +nan] (0); K columns +nan [+nan, +nan] (0); H within +nan [+nan, +nan] (0); H columns +nan [+nan, +nan] (0)

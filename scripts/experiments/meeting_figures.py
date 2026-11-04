@@ -21,6 +21,7 @@ from __future__ import annotations
 import csv
 import json
 import re
+import shlex
 import sqlite3
 import subprocess
 import sys
@@ -62,7 +63,12 @@ READERS: dict[str, list[str]] = {
     "tabpfn_cls_e83": [f"{E}/tabpfn_classification.py", "--tally"],
     "spread_e84": [f"{E}/spread_mechanisms.py", "--tally"],
     "occlusion_e85": [f"{E}/occlusion_map.py", "--study", "e85", "--tally"],
+    "cls_upstream_e118": [f"{E}/cls_tenfold.py", "--study", "e118", "--tally"],
+    "encoder_e119": [f"{E}/large_batch.py", "--study", "e119", "--tally"],
+    "deep_mnar_e120": [f"{E}/deep_baselines.py", "--study", "e120", "--tally"],
 }
+# Readers whose folds live only on medusa1 run there, unchanged, through ssh (its checkout pulled to this commit).
+ON_MEDUSA = {"cls_upstream_e118", "deep_mnar_e120"}
 
 NUM = r"[+-]?\d+\.\d+"
 CI = rf"({NUM}) \[({NUM}), ({NUM})\]"
@@ -73,8 +79,10 @@ TALLY = re.compile(r"^\s*- (.+?): better (\d+) / no difference (\d+)(?: / equiva
 def reader_output(out: Path, name: str, reuse: bool) -> str:
     path = out / "readers" / f"{name}.txt"
     if not (reuse and path.exists()):
-        done = subprocess.run(["uv", "run", "--python", "3.11", "python", "-B", *READERS[name]],
-                              capture_output=True, text=True, check=False)
+        call = ["uv", "run", "--python", "3.11", "python", "-B", *READERS[name]]
+        if name in ON_MEDUSA:
+            call = ["ssh", "-o", "BatchMode=yes", "medusa1", "cd /scratch/diogoneiss/TRIDENT && " + shlex.join(call)]
+        done = subprocess.run(call, capture_output=True, text=True, check=False)
         if done.returncode != 0:
             sys.exit(f"reader {name} failed ({done.returncode}):\n{done.stderr[-2000:]}")
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -408,7 +416,7 @@ def main() -> int:
         "primary": {name: primary_lines(text[name]) for name in
                     ["occlusion_e78", "occlusion_e79", "gap_reliance", "null_gaps", "frozen", "remask_e75",
                      "remask_e76", "remask_e77", "spread_e80", "default_refresh", "hybrid_e82",
-                     "spread_e84", "occlusion_e85"]}
+                     "spread_e84", "occlusion_e85", "cls_upstream_e118", "encoder_e119", "deep_mnar_e120"]}
                    | {"tabpfn_cls_e83": [x.strip() for x in text["tabpfn_cls_e83"].splitlines() if re.match(r"^- \d+nan:", x)]},
         "trajectory": trajectory(),
         "occlusion_synthetic": occlusion_synthetic(),
