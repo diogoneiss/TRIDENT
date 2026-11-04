@@ -67,6 +67,7 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E119: ADR 0037's encoder under MAR and MNAR", "imputation-protocol/49", [f"{E}/large_batch.py", "--study", "e119", "--tally"]),
     ("E120: classification, TRIDENT against MLP under MNAR on fresh seeds", "classification-step-zero/16",
      [f"{E}/deep_baselines.py", "--study", "e120", "--tally"]),
+    ("E121: ADR 0018's encoder under MAR and MNAR at 20nan", "imputation-protocol/50", [f"{E}/large_batch.py", "--study", "e121", "--tally"]),
 ]
 # Readers whose folds live only on medusa1 run there, unchanged, through ssh (its checkout pulled to this commit).
 ON_MEDUSA = {"E118", "E120"}

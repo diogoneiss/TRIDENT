@@ -1,0 +1,9 @@
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+- pendigits_marf_20nan: -4.59% [-5.56%, -3.62%] seeds -5.58%, -4.15%, -4.05% -> better; masked -5.96%
+- letter_marf_20nan: -5.81% [-6.25%, -5.37%] seeds -5.51%, -5.85%, -6.06% -> better; masked -6.37%
+- pendigits_probit_20nan: -5.00% [-5.61%, -4.39%] seeds -4.97%, -4.70%, -5.33% -> better; masked -5.71%
+- letter_probit_20nan: -6.50% [-6.98%, -6.02%] seeds -6.70%, -6.11%, -6.69% -> better; masked -5.83%
+
+Primary (E121, BIG − M), MAR (marf): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
+
+Primary (E121, BIG − M), MNAR (probit): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds

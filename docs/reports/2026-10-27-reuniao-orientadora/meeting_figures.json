@@ -3831,6 +3831,10 @@
   "deep_mnar_e120": [
    "Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict"
   ],
+  "encoder_e121": [
+   "Primary (E121, BIG − M), MAR (marf): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds",
+   "Primary (E121, BIG − M), MNAR (probit): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds"
+  ],
   "tabpfn_cls_e83": [
    "- 0nan: TabPFN − TRIDENT macro-F1 +0.0212 [+0.0136, +0.0288] seeds +0.0178, +0.0246, 48 fold pairs -> TabPFN ahead",
    "- 20nan: TabPFN − TRIDENT macro-F1 +0.0186 [+0.0108, +0.0264] seeds +0.0160, +0.0212, 48 fold pairs -> TabPFN ahead",

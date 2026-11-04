@@ -1,6 +1,6 @@
 # What the imputation studies support, as of 2026-11-03 (consolidated)
 
-This report gathers E44–E85 and E118–E120 into one statement for the thesis. It was updated 2026-11-03 21:10 GMT-3 with E118–E120
+This report gathers E44–E85 and E118–E121 into one statement for the thesis. It was updated 2026-11-03 22:58 GMT-3 with E121 and ADR 0018's extension, 2026-11-03 21:10 GMT-3 with E118–E120
 and ADR 0037's extension, updated 2026-10-28, 12:47 GMT-3 with E84 and
 E85, and rebuilt 2026-10-28, 00:39 GMT-3 to add
 E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
@@ -58,8 +58,9 @@ new analysis.
    80nan gap.**
    - On pendigits and letter at 40–60nan, on today's defaults: −1.1% to −6.0% (E113), replicated on fresh
      seeds (E116); under MAR and MNAR, −1.8% to −6.9%, better on 8 of 8 (E119).
-   - ADR 0037 adopts it there for MCAR, MAR and MNAR (decision 3, 2026-11-03). ADR 0018 covers 20nan under
-     MCAR; E121 asks the same at 20nan under MAR and MNAR (running).
+   - ADR 0037 adopts it there for MCAR, MAR and MNAR (decision 3, 2026-11-03). At 20nan, under MAR and MNAR,
+     −4.6% to −6.5%, better on 4 of 4 (E121), and ADR 0018 covers the three mechanisms there too (decision 4).
+     [imputation-protocol/50](../tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md).
    - At 80nan it is mixed and under the SESOI (E117), as E59 found.
 7. **The standing holds across MCAR draws, under MNAR and under MAR.**
    - **Under MNAR (E45, E46, E58),** H is never worse than TabPFN (6 better, 4 no difference), and
@@ -243,7 +244,7 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   - ADR 0032: TabPFN is a separate strong tier.
   - Step zero itself waits on ADR 0029's eight decisions.
 
-## 3c. 2026-11-03: E118–E120
+## 3c. 2026-11-03: E118–E121
 
 - **E118, classification:** the paper's pre-training gain under the upstream defaults (40 pre-training and
   40 fine-tuning epochs): refuted, B − A equivalent at every level. T41 closed
@@ -252,6 +253,9 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   worse on none ([imputation-protocol/49](../tickets/imputation-protocol/49-bigger-encoder-mar-mnar.md)).
   ADR 0037's decision 3, accepted by the user, extends it to all three mechanisms; a default run was
   checked identical to E119's BIG cell.
+- **E121, ADR 0018's encoder under MAR and MNAR at 20nan:** holds under both, better on 2 of 2 each, worse on
+  none ([imputation-protocol/50](../tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md)). ADR 0018's
+  decision 4, accepted by the user, extends it to all three mechanisms.
 - **E120, classification, TRIDENT against MLP under MNAR on fresh seeds:** no verdict, as E115
   ([classification-step-zero/16](../tickets/classification-step-zero/16-trident-mlp-mnar-fresh-seeds.md)).
 
@@ -273,8 +277,8 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53). On classification no gain is
   detected under the fork's sweep or the upstream defaults (E71, E118); the paper's tuned values are untested.
 - **Classification against MLP under MNAR:** not separable on two seed sets (E115, E120); no lead claim.
-- **The bigger encoder's scope:** pendigits and letter only, 20–60nan; off MCAR at 20nan it is E121's
-  question (running).
+- **The bigger encoder's scope:** pendigits and letter only, 20–60nan, under MCAR, MAR (`marf`) and MNAR
+  (`probit`) (ADR 0018 decision 4, ADR 0037 decision 3).
 - **One seed set or one draw:** E61 (the per-column read) rests on one seed set. The blend's
   complementarity (E60, E66) holds on two, narrower on the second. Every per-variant interval is conditional on the MCAR draw (E62).
 - **MAR:** the standing against the strong tier holds on six tables (E64), with biodeg_60nan the
@@ -292,11 +296,9 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 
 ## 5. Open
 
-- **E121:** ADR 0018's encoder under MAR and MNAR at 20nan, running from 2026-11-03 20:55 GMT-3
-  ([imputation-protocol/50](../tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md)).
 - **Decided since the last update:** ADR 0030's decision 7 (MAR and MNAR, 20–60nan), ADR 0031's decision 6
   (the deployable `table` hybrid), ADR 0029 (classification step zero, accepted 2026-10-29), ADR 0036 (P600
-  on pendigits and letter at 20–40nan; T11 closed), ADR 0037 (T32 closed), T41 closed (E118), T14 refuted
+  on pendigits and letter at 20–40nan; T11 closed), ADR 0037 (T32 closed) and ADR 0018 extended to MAR and MNAR (E121), T41 closed (E118), T14 refuted
   (E100).
 - **The backlog:** T10's evaluation-mask half, T08, T09 and T15.
 
@@ -794,4 +796,12 @@ Primary (E119, BIG − M), MNAR (probit): better 4 / no difference 0 / worse 0 (
 ## MNAR (probit): biodeg, kc2, vehicle, spambase
 ## MAR (marf): biodeg, kc2, vehicle, spambase, credit-g, kr-vs-kp
 Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict
+```
+
+### E121: ADR 0018's encoder under MAR and MNAR at 20nan (imputation-protocol/50)
+
+```text
+## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
+Primary (E121, BIG − M), MAR (marf): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
+Primary (E121, BIG − M), MNAR (probit): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
 ```

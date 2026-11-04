@@ -66,6 +66,7 @@ READERS: dict[str, list[str]] = {
     "cls_upstream_e118": [f"{E}/cls_tenfold.py", "--study", "e118", "--tally"],
     "encoder_e119": [f"{E}/large_batch.py", "--study", "e119", "--tally"],
     "deep_mnar_e120": [f"{E}/deep_baselines.py", "--study", "e120", "--tally"],
+    "encoder_e121": [f"{E}/large_batch.py", "--study", "e121", "--tally"],
 }
 # Readers whose folds live only on medusa1 run there, unchanged, through ssh (its checkout pulled to this commit).
 ON_MEDUSA = {"cls_upstream_e118", "deep_mnar_e120"}
@@ -416,7 +417,7 @@ def main() -> int:
         "primary": {name: primary_lines(text[name]) for name in
                     ["occlusion_e78", "occlusion_e79", "gap_reliance", "null_gaps", "frozen", "remask_e75",
                      "remask_e76", "remask_e77", "spread_e80", "default_refresh", "hybrid_e82",
-                     "spread_e84", "occlusion_e85", "cls_upstream_e118", "encoder_e119", "deep_mnar_e120"]}
+                     "spread_e84", "occlusion_e85", "cls_upstream_e118", "encoder_e119", "deep_mnar_e120", "encoder_e121"]}
                    | {"tabpfn_cls_e83": [x.strip() for x in text["tabpfn_cls_e83"].splitlines() if re.match(r"^- \d+nan:", x)]},
         "trajectory": trajectory(),
         "occlusion_synthetic": occlusion_synthetic(),

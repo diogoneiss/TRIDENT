@@ -465,7 +465,7 @@ html { scroll-behavior: smooth; }
   <div class="card">
     <header><h3>7.2 · Onde perde para o TabPFN, e o que não resolveu</h3><span class="tag">E54 · E59 · E61 · E50</span></header>
     <ul class="points">
-      <li><b>Capacidade:</b> o encoder maior (ADR 0018) ajuda pendigits e letter de 40 a 60nan sobre os defaults atuais (−1,1% a −6,0%, E113; replicado no E116), também sob MAR e MNAR (−1,8% a −6,9%, melhor em 8 de 8, E119). A ADR 0037 o adota ali para os três mecanismos. A 80nan fica misto e abaixo da SESOI (E117).</li>
+      <li><b>Capacidade:</b> o encoder maior (ADR 0018) ajuda pendigits e letter de 40 a 60nan sobre os defaults atuais (−1,1% a −6,0%, E113; replicado no E116), também sob MAR e MNAR (−1,8% a −6,9%, melhor em 8 de 8, E119), e a 20nan sob MAR e MNAR (−4,6% a −6,5%, 4 de 4, E121). As ADRs 0037 e 0018 o adotam ali para os três mecanismos. A 80nan fica misto e abaixo da SESOI (E117).</li>
       <li><b>80nan e tabelas categóricas:</b> nem capacidade (E59, E117), nem ponderação por coluna (o déficit categórico é uniforme: o TRIDENT aprende cada coluna que o TabPFN aprende, alguns pontos a menos), nem as alavancas contra o washout.</li>
       <li><b>electricity:</b> os boosters buscam o valor pela coluna <code>date</code>, uma chave de 933 níveis; sem a data da linha, o TRIDENT nunca é pior que a barra.</li>
     </ul>
@@ -524,7 +524,7 @@ html { scroll-behavior: smooth; }
     <li><b>80nan e tabelas categóricas</b> ficam com o TabPFN, sem alavanca encontrada.</li>
     <li><b>Pré-treino</b> apagado pelo decode; na classificação, nenhum ganho com o sweep do fork nem com os defaults do código original (E71, E118). Os valores ajustados do artigo ficam sem teste.</li>
     <li><b>Classificação contra o MLP sob MNAR:</b> os dois não se separam (E115, E120); nenhuma liderança afirmada ali.</li>
-    <li><b>Encoder maior:</b> só pendigits e letter, de 20 a 60nan; fora do MCAR a 20nan é a pergunta do E121, em andamento.</li>
+    <li><b>Encoder maior:</b> só pendigits e letter, de 20 a 60nan, sob MCAR, MAR e MNAR (ADR 0018, ADR 0037).</li>
     <li><b>Mapa de oclusão:</b> fiel de 20 a 60nan, sob MCAR, lido no K; a 80nan não se sustenta nas tabelas pequenas.</li>
     <li><b>Torch:</b> as runs até 27/10 usaram o torch 2.5.1; a partir de 28/10, o 2.11.0 (preparação da ADR 0033), que sorteia outros números com a mesma seed. O E84 e o E85 registram isso.</li>
     <li><b>Um sorteio, um conjunto de seeds:</b> todo intervalo por variante vale para um sorteio MCAR fixo; algumas leituras (por coluna, híbrido) se apoiam num só conjunto de seeds.</li>
@@ -543,7 +543,7 @@ html { scroll-behavior: smooth; }
         <tr><td>RQ3</td><td>Latente × valor num 2 × 2 (alvo × onde a loss incide), com o encoder congelado para escapar do washout</td><td>Desenhado</td></tr>
         <tr><td>RQ4 / C1</td><td>A ablação tied vs untied do split, na classificação</td><td>Protocolo C1 na wiki</td></tr>
         <tr><td>Concluídos 27–28/10</td><td>E84: o spread da ADR 0030 sob MNAR e MAR. E85: o mapa de oclusão a 20nan e 80nan</td><td>E84 sustentado, e a ADR 0030 estendida a MAR e MNAR (decisão 7); E85: 20nan sustentado, 80nan refutado</td></tr>
-        <tr><td>Concluídos 03/11</td><td>E118: pré-treino com os defaults do código original. E119: o encoder maior sob MAR e MNAR. E120: TRIDENT contra MLP sob MNAR com seeds novas</td><td>E118 refutado; E119 se sustenta nos dois (ADR 0037, decisão 3); E120 sem veredito. Em andamento: E121, o mesmo do E119 a 20nan</td></tr>
+        <tr><td>Concluídos 03/11</td><td>E118: pré-treino com os defaults do código original. E119: o encoder maior sob MAR e MNAR. E120: TRIDENT contra MLP sob MNAR com seeds novas</td><td>E118 refutado; E119 se sustenta nos dois (ADR 0037, decisão 3); E120 sem veredito; E121 (o mesmo do E119 a 20nan) se sustenta nos dois, e a ADR 0018 passa a valer para os três mecanismos</td></tr>
         <tr><td>Híbrido implantável</td><td>Escolha de pesos mais robusta: um peso por tabela, ou encolher em direção ao 50/50 em colunas com poucas células</td><td>Feito: a regra <code>table</code> (E90, E91, E95), ADR 0031, decisão 6</td></tr>
         <tr><td>Dados clínicos</td><td>PhysioNet 2012/2019 (acesso aberto) para uma primeira célula com falta natural</td><td>Decisão em aberto</td></tr>
       </tbody>
@@ -582,7 +582,7 @@ html { scroll-behavior: smooth; }
         <tr><td>Lacunas como <code>[MASK]</code> no decode</td><td class="num">0014</td><td>E32, E33</td></tr>
         <tr><td>Checkpoint pelas lacunas de validação (K)</td><td class="num">0015</td><td>E34, E35</td></tr>
         <tr><td>missForest e os dois tiers; orçamento de tuning</td><td class="num">0016, 0017, 0021, 0022</td><td>E41, E42</td></tr>
-        <tr><td>Encoder maior nas tabelas grandes</td><td class="num">0018</td><td>E37, E38</td></tr>
+        <tr><td>Encoder maior nas tabelas grandes</td><td class="num">0018</td><td>E37, E38, E121 (MAR e MNAR)</td></tr>
         <tr><td>Batch 1024, LR ×4 e 600 épocas de decode (P600) em pendigits e letter a 20–40nan</td><td class="num">0036</td><td>E101–E104, E108</td></tr>
         <tr><td>Encoder maior em pendigits e letter a 40–60nan, sob MCAR, MAR e MNAR</td><td class="num">0037</td><td>E113, E116, E117, E119</td></tr>
         <tr><td>Uma leitura das comparações; painel secundário</td><td class="num">0020, 0025</td><td>E56</td></tr>
@@ -937,7 +937,7 @@ html { scroll-behavior: smooth; }
   // ---------- raw ----------
   (function () {
     const raw = document.getElementById("raw");
-    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)", spread_e84: "E84 · spread sob MNAR e MAR", occlusion_e85: "E85 · mapa de oclusão a 20nan e 80nan", cls_upstream_e118: "E118 · pré-treino com os defaults do código original", encoder_e119: "E119 · encoder maior sob MAR e MNAR", deep_mnar_e120: "E120 · TRIDENT contra MLP sob MNAR, seeds novas" };
+    const names = { occlusion_e78: "E78 · mapa de oclusão, 40nan", occlusion_e79: "E79 · mapa de oclusão, 60nan", gap_reliance: "E81 · uso do padrão de lacunas", null_gaps: "E67 · [NULL] sozinho no decode", frozen: "E52 · encoder congelado", remask_e75: "E75 · ensemble de re-mascaramento", remask_e76: "E76 · spread nas variantes de desenvolvimento", remask_e77: "E77 · intervalos pelo spread", spread_e80: "E80 · spread e fontes faltantes", default_refresh: "E51 · seeds novas a 20nan", hybrid_e82: "E82 · híbrido implantável", tabpfn_cls_e83: "E83 · TabPFN na classificação (por nível)", spread_e84: "E84 · spread sob MNAR e MAR", occlusion_e85: "E85 · mapa de oclusão a 20nan e 80nan", cls_upstream_e118: "E118 · pré-treino com os defaults do código original", encoder_e119: "E119 · encoder maior sob MAR e MNAR", deep_mnar_e120: "E120 · TRIDENT contra MLP sob MNAR, seeds novas", encoder_e121: "E121 · encoder maior a 20nan sob MAR e MNAR" };
     for (const k in names) {
       const d = document.createElement("details"); d.className = "raw";
       const lines = D.primary[k] || [];
