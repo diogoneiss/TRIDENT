@@ -3601,7 +3601,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E130 · C1 cut 2: the integrity smoke, S, T, B and BT on biodeg_probit_60nan, deterministic (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done: passes
 - **Hypothesis:** under no pre-training, S's and T's code paths give bit-identical results (integrity check 1), so
   the tied arm differs from S only through pre-training.
 - **Scenarios:** S, T, B and BT (B through T's path) on `biodeg_probit_60nan`, seed 42, five folds, deterministic
@@ -3609,6 +3609,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** B's and BT's test probabilities and kept states identical on all five folds; no S − T
   contrast is read.
 - **Sources:** [c1-split/02](tickets/c1-split/02-integrity-smoke.md).
+- **Results (2026-11-04 12:55 GMT-3):** B and BT identical on all five folds (largest probability difference 0, kept states
+  equal); S and T ran end to end.
+- **Conclusion:** integrity check 1 holds; cut 3 starts.
 
 ### E131 · C1 cut 3: S against T on the four MNAR 60nan files and their MCAR siblings; G2; the anchor (2026-11-04)
 
