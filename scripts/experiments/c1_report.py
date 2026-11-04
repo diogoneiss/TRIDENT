@@ -4,6 +4,7 @@
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --primary   # cut 3: S − T, G2, MCAR step
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --anchor    # S(normalized) − S(embedding)
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --cosine    # [MASK]_j · [NULL]_j in S
+    uv run --python 3.11 python -B scripts/experiments/c1_report.py --channel   # E132: frozen pre-trained vs frozen random
 
 Cells come from both machines' state directories (medusa1's copied under ``<state>/medusa``); S's decision-mode
 cells are E124's A1 cells (``c15_report.readouts``). Macro-F1 is recomputed from each fold's test probabilities,
@@ -175,6 +176,32 @@ def cosines(tokens: dict[str, torch.Tensor], prefix: str = "") -> tuple[np.ndarr
     return within, cross
 
 
+def channel() -> None:
+    """E132: FP − FR (a frozen pre-trained encoder against a frozen random one, head only), S − FP and B − FR beside."""
+    print("## Channel probe (E132): FP − FR macro-F1 on the four MNAR files, then the MCAR files; 15 paired replicates, "
+          "plain 95% t intervals, Nadeau–Bengio beside; S − FP and B − FR descriptive")
+    for label, files in (("MNAR", run.MNAR), ("MCAR", run.MCAR)):
+        print(f"\n### {label}")
+        probe, ll_probe, s_fp, b_fr = [], [], [], []
+        for v in files:
+            d, sf, bf = paired("FP", "FR", v), paired("S", "FP", v), paired("B", "FR", v)
+            if d is None or sf is None or bf is None:
+                print(f"- {v}: missing\n\nPrimary (E132): incomplete")
+                return
+            probe.append(d[0]); ll_probe.append(d[1]); s_fp.append(sf[0]); b_fr.append(bf[0])
+            print(f"- {v}: FP − FR F1 {line('', d[0], MARGIN)}; LL(FR) − LL(FP) {c15.interval(d[1], False)[0]:+.4f}; "
+                  f"S − FP {c15.interval(sf[0], False)[0]:+.4f}; B − FR {c15.interval(bf[0], False)[0]:+.4f}")
+        pooled = np.mean(probe, axis=0)
+        m, lo, hi = c15.interval(pooled, False)
+        _, nlo, nhi = c15.interval(pooled)
+        reading = "content present (pre-training leaves label-relevant structure)" if lo > 0 else (
+            "content absent, head reads a random encoder as well" if hi < MARGIN and lo > -MARGIN else "no verdict")
+        print(f"\nPooled FP − FR ({label}): {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]) -> {reading}")
+        print(f"Pooled LL(FR) − LL(FP) ({label}): {line('', np.mean(ll_probe, axis=0), None)}")
+        print(f"Pooled S − FP ({label}): {c15.interval(np.mean(s_fp, axis=0), False)[0]:+.4f}; "
+              f"B − FR: {c15.interval(np.mean(b_fr, axis=0), False)[0]:+.4f}")
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -197,7 +224,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

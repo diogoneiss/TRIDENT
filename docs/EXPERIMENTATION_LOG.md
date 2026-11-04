@@ -3634,3 +3634,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** Inconclusive, reason "no pre-training channel": with S ≈ B (E71 again), the split, which acts only in
   pre-training, has nowhere to act; S and T tie within about ±0.01 on every file and the model does not tie the
   tokens itself. The reserve and cut 4 are not proposed; the next step is the user's.
+
+### E132 · C1's channel probe: a frozen pre-trained encoder against a frozen random one, head only (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** none directional. If pre-training leaves label-relevant structure (FP − FR above 0), E131's S ≈ B is
+  washout and the fix is on the fine-tuning side; if a random frozen encoder serves the head as well (inside ±0.010),
+  the lever is pre-training itself.
+- **Scenarios:** FP (S's pre-training, encoder frozen in fine-tuning, head alone trains) and FR (`EPOCHS_PRE 0`, same
+  freeze) on `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (48 cells); S and B
+  from E124/E131.
+- **Measures and decision rule:** FP − FR macro-F1 pooled over the four MNAR files, plain 95% t interval: content
+  present above 0, absent inside ±0.010, no verdict otherwise; MCAR second step, S − FP and B − FR descriptive.
+- **Sources:** [c1-split/04](tickets/c1-split/04-channel-probe.md).

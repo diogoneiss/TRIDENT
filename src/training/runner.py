@@ -202,6 +202,10 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     artifacts.metrics_dir.mkdir(parents=True, exist_ok=True)
                     tokens = {k: v.detach().cpu() for k, v in pretraining.model.embedder.special_embeddings.state_dict().items()}
                     torch.save(tokens, artifacts.metrics_dir / f"c1_tokens_pretrained_fold_{ordinal}.pt")
+                    # And the whole encoder as pre-training left it, for drift readings against the kept state.
+                    encoder = {f"{part}.{k}": v.detach().cpu() for part in ("embedder", "transformer")
+                               for k, v in getattr(pretraining.model, part).state_dict().items()}
+                    torch.save(encoder, artifacts.metrics_dir / f"c1_encoder_pretrained_fold_{ordinal}.pt")
                 finetuning_started = time.perf_counter()
                 # The two tasks produce different outcomes; the union states the contract
                 # that already holds at runtime. Exhaustiveness (``assert_never``) waits on

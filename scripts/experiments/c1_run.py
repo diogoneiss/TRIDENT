@@ -1,7 +1,7 @@
 """C1's cells (docs/plans/2026-11-04-c1-split.md; tickets docs/tickets/c1-split/), MLflow off, five folds a cell.
 
     uv run --python 3.11 python -B scripts/experiments/c1_run.py train <arm> <variant> <seed>
-    C1_CUT=<2|3> uv run --python 3.11 python -B scripts/experiments/c1_run.py --todo <n> <queues>
+    C1_CUT=<2|3|4> uv run --python 3.11 python -B scripts/experiments/c1_run.py --todo <n> <queues>
 
 Arms, over each variant's resolved classification configuration with ``PRETRAIN_OBJECTIVE embedding_normalized``
 and ``C15_ARM A1`` (the shipped classifier plus its per-fold readouts; ``src/training/c15_inputs.py``):
@@ -42,6 +42,8 @@ ARMS: dict[str, dict[str, object]] = {
     "BT": {"EPOCHS_PRE": 0, "PRETRAIN_HOLE_TOKEN": "null"},
     "ANCHOR": {"PRETRAIN_OBJECTIVE": "embedding"},
     "S_GEOM": {},
+    "FP": {"FINETUNE_FREEZE_ENCODER": "all"},  # the channel probe (ticket 04): a frozen pre-trained encoder, the head alone trains
+    "FR": {"EPOCHS_PRE": 0, "FINETUNE_FREEZE_ENCODER": "all"},  # its baseline, a frozen random encoder
 }
 SMOKE_VARIANT = "biodeg_probit_60nan"
 CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
@@ -50,6 +52,7 @@ CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
         **{(v, s): ("T", "B") for v in MCAR for s in SEEDS},
         **{(v, s): ("T", "B", "ANCHOR") + (("S_GEOM",) if s == 42 else ()) for v in MNAR for s in SEEDS},
     },
+    "4": {(v, s): ("FP", "FR") for v in MNAR + MCAR for s in SEEDS},  # the channel probe, E132 (ticket 04)
 }
 
 

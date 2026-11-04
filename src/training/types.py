@@ -279,6 +279,10 @@ class Hyperparameters:
     # before it, is the column's [MASK]; ``null`` ties the hole to the gap's [NULL] (arm T), the loss
     # still at ``masked_positions``.
     pretrain_hole_token: str = "mask"
+    # C1's channel probe (docs/tickets/c1-split/04-channel-probe.md): ``all`` freezes the embedder and the
+    # transformer through fine-tuning (eval mode, out of the optimizer), so only the head trains; ``off``,
+    # every run before it, changes nothing.
+    finetune_freeze_encoder: str = "off"
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -329,6 +333,8 @@ class Hyperparameters:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
         if not re.match(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$", self.c15_arm):
             raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3, A4:<draw> or A5:<column>")
+        if self.finetune_freeze_encoder not in ("off", "all"):
+            raise ValueError(f"Unknown fine-tuning freeze {self.finetune_freeze_encoder!r}; expected off or all")
         if self.pretrain_hole_token not in ("mask", "null"):
             raise ValueError(f"Unknown pre-training hole token {self.pretrain_hole_token!r}; expected mask or null")
         if self.pretrain_hole_token == "null" and self.pretrain_gap_token != "null":
@@ -398,6 +404,7 @@ class Hyperparameters:
             min_steps_per_epoch=int(values.get("MIN_STEPS_PER_EPOCH", values.get("min_steps_per_epoch", 0))),
             c15_arm=str(values.get("C15_ARM", values.get("c15_arm", "off"))),
             pretrain_hole_token=str(values.get("PRETRAIN_HOLE_TOKEN", values.get("pretrain_hole_token", "mask"))),
+            finetune_freeze_encoder=str(values.get("FINETUNE_FREEZE_ENCODER", values.get("finetune_freeze_encoder", "off"))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

@@ -105,8 +105,14 @@ def train_and_evaluate_classifier(
         num_labels=number_of_labels,
         class_weights=class_weights,
     ).to(device)
+    # C1's channel probe (``FINETUNE_FREEZE_ENCODER all``): the encoder stays as pre-training left it,
+    # in eval mode (no dropout) and out of the optimizer; the head alone trains.
+    frozen = hyperparameters.finetune_freeze_encoder == "all"
+    if frozen:
+        for parameter in list(model.embedder.parameters()) + list(model.transformer.parameters()):
+            parameter.requires_grad_(False)
     optimizer = optim.AdamW(
-        model.parameters(),
+        model.classifier.parameters() if frozen else model.parameters(),
         lr=hyperparameters.finetuning_learning_rate,
         weight_decay=hyperparameters.finetuning_weight_decay,
     )
@@ -133,6 +139,9 @@ def train_and_evaluate_classifier(
     print("\n=== Starting Fine-Tuning (Classification) ===")
     for epoch in tqdm(range(hyperparameters.finetuning_epochs), desc="Fine-tuning epochs"):
         model.train()
+        if frozen:
+            model.embedder.eval()
+            model.transformer.eval()
         # Drawn on the CPU generator, then moved once so batch slicing stays on device.
         indices = torch.randperm(len(processed_train)).to(device)
         # Accumulated on device in float64, so the per-batch losses are summed in

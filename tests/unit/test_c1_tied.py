@@ -49,3 +49,41 @@ def test_the_flag_is_gated() -> None:
         Hyperparameters.from_mapping({"PRETRAIN_HOLE_TOKEN": "cls"})
     with pytest.raises(ValueError):
         Hyperparameters.from_mapping({"PRETRAIN_HOLE_TOKEN": "null", "PRETRAIN_GAP_TOKEN": "mask"})
+
+
+def test_a_frozen_encoder_does_not_move_while_the_head_does() -> None:
+    import copy
+
+    from src.models import TridentModel
+    from src.training.types import Hyperparameters
+    from src.transformer import TabularTransformerEncoder
+    from src.utils import preprocess_table
+
+    frame = _frame()
+    features = frame.copy()
+    torch.manual_seed(0)
+    embedder = TabularEmbedder(features, ["c"], ["a", "b"], dimensao=8, hidden_dim=16)
+    transformer = TabularTransformerEncoder(d_model=8, nhead=2, num_layers=1, dim_feedforward=16, dropout=0.3)
+    model = TridentModel(embedder, transformer, num_labels=2)
+    h = Hyperparameters.from_mapping({"FINETUNE_FREEZE_ENCODER": "all"})
+    assert h.finetune_freeze_encoder == "all" and Hyperparameters.from_mapping({}).finetune_freeze_encoder == "off"
+    with pytest.raises(ValueError):
+        Hyperparameters.from_mapping({"FINETUNE_FREEZE_ENCODER": "head"})
+    # The same steps finetuning.py takes under the flag.
+    before = copy.deepcopy(model.state_dict())
+    for p in list(model.embedder.parameters()) + list(model.transformer.parameters()):
+        p.requires_grad_(False)
+    optimizer = torch.optim.AdamW(model.classifier.parameters(), lr=0.01)
+    model.train()
+    model.embedder.eval()
+    model.transformer.eval()
+    assert not model.transformer.training and model.classifier.training
+    encoded = embedder.encode(preprocess_table(features, p_base=0.0, fine_tunning=True))
+    _, loss = model(encoded, labels=torch.zeros(len(frame), dtype=torch.long))
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+    after = model.state_dict()
+    encoder_keys = [k for k in before if k.startswith(("embedder.", "transformer."))]
+    assert encoder_keys and all(torch.equal(before[k], after[k]) for k in encoder_keys)
+    assert any(not torch.equal(before[k], after[k]) for k in before if k.startswith("classifier."))
