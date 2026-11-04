@@ -1,5 +1,6 @@
 """Immutable values exchanged between the training workflow stages."""
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence, TypeAlias
@@ -271,6 +272,9 @@ class Hyperparameters:
     # T14: the fewest optimizer steps a training epoch may take; the batch shrinks to fit.
     # 0, every run before it, keeps ``batch_size`` on every table.
     min_steps_per_epoch: int = 0
+    # C15 (docs/plans/2026-11-03-c15-mnar-prediction.md): which arm shows the gaps, and the readouts
+    # it writes; ``off``, every run before it, changes nothing (``src/training/c15_inputs.py``).
+    c15_arm: str = "off"
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -319,6 +323,8 @@ class Hyperparameters:
             )
         if self.decode_patience < 0:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
+        if not re.match(r"^(off|A1|A2|A3|A4:\d+)$", self.c15_arm):
+            raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3 or A4:<draw>")
         if self.min_steps_per_epoch < 0:
             raise ValueError(f"The minimum steps an epoch counts steps, so it cannot be {self.min_steps_per_epoch}")
         if self.decode_freeze_epochs < 0:
@@ -382,6 +388,7 @@ class Hyperparameters:
             ),
             embedding_lookup=str(values.get("EMBEDDING_LOOKUP", values.get("embedding_lookup", DEFAULT_EMBEDDING_LOOKUP))),
             min_steps_per_epoch=int(values.get("MIN_STEPS_PER_EPOCH", values.get("min_steps_per_epoch", 0))),
+            c15_arm=str(values.get("C15_ARM", values.get("c15_arm", "off"))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),
@@ -578,6 +585,8 @@ class FinetuningOutcome:
     result: FoldResult
     train_losses: Sequence[float]
     validation_losses: Sequence[float]
+    # C15's readouts (per-row probabilities, the kept state); None unless C15_ARM is on.
+    readout: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)

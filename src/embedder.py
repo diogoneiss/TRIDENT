@@ -43,6 +43,9 @@ class EncodedTable:
     mask_flags: torch.Tensor        # (n_numerical, n_rows)    bool
     null_flags: torch.Tensor        # (n_numerical, n_rows)    bool
     masked_positions: torch.Tensor  # (n_rows, n_categorical + n_numerical) bool
+    # C15's A2 (``src/training/c15_inputs.py``): which numerical cells hold an imputer's fill, read by
+    # the value MLP as a second input. None, the default, everywhere else.
+    fill_flags: torch.Tensor | None = None  # (n_numerical, n_rows) bool
 
     def __len__(self) -> int:
         return self.masked_positions.shape[0]
@@ -55,6 +58,7 @@ class EncodedTable:
             mask_flags=self.mask_flags[:, index],
             null_flags=self.null_flags[:, index],
             masked_positions=self.masked_positions[index],
+            fill_flags=None if self.fill_flags is None else self.fill_flags[:, index],
         )
 
 
@@ -73,13 +77,17 @@ class EpochMasker:
     def __init__(self, embedder: "TabularEmbedder", frame, device, weights: np.ndarray | None = None) -> None:
         from .utils import preprocess_table
 
-        self._null_values = frame.isnull().to_numpy()
+        # C15's A2: the frame holds fills plus one gap column per numerical column. The mask is drawn
+        # over the feature columns with the real gaps as nulls, exactly as A1's would be, so
+        # pre-training never hides a fill and its holes match A1's draw for draw.
+        shape = embedder.gap_pattern(frame) if embedder.indicator_channel else frame
+        self._null_values = shape.isnull().to_numpy()
         # Per-cell weights in frame order for ``draw_weighted_mask`` (E65); None draws uniformly,
         # through ``draw_dynamic_mask``, exactly as before.
         self._weights = weights
         self._base = embedder.encode(preprocess_table(frame.copy(), fine_tunning=True), device)
         columns = list(embedder.categorical_columns) + list(embedder.numerical_columns)
-        self._order = np.array([frame.columns.get_loc(column) for column in columns], dtype=np.int64)
+        self._order = np.array([shape.columns.get_loc(column) for column in columns], dtype=np.int64)
         self._n_categorical = len(embedder.categorical_columns)
         self._mask_ids = torch.tensor(
             [int(embedder.label_encoders[column].transform(["[MASK]"])[0]) for column in embedder.categorical_columns],
@@ -113,6 +121,7 @@ class EpochMasker:
             mask_flags=numerical,
             null_flags=base.null_flags,
             masked_positions=positions,
+            fill_flags=base.fill_flags,
         )
 
 
@@ -126,8 +135,11 @@ class TabularEmbedder(nn.Module):
     _lookup_offsets: torch.Tensor  # registered as a buffer in __init__
 
     def __init__(self, df, categorical_columns, numerical_columns,
-                 dimensao=4, hidden_dim=32, batched_lookup=False):
+                 dimensao=4, hidden_dim=32, batched_lookup=False, indicator_channel=False):
         super().__init__()
+        # C15's A2: each numerical column's value MLP reads (value, filled) instead of the value alone.
+        # Off, the default, builds and computes exactly what it did before.
+        self.indicator_channel = indicator_channel
         # ``EMBEDDING_LOOKUP batched`` (T06): the categorical columns' tables are read with one
         # gather over their rows laid end to end, instead of one lookup a column. The same
         # parameters and the same forward values; the backward sums each row's gradient in a
@@ -207,7 +219,7 @@ class TabularEmbedder(nn.Module):
         # -----------------------
         self.mlp_layers = nn.ModuleDict({
             self.column_to_key[col]: nn.Sequential(
-                nn.Linear(1, hidden_dim),
+                nn.Linear(2 if indicator_channel else 1, hidden_dim),
                 nn.ReLU(),
                 nn.Linear(hidden_dim, dimensao)
             ) for col in self.numerical_columns
@@ -265,7 +277,17 @@ class TabularEmbedder(nn.Module):
             mask_flags=encoded.mask_flags | encoded.null_flags,
             null_flags=torch.zeros_like(encoded.null_flags),
             masked_positions=encoded.masked_positions,
+            fill_flags=encoded.fill_flags,
         )
+
+    def gap_pattern(self, df):
+        """C15's A2: the feature columns with each filled cell back to NaN, the gap columns dropped."""
+        from .training.c15_inputs import GAP_PREFIX
+
+        features = df[[c for c in df.columns if not str(c).startswith(GAP_PREFIX)]].copy()
+        for column in self.numerical_columns:
+            features[column] = features[column].mask(df[GAP_PREFIX + column].astype(bool))
+        return features
 
     def encode(self, df, device=None) -> EncodedTable:
         """
@@ -300,12 +322,22 @@ class TabularEmbedder(nn.Module):
         for index, col in enumerate(columns):
             masked_array[:, index] = (df[col] == "[MASK]").to_numpy()
 
+        fill_flags = None
+        if self.indicator_channel:
+            from .training.c15_inputs import GAP_PREFIX
+
+            fill_flags = torch.tensor(
+                np.stack([df[GAP_PREFIX + col].to_numpy(dtype=float) for col in self.numerical_columns]) > 0.5,
+                dtype=torch.bool,
+                device=device,
+            )
         return EncodedTable(
             cat_indices=cat_indices,
             num_values=numeric_values.t(),
             mask_flags=mask_flags.t(),
             null_flags=null_flags.t(),
             masked_positions=torch.tensor(masked_array, dtype=torch.bool, device=device),
+            fill_flags=fill_flags,
         )
 
     def forward(self, data):
@@ -359,7 +391,6 @@ class TabularEmbedder(nn.Module):
             mlps = [cast(nn.Sequential, self.mlp_layers[key]) for key in self.numerical_keys]
             first = [cast(nn.Linear, mlp[0]) for mlp in mlps]
             second = [cast(nn.Linear, mlp[2]) for mlp in mlps]
-            first_weight = torch.stack([layer.weight for layer in first]).squeeze(-1)
             first_bias = torch.stack([layer.bias for layer in first])
             second_weight = torch.stack([layer.weight for layer in second])
             second_bias = torch.stack([layer.bias for layer in second])
@@ -367,9 +398,20 @@ class TabularEmbedder(nn.Module):
             # The first layer takes a single scalar per column, so it is a plain
             # broadcast multiply-add rather than a matrix product.
             values = encoded.num_values.unsqueeze(-1)                     # (C, B, 1)
-            hidden = torch.relu(
-                values * first_weight.unsqueeze(1) + first_bias.unsqueeze(1)
-            )                                                             # (C, B, hidden)
+            if self.indicator_channel:
+                # C15's A2: a second scalar, 1 where the value is an imputer's fill.
+                weights = torch.stack([layer.weight for layer in first])  # (C, hidden, 2)
+                assert encoded.fill_flags is not None, "an A2 table must be encoded with its gap columns"
+                flags = encoded.fill_flags.to(values.dtype).unsqueeze(-1)  # (C, B, 1)
+                hidden = torch.relu(
+                    values * weights[:, :, 0].unsqueeze(1) + flags * weights[:, :, 1].unsqueeze(1)
+                    + first_bias.unsqueeze(1)
+                )                                                         # (C, B, hidden)
+            else:
+                first_weight = torch.stack([layer.weight for layer in first]).squeeze(-1)
+                hidden = torch.relu(
+                    values * first_weight.unsqueeze(1) + first_bias.unsqueeze(1)
+                )                                                         # (C, B, hidden)
             numerical = torch.baddbmm(
                 second_bias.unsqueeze(1), hidden, second_weight.transpose(1, 2)
             )                                                             # (C, B, d)

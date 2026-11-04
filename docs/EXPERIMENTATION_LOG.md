@@ -3517,3 +3517,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** G2 holds; C15's primary set is fixed. Five of seven self-masking variants carry too little
   signal for prediction; the outcome-dependent family carries a lot (+0.76 to +0.85 at odds 3).
 
+### E124 · C15 Stage 1: gate G1 on the positive controls, and A1 against A2 on the development set (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** on F5 the indicator arm beats MICE without one and A1's direct contrast on the noise column is
+  positive (G1); the development set gives A1 − A2 estimates before confirmation.
+- **Scenarios:** 1a: A1, A2, A4:0–4 on F5's three controls, seed 42 (21 cells); 1b: A1, A2 on 23 development
+  variants × seeds 42/7/13 (138 cells); five folds, `embedding_normalized`, gorgona8 seed 42, medusa1 the rest.
+- **Measures and decision rule:** G1 passes if, on at least 2 of 3 controls, A2 − A4 relative log loss is below 0
+  and A1's noise-column contrast above 0 (Nadeau–Bengio corrected intervals); 1b descriptive.
+- **Sources:** [c15-mnar-prediction/03](tickets/c15-mnar-prediction/03-stage1.md).
+

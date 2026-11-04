@@ -6,7 +6,7 @@ from typing import Sequence
 import numpy as np
 import torch
 import torch.optim as optim
-from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, log_loss, precision_score, recall_score  # type: ignore[attr-defined]
 from sklearn.utils.class_weight import compute_class_weight
 from tqdm import tqdm
 
@@ -193,6 +193,28 @@ def train_and_evaluate_classifier(
     with torch.no_grad():
         test_logits, test_loss = model(test_encoded, labels=test_labels)
         test_predictions = torch.argmax(test_logits, dim=1)
+    readout = None
+    if hyperparameters.c15_arm != "off":
+        # C15's readouts: per-row probabilities of the kept model on the validation and test rows,
+        # their unweighted log loss, and the kept state, so an analysis needs no retraining.
+        with torch.no_grad():
+            validation_probabilities = torch.softmax(model(validation_encoded, labels=validation_labels)[0], dim=1).cpu().numpy()
+            test_probabilities = torch.softmax(test_logits, dim=1).cpu().numpy()
+        classes = np.arange(number_of_labels)
+        test_log_loss = float(log_loss(test_labels.cpu().numpy(), test_probabilities, labels=classes))
+        val_log_loss = float(log_loss(validation_labels.cpu().numpy(), validation_probabilities, labels=classes))
+        readout = {
+            "arm": hyperparameters.c15_arm,
+            "validation_indices": np.asarray(fold.validation_indices),
+            "test_indices": np.asarray(fold.test_indices),
+            "validation_labels": validation_labels.cpu().numpy(),
+            "test_labels": test_labels.cpu().numpy(),
+            "validation_probabilities": validation_probabilities,
+            "test_probabilities": test_probabilities,
+            "state_dict": {name: tensor.detach().cpu() for name, tensor in model.state_dict().items()},
+            "test_log_loss": test_log_loss,
+            "val_log_loss": val_log_loss,
+        }
     result = build_fold_result(
         fold="single_split",
         dataset_name=dataset.frame.attrs.get("dataset_name", ""),
@@ -208,9 +230,12 @@ def train_and_evaluate_classifier(
     )
     # Added after the test metrics are logged, so no validation number is logged as ``test/``.
     result = replace(result, metrics={**result.metrics, **(kept_validation or last_validation)})
+    if readout is not None:
+        result = replace(result, metrics={**result.metrics, "test_log_loss": test_log_loss, "val_log_loss": val_log_loss})
     return FinetuningOutcome(
         model=model,
         result=result,
         train_losses=train_losses,
         validation_losses=validation_losses,
+        readout=readout,
     )

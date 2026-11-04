@@ -11,6 +11,7 @@ from src.models import EmaTargetPretrainer, NormalizedEmbeddingPretrainer, Tride
 from src.transformer import TabularTransformerEncoder
 
 from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
+from .c15_inputs import has_indicator
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
 
@@ -61,6 +62,7 @@ def train_pretrainer(
         dimensao=hyperparameters.dimension,
         hidden_dim=hyperparameters.hidden_dimension,
         batched_lookup=hyperparameters.embedding_lookup == "batched",
+        indicator_channel=has_indicator(hyperparameters.c15_arm),
     )
     transformer = TabularTransformerEncoder(
         d_model=embedder.dimensao,

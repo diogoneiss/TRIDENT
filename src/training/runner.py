@@ -31,6 +31,7 @@ from .config import logged_hyperparameters
 from .data import build_folds, load_complete_sibling, prepare_dataset
 from .decoding import train_and_evaluate_decoder
 from .environment import runtime_environment_tags
+from .c15_inputs import fold_dataset
 from .finetuning import train_and_evaluate_classifier
 from .imputation_metrics import mean_mode_baselines, score_cells
 from .pretraining import train_pretrainer
@@ -108,6 +109,8 @@ def run_training(request: TrainingRequest) -> TrainingResult:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     dataset = prepare_dataset(request.dataset)
+    if task.name == "imputation" and request.hyperparameters.c15_arm != "off":
+        raise ValueError("C15_ARM is a classification setting; imputation runs keep it off")
     # Read once per run, not per fold, and only when there is something to score against.
     complete_sibling = (
         load_complete_sibling(request.dataset) if task.name == "imputation" else None
@@ -187,8 +190,10 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                 fold=ordinal, cv_folds=request.cv_folds, dataset_name=request.dataset.dataset_name
             ) as fold_tracker:
                 pretraining_started = time.perf_counter()
+                # C15 (``C15_ARM``): the fold as its arm shows the gaps; the dataset itself when off.
+                fold_data = fold_dataset(dataset, fold, request.hyperparameters.c15_arm)
                 pretraining = train_pretrainer(
-                    dataset, fold, request.hyperparameters, device, fold_tracker
+                    fold_data, fold, request.hyperparameters, device, fold_tracker
                 )
                 pretraining_seconds = time.perf_counter() - pretraining_started
                 finetuning_started = time.perf_counter()
@@ -219,7 +224,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     )
                 else:
                     finetuning = train_and_evaluate_classifier(
-                        dataset,
+                        fold_data,
                         fold,
                         pretraining,
                         request.hyperparameters,
@@ -268,6 +273,9 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     per_column[ordinal] = _per_column_scores(
                         dataset, fold, finetuning.scored_cells, finetuning.baseline_per_column
                     )
+                if isinstance(finetuning, FinetuningOutcome) and finetuning.readout is not None:
+                    artifacts.metrics_dir.mkdir(parents=True, exist_ok=True)
+                    torch.save(finetuning.readout, artifacts.metrics_dir / f"c15_readout_fold_{ordinal}.pt")
                 if request.save_model:
                     suffix = f"_fold_{ordinal}" if request.cv_folds is not None else ""
                     model_path = artifacts.save_model(f"final_model{suffix}.pt", finetuning.model)
