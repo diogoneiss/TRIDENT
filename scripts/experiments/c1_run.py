@@ -1,7 +1,7 @@
 """C1's cells (docs/plans/2026-11-04-c1-split.md; tickets docs/tickets/c1-split/), MLflow off, five folds a cell.
 
     uv run --python 3.11 python -B scripts/experiments/c1_run.py train <arm> <variant> <seed>
-    C1_CUT=<2|3|4|5> uv run --python 3.11 python -B scripts/experiments/c1_run.py --todo <n> <queues>
+    C1_CUT=<2|3|4|5|6|7> uv run --python 3.11 python -B scripts/experiments/c1_run.py --todo <n> <queues>
 
 Arms, over each variant's resolved classification configuration with ``PRETRAIN_OBJECTIVE embedding_normalized``
 and ``C15_ARM A1`` (the shipped classifier plus its per-fold readouts; ``src/training/c15_inputs.py``):
@@ -49,6 +49,12 @@ ARMS: dict[str, dict[str, object]] = {
     "FRZ": {"FINETUNE_FREEZE_EPOCHS": 50},  # the head alone for 50 epochs, then everything
     "FP10": {"FINETUNE_FREEZE_ENCODER": "all", "FINETUNE_HEAD_LR_SCALE": 10},  # the probe with a head that converges
     "FR10": {"EPOCHS_PRE": 0, "FINETUNE_FREEZE_ENCODER": "all", "FINETUNE_HEAD_LR_SCALE": 10},
+    # E134 (ticket 06): the fine-tuning budget under cosine_legacy; E135 (ticket 07): fine-tuning's schedule.
+    "S30": {"EPOCH_FINE": 30}, "S50": {"EPOCH_FINE": 50},
+    "B30": {"EPOCHS_PRE": 0, "EPOCH_FINE": 30}, "B50": {"EPOCHS_PRE": 0, "EPOCH_FINE": 50},
+    "COS150": {"FINETUNE_LR_SCHEDULER": "cosine"}, "COS50": {"FINETUNE_LR_SCHEDULER": "cosine", "EPOCH_FINE": 50},
+    "WUC150": {"FINETUNE_LR_SCHEDULER": "warmup_cosine"}, "WUC50": {"FINETUNE_LR_SCHEDULER": "warmup_cosine", "EPOCH_FINE": 50},
+    "PLAT150": {"FINETUNE_LR_SCHEDULER": "plateau"}, "CONST150": {"FINETUNE_LR_SCHEDULER": "constant"},
 }
 SMOKE_VARIANT = "biodeg_probit_60nan"
 CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
@@ -62,6 +68,8 @@ CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
         **{(v, s): ("LRS", "FRZ") for v in MCAR for s in SEEDS},
         **{(v, s): ("LRS", "FRZ", "FP10", "FR10") for v in MNAR for s in SEEDS},
     },
+    "6": {(v, s): ("S30", "S50", "B30", "B50") for v in MNAR + MCAR for s in SEEDS},  # the budget, E134 (ticket 06)
+    "7": {(v, s): ("COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150") for v in MNAR + MCAR for s in SEEDS},  # E135
 }
 
 

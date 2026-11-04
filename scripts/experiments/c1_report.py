@@ -6,6 +6,8 @@
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --cosine    # [MASK]_j · [NULL]_j in S
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --channel   # E132: frozen pre-trained vs frozen random
     uv run --python 3.11 python -B scripts/experiments/c1_report.py --fix       # E133: LRS and FRZ against S, Holm over the two
+    uv run --python 3.11 python -B scripts/experiments/c1_report.py --budget    # E134: EPOCH_FINE 30/50 against 150 (cosine_legacy)
+    uv run --python 3.11 python -B scripts/experiments/c1_report.py --scheduler # E135: fine-tuning schedules against cosine_legacy
 
 Cells come from both machines' state directories (medusa1's copied under ``<state>/medusa``); S's decision-mode
 cells are E124's A1 cells (``c15_report.readouts``). Macro-F1 is recomputed from each fold's test probabilities,
@@ -244,6 +246,57 @@ def fix() -> None:
     print(f"Pooled FP10 − FR10: {line('', np.mean(ds, axis=0), MARGIN)}; FP − FR was {c15.interval(np.mean(old, axis=0), False)[0]:+.4f}")
 
 
+def arms_against_s(title: str, arms: tuple[str, ...], beside: dict[str, str] | None = None) -> None:
+    """X − S macro-F1 per arm, 15 paired replicates a file, pooled over the eight files (MNAR and MCAR beside), plain
+    95% t intervals, Holm over the arms; ``beside`` maps an arm to its no-pre-training twin for X − twin."""
+    from scipy import stats
+
+    print(title)
+    pooled: dict[str, np.ndarray] = {}
+    for arm in arms:
+        ds: dict[str, np.ndarray] = {}
+        for v in run.MNAR + run.MCAR:
+            d = paired(arm, "S", v)
+            if d is None:
+                print(f"- {arm} {v}: missing\n\nPrimary: incomplete")
+                return
+            ds[v] = d[0]
+            extra = ""
+            if beside and arm in beside:
+                b = paired(arm, beside[arm], v)
+                extra = f"; {arm} − {beside[arm]} {c15.interval(b[0], False)[0]:+.4f}" if b is not None else "; twin missing"
+            print(f"- {arm} − S {v}: F1 {line('', d[0], MARGIN)}; LL(S) − LL({arm}) {c15.interval(d[1], False)[0]:+.4f}{extra}")
+        pooled[arm] = np.mean(list(ds.values()), axis=0)
+        mn = np.mean([ds[v] for v in run.MNAR], axis=0)
+        mc = np.mean([ds[v] for v in run.MCAR], axis=0)
+        print(f"  {arm}: MNAR {c15.interval(mn, False)[0]:+.4f} [{c15.interval(mn, False)[1]:+.4f}, {c15.interval(mn, False)[2]:+.4f}]; "
+              f"MCAR {c15.interval(mc, False)[0]:+.4f} [{c15.interval(mc, False)[1]:+.4f}, {c15.interval(mc, False)[2]:+.4f}]")
+    p = {arm: float(stats.ttest_1samp(pooled[arm], 0).pvalue) for arm in arms}
+    order = sorted(arms, key=lambda a: p[a])
+    holm, running = {}, 0.0
+    for k, arm in enumerate(order):
+        running = max(running, (len(arms) - k) * p[arm])
+        holm[arm] = min(1.0, running)
+    print()
+    for arm in arms:
+        m, lo, hi = c15.interval(pooled[arm], False)
+        _, nlo, nhi = c15.interval(pooled[arm])
+        verdict = ("better" if m > 0 else "worse") if holm[arm] < 0.05 else "no verdict"
+        print(f"Pooled {arm} − S (8 files): {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); p {p[arm]:.4f}, "
+              f"Holm {holm[arm]:.4f} -> {verdict}")
+
+
+def budget() -> None:
+    arms_against_s("## Budget (E134): EPOCH_FINE 30 and 50 under cosine_legacy against S (150); B at the same budgets "
+                   "beside (the channel); 15 paired replicates a file, pooled over the eight files, Holm over the two",
+                   ("S30", "S50"), {"S30": "B30", "S50": "B50"})
+
+
+def scheduler() -> None:
+    arms_against_s("## Scheduler (E135): fine-tuning's schedule against cosine_legacy at 150 epochs (S); pooled over the "
+                   "eight files, Holm over the six arms", ("COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150"))
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -266,7 +319,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

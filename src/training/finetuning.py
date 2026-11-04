@@ -134,7 +134,7 @@ def train_and_evaluate_classifier(
     )
     scheduler = StageScheduler(
         optimizer,
-        hyperparameters.lr_scheduler,
+        hyperparameters.finetune_lr_scheduler or hyperparameters.lr_scheduler,
         epochs=hyperparameters.finetuning_epochs,
         batches_per_epoch=batches_per_epoch(len(processed_train), hyperparameters.batch_size),
     )

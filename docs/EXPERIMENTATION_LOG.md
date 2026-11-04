@@ -3669,3 +3669,28 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   and 74–109 (FRZ) at the same scores. FP10/FR10 diverged at the higher head rate (spambase at chance): no reading.
 - **Conclusion:** a gentler fine-tuning keeps nothing measurable of pre-training; the fine-tuning side of C1's channel is
   closed, and the +0.01 ceiling from E132 was not reached. E131 stays Inconclusive.
+
+### E134 · The fine-tuning budget: 30 and 50 epochs against 150 under cosine_legacy (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** none directional; fine-tuning's validation minimum falls by epoch 13–24 (E132's curves), so a shorter
+  budget may match or beat 150 epochs at a third of the cost.
+- **Scenarios:** S30, S50, B30, B50 (`EPOCH_FINE` 30/50, with and without pre-training) on
+  `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (96 cells); S and B at 150 reused.
+- **Measures and decision rule:** S(k) − S(150) macro-F1 pooled over the eight files, plain 95% t interval, Holm over
+  the two budgets: better / worse / no verdict; S(k) − B(k) and log loss descriptive. A default change needs an ADR and
+  a 21-variant confirmation, not done here.
+- **Sources:** [c1-split/06](tickets/c1-split/06-finetuning-budget.md).
+
+### E135 · Fine-tuning's schedule: cosine, warmup_cosine, plateau and constant against cosine_legacy (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** none directional; `cosine_legacy` is a per-batch sawtooth (ADR 0003) never measured on
+  classification, and the user asked for the best schedule to be studied apart from the budget.
+- **Scenarios:** `FINETUNE_LR_SCHEDULER` (new, "" = shared schedule) at cosine 150/50, warmup_cosine 150/50, plateau
+  150, constant 150, S's pre-training, on the eight files, seeds 42/7/13 × 5 folds (144 cells); S under cosine_legacy
+  reused.
+- **Measures and decision rule:** X − S macro-F1 pooled over the eight files, plain 95% t interval, Holm over the six
+  arms: better / worse / no verdict; log loss and kept epochs descriptive; a winner goes to an ADR proposal with a
+  21-variant confirmation.
+- **Sources:** [c1-split/07](tickets/c1-split/07-finetuning-scheduler.md).

@@ -290,6 +290,9 @@ class Hyperparameters:
     finetune_freeze_epochs: int = 0
     finetune_encoder_lr_scale: float = 1.0
     finetune_head_lr_scale: float = 1.0
+    # E135 (docs/tickets/c1-split/07-finetuning-scheduler.md): fine-tuning's own schedule name; "" (every
+    # run before it) means ``lr_scheduler``, the schedule both stages share.
+    finetune_lr_scheduler: str = ""
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -340,6 +343,8 @@ class Hyperparameters:
             raise ValueError(f"The decode patience counts epochs, so it cannot be {self.decode_patience}")
         if not re.match(r"^(off|A1|A2|A3|A4:\d+|A5:[\w.]+)$", self.c15_arm):
             raise ValueError(f"Unknown C15 arm {self.c15_arm!r}; expected off, A1, A2, A3, A4:<draw> or A5:<column>")
+        if self.finetune_lr_scheduler and self.finetune_lr_scheduler not in LR_SCHEDULER_NAMES:
+            raise ValueError(f"Unknown fine-tuning schedule {self.finetune_lr_scheduler!r}; expected one of {', '.join(LR_SCHEDULER_NAMES)}")
         if self.finetune_freeze_epochs < 0:
             raise ValueError(f"The fine-tuning freeze counts epochs, so it cannot be {self.finetune_freeze_epochs}")
         if not self.finetune_encoder_lr_scale > 0 or not self.finetune_head_lr_scale > 0:
@@ -419,6 +424,7 @@ class Hyperparameters:
             finetune_freeze_epochs=int(values.get("FINETUNE_FREEZE_EPOCHS", values.get("finetune_freeze_epochs", 0))),
             finetune_encoder_lr_scale=float(values.get("FINETUNE_ENCODER_LR_SCALE", values.get("finetune_encoder_lr_scale", 1.0))),
             finetune_head_lr_scale=float(values.get("FINETUNE_HEAD_LR_SCALE", values.get("finetune_head_lr_scale", 1.0))),
+            finetune_lr_scheduler=str(values.get("FINETUNE_LR_SCHEDULER", values.get("finetune_lr_scheduler", ""))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

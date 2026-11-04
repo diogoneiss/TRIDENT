@@ -113,3 +113,12 @@ def test_the_fix_flags_build_the_optimizer_groups_they_name() -> None:
         Hyperparameters.from_mapping({"FINETUNE_FREEZE_EPOCHS": -1})
     with pytest.raises(ValueError):
         Hyperparameters.from_mapping({"FINETUNE_ENCODER_LR_SCALE": 0})
+
+
+def test_fine_tuning_may_name_its_own_schedule() -> None:
+    from src.training.types import Hyperparameters
+
+    assert Hyperparameters.from_mapping({}).finetune_lr_scheduler == ""
+    assert Hyperparameters.from_mapping({"FINETUNE_LR_SCHEDULER": "cosine"}).finetune_lr_scheduler == "cosine"
+    with pytest.raises(ValueError):
+        Hyperparameters.from_mapping({"FINETUNE_LR_SCHEDULER": "sawtooth"})
