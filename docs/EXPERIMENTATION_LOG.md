@@ -3480,3 +3480,5 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** BIG − M, relative, 15 fold pairs, 1% SESOI; per mechanism, holds if better on
   both and worse on none, does not hold if better on neither or worse on any.
 - **Sources:** [imputation-protocol/50](tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md).
+- **Amendment (2026-11-03 22:03 GMT-3):** the pair `letter_probit_20nan` seed 42 moved from gorgona8 to medusa1
+  (both arms there) to finish sooner; same cells and rule.

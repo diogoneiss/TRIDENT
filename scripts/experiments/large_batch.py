@@ -128,6 +128,8 @@ def _use_e121() -> None:
     STATE = STATE.parent / "trident-2026-10-30-large-batch-e121"  # run_large_batch_queue.sh names it so
     VARIANTS = tuple(f"{b}_{m}_20nan" for m in ("marf", "probit") for b in ("pendigits", "letter"))
     SEEDS = {"gorgona8": (42,), "medusa": (7, 13)}
+    global MOVED
+    MOVED = {("letter_probit_20nan", 42)}  # amendment 2026-11-03: moved from gorgona8 to speed the end
     ARMS, STUDY = ("M", "BIG"), "e121"
 
 

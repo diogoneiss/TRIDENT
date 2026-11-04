@@ -37,3 +37,13 @@ This ticket was written and committed before the study's first cell (20:55 GMT-3
 - **What follows:** the result goes to the user, who decides whether ADR 0018 states its scope as all three
   mechanisms. Nothing changes on its own.
 - **Read only with every cell done**; a cut stays partial.
+
+## Amendment 2026-11-03 22:03 GMT-3 (the user's decision, "sim")
+
+As in E119: medusa1 finished its 16 cells first, so gorgona8's one unstarted pair, `letter_probit_20nan` seed
+42, runs on medusa1's GPU 1, both arms there (ADR 0035's pairing holds; seed 42 is split between machines on
+this one variant). gorgona8 stops on its STOP file between cells (touched 22:02:57); since queue 1 stops there
+too before its pair's last arm, `BIG_pendigits_probit_20nan_s42` runs on gorgona8 by a one-cell runner, so that
+pair stays on gorgona8. `--tally` reads the moved pair from medusa1's directory (`MOVED`). Same cells, seeds and
+rule.
+
