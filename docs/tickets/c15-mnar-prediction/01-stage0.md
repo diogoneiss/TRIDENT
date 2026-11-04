@@ -87,4 +87,7 @@ Primary (G2): invalid, positive controls failing: biodeg_noise3p0_s2060_60nan, k
   control) is a new, dated pre-registration for the user, and this stage stays recorded as invalid.
 - **The driving-column table** crashed on spambase in the first pass (`partial_dependence` refuses integer
   columns); it was fixed by casting the complete table's features to float (only that table reads them) and rerun.
+  Rerun complete at 23:46 GMT-3 (`drivers.json` in the stage's state directory): driving columns, biodeg 2 of 41,
+  kc2 1 of 21, vehicle 1 of 18, spambase 3 of 57; sign-test columns 1, 1, 0 and 1. Leave-one-column-out finds
+  few drivers on tables with correlated columns; the table is frozen as computed and is used only from Stage 2.
 
