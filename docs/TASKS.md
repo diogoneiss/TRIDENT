@@ -782,7 +782,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   [Plan](plans/2026-11-03-c15-mnar-prediction.md): Stages 0–3 approved (Stage 4 optional), objective
   `embedding_normalized` by explicit flag, GBDT internal only, margins fixed (−0.01 macro-F1, +2% log loss).
   **Stage 0 (E122, [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md)), from 2026-11-03:** the
-  driving columns and gate G2 (CPU), which define the primary set P. **Done 2026-11-03: G2 invalid** (positive controls fail on biodeg and kc2, intervals below 0); by the rule C15 stops; the next step is the user's. **E123 ([02](tickets/c15-mnar-prediction/02-g2-out-of-fold.md)), from 2026-11-03: G2 read out of fold over the training and validation rows (the user's "opção 1"); if the controls fail again, C15 stops for good.**
+  driving columns and gate G2 (CPU), which define the primary set P. **Done 2026-11-03: G2 invalid** (positive controls fail on biodeg and kc2, intervals below 0); by the rule C15 stops; the next step is the user's. **E123 ([02](tickets/c15-mnar-prediction/02-g2-out-of-fold.md)), from 2026-11-03: G2 read out of fold over the training and validation rows (the user's "opção 1"); if the controls fail again, C15 stops for good.** **Done 2026-11-04: G2 valid, P = 5** (biodeg_probit_60nan, vehicle_probit_60nan, the odds-3 outcome variants of biodeg, kc2, spambase). Next: Stage 1.
 
 ### Process
 
