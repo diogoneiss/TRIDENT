@@ -79,3 +79,47 @@ Primary (G1): 1 of 3 -> fails
   indicator (the protocol's Open decision 14a), and five cells under the Nadeau–Bengio factor (0.2 + 0.286) leave
   biodeg's and kc2's intervals wide.
 
+## Outcome (2026-11-04 01:34 GMT-3): G1 failed (above); Stage 1b, descriptive
+
+All 159 cells done (2026-11-04 00:25–01:31 GMT-3), none failed in its own right. The three `FAILED` lines in
+medusa1's progress.log are mine: two cells (A2_spambase_probit_60nan_s13, A1_biodeg_probit1p0_60nan_s7) started twice
+after the rebalancing, because the relaunched queues dealt cells an old queue was still running; both copies were
+killed, the cells' directories removed, and each cell rerun alone (`queue single` lines). The unedited
+`c15_report.py --tally`:
+
+```
+## Stage 1b (descriptive): A1 − A2 per variant, 15 cells; macro-F1 difference and relative log loss (LL_A1 − LL_A2) / LL_A2, Nadeau–Bengio corrected (plain); H2's per-variant call at −0.01 / +2%
+- biodeg_20nan: F1 -0.0164 [-0.0513, +0.0186] (plain [-0.0316, -0.0012]); LL +0.0847 [-0.0500, +0.2194] -> inconclusive
+- biodeg_60nan: F1 -0.0324 [-0.0769, +0.0121] (plain [-0.0517, -0.0131]); LL +0.1623 [+0.0539, +0.2707] -> inferior
+- kc2_20nan: F1 +0.0138 [-0.0438, +0.0714] (plain [-0.0113, +0.0389]); LL -0.0071 [-0.1870, +0.1729] -> inconclusive
+- kc2_60nan: F1 -0.0291 [-0.0955, +0.0373] (plain [-0.0580, -0.0003]); LL +0.0842 [-0.1239, +0.2923] -> inconclusive
+- vehicle_20nan: F1 -0.0290 [-0.0647, +0.0068] (plain [-0.0445, -0.0134]); LL +0.1398 [-0.0545, +0.3341] -> inconclusive
+- vehicle_60nan: F1 -0.0930 [-0.1583, -0.0277] (plain [-0.1214, -0.0646]); LL +0.2617 [+0.1434, +0.3801] -> inferior
+- spambase_60nan: F1 +0.0002 [-0.0126, +0.0131] (plain [-0.0053, +0.0058]); LL +0.0002 [-0.0715, +0.0720] -> inconclusive
+- biodeg_probit_20nan: F1 -0.0286 [-0.0748, +0.0175] (plain [-0.0487, -0.0086]); LL +0.1160 [-0.0964, +0.3285] -> inconclusive
+- biodeg_probit_60nan: F1 -0.0508 [-0.1048, +0.0033] (plain [-0.0743, -0.0272]); LL +0.1455 [+0.0018, +0.2892] -> inconclusive
+- kc2_probit_20nan: F1 +0.0011 [-0.0313, +0.0336] (plain [-0.0130, +0.0153]); LL -0.0249 [-0.1915, +0.1418] -> inconclusive
+- kc2_probit_60nan: F1 -0.0335 [-0.1118, +0.0449] (plain [-0.0676, +0.0006]); LL +0.1538 [-0.3553, +0.6629] -> inconclusive
+- vehicle_probit_20nan: F1 -0.0533 [-0.0859, -0.0208] (plain [-0.0675, -0.0392]); LL +0.3012 [+0.0244, +0.5780] -> inferior
+- vehicle_probit_60nan: F1 -0.0618 [-0.1164, -0.0071] (plain [-0.0855, -0.0380]); LL +0.2455 [+0.0819, +0.4092] -> inferior
+- spambase_probit_60nan: F1 -0.0014 [-0.0156, +0.0127] (plain [-0.0076, +0.0047]); LL +0.0254 [-0.0242, +0.0750] -> inconclusive
+- biodeg_probit0p25_60nan: F1 -0.0431 [-0.0834, -0.0027] (plain [-0.0606, -0.0255]); LL +0.1412 [+0.0270, +0.2554] -> inferior
+- biodeg_probit1p0_60nan: F1 -0.0267 [-0.0625, +0.0092] (plain [-0.0423, -0.0111]); LL +0.1414 [+0.0159, +0.2669] -> inconclusive
+- biodeg_probit2p0_60nan: F1 -0.0144 [-0.0436, +0.0147] (plain [-0.0271, -0.0017]); LL +0.0301 [-0.1040, +0.1642] -> inconclusive
+- biodeg_outcome1p5_s2060_60nan: F1 +0.0140 [-0.0258, +0.0538] (plain [-0.0033, +0.0313]); LL -0.0470 [-0.2508, +0.1568] -> inconclusive
+- biodeg_outcome3p0_s2060_60nan: F1 -0.0028 [-0.0132, +0.0077] (plain [-0.0073, +0.0018]); LL +1.2728 [-1.9594, +4.5049] -> inconclusive
+- kc2_outcome1p5_s2060_60nan: F1 -0.0008 [-0.0422, +0.0405] (plain [-0.0188, +0.0171]); LL +0.0976 [-0.5223, +0.7175] -> inconclusive
+- kc2_outcome3p0_s2060_60nan: F1 +0.0094 [-0.0226, +0.0413] (plain [-0.0045, +0.0233]); LL +2.5226 [-8.7781, +13.8232] -> inconclusive
+- spambase_outcome1p5_s2060_60nan: F1 -0.0009 [-0.0100, +0.0082] (plain [-0.0048, +0.0030]); LL +0.0085 [-0.0760, +0.0930] -> inconclusive
+- spambase_outcome3p0_s2060_60nan: F1 +0.0014 [-0.0009, +0.0038] (plain [+0.0004, +0.0025]); LL -0.5550 [-1.3609, +0.2510] -> inconclusive
+```
+
+- **Nothing here decides H2** (confirmation does, and it did not run).
+- **A1 against A2 on development:** A1 is *inferior* on 5 of 23 variants (vehicle at 60nan MCAR and both self-masking
+  levels, biodeg_60nan MCAR, biodeg's dial at 0.25), *non-inferior* or *superior* on none, *inconclusive* on 18. Its
+  macro-F1 is lower on 17 of 23 by point estimate. The deficit shows under MCAR too, so it reads as the fill-plus-
+  indicator input beating `[NULL]` on these tables in general, not as informative missingness.
+- **The relative log loss is unstable on the outcome-dependent variants** (+1.27, +2.52, −0.55 at odds 3): where the
+  indicators nearly separate the classes, A2's log loss approaches 0 and the ratio explodes. Any later read of H2 on
+  such variants needs the absolute log-loss difference beside the ratio.
+

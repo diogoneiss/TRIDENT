@@ -3519,7 +3519,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E124 · C15 Stage 1: gate G1 on the positive controls, and A1 against A2 on the development set (2026-11-04)
 
-- **Status:** G1 failed (1 of 3); Stage 1b running, descriptive
+- **Status:** done: G1 failed (1 of 3); Stage 1b descriptive
 - **Hypothesis:** on F5 the indicator arm beats MICE without one and A1's direct contrast on the noise column is
   positive (G1); the development set gives A1 − A2 estimates before confirmation.
 - **Scenarios:** 1a: A1, A2, A4:0–4 on F5's three controls, seed 42 (21 cells); 1b: A1, A2 on 23 development
@@ -3529,6 +3529,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [c15-mnar-prediction/03](tickets/c15-mnar-prediction/03-stage1.md).
 - **Amendment (2026-11-04 01:10 GMT-3):** seed 42 of the development set moves to medusa1 except spambase and kc2 (whole pairs, every stage), to balance the machines.
 - **Results, G1 (2026-11-04 01:16 GMT-3):** A1's noise-column contrast positive on 3 of 3 (+1.78, +3.80, +1.75 logit; interval above 0 on 2); A2 beats A4 on log loss only on spambase (−0.33); biodeg and kc2 intervals wide over 5 cells. G1 fails, C15 stops before Stage 2.
+- **Results, Stage 1b (2026-11-04 01:34 GMT-3):** A1 − A2 inferior on 5 of 23 development variants (vehicle 60nan, both vehicle
+  self-masking levels, biodeg_60nan, biodeg's dial at 0.25), non-inferior on none; the deficit shows under MCAR too.
+- **Conclusion:** G1 fails, so C15 stops before Stage 2; on development, `[NULL]` trails missForest + indicator in
+  the same encoder, MCAR included. The next step is the user's.
 
 ### E125 · C15 Stage 2: A4 (MICE, no indicator), the complete and MAR tables; H2-c2, H2.2 and H2b on development (2026-11-04)
 
