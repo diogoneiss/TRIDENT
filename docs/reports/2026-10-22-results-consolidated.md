@@ -11,6 +11,9 @@ new analysis.
   them makes a line of this report false, the line is corrected and cites it: E108 (the thesis tables read
   ADR 0036's reruns), E113/E116/E117 (ADR 0037), E90/E91/E95 (ADR 0031 decision 6), E105/E110 (ADR 0030
   decision 7), E99 and E115 (classification against the deep baselines).
+- **E58's seed-set tallies predate E108:** `tabpfn_seed_sets_report.py` reads E35's and E40's own cells, so on
+  42/7/13 pendigits_20nan still counts as worse against TabPFN, where the thesis table, on ADR 0036's reruns,
+  reads better (E108).
 - **Every number is a pre-registered reader's output.**
   - The summary lines are in the appendix, built by `scripts/experiments/results_digest.py`, which
     runs each reader unchanged.
