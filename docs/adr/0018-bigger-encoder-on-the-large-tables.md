@@ -9,6 +9,10 @@ and [imputation-architecture/02](../tickets/imputation-architecture/02-bigger-en
 of a confirmed hypothesis. It changes no code and no global default: two promoted per-variant files
 (ADR 0005) carry the bigger encoder.
 
+**Extended 2026-11-03 22:57 GMT-3** by the user ("sim, vale") to MAR and MNAR at 20nan, from E121
+([imputation-protocol/50](../tickets/imputation-protocol/50-bigger-encoder-20nan-mar-mnar.md)): decision 4.
+ADR 0037 has since covered pendigits and letter at 40–60nan (decision 3 here).
+
 ## Context
 
 The imputation encoder has 2 layers, a feed-forward width of 32 against a model width of 128, and
@@ -44,6 +48,19 @@ electricity_20nan (+0.3%), the largest table but one with 8 columns.
    bigger one neutral on the former and worse on the latter.
 3. **Only the two studied variants.** pendigits and letter also exist at 40/60/80nan, outside
    ADR 0007's 21; those read no promoted file and keep today's encoder until checked.
+
+4. **The scope covers all three mechanisms at 20nan (2026-11-03).** Under MAR (`marf`) and MNAR (`probit`),
+   E121 trained BIG (the MCAR sibling's resolved configuration) against M (the same, encoder undone):
+
+| variant | MAR (marf) | MNAR (probit) |
+|---|---|---|
+| pendigits_20nan | −4.59% better | −5.00% better |
+| letter_20nan | −5.81% better | −6.50% better |
+
+   - Through promoted files: `<base>_{marf,probit}_20nan.imputation.json` for pendigits and letter, each a
+     copy of its MCAR sibling's file (which carries ADR 0036's P600 too; both E121 arms trained it), so a
+     plain run trains what E121's BIG trained. No code change.
+   - Not covered: `marfctl` (E64's control) and 80nan off MCAR.
 
 ## Verification
 
