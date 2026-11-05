@@ -13,6 +13,7 @@ from .types import (
     DECODE_MASK_WEIGHTINGS,
     EMBEDDING_LOOKUPS,
     DECODE_CHECKPOINTS,
+    DECODE_METRICS,
     DECODE_GAP_TOKENS,
     ENCODER_FINAL_NORMS,
     PRETRAIN_GAP_TOKENS,
@@ -36,7 +37,7 @@ from .types import (
 # study would silently not reach its trials.
 CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
-    "decode_gap_token", "decode_checkpoint", "pretrain_gap_token", "encoder_final_norm",
+    "decode_gap_token", "decode_checkpoint", "decode_metric", "pretrain_gap_token", "encoder_final_norm",
     "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting",
     "embedding_lookup", "min_steps_per_epoch",
 )
@@ -86,6 +87,10 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     decode_checkpoint = getattr(args, "decode_checkpoint", None)
     if decode_checkpoint is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_checkpoint=decode_checkpoint)
+    # ``--decode_metric`` wins the same way (imputation-protocol/51).
+    decode_metric = getattr(args, "decode_metric", None)
+    if decode_metric is not None:
+        hyperparameters = dataclasses.replace(hyperparameters, decode_metric=decode_metric)
     # ``--decode_calibration`` wins the same way (ADR 0027).
     decode_calibration = getattr(args, "decode_calibration", None)
     if decode_calibration is not None:
@@ -186,6 +191,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
+            "DECODE_METRIC": values.decode_metric,
             "DECODE_CALIBRATION": values.decode_calibration,
             "PRETRAIN_GAP_TOKEN": values.pretrain_gap_token,
             "ENCODER_FINAL_NORM": values.encoder_final_norm,
@@ -300,6 +306,8 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_checkpoint requires --task imputation")
+    if getattr(args, "decode_metric", None) is not None and getattr(args, "task", DEFAULT_TASK) != "imputation":
+        raise SystemExit("error: --decode_metric requires --task imputation")
 
     # Only imputation has an output to calibrate.
     if (
@@ -493,6 +501,21 @@ def build_training_parser() -> argparse.ArgumentParser:
             "default, every run before the choice) shows the [NULL] token; 'mask' shows [MASK], "
             "as ADR 0014 does for the decode stage. A gap never enters the loss either way. "
             "Both tasks. Overrides PRETRAIN_GAP_TOKEN from the hyperparameter file."
+        ),
+    )
+    parser.add_argument(
+        "--decode_metric",
+        type=str,
+        default=None,
+        choices=DECODE_METRICS,
+        help=(
+            "Imputation only: which score the decode stage's selections rank by, the epoch the "
+            "'induced' and 'masked' checkpoints keep and the validation key a search ranks its "
+            "trials by. 'impute_score' (the default, every run before the choice) is the "
+            "cell-by-cell error ratio; 'dist_score' is the distributional score, the per-column "
+            "Wasserstein distance and category total variation as a ratio to the mean/mode fill "
+            "(imputation-protocol/51), and the run then logs it beside impute_score. Overrides "
+            "DECODE_METRIC from the hyperparameter file."
         ),
     )
     parser.add_argument(

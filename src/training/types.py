@@ -71,6 +71,13 @@ DEFAULT_ENCODER_FINAL_NORM = "none"
 # it needs no complete table and is the criterion a deployed model can use.
 DECODE_CHECKPOINTS: tuple[str, ...] = ("loss", "induced", "masked")
 DEFAULT_DECODE_CHECKPOINT = "loss"
+# Which score the decode stage's selections rank by, accepted by ``Hyperparameters.decode_metric``
+# and ``--decode_metric``: the epoch the ``induced`` and ``masked`` checkpoints keep, and the
+# validation key an imputation search ranks its trials by. ``impute_score`` is every run before the
+# choice and the default (ADR 0025 decision 1); ``dist_score`` is the distributional score of
+# ``src/training/distribution_metrics.py`` (imputation-protocol/51).
+DECODE_METRICS: tuple[str, ...] = ("impute_score", "dist_score")
+DEFAULT_DECODE_METRIC = "impute_score"
 
 # Whether an imputation run's output is calibrated on the validation rows' own gaps
 # (``src/training/calibration.py``), accepted by ``Hyperparameters.decode_calibration`` and
@@ -123,14 +130,16 @@ CLASSIFICATION_SEARCH_OBJECTIVES: tuple[str, ...] = ("test", "validation")
 CLASSIFICATION_VALIDATION_OBJECTIVE = "val_f1_macro"
 
 
-def validation_objective_key(population: str) -> str:
-    """The validation metric an imputation search ranks by, for a population."""
+def validation_objective_key(population: str, metric: str = DEFAULT_DECODE_METRIC) -> str:
+    """The validation metric an imputation search ranks by, for a population and a decode metric."""
     if population not in SEARCH_OBJECTIVE_POPULATIONS:
         raise ValueError(
             f"Unknown search objective population {population!r}; expected one of "
             f"{SEARCH_OBJECTIVE_POPULATIONS}."
         )
-    return f"validation/impute/{population}/impute_score"
+    if metric not in DECODE_METRICS:
+        raise ValueError(f"Unknown decode metric {metric!r}; expected one of {DECODE_METRICS}.")
+    return f"validation/impute/{population}/{metric}"
 
 
 @dataclass(frozen=True)
@@ -264,6 +273,7 @@ class Hyperparameters:
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
+    decode_metric: str = DEFAULT_DECODE_METRIC
     decode_calibration: str = DEFAULT_DECODE_CALIBRATION
     pretrain_gap_token: str = DEFAULT_PRETRAIN_GAP_TOKEN
     encoder_final_norm: str = DEFAULT_ENCODER_FINAL_NORM
@@ -330,6 +340,10 @@ class Hyperparameters:
         if self.decode_checkpoint not in DECODE_CHECKPOINTS:
             raise ValueError(
                 f"Unknown decode checkpoint {self.decode_checkpoint!r}; expected one of {', '.join(DECODE_CHECKPOINTS)}"
+            )
+        if self.decode_metric not in DECODE_METRICS:
+            raise ValueError(
+                f"Unknown decode metric {self.decode_metric!r}; expected one of {', '.join(DECODE_METRICS)}"
             )
         if self.decode_calibration not in DECODE_CALIBRATIONS:
             raise ValueError(
@@ -448,6 +462,7 @@ class Hyperparameters:
             decode_checkpoint=str(
                 values.get("DECODE_CHECKPOINT", values.get("decode_checkpoint", DEFAULT_DECODE_CHECKPOINT))
             ),
+            decode_metric=str(values.get("DECODE_METRIC", values.get("decode_metric", DEFAULT_DECODE_METRIC))),
             decode_calibration=str(
                 values.get("DECODE_CALIBRATION", values.get("decode_calibration", DEFAULT_DECODE_CALIBRATION))
             ),

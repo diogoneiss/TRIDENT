@@ -43,6 +43,7 @@ from src.training.types import (
     default_lr_scheduler,
     task_spec,
     validation_objective_key,
+    DEFAULT_DECODE_METRIC,
 )
 
 # Import components from train.py
@@ -460,7 +461,9 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     objective.task = task.name
     objective.ranking_metric = task.ranking_metric
     if task.name == "imputation":
-        objective.search_objective = validation_objective_key(population)
+        objective.search_objective = validation_objective_key(
+            population, getattr(args, "decode_metric", None) or DEFAULT_DECODE_METRIC
+        )
     elif getattr(args, "classification_search_objective", None) == "validation":
         objective.search_objective = CLASSIFICATION_VALIDATION_OBJECTIVE
     else:

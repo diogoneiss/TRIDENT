@@ -5,12 +5,13 @@ from pathlib import Path
 import pytest
 
 from src.training.config import (
+    CONFIGURATION_FLAGS,
     build_training_parser,
     logged_hyperparameters,
     resolve_training_request,
     validate_parsed_args,
 )
-from src.training.types import DEFAULT_LR_SCHEDULER, Hyperparameters, RuntimeOptions
+from src.training.types import DEFAULT_LR_SCHEDULER, Hyperparameters, RuntimeOptions, validation_objective_key
 
 
 def test_legacy_namespace_uses_legacy_runtime_defaults() -> None:
@@ -286,7 +287,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "BATCH", "LR_PRE", "WEIGHT_DECAY_PRE", "PROB_MASCARA", "LR_SCHEDULER",
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
-        "DECODE_CHECKPOINT", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
+        "DECODE_CHECKPOINT", "DECODE_METRIC", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
         "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH",
     }
 
@@ -747,3 +748,26 @@ def test_the_training_batch_shrinks_only_to_reach_the_minimum_steps() -> None:
     assert batches_per_epoch(645, training_batch_size(645, 256, 8)) >= 8
     assert training_batch_size(36000, 256, 8) == 256
     assert training_batch_size(5, 256, 8) == 1
+
+
+def test_the_decode_metric_is_impute_score_unless_a_run_asks_for_the_distributional_one() -> None:
+    """imputation-protocol/51: ``impute_score`` ranks the decode stage's selections on every run that
+    does not ask (ADR 0025 decision 1); ``--decode_metric dist_score`` switches the checkpoint's
+    score and a search's validation key, reaches a study's trials, and is imputation's alone."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+
+    default = resolve_training_request(parser.parse_args(imputation)).hyperparameters
+    asked = resolve_training_request(parser.parse_args([*imputation, "--decode_metric", "dist_score"])).hyperparameters
+
+    assert (default.decode_metric, asked.decode_metric) == ("impute_score", "dist_score")
+    assert Hyperparameters.from_mapping({"DECODE_METRIC": "dist_score"}).decode_metric == "dist_score"
+    with pytest.raises(ValueError, match="decode metric"):
+        Hyperparameters.from_mapping({"DECODE_METRIC": "energy"})
+    with pytest.raises(SystemExit, match="decode_metric"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_metric", "dist_score"]))
+    assert "decode_metric" in CONFIGURATION_FLAGS
+    assert validation_objective_key("induced") == "validation/impute/induced/impute_score"
+    assert validation_objective_key("masked", "dist_score") == "validation/impute/masked/dist_score"
+    with pytest.raises(ValueError, match="decode metric"):
+        validation_objective_key("masked", "energy")

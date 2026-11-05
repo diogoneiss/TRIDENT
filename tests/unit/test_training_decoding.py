@@ -971,3 +971,35 @@ def test_the_propensity_weighting_hands_the_folds_weights_to_the_decode_masks(mo
     (shape, weights), (_, none) = seen
     assert isinstance(weights, np.ndarray) and weights.shape == shape
     assert none is None
+
+
+@pytest.mark.parametrize(("checkpoint", "population", "series_key"), [("induced", "induced", "decode/val_induced_score"), ("masked", "masked", "decode/val_masked_score")])
+def test_a_run_that_ranks_by_the_distributional_score_keeps_the_epoch_it_names(checkpoint: str, population: str, series_key: str) -> None:
+    """``DECODE_METRIC dist_score`` (imputation-protocol/51): the per-epoch score the checkpoint
+    watches is the distributional one, equal at the kept epoch to what the pandas path computes on
+    the same cells, and the run logs it beside ``impute_score``. A run that does not ask carries no
+    such key."""
+    dataset = _dataset()
+    np.random.seed(0)
+    asked, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT=checkpoint, DECODE_METRIC="dist_score"),
+    )
+    np.random.seed(0)
+    plain, plain_tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT=checkpoint),
+    )
+
+    metrics = asked.result.metrics
+    series = {event.step: event.value for event in tracker.metric_events if event.key == series_key}
+    assert sorted(series) == list(range(6))
+    kept = min(series, key=lambda epoch: (series[epoch], epoch))
+    assert series[kept] == pytest.approx(metrics[f"validation/impute/{population}/dist_score"], abs=1e-9)
+    for prefix in ("impute/masked", "impute/induced", "validation/impute/masked", "validation/impute/induced"):
+        assert f"{prefix}/dist_score" in metrics and f"{prefix}/impute_score" in metrics
+    # The same trajectory: only the kept epoch may differ.
+    assert asked.train_losses == plain.train_losses
+    assert not any("dist_score" in key or "wd_num_z" in key or "tv_cat" in key for key in plain.result.metrics)
+    plain_series = {event.step: event.value for event in plain_tracker.metric_events if event.key == series_key}
+    assert plain_series != series

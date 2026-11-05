@@ -117,6 +117,12 @@ DECODE_GAP_TOKEN_BACKFILLED_TAG = "decode_gap_token_backfilled"
 # ``scripts/backfill_decode_checkpoint_tag.py`` and marked DECODE_CHECKPOINT_BACKFILLED_TAG.
 DECODE_CHECKPOINT_TAG = "decode_checkpoint"
 DECODE_CHECKPOINT_BACKFILLED_TAG = "decode_checkpoint_backfilled"
+# Which score an imputation run's decode selections ranked by, "impute_score" (the default) or
+# "dist_score" (imputation-protocol/51). On every imputation parent and trial; runs recorded before
+# it are stamped "impute_score" by ``scripts/backfill_decode_metric_tag.py`` and marked
+# DECODE_METRIC_BACKFILLED_TAG.
+DECODE_METRIC_TAG = "decode_metric"
+DECODE_METRIC_BACKFILLED_TAG = "decode_metric_backfilled"
 # Whether an imputation run's induced output was calibrated on the validation rows' own gaps,
 # "gaps" or "none" (ADR 0027): the value the run actually used, so ``auto`` is recorded as what it
 # resolved to, and a variant without a complete table records "none". On every imputation parent

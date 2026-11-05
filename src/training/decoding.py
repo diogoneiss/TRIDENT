@@ -22,9 +22,11 @@ from src.utils import preprocess_table
 from .data import evaluation_mask, in_variant_dtypes
 from .baseline_cache import BaselineScorer
 from .calibration import Calibration, apply_calibration, fit_calibration
+from .distribution_metrics import distribution_scores, naive_distances
 from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
 from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
 from .types import (
+    DEFAULT_DECODE_METRIC,
     DecodingOutcome,
     FoldResult,
     FoldSplit,
@@ -128,7 +130,7 @@ def train_and_evaluate_decoder(
         gap_score = _ValidationGapScore(
             model, dataset, validation_frame, complete_sibling, fold.validation_indices,
             mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
-            device,
+            device, hyperparameters.decode_metric,
         )
     best_gap_score = float("inf")
     gap_state = None
@@ -139,6 +141,7 @@ def train_and_evaluate_decoder(
         mask_score = _ValidationMaskScore(
             model, hidden_validation, clean_validation,
             mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
+            hyperparameters.decode_metric,
         )
     best_mask_score = float("inf")
     mask_state = None
@@ -248,6 +251,11 @@ def train_and_evaluate_decoder(
         metrics["decode/epochs_trained"] = len(train_losses)
     scored = score_cells(cells, baselines)
     metrics.update({f"impute/masked/{name}": value for name, value in scored.metrics.items()})
+    # A run that ranks by the distributional score logs it for its own cells, beside ``impute_score``
+    # (imputation-protocol/51); every other run's keys are as they were.
+    distributional = hyperparameters.decode_metric == "dist_score"
+    if distributional:
+        metrics.update({f"impute/masked/{name}": value for name, value in distribution_scores(cells, baselines).items()})
     # Scored here, while ``cells`` holds the masked population alone: the induced cells
     # are appended to it further down.
     masked_baselines = baseline_scorer.score(test_frame, cells, baselines)
@@ -307,11 +315,17 @@ def train_and_evaluate_decoder(
                 }
             )
             metrics.update(_calibration_summary("impute/induced/calibration", calibration))
+            if distributional:
+                metrics.update(
+                    {f"impute/induced/uncalibrated/{name}": value for name, value in distribution_scores(raw_induced, baselines).items()}
+                )
         cells = pd.concat([cells, induced], ignore_index=True)
         scored_induced = score_cells(induced, baselines)
         metrics.update(
             {f"impute/induced/{name}": value for name, value in scored_induced.metrics.items()}
         )
+        if distributional:
+            metrics.update({f"impute/induced/{name}": value for name, value in distribution_scores(induced, baselines).items()})
         # The induced cells are the frame's own gaps, so the mask adds nothing here; one
         # code path for both populations all the same. The baselines are scored on the raw
         # cells: the same positions, and nothing of the model's guesses.
@@ -513,6 +527,10 @@ def train_and_evaluate_decoder(
             f"validation/impute/masked/{name}": value
             for name, value in score_cells(validation_cells, baselines).metrics.items()
         }
+        if distributional:
+            validation_metrics.update(
+                {f"validation/impute/masked/{name}": value for name, value in distribution_scores(validation_cells, baselines).items()}
+            )
         if complete_sibling is not None:
             # The validation rows' own gaps, scored against the complete table like the
             # induced test cells, for a search that ranks by the headline population
@@ -527,6 +545,10 @@ def train_and_evaluate_decoder(
                     for name, value in score_cells(validation_induced, baselines).metrics.items()
                 }
             )
+            if distributional:
+                validation_metrics.update(
+                    {f"validation/impute/induced/{name}": value for name, value in distribution_scores(validation_induced, baselines).items()}
+                )
         tracker.log_metrics({name: float(value) for name, value in validation_metrics.items()})
 
     tracker.log_metrics({f"test/{name}": float(value) for name, value in metrics.items()})
@@ -715,7 +737,7 @@ class _ValidationGapScore:
     an epoch costs one forward pass and a few reductions.
     """
 
-    def __init__(self, model, dataset, frame, complete_sibling, rows, baselines, device) -> None:
+    def __init__(self, model, dataset, frame, complete_sibling, rows, baselines, device, metric: str = DEFAULT_DECODE_METRIC) -> None:
         cells = _score_induced_missing(model, dataset, frame, complete_sibling, rows, device)
         embedder = model.embedder
         self._hidden = embedder.encode(frame.mask(frame.isna(), "[MASK]"), device)
@@ -752,6 +774,42 @@ class _ValidationGapScore:
         if self._n_categorical:
             naive_labels = categorical["column"].map(baselines).to_numpy()
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
+        self._prepare_distribution(embedder, cells, baselines, metric)
+
+    def _prepare_distribution(self, embedder, cells, baselines, metric: str) -> None:
+        """What ``dist_score`` needs beside the cells, fixed for the fold: each numerical column's truths
+        sorted (with equal counts the 1-D Wasserstein distance is the mean gap between sorted fills and
+        sorted truths), each categorical column's truth frequencies over its ids, one more for a truth
+        the variant never shows, and the naive fill's own distances."""
+        self._metric = metric
+        if metric != "dist_score":
+            return
+        self._sorted_truths = [torch.sort(truth).values for _, _, truth in self._numerical]
+        self._truth_frequencies = []
+        for index, rows, truth in self._categorical:
+            size = len(embedder.label_encoders[embedder.categorical_columns[index]].classes_) + 1
+            self._truth_frequencies.append(torch.bincount(truth + 1, minlength=size).double() / rows.numel())
+        self._naive_wd, self._naive_tv = naive_distances(cells, baselines)
+
+    def _distribution_score(self, prediction) -> float:
+        total = self._n_numerical + self._n_categorical
+        score = 0.0
+        if self._n_numerical:
+            distances = [
+                float((torch.sort(prediction.numerical_values[index][rows].double()).values - truth).abs().mean().item())
+                for (index, rows, _), truth in zip(self._numerical, self._sorted_truths)
+            ]
+            score += (self._n_numerical / total) * _ratio(float(np.mean(distances)), self._naive_wd)
+        if self._n_categorical:
+            variations = [
+                0.5 * float(
+                    (torch.bincount(prediction.categorical_ids[index][rows] + 1, minlength=len(frequencies)).double() / rows.numel() - frequencies)
+                    .abs().sum().item()
+                )
+                for (index, rows, _), frequencies in zip(self._categorical, self._truth_frequencies)
+            ]
+            score += (self._n_categorical / total) * _ratio(float(np.mean(variations)), self._naive_tv)
+        return score
 
     def score(self, model) -> float:
         with torch.no_grad():
@@ -759,6 +817,8 @@ class _ValidationGapScore:
         total = self._n_numerical + self._n_categorical
         if not total:
             return 0.0
+        if self._metric == "dist_score":
+            return self._distribution_score(prediction)
         score = 0.0
         if self._n_numerical:
             squared = sum(
@@ -786,7 +846,7 @@ class _ValidationMaskScore(_ValidationGapScore):
     and a few reductions, scored as the gap score is.
     """
 
-    def __init__(self, model, hidden, clean, baselines) -> None:
+    def __init__(self, model, hidden, clean, baselines, metric: str = DEFAULT_DECODE_METRIC) -> None:
         cells = _score_population(model, hidden, clean, "masked")
         self._hidden = hidden
         embedder = model.embedder
@@ -813,6 +873,7 @@ class _ValidationMaskScore(_ValidationGapScore):
         if self._n_categorical:
             naive_labels = categorical["column"].map(baselines).to_numpy()
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
+        self._prepare_distribution(embedder, cells, baselines, metric)
 
 
 def _decode_parameters(model: TridentDecoder, hyperparameters: Hyperparameters):

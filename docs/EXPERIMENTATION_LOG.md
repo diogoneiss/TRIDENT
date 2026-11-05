@@ -3865,3 +3865,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   gorgona8 on the user's decision. Within-pair differences stay on one machine; the second-order contrast crosses
   machines for every medusa1-sibling pair (stated threat).
 - **Sources:** [c1-split/13](tickets/c1-split/13-selector-squares.md).
+
+### E145 · Choosing the decode checkpoint by a distributional score (2026-11-05)
+
+- **Status:** in progress
+- **Hypothesis:** keeping the decode epoch whose validation gaps score best by `dist_score` (per-column Wasserstein
+  distance and category total variation, as a ratio to the mean/mode fill) improves the test fills' distribution
+  without a relevant cost in `impute_score`.
+- **Scenarios:** E40's 12 development variants at 40nan+ × seeds 42/7/13 × arms A (`impute_score`, today's K) and B
+  (`--decode_metric dist_score`), `--decode_calibration none` in both, 72 cells (gorgona8 seed 42, medusa1 seeds 7/13), MLflow off; K's induced
+  fills from the five fold ledgers.
+- **Measures and decision rule:** B − A pooled over the 12 variants per replicate (15), plain 95% t interval:
+  supported if `dist_score` is below 0 and `impute_score`'s upper bound is below +0.01; "at a cost" if only the
+  first; else not supported. No default change, no ADR; ADR 0025 stands (`score_cells` untouched).
+- **Sources:** [imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md).

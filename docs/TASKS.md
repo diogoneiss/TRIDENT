@@ -860,6 +860,15 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 
 ### Process
 
+
+- **T49 · A distributional score to select by** (the user, 2026-11-05: "usar outra métrica pra imputação que não seja
+  o impute_score ... incluindo uma nova flag para optimizar por essas novas métricas"). ADR 0025's offline panel
+  already reads the distribution of the fills (Wasserstein, total variation, dispersion) for the model, the baselines
+  and TabPFN; the new part is selecting by it. `DECODE_METRIC` / `--decode_metric dist_score` (off by default; tag
+  `decode_metric`, backfilled) switches the checkpoint's score and a search's validation key; `score_cells` is
+  untouched. **E145 ([imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md)), from 2026-11-05:**
+  checkpoint by `dist_score` against by `impute_score` on E40's 12 variants, seeds 42/7/13, 72 cells on both machines.
+  Cut for now: energy distance, I-Scores, row-level sliced Wasserstein, downstream utility, CRPS.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
