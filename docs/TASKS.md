@@ -854,6 +854,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   interaction (arm − A1) F3 − sibling, Holm over the two arms: shrinks / grows / holds / no verdict.
   **E142 ([c15-mnar-prediction/10](tickets/c15-mnar-prediction/10-h2-fresh-draws.md)) pre-registered 2026-11-05, conditional on E139 reading "shrinks": the s4848 fresh draws (odds 3) on the confirmation seeds, 18 A1 cells plus TabPFN.**
   **E139 done 2026-11-05 00:34 GMT-3: the lead SHRINKS under outcome-dependent MNAR for both TabPFN arms (native −0.045 [−0.056, −0.035], mask −0.036 [−0.047, −0.026], Holm < 0.0001; 12 of 12 file intervals below zero): the first positive H2 reading. E142 launched on medusa1 (stage h2c).**
+  **E142 done 2026-11-05 01:24 GMT-3: confirmed on the s4848 draw and seeds 1515/2626/3737 (native −0.039 [−0.051, −0.028], mask −0.028 [−0.040, −0.016], Holm ≤ 0.0002). H2 holds on the outcome-dependent family: `[NULL]` gains 0.03–0.05 of ground on TabPFN relative to MCAR. T48 done; the thesis sentence is the user's call.**
 
 ### Process
 

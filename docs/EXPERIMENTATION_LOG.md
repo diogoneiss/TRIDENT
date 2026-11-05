@@ -3805,7 +3805,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E142 · H2's fresh-draw confirmation (conditional on E139 reading "shrinks") (2026-11-05)
 
-- **Status:** in progress (condition met by E139 at 00:34 GMT-3; launched on medusa1)
+- **Status:** done 2026-11-05 (18 A1 cells, 18 TabPFN pairs; read 01:24 GMT-3)
+- **Results:** interaction (arm − A1) odds-3 − sibling, balanced: native −0.0394 [−0.0513, −0.0275], mask −0.0278
+  [−0.0398, −0.0159], Holm ≤ 0.0002 → SHRINKS for both; plain also shrinks (−0.027, −0.022). A1 gains +0.15 to
+  +0.27 from the label-bearing gaps, TabPFN +0.12 to +0.24.
+- **Conclusion:** E139 confirmed on a fresh draw and fresh seeds: TRIDENT's `[NULL]` gains 0.03–0.05 macro-F1 of ground
+  on TabPFN v2 under outcome-dependent MNAR relative to MCAR; the explicit mask does not close it. Thesis sentence the
+  user's call; ADR 0032 unchanged.
 - **Scenarios:** A1 on `{biodeg,kc2,spambase}_outcome3p0_s4848_60nan` and `_mcar_s4848_60nan`, seeds 1515/2626/3737 (18
   cells); TabPFN arms offline on the same pairs.
 - **Measures and decision rule:** E139's interaction rule on the three odds-3 files, Holm over the two arms.
