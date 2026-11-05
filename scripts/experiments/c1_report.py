@@ -26,6 +26,7 @@ from typing import Any
 
 import numpy as np
 import torch
+from scipy import stats
 
 ROOT = Path.cwd()
 if not (ROOT / "train.py").exists():
@@ -317,6 +318,59 @@ def kept() -> None:
         print(f"- {arm}: " + " | ".join(cells))
 
 
+def scarce() -> None:
+    """E136 (ticket 08): the gate S(f) − B(f) per fraction, Holm over the two; S(f) − T(f) read only where it passes."""
+    print("## Label-scarce (E136): fine-tuning on a tenth / a quarter of the training labels; 15 paired replicates a file, "
+          "pooled over the eight files; gate S(f) − B(f) with Holm over the two fractions; S(f) − T(f) only past the gate")
+    gates: dict[str, np.ndarray] = {}
+    for f in ("10", "25"):
+        rows = []
+        for v in run.MNAR + run.MCAR:
+            sb = paired(f"S{f}", f"B{f}", v)
+            if sb is None:
+                print(f"- S{f} − B{f} {v}: missing\n\nScarce: incomplete")
+                return
+            rows.append(sb[0])
+            print(f"- S{f} − B{f} {v}: F1 {line('', sb[0], None)}; LL(B) − LL(S) {c15.interval(sb[1], False)[0]:+.4f}")
+        gates[f] = np.mean(rows, axis=0)
+    p = {f: float(stats.ttest_1samp(d, 0.0).pvalue) for f, d in gates.items()}
+    order = sorted(p, key=lambda k: p[k])
+    holm = {f: min(1.0, max(p[g] * (2 - j) for j, g in enumerate(order[:k + 1]))) for k, f in enumerate(order)}
+    passed = []
+    for f in ("10", "25"):
+        m, lo, hi = c15.interval(gates[f], False)
+        _, nlo, nhi = c15.interval(gates[f])
+        ok = holm[f] < 0.05 and m > 0
+        passed += [f] if ok else []
+        print(f"Gate S{f} − B{f} pooled: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); p {p[f]:.4f}, "
+              f"Holm {holm[f]:.4f} -> channel {'OPEN' if ok else 'closed'}")
+    for f in ("10", "25"):
+        cost = [paired(f"S{f}", "S", v) for v in run.MNAR + run.MCAR]
+        if all(c is not None for c in cost):
+            print(f"Beside, S{f} − S(all labels) pooled: {line('', np.mean([c[0] for c in cost if c is not None], axis=0), None)}")
+    if not passed:
+        print("\nNo fraction opens a channel: S − T stays unread (C1 closed in the label-scarce regime too).")
+        return
+    for f in passed:
+        print(f"\n### S{f} − T{f} (the gate passed at {f}%)")
+        blocks: dict[str, np.ndarray] = {}
+        for label, files in (("MNAR", run.MNAR), ("MCAR", run.MCAR)):
+            ds = []
+            for v in files:
+                st = paired(f"S{f}", f"T{f}", v)
+                if st is None:
+                    print(f"- {v}: missing"); return
+                ds.append(st[0])
+                print(f"- {v}: F1 {line('S − T', st[0], MARGIN)}; LL(T) − LL(S) {c15.interval(st[1], False)[0]:+.4f}")
+            pooled = np.mean(ds, axis=0)
+            blocks[label] = pooled
+            status, note = pooled_status(pooled)
+            print(f"Pooled S{f} − T{f} ({label}): {line('', pooled, MARGIN)} -> {status} ({note})")
+        d = blocks["MNAR"] - blocks["MCAR"]
+        m, lo, hi = c15.interval(d, False)
+        print(f"Interaction (S − T) MNAR − MCAR, pooled: {m:+.4f} [{lo:+.4f}, {hi:+.4f}]")
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -339,7 +393,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

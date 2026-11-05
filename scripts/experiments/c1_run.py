@@ -55,6 +55,11 @@ ARMS: dict[str, dict[str, object]] = {
     "COS150": {"FINETUNE_LR_SCHEDULER": "cosine"}, "COS50": {"FINETUNE_LR_SCHEDULER": "cosine", "EPOCH_FINE": 50},
     "WUC150": {"FINETUNE_LR_SCHEDULER": "warmup_cosine"}, "WUC50": {"FINETUNE_LR_SCHEDULER": "warmup_cosine", "EPOCH_FINE": 50},
     "PLAT150": {"FINETUNE_LR_SCHEDULER": "plateau"}, "CONST150": {"FINETUNE_LR_SCHEDULER": "constant"},
+    # E136 (ticket 08): the label-scarce regime; fine-tuning sees a tenth or a quarter of the training labels.
+    "S10": {"FINETUNE_LABEL_FRACTION": 0.1}, "T10": {"PRETRAIN_HOLE_TOKEN": "null", "FINETUNE_LABEL_FRACTION": 0.1},
+    "B10": {"EPOCHS_PRE": 0, "FINETUNE_LABEL_FRACTION": 0.1},
+    "S25": {"FINETUNE_LABEL_FRACTION": 0.25}, "T25": {"PRETRAIN_HOLE_TOKEN": "null", "FINETUNE_LABEL_FRACTION": 0.25},
+    "B25": {"EPOCHS_PRE": 0, "FINETUNE_LABEL_FRACTION": 0.25},
 }
 SMOKE_VARIANT = "biodeg_probit_60nan"
 CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
@@ -70,6 +75,7 @@ CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
     },
     "6": {(v, s): ("S30", "S50", "B30", "B50") for v in MNAR + MCAR for s in SEEDS},  # the budget, E134 (ticket 06)
     "7": {(v, s): ("COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150") for v in MNAR + MCAR for s in SEEDS},  # E135
+    "8": {(v, s): ("S10", "T10", "B10", "S25", "T25", "B25") for v in MNAR + MCAR for s in SEEDS},  # E136 (ticket 08)
 }
 
 

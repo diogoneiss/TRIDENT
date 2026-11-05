@@ -7,6 +7,7 @@ import numpy as np
 import torch
 import torch.optim as optim
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, log_loss, precision_score, recall_score  # type: ignore[attr-defined]
+from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from tqdm import tqdm
 
@@ -76,6 +77,18 @@ def build_fold_result(
     return FoldResult(fold=fold, dataset_name=dataset_name, metrics=metrics)
 
 
+def labelled_rows(labels: np.ndarray, fraction: float) -> np.ndarray:
+    """E136: the sorted positions of the training rows whose labels fine-tuning sees.
+
+    A stratified draw fixed by the rows themselves (``random_state`` 0), so S, T and B of one fold see the same
+    labelled rows; the run's seed enters through the fold split. ``fraction`` 1.0 keeps every row.
+    """
+    if fraction >= 1:
+        return np.arange(len(labels))
+    keep, _ = train_test_split(np.arange(len(labels)), train_size=fraction, stratify=labels, random_state=0)
+    return np.sort(np.asarray(keep))
+
+
 def train_and_evaluate_classifier(
     dataset: PreparedDataset,
     fold: FoldSplit,
@@ -103,6 +116,13 @@ def train_and_evaluate_classifier(
     processed_test = preprocess_table(
         test_frame.drop(columns=[dataset.label_column]), p_base=0.0, fine_tunning=True
     )
+
+    # E136: fine-tuning sees a fixed stratified share of the training rows' labels; sliced after the token
+    # replacement (which fits nothing) and before the class weights, which come from the kept labels alone.
+    kept_rows = labelled_rows(train_labels.cpu().numpy(), hyperparameters.finetune_label_fraction)
+    if len(kept_rows) < len(processed_train):
+        processed_train = processed_train.iloc[kept_rows].reset_index(drop=True)
+        train_labels = train_labels[torch.as_tensor(kept_rows, device=device)]
 
     number_of_labels = len(dataset.label_classes)
     present_classes = np.unique(train_labels.cpu().numpy())
@@ -245,6 +265,7 @@ def train_and_evaluate_classifier(
             "state_dict": {name: tensor.detach().cpu() for name, tensor in model.state_dict().items()},
             "test_log_loss": test_log_loss,
             "val_log_loss": val_log_loss,
+            "labelled_rows": int(len(train_labels)),
         }
     result = build_fold_result(
         fold="single_split",

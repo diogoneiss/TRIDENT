@@ -777,6 +777,57 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     qualquer maquina ... nao precisamos testar em mais datasets". T42 is done.
   - Runs now record `host` ([ADR 0034](adr/0034-a-host-tag-on-every-run.md)).
 
+- **T43 · Conformal intervals for the imputer's fills, calibrated by row missingness** (proposed
+  2026-10-29 from the wiki's claims ledger, `projects/trident/claims`, C18 and P6, batch t49; for
+  the user's decision).
+  - **The gap:** ADR 0030 gives a per-cell rank, not an interval. E77 found that the spread, scaled
+    to 90% by cross-fitting, makes wider intervals than a per-column constant width on 15 of 15
+    variants. E80 found why a single scale fails: the spread *falls* as a row's gaps grow, while the
+    error *rises* when a cell's top sources are missing.
+  - **The literature's answer:** missing values make the error heteroskedastic by pattern, so one
+    correction for every pattern under-covers the rows that hide the most informative columns.
+    Conformal prediction with missing values (Zaffran et al., ICML 2023) restores per-pattern
+    coverage by calibrating on rows that carry the test row's pattern; conformalized matrix
+    completion (Gui et al., NeurIPS 2023) calibrates cell-wise intervals for missing entries.
+  - **What it would be:** offline, on ledgers that already hold fills and spreads (E75, E76, E84),
+    with no new training.
+    - **Groups (Mondrian conformal):** calibrate per numerical column and per bin of the row's
+      missingness, either the count of gaps in the row or the count of the cell's top-3 sources
+      missing from E78's map.
+    - **Two scores per group:** a constant width (|error|), and a spread-scaled width
+      (|error| / (spread + floor), the floor chosen on calibration cells).
+    - **Calibration cells:** other folds' induced cells, as E77 (an oracle reading under K), and,
+      for a deployable reading, observed validation cells hidden on purpose, as E82.
+  - **What it would read:** coverage at a nominal 90% overall and per bin (the Zaffran-style
+    per-pattern check); mean width against E77's per-column constant; both under K and H
+    (ADR 0024); MCAR first, then E84's MNAR and MAR variants. The decision rule is the ticket's.
+  - **What it would settle:** whether the decoder's uncertainty can become an interval at all
+    (ADR 0030's "a rank, not an interval"), and whether binning by row missingness fixes E80.
+
+- **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
+  claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork
+  changes, wiki todo t41).
+  - **The gap:** untuned TabPFN v2 leads TRIDENT's classification under MCAR (E83; ADR 0032), but
+    its prior has only MCAR gaps. The wiki's search (t46) found no published test of TabPFN's
+    native missing-value handling (a mean fill plus an indicator channel) under a controlled
+    MNAR mechanism. The closest, Liang et al. (arXiv 2601.18500, a preprint), uses natural
+    missingness only: there, TabPFN with raw NaNs and TabPFN after 12 imputers are within about
+    0.003 mean AUC.
+  - **What it would be:** two offline, untuned arms beside the protocol's A1 (`[NULL]`) and A2
+    (missForest + indicator), on the same MNAR family, folds and seeds:
+    - **TabPFN, native:** raw NaNs, ADR 0032's settings;
+    - **TabPFN, explicit mask:** the 0/1 missingness mask appended as ordinary features, which the
+      in-context learner can use as predictors (its built-in indicator was trained only where
+      gaps carry no signal).
+    - Class balancing follows E92's outcome.
+  - **What it would read:** each arm against A1 on macro-F1 and log loss, and the interaction
+    (arm − A1) MNAR minus MCAR: does TabPFN's MCAR lead shrink, hold or grow when missingness
+    carries the label? Explicit mask minus native, on the MNAR variants only, measures what the
+    MCAR prior leaves unused.
+  - **What it would settle:** whether TabPFN's lead is robust to informative missingness, which
+    no published study shows, and whether TRIDENT's per-column `[NULL]` gains ground there (H2).
+  - **Pre-registered 2026-11-04 as E137 ([c15-mnar-prediction/08](tickets/c15-mnar-prediction/08-tabpfn-arm.md)), the user's go ("vamos no 1 e 2 paralelos"): native and explicit-mask arms, balanced primary, on E124's 69 A1 pairs; primary the interaction (arm − A1) MNAR − MCAR over the seven probit/MCAR sibling pairs, Holm over the two arms. Proposal text ported from `origin/docs/wiki-proposed-tasks-t49` (fbcc010) with T43.**
+
 - **T45 · C15: `[NULL]` tokens against missForest + indicator under informative missingness** (the user's
   choice, 2026-11-03: "prefiro começar pelo c15"; the wiki's protocol C15, H2 and H2.2 of the thesis).
   [Plan](plans/2026-11-03-c15-mnar-prediction.md): Stages 0–3 approved (Stage 4 optional), objective
@@ -788,7 +839,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   2026-11-04: "vamos trabalhar no c1"; the wiki's protocol C1, the thesis's main claim). [Plan](plans/2026-11-04-c1-split.md):
   `embedding_normalized` by explicit override (no ADR), gates condition only the Null row, G2 by interval, cosine
   threshold 0.9, scope cuts 1–3 and the anchor. S reuses E124's A1 cells. **Cut 1 (E129, [c1-split/01](tickets/c1-split/01-g1-probe.md)),
-  cut 2 (E130, [02](tickets/c1-split/02-integrity-smoke.md)) and cut 3 (E131, [03](tickets/c1-split/03-primary.md)), from 2026-11-04.** **Done 2026-11-04: G1 passes (4 of 4), the smoke passes, the primary is Inconclusive: S − T −0.003 [−0.011, +0.004], G2 fails (S − B +0.004, no pre-training channel, as E71); cosines at initialisation.** **E132 ([04](tickets/c1-split/04-channel-probe.md)), from 2026-11-04 (the user's "vamos no 2"): the channel probe, a frozen pre-trained encoder against a frozen random one, head only; it says whether a fine-tuning-side fix is worth a ticket.** **Done 2026-11-04: content present but small (FP − FR +0.009 [+0.001, +0.017] MNAR; S − FP +0.10): washout; a fix is bounded near +0.01.** **E133 ([05](tickets/c1-split/05-finetuning-fix.md)), from 2026-11-04 (the user's "1!", after the loss curves: fine-tuning overfits after epoch ~20, frozen heads unconverged): LRS (encoder LR x0.1) and FRZ (head alone for 50 epochs) against S, Holm over the two; FP10/FR10 beside.** **Done 2026-11-04: neither helps (LRS −0.001, FRZ −0.003, no verdict); FP10/FR10 diverged. Fine-tuning side closed.** **E134 ([06](tickets/c1-split/06-finetuning-budget.md)) and E135 ([07](tickets/c1-split/07-finetuning-scheduler.md)), from 2026-11-04 (the user's "rode o 134 entao, alem de estudar o melhor metodo"): the fine-tuning budget (30/50 against 150) and fine-tuning's schedule (cosine, warmup_cosine, plateau, constant against cosine_legacy's sawtooth); 240 cells; a winner goes to an ADR proposal with a 21-variant confirmation.** **Done 2026-11-04: no verdict everywhere. E134: S30 −0.008 (Holm 0.058, vehicle worse ×2), S50 −0.001 (no file worse: a cost argument only, the user's call); E135: six schedules within −0.003…+0.001 of `cosine_legacy`, none better, plateau ≡ constant on 5/8 files. `cosine_legacy` at 150 epochs stays; no ADR. C1's fine-tuning side is closed on every axis tried (fix, budget, schedule).** **Closed 2026-11-04 (the user: "podemos encerrar ela então no momento"): Inconclusive for want of a channel. Pre-training leaves about +0.01 to a frozen head (E132) and fine-tuning rebuilds +0.10 from any start, so S ≈ T ≈ B on fully labelled small files; the split's claim is untestable in this regime, not refuted. Reopen only where a pre-training channel exists (a label-scarce fine-tuning regime is the candidate).**
+  cut 2 (E130, [02](tickets/c1-split/02-integrity-smoke.md)) and cut 3 (E131, [03](tickets/c1-split/03-primary.md)), from 2026-11-04.** **Done 2026-11-04: G1 passes (4 of 4), the smoke passes, the primary is Inconclusive: S − T −0.003 [−0.011, +0.004], G2 fails (S − B +0.004, no pre-training channel, as E71); cosines at initialisation.** **E132 ([04](tickets/c1-split/04-channel-probe.md)), from 2026-11-04 (the user's "vamos no 2"): the channel probe, a frozen pre-trained encoder against a frozen random one, head only; it says whether a fine-tuning-side fix is worth a ticket.** **Done 2026-11-04: content present but small (FP − FR +0.009 [+0.001, +0.017] MNAR; S − FP +0.10): washout; a fix is bounded near +0.01.** **E133 ([05](tickets/c1-split/05-finetuning-fix.md)), from 2026-11-04 (the user's "1!", after the loss curves: fine-tuning overfits after epoch ~20, frozen heads unconverged): LRS (encoder LR x0.1) and FRZ (head alone for 50 epochs) against S, Holm over the two; FP10/FR10 beside.** **Done 2026-11-04: neither helps (LRS −0.001, FRZ −0.003, no verdict); FP10/FR10 diverged. Fine-tuning side closed.** **E134 ([06](tickets/c1-split/06-finetuning-budget.md)) and E135 ([07](tickets/c1-split/07-finetuning-scheduler.md)), from 2026-11-04 (the user's "rode o 134 entao, alem de estudar o melhor metodo"): the fine-tuning budget (30/50 against 150) and fine-tuning's schedule (cosine, warmup_cosine, plateau, constant against cosine_legacy's sawtooth); 240 cells; a winner goes to an ADR proposal with a 21-variant confirmation.** **Done 2026-11-04: no verdict everywhere. E134: S30 −0.008 (Holm 0.058, vehicle worse ×2), S50 −0.001 (no file worse: a cost argument only, the user's call); E135: six schedules within −0.003…+0.001 of `cosine_legacy`, none better, plateau ≡ constant on 5/8 files. `cosine_legacy` at 150 epochs stays; no ADR. C1's fine-tuning side is closed on every axis tried (fix, budget, schedule).** **Closed 2026-11-04 (the user: "podemos encerrar ela então no momento"): Inconclusive for want of a channel. Pre-training leaves about +0.01 to a frozen head (E132) and fine-tuning rebuilds +0.10 from any start, so S ≈ T ≈ B on fully labelled small files; the split's claim is untestable in this regime, not refuted. Reopen only where a pre-training channel exists (a label-scarce fine-tuning regime is the candidate).** **Reopened 2026-11-04 in the label-scarce regime (the user's "vamos no 1"): E136 ([08](tickets/c1-split/08-label-scarce.md)), S/T/B with fine-tuning on a tenth and a quarter of the training labels (`FINETUNE_LABEL_FRACTION`, new, default 1.0), 144 cells; gate S(f) − B(f) with Holm over the two fractions, S(f) − T(f) read only past the gate.**
 
 ### Process
 

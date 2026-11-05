@@ -3708,3 +3708,29 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   arms: better / worse / no verdict; log loss and kept epochs descriptive; a winner goes to an ADR proposal with a
   21-variant confirmation.
 - **Sources:** [c1-split/07](tickets/c1-split/07-finetuning-scheduler.md).
+
+### E136 · Label-scarce fine-tuning: does pre-training open a channel at a tenth or a quarter of the labels? (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** with few labels the encoder (pre-trained on every row) carries content the head cannot rebuild, so
+  S − B > 0; if so, the `[NULL]`/`[MASK]` split (S − T) becomes testable where E131 could not.
+- **Scenarios:** S10/T10/B10 (`FINETUNE_LABEL_FRACTION` 0.1) and S25/T25/B25 (0.25) on
+  `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (144 cells); the full-label
+  arms are E124's and E131's cells. Validation and test keep every label (a shared oracle selector, stated).
+- **Measures and decision rule:** gate S(f) − B(f) macro-F1 pooled over the eight files, plain 95% t interval, Holm
+  over the two fractions (open if Holm p < 0.05 with a positive mean); past the gate, S(f) − T(f) on the MNAR files
+  with C1's verdicts (±0.010 band), MCAR second, interaction beside; S(f) − S(1.0) descriptive.
+- **Sources:** [c1-split/08](tickets/c1-split/08-label-scarce.md).
+
+### E137 · TabPFN v2 under informative missingness: native and explicit-mask arms beside A1 (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** none directional (T44): TabPFN's MCAR lead over TRIDENT (E83, E92) may shrink, hold or grow when
+  missingness carries the label, which no published study tests; an explicit 0/1 mask may recover what its
+  MCAR-trained indicator leaves unused.
+- **Scenarios:** two offline arms (native NaNs; mask columns appended), balanced probabilities primary and plain
+  beside, one fit a fold, context = training split, on E124's 69 A1 pairs (F0–F3 × seeds 42/7/13, 5 folds).
+- **Measures and decision rule:** interaction (arm − A1) MNAR − MCAR macro-F1 over the seven probit/MCAR sibling
+  pairs, pooled per replicate, plain 95% t interval, Holm over the two arms: shrinks / grows / holds (±0.01) / no
+  verdict; leads per group, F2/F3 per file and mask − native descriptive.
+- **Sources:** [c15-mnar-prediction/08](tickets/c15-mnar-prediction/08-tabpfn-arm.md).
