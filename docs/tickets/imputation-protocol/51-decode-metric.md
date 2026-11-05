@@ -82,3 +82,12 @@ This ticket was written and committed before the study's first cell (18:49 GMT-3
 - **Cost, estimated now:** kc2 took 7 minutes a cell on gorgona8 in the real run above; spambase and kr-vs-kp cost
   several times that. About 3 hours, gorgona8 on 3 queues and medusa1 on 4.
 - **Read only with all 72 cells done.**
+
+## Amendment (2026-11-05, 19:29 GMT-3)
+
+gorgona8, three queues on one GPU, took about 30 minutes a kr-vs-kp cell against medusa1's 4 to 8. On the user's
+decision ("cancele as runs da gorgona, use a medusa o máximo possível") gorgona8's queues were stopped at 19:29 GMT-3
+and seed 42's 24 cells run on medusa1 too, on four queues added beside the four that hold seeds 7 and 13. gorgona8 had
+finished three arm-A cells (kr-vs-kp at 40, 60 and 80nan, seed 42) and was inside their arm-B cells; all of that is
+discarded and those pairs are trained whole on medusa1, so every pair still has both arms on one machine (ADR 0035).
+The cells, the readout and the rule are unchanged; the reading runs on medusa1's ledgers.

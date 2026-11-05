@@ -6,8 +6,8 @@
 
 Each cell is a default imputation run of the checkout, five folds, with ``--decode_calibration none`` so
 the fold ledgers hold K, the fills of the kept checkpoint, and arm B adds ``--decode_metric dist_score``.
-MLflow is off; a cell is done when its five ledgers are written. Seed 42 runs on gorgona8 and seeds 7 and
-13 on medusa1; both arms of a (variant, seed) pair go to one queue, so they train on one GPU. Queues through ``c15_queue.sh`` with ``QUEUE_RUNNER`` and
+MLflow is off; a cell is done when its five ledgers are written. Every cell runs on medusa1 (the ticket's
+amendment); both arms of a (variant, seed) pair go to one queue, so they train on one GPU. Queues through ``c15_queue.sh`` with ``QUEUE_RUNNER`` and
 ``QUEUE_STATE``. Run from the checkout root.
 """
 
@@ -31,7 +31,11 @@ STATE = Path(os.environ.get("DECODE_METRIC_STATE") or (
 VARIANTS = tuple(f"{table}_{level}nan" for table in ("kr-vs-kp", "spambase", "credit-g") for level in (40, 60, 80)) + (
     "vehicle_60nan", "biodeg_60nan", "kc2_60nan")
 SEEDS = (42, 7, 13)
-HERE = {"gorgona8": (42,), "medusa": (7, 13)}[HOST]  # ADR 0035: split by seed, both arms of a pair on one machine
+# Amendment 2026-11-05 19:29 GMT-3 (the user: "cancele as runs da gorgona, use a medusa o máximo possível"): every cell
+# on medusa1, so both arms of every pair are still on one machine (ADR 0035). ``DECODE_METRIC_SEEDS`` narrows a set of
+# queues to some seeds, so queues added beside running ones take none of their cells.
+HERE = tuple(int(seed) for seed in os.environ["DECODE_METRIC_SEEDS"].split()) if os.environ.get("DECODE_METRIC_SEEDS") else (
+    {"gorgona8": (), "medusa": SEEDS}[HOST])
 ARMS: dict[str, dict[str, str]] = {"A": {}, "B": {"decode_metric": "dist_score"}}
 
 

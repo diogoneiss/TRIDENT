@@ -3878,4 +3878,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** B − A pooled over the 12 variants per replicate (15), plain 95% t interval:
   supported if `dist_score` is below 0 and `impute_score`'s upper bound is below +0.01; "at a cost" if only the
   first; else not supported. No default change, no ADR; ADR 0025 stands (`score_cells` untouched).
+- **Amendment 2026-11-05 19:29 GMT-3:** gorgona8's queues stopped on the user's decision (30 minutes a cell there);
+  all 72 cells on medusa1, gorgona8's three finished arm-A cells discarded and their pairs trained whole on medusa1.
 - **Sources:** [imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md).
