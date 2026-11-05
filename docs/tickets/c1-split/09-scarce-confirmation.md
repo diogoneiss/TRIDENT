@@ -37,3 +37,8 @@ This ticket was written and committed before the cut's first cell (23:37 GMT-3).
 - **Threats stated now:** kc2's 13 validation rows (about 3 positives) make its kept epoch noisy for both arms; one
   fraction (0.25); 60nan files only; the fresh seeds change folds and initialisation but not the missingness draw.
 - **Read only with all 48 cells done.**
+
+**Amendment (23:45 GMT-3):** at 23:42 GMT-3 another user's job took both of medusa1's GPUs (31 GB each) and every cut-9 cell
+there failed with CUDA out of memory before training (48 fast failures, nothing read). The 48 cells moved whole to
+gorgona8 (`c1_run.py` cut 9 routes to gorgona8): the fresh-seed pairs had no arm on any machine, so ADR 0035 holds.
+The design and the rule are unchanged.

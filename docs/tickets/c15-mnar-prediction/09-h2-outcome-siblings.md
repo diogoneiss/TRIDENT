@@ -36,3 +36,7 @@ This ticket was written and committed before the stage's first cell (23:37 GMT-3
 - **Threats stated now:** three tables, one draw seed; kc2's intervals are wide; the siblings are new MCAR draws, not
   the `_60nan` files E137 used as F0, so the F0 reading is not repeated here.
 - **Read only with all 9 A1 cells and 9 TabPFN pairs done.**
+
+**Amendment (23:45 GMT-3):** medusa1's GPUs were filled by another user's job at 23:42 GMT-3; its stage-h2 queue failed
+its first cell (out of memory) and was stopped. gorgona8's two cells and pairs run now; medusa1's seven cells and
+their TabPFN pairs are relaunched when its GPUs free up, so the F3 ↔ sibling pairing stays on one machine per seed.

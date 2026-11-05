@@ -122,7 +122,9 @@ def train(arm: str, variant: str, seed: int) -> None:
 def todo(which: int, queues: int) -> None:
     pairs = CUTS[cut()]
     # The smoke's cells pair with nothing reused, so they take gorgona8, idle otherwise.
-    mine = [pair for pair in pairs if (HOST == "gorgona8" if cut() == "2" else c15_run.machine(pair) == HOST)]
+    # Cut 2's cells pair with nothing reused, and cut 9's pairs (fresh seeds) have no arm anywhere yet, so both take
+    # gorgona8 whole (ADR 0035 holds); cut 9 moved there on 2026-11-04 23:45 GMT-3 when another user's job filled medusa1's GPUs.
+    mine = [pair for pair in pairs if (HOST == "gorgona8" if cut() in ("2", "9") else c15_run.machine(pair) == HOST)]
     mine.sort(key=lambda p: (not p[0].startswith("spambase"), p[1], p[0]))  # dearest first, so the queues end together
     for k, (variant, seed) in enumerate(mine):
         if k % queues == which - 1:
