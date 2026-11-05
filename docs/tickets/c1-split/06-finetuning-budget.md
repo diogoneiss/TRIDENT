@@ -36,3 +36,28 @@ This ticket was written and committed before the cut's first cell (19:50 GMT-3).
   phase; the kept-epoch rule (ADR 0029 decision 5) stays, so a shorter budget removes epochs the rule already
   discards.
 - **Read only with all 96 cells done.**
+
+## Outcome (2026-11-04, 21:21 GMT-3; both machines done 20:16 GMT-3, 96 of 96 cells, 0 failed)
+
+Read with `c1_report.py --budget` on all 96 cells (medusa1's copied under `<state>/medusa`). Unedited tally:
+
+| arm − S(150), macro-F1 | pooled over 8 files (15 replicates) | NB | p | Holm | verdict | files better / worse |
+|---|---|---|---|---|---|---|
+| S30 | −0.0081 [−0.0153, −0.0010] | [−0.0247, +0.0084] | 0.029 | 0.058 | **no verdict** | kc2 ×2 better (+0.021, +0.019) / vehicle ×2 worse (−0.041, −0.047) |
+| S50 | −0.0009 [−0.0049, +0.0031] | [−0.0100, +0.0083] | 0.644 | 0.644 | **no verdict** | none / none (spambase ×2 equivalent) |
+
+- **Halves (flags):** S30 MNAR −0.008 [−0.019, +0.002], MCAR −0.008 [−0.015, −0.001]; S50 MNAR −0.001 [−0.009,
+  +0.006], MCAR −0.001 [−0.006, +0.005].
+- **Channel beside, S(k) − B(k) per file (probit then MCAR, biodeg/kc2/vehicle/spambase):** S30: −0.020, +0.009,
+  +0.005, +0.005, −0.002, +0.013, +0.019, +0.007; S50: −0.006, +0.012, −0.000, +0.007, +0.010, −0.000, +0.019, +0.008.
+  As at 150 (E131, E132): small and of both signs; no budget opens a pre-training channel.
+- **Kept epochs (median [min, max] over 15 replicates; files in the order above):** S(150) 11 / 13 / 32 / 25 / 13 /
+  11 / 31 / 20; S30 20 / 23 / 27 / 21 / 21 / 21 / 29 / 15, with vehicle's maxima at the cap (29); S50 27 / 13 / 36 / 22
+  / 28 / 12 / 35 / 18. Vehicle's validation minimum sits at epoch 30–35, so a 30-epoch budget truncates it, which is
+  where S30's two *worse* files come from; the other files keep their minimum well inside 30.
+- **Reading, by the rule:** neither budget is *better*; S30 is *no verdict* with two files *worse* (fails the Holm
+  threshold by 0.008 and is worse on vehicle), so it is not a cost argument; S50 is *no verdict* with no file worse or
+  better, which the rule calls a cost argument only: about a third of fine-tuning's time at a score this study cannot
+  tell from 150's, within ±0.005 pooled. No ADR change follows from this ticket; whether to spend a 21-variant
+  confirmation on a budget of 50 is the user's call. The budget question under `cosine_legacy` is otherwise closed:
+  the sawtooth's shorter period at 30 did not help.

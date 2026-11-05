@@ -3672,9 +3672,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E134 · The fine-tuning budget: 30 and 50 epochs against 150 under cosine_legacy (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-04 (96 of 96 cells, 0 failed; read 21:21 GMT-3)
 - **Hypothesis:** none directional; fine-tuning's validation minimum falls by epoch 13–24 (E132's curves), so a shorter
   budget may match or beat 150 epochs at a third of the cost.
+- **Results:** S30 − S −0.0081 [−0.0153, −0.0010], p 0.029, Holm 0.058 → no verdict, vehicle worse on both files
+  (−0.041, −0.047; its validation minimum sits at epoch 30–35, so 30 truncates it), kc2 better on both (+0.021,
+  +0.019); S50 − S −0.0009 [−0.0049, +0.0031], p 0.64 → no verdict, no file better or worse. S(k) − B(k) small and of
+  both signs on every file.
+- **Conclusion:** no budget is better; S30 is not a cost argument (two files worse); S50 is a cost argument only (a
+  third of fine-tuning's time, within ±0.005 pooled of 150), the user's call. No ADR change.
 - **Scenarios:** S30, S50, B30, B50 (`EPOCH_FINE` 30/50, with and without pre-training) on
   `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (96 cells); S and B at 150 reused.
 - **Measures and decision rule:** S(k) − S(150) macro-F1 pooled over the eight files, plain 95% t interval, Holm over
@@ -3684,9 +3690,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E135 · Fine-tuning's schedule: cosine, warmup_cosine, plateau and constant against cosine_legacy (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-04 (144 of 144 cells, 0 failed; read 21:21 GMT-3)
 - **Hypothesis:** none directional; `cosine_legacy` is a per-batch sawtooth (ADR 0003) never measured on
   classification, and the user asked for the best schedule to be studied apart from the budget.
+- **Results:** every arm no verdict (Holm p ≥ 0.85): COS150 −0.0023 [−0.0054, +0.0009], COS50 −0.0017 [−0.0064,
+  +0.0030], WUC150 −0.0007 [−0.0078, +0.0064], WUC50 +0.0014 [−0.0043, +0.0072], PLAT150 −0.0025 [−0.0059, +0.0009],
+  CONST150 −0.0026 [−0.0062, +0.0011]; no file better anywhere, COS150 worse on vehicle_probit, PLAT150/CONST150
+  worse on spambase_60nan. Single annealings keep earlier epochs (medians 8–25 vs 11–32); COS50 keeps the same epochs
+  as COS150. PLAT150 equals CONST150 on five of eight files (the kept state precedes the first halving).
+- **Conclusion:** `cosine_legacy` stays fine-tuning's default; the schedule question is closed at this base rate and
+  budget; no ADR proposal. `FINETUNE_LR_SCHEDULER` stays, default "".
 - **Scenarios:** `FINETUNE_LR_SCHEDULER` (new, "" = shared schedule) at cosine 150/50, warmup_cosine 150/50, plateau
   150, constant 150, S's pre-training, on the eight files, seeds 42/7/13 × 5 folds (144 cells); S under cosine_legacy
   reused.
