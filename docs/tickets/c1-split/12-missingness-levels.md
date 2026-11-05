@@ -29,8 +29,9 @@ pooled over the four tables per level, Holm over the three levels:
 - **Flat from 20 to 60% missingness (+0.023 to +0.026), closed at 80%.** The channel does not grow with the missingness
   level; it holds steady until the table is mostly gaps, where only spambase (the largest of the four) still gains.
   No table is worse at any level.
-- **Why 80nan closes, two readings not tested here:** with four fifths of the cells missing, the pre-training
-  objective (reconstruct hidden cells from a mostly empty context) learns less structure to hand over; and the
+- **Why 80nan closes, two readings not tested here:** with four fifths of the cells missing, the pre-training signal
+  (`embedding_normalized`, an embedding-level objective over masked cells in a mostly empty context) has less
+  structure to learn and hand over; and the
   small tables' per-seed means swing both ways at 80nan (vehicle −0.022, kc2 +0.020), so the pooled interval
   widens.
 - **Reading, by the rule:** open at 20 and 40 (Holm 0.039), closed at 80. Descriptive for the thesis: on these four

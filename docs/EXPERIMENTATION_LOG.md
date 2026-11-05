@@ -3843,3 +3843,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** per level pooled over the four tables, plain 95% t interval, Holm over three levels:
   open / closed; E138's 60nan MCAR half beside.
 - **Sources:** [c1-split/12](tickets/c1-split/12-missingness-levels.md).
+
+### E144 · The selector × seeds squares at a tenth and a quarter of the labels (2026-11-05)
+
+- **Status:** in progress
+- **Hypothesis:** the scarce-validation selector widens S − B relative to the whole-validation selector (E140's
+  reading of why a tenth opened where E136 read it closed).
+- **Scenarios:** cut 13: S10/B10 × seeds 1515/2626/3737 and S10V/B10V × seeds 42/7/13 on the eight C1 files (96 cells);
+  cut 14: S25/B25 × 1515/2626/3737 and S25V/B25V on the four probit files × 42/7/13 (72 cells; MCAR reused from
+  E141). Pairs sit with their earlier arms' machine (two reused MCAR pairs cross machines, stated).
+- **Measures and decision rule:** per fraction (S(f)V − B(f)V) − (S(f) − B(f)) paired per (file, seed, fold), pooled
+  over the eight files (30 replicates), plain 95% t interval, Holm over the two fractions: supported / not supported.
+  E136's and E140's verdicts stand as written. No ADR.
+- **Sources:** [c1-split/13](tickets/c1-split/13-selector-squares.md).

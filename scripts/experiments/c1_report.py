@@ -427,7 +427,7 @@ def _gate(a: str, b: str, seeds: tuple[int, ...], files: tuple[str, ...], label:
     return np.asarray(np.mean(rows, axis=0))
 
 
-def _holm_lines(name: str, pooled: dict[str, np.ndarray]) -> None:
+def _holm_lines(name: str, pooled: dict[str, np.ndarray], words: tuple[str, str] = ("channel OPEN", "channel closed")) -> None:
     p = {k: float(stats.ttest_1samp(d, 0.0).pvalue) for k, d in pooled.items()}
     order = sorted(p, key=lambda k: p[k])
     n = len(p)
@@ -436,7 +436,7 @@ def _holm_lines(name: str, pooled: dict[str, np.ndarray]) -> None:
         m, lo, hi = c15.interval(d, False)
         _, nlo, nhi = c15.interval(d)
         print(f"{name} {k} pooled: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); p {p[k]:.4f}, Holm {holm[k]:.4f} -> "
-              f"{'channel OPEN' if holm[k] < 0.05 and m > 0 else 'channel closed'}")
+              f"{words[0] if holm[k] < 0.05 and m > 0 else words[1]}")
 
 
 def curve() -> None:
@@ -498,6 +498,36 @@ def levels() -> None:
         print(f"Beside, 60nan MCAR (E138): {m:+.4f} [{lo:+.4f}, {hi:+.4f}]")
 
 
+def selector() -> None:
+    """E144 (ticket 13): the selector effect (S − B, validation scarce) − (S − B, validation whole) at a tenth and a quarter
+    of the labels, eight files × six seeds (42/7/13 and 1515/2626/3737) × 5 folds; Holm over the two fractions."""
+    seeds = SEEDS + c15_run.CONFIRMATION_SEEDS
+    print("## Selector squares (E144): (S(f)V − B(f)V) − (S(f) − B(f)) paired per (file, seed, fold), seeds 42/7/13 and "
+          "1515/2626/3737, pooled over the eight files; Holm over the two fractions; the four cell means beside")
+    pooled = {}
+    for f in ("10", "25"):
+        rows, scarce, oracle = [], [], []
+        for v in run.MNAR + run.MCAR:
+            d = []
+            for seed in seeds:
+                cells = [readouts(a, v, seed) for a in (f"S{f}V", f"B{f}V", f"S{f}", f"B{f}")]
+                if any(c is None for c in cells):
+                    print(f"- {f}% {v} s{seed}: missing\n\nSelector: incomplete")
+                    return
+                sv, bv, so, bo = (c15.scores(c)[0] for c in cells if c is not None)
+                scarce.append(sv - bv)
+                oracle.append(so - bo)
+                d.append((sv - bv) - (so - bo))
+            dd = np.concatenate(d)
+            rows.append(dd)
+            m, lo, hi = c15.interval(dd, False)
+            flag = "larger scarce" if lo > 0 else "larger oracle" if hi < 0 else "no difference"
+            print(f"- {f}% {v}: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] ({', '.join(f's{sd} {x.mean():+.4f}' for sd, x in zip(seeds, d))}) -> {flag}")
+        pooled[f"{f}%"] = np.asarray(np.mean(rows, axis=0))
+        print(f"  {f}% cell means, S − B pooled over files and six seeds: scarce {np.mean(scarce):+.4f}, oracle {np.mean(oracle):+.4f}")
+    _holm_lines("Selector effect", pooled, ("SUPPORTED", "not supported"))
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -520,7 +550,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce, "--confirm": confirm, "--curve": curve, "--stage2": stage2, "--levels": levels}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce, "--confirm": confirm, "--curve": curve, "--stage2": stage2, "--levels": levels, "--selector": selector}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

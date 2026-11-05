@@ -97,10 +97,39 @@ CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
     "10": {(v, s): ("S10V", "B10V", "S50V", "B50V") for v in MNAR + MCAR for s in c15_run.CONFIRMATION_SEEDS},  # E140
     "11": {(v, s): ("S25V", "B25V") for v in CONFIRMATORY_21 for s in FIVE_SEEDS},  # E141 (ticket 11), after E138 holds
     "12": {(v, s): ("S25V", "B25V") for v in LEVELS for s in c15_run.CONFIRMATION_SEEDS},  # E143 (ticket 12)
+    # E144 (ticket 13): the selector x seeds squares. A tenth: oracle arms on the fresh seeds (E140 has the scarce ones)
+    # and scarce arms on E136's seeds. A quarter: the same, the MCAR scarce half at E136's seeds coming from E141.
+    "13": {
+        **{(v, s): ("S10", "B10") for v in MNAR + MCAR for s in c15_run.CONFIRMATION_SEEDS},
+        **{(v, s): ("S10V", "B10V") for v in MNAR + MCAR for s in SEEDS},
+    },
+    "14": {
+        **{(v, s): ("S25", "B25") for v in MNAR + MCAR for s in c15_run.CONFIRMATION_SEEDS},
+        **{(v, s): ("S25V", "B25V") for v in MNAR for s in SEEDS},
+    },
 }
 # ADR 0035: a (variant, seed) pair's arms stay on one machine. Cuts 9–12 pair nothing already trained, so they split
 # by seed: gorgona8 (one GPU, about half medusa1's speed) takes one seed, medusa1 the rest.
 GORGONA8_SEED = {"10": 1515, "11": 42, "12": 1515}
+# The squares (cuts 13/14) join new arms to pairs trained earlier: E136's (by machine()) and the fresh-seed cells of
+# cut 10 (seed 1515 on gorgona8) or cut 9 (all on gorgona8).
+SQUARE_SIBLINGS = {"13": "10", "14": "9"}
+
+
+def home(pair: tuple[str, int]) -> str:
+    """The machine a (variant, seed) pair's arms run on (ADR 0035): the one its earlier arms already sit on."""
+    c = cut()
+    if c in SQUARE_SIBLINGS:
+        if pair[1] in SEEDS:
+            return c15_run.machine(pair)
+        c = SQUARE_SIBLINGS[c]
+    # Cut 2's cells pair with nothing reused, and cut 9's pairs (fresh seeds) had no arm anywhere yet, so both took
+    # gorgona8 whole; cut 9 moved there on 2026-11-04 23:45 GMT-3 when another user's job filled medusa1's GPUs.
+    if c in ("2", "9"):
+        return "gorgona8"
+    if c in GORGONA8_SEED:
+        return "gorgona8" if pair[1] == GORGONA8_SEED[c] else "medusa"
+    return c15_run.machine(pair)
 
 
 def cut() -> str:
@@ -141,15 +170,7 @@ def train(arm: str, variant: str, seed: int) -> None:
 
 def todo(which: int, queues: int) -> None:
     pairs = CUTS[cut()]
-    # The smoke's cells pair with nothing reused, so they take gorgona8, idle otherwise.
-    # Cut 2's cells pair with nothing reused, and cut 9's pairs (fresh seeds) have no arm anywhere yet, so both take
-    # gorgona8 whole (ADR 0035 holds); cut 9 moved there on 2026-11-04 23:45 GMT-3 when another user's job filled medusa1's GPUs.
-    if cut() in ("2", "9"):
-        mine = [pair for pair in pairs if HOST == "gorgona8"]
-    elif cut() in GORGONA8_SEED:
-        mine = [pair for pair in pairs if (pair[1] == GORGONA8_SEED[cut()]) == (HOST == "gorgona8")]
-    else:
-        mine = [pair for pair in pairs if c15_run.machine(pair) == HOST]
+    mine = [pair for pair in pairs if home(pair) == HOST]
     big = ("electricity", "letter", "pendigits", "spambase", "kr-vs-kp")
     mine.sort(key=lambda p: (p[0].split("_")[0] not in big, p[1], p[0]))  # dearest first, so the queues end together
     for k, (variant, seed) in enumerate(mine):

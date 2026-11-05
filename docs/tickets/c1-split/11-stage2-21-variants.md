@@ -43,7 +43,8 @@ macro-F1, seeds 42/7/13/101/202 × 5 folds, pooled over the 21 variants per repl
 | large (pendigits, letter, electricity) | +0.0159 [+0.0127, +0.0190] | all three (+0.010, +0.017, +0.021) / none |
 
 - **8 of 21 variants better, none worse.** Every seed's pooled mean is positive on the large tables and on spambase;
-  the small tables are noisy per variant (biodeg_60nan's s13 at −0.10 is one 25-row-labelled fold set) and net to
+  the small tables are noisy per variant (biodeg_60nan's s13 at −0.10: five folds with 184 labelled and 26 validation
+  rows each, from the readouts) and net to
   about +0.008.
 - **The channel is smaller on the 21 than on the four 60nan tables** (+0.010 against E138's +0.022): the 21 are mostly
   20–40nan and large, where a quarter of the labels is still thousands of rows. The large tables nevertheless give
