@@ -79,8 +79,12 @@ STAGE1C_GORGONA8 = {(f"{b}_noise3p0_s2060_60nan", 13) for b in ("biodeg", "kc2")
 # E139 (ticket 09): F3's MCAR siblings by the same seed, so the outcome-dependent family gets its interaction reading.
 SIBLINGS_2060 = tuple(f"{b}_mcar_s2060_60nan" for b in ("biodeg", "kc2", "spambase"))
 STAGE_H2: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1",) for v in SIBLINGS_2060 for s in SEEDS}
+# E142 (ticket 10): H2's fresh-draw confirmation, odds 3 and MCAR siblings of seed 4848, the confirmation seeds.
+OUTCOME_4848 = tuple(f"{b}_outcome3p0_s4848_60nan" for b in ("biodeg", "kc2", "spambase"))
+SIBLINGS_4848 = tuple(f"{b}_mcar_s4848_60nan" for b in ("biodeg", "kc2", "spambase"))
+STAGE_H2C: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1",) for v in OUTCOME_4848 + SIBLINGS_4848 for s in CONFIRMATION_SEEDS}
 STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "1c": STAGE1C, "2": STAGE2, "3": STAGE3,
-                                                             "4": STAGE4, "h2": STAGE_H2}
+                                                             "4": STAGE4, "h2": STAGE_H2, "h2c": STAGE_H2C}
 
 
 def machine(pair: tuple[str, int]) -> str:

@@ -63,7 +63,21 @@ ARMS: dict[str, dict[str, object]] = {
     # E138 (ticket 09): the quarter-label channel confirmed on fresh seeds with the validation split scarce too.
     "S25V": {"FINETUNE_LABEL_FRACTION": 0.25, "FINETUNE_SCARCE_VALIDATION": "on"},
     "B25V": {"EPOCHS_PRE": 0, "FINETUNE_LABEL_FRACTION": 0.25, "FINETUNE_SCARCE_VALIDATION": "on"},
+    # E140 (ticket 10): the label-fraction curve with the validation split scarce too.
+    "S10V": {"FINETUNE_LABEL_FRACTION": 0.1, "FINETUNE_SCARCE_VALIDATION": "on"},
+    "B10V": {"EPOCHS_PRE": 0, "FINETUNE_LABEL_FRACTION": 0.1, "FINETUNE_SCARCE_VALIDATION": "on"},
+    "S50V": {"FINETUNE_LABEL_FRACTION": 0.5, "FINETUNE_SCARCE_VALIDATION": "on"},
+    "B50V": {"EPOCHS_PRE": 0, "FINETUNE_LABEL_FRACTION": 0.5, "FINETUNE_SCARCE_VALIDATION": "on"},
 }
+# E141 (ticket 11): the confirmatory set of 21 variants (E30's list) for the quarter-label channel.
+CONFIRMATORY_21 = (
+    *(f"{b}_{r}nan" for b in ("credit-g", "kr-vs-kp", "spambase") for r in (20, 40, 60, 80)),
+    *(f"{b}_{r}nan" for b in ("vehicle", "biodeg", "kc2") for r in (20, 60)),
+    "pendigits_20nan", "letter_20nan", "electricity_20nan",
+)
+FIVE_SEEDS = (42, 7, 13, 101, 202)
+# E143 (ticket 12): the quarter-label channel at the other missingness levels of the four C1 tables (MCAR files).
+LEVELS = tuple(f"{b}_{r}nan" for b in TABLES for r in (20, 40, 80))
 SMOKE_VARIANT = "biodeg_probit_60nan"
 CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
     "2": {(SMOKE_VARIANT, 42): ("S", "T", "B", "BT")},
@@ -80,7 +94,13 @@ CUTS: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {
     "7": {(v, s): ("COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150") for v in MNAR + MCAR for s in SEEDS},  # E135
     "8": {(v, s): ("S10", "T10", "B10", "S25", "T25", "B25") for v in MNAR + MCAR for s in SEEDS},  # E136 (ticket 08)
     "9": {(v, s): ("S25V", "B25V") for v in MNAR + MCAR for s in c15_run.CONFIRMATION_SEEDS},  # E138 (ticket 09)
+    "10": {(v, s): ("S10V", "B10V", "S50V", "B50V") for v in MNAR + MCAR for s in c15_run.CONFIRMATION_SEEDS},  # E140
+    "11": {(v, s): ("S25V", "B25V") for v in CONFIRMATORY_21 for s in FIVE_SEEDS},  # E141 (ticket 11), after E138 holds
+    "12": {(v, s): ("S25V", "B25V") for v in LEVELS for s in c15_run.CONFIRMATION_SEEDS},  # E143 (ticket 12)
 }
+# ADR 0035: a (variant, seed) pair's arms stay on one machine. Cuts 9–12 pair nothing already trained, so they split
+# by seed: gorgona8 (one GPU, about half medusa1's speed) takes one seed, medusa1 the rest.
+GORGONA8_SEED = {"10": 1515, "11": 42, "12": 1515}
 
 
 def cut() -> str:
@@ -124,8 +144,14 @@ def todo(which: int, queues: int) -> None:
     # The smoke's cells pair with nothing reused, so they take gorgona8, idle otherwise.
     # Cut 2's cells pair with nothing reused, and cut 9's pairs (fresh seeds) have no arm anywhere yet, so both take
     # gorgona8 whole (ADR 0035 holds); cut 9 moved there on 2026-11-04 23:45 GMT-3 when another user's job filled medusa1's GPUs.
-    mine = [pair for pair in pairs if (HOST == "gorgona8" if cut() in ("2", "9") else c15_run.machine(pair) == HOST)]
-    mine.sort(key=lambda p: (not p[0].startswith("spambase"), p[1], p[0]))  # dearest first, so the queues end together
+    if cut() in ("2", "9"):
+        mine = [pair for pair in pairs if HOST == "gorgona8"]
+    elif cut() in GORGONA8_SEED:
+        mine = [pair for pair in pairs if (pair[1] == GORGONA8_SEED[cut()]) == (HOST == "gorgona8")]
+    else:
+        mine = [pair for pair in pairs if c15_run.machine(pair) == HOST]
+    big = ("electricity", "letter", "pendigits", "spambase", "kr-vs-kp")
+    mine.sort(key=lambda p: (p[0].split("_")[0] not in big, p[1], p[0]))  # dearest first, so the queues end together
     for k, (variant, seed) in enumerate(mine):
         if k % queues == which - 1:
             for arm in pairs[(variant, seed)]:

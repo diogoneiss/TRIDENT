@@ -39,6 +39,7 @@ STATE = Path(os.environ.get("TABPFN_MNAR_STATE") or
              (Path("/scratch2/diogoneiss" if run.HOST == "gorgona8" else "/scratch/diogoneiss") / "trident-2026-11-04-tabpfn-mnar"))
 VARIANTS = run.DEVELOPMENT  # F0 (MCAR controls), F1 (probit MNAR), F2 (probit scales), F3 (outcome-dependent)
 ALL = VARIANTS + run.SIBLINGS_2060  # E139 adds F3's same-seed MCAR siblings (c15_run stage h2 trains A1 on them)
+FRESH = run.OUTCOME_4848 + run.SIBLINGS_4848  # E142's fresh draws, on the confirmation seeds
 SEEDS = run.SEEDS
 ARMS = ("native", "mask")
 MARGIN = 0.01
@@ -121,6 +122,8 @@ def run_pair(variant: str, seed: int) -> None:
 
 def todo(which: int, queues: int) -> None:
     mine = [(v, s) for s in SEEDS for v in ALL if run.machine((v, s)) == run.HOST and not out_path(v, s).exists()]
+    mine += [(v, s) for s in run.CONFIRMATION_SEEDS for v in FRESH if run.machine((v, s)) == run.HOST
+             and c15.readouts("A1", v, s) is not None and not out_path(v, s).exists()]
     for k, (variant, seed) in enumerate(mine):
         if k % queues == which - 1:
             print(variant, seed)
@@ -196,19 +199,24 @@ def tally() -> None:
         print(f"Mask − native ({mode}) on the {len(mnar)} MNAR files pooled: {_line(gap)}")
 
 
-def tally_h2() -> None:
-    """E139 (ticket 09): the interaction (arm − A1) F3 − same-seed MCAR sibling, 6 outcome files pooled."""
-    print("## H2 under outcome-dependent MNAR (E139): (arm − A1) on each F3 file minus (arm − A1) on its same-seed MCAR "
-          "sibling (s2060), paired per (table, seed, fold), pooled over the six F3 files; balanced primary, plain beside; "
-          "Holm over the two arms")
-    sibling = {v: f"{v.split('_')[0]}_mcar_s2060_60nan" for v in run.F3}
+def tally_h2(fresh: bool = False) -> None:
+    """E139 (ticket 09): the interaction (arm − A1) F3 − same-seed MCAR sibling, 6 outcome files pooled; E142 (ticket 10):
+    the same on the s4848 fresh draws (odds 3, three files) over the confirmation seeds."""
+    global SEEDS
+    files, draw = (run.OUTCOME_4848, "s4848") if fresh else (run.F3, "s2060")
+    if fresh:
+        SEEDS = run.CONFIRMATION_SEEDS
+    print(f"## H2 under outcome-dependent MNAR ({'E142, fresh draws' if fresh else 'E139'}): (arm − A1) on each outcome file "
+          f"minus (arm − A1) on its same-seed MCAR sibling ({draw}), paired per (table, seed, fold), pooled over the "
+          f"{len(files)} outcome files; balanced primary, plain beside; Holm over the two arms")
+    sibling = {v: f"{v.split('_')[0]}_mcar_{draw}_60nan" for v in files}
     for mode in ("balanced", "plain"):
         print(f"\n### {mode}{' (primary)' if mode == 'balanced' else ' (beside)'}")
         inter: dict[str, np.ndarray] = {}
         for arm in ARMS:
             key = f"{arm}_{mode}"
             parts = []
-            for v in run.F3:
+            for v in files:
                 d, ds = _diff(key, v), _diff(key, sibling[v])
                 if d is None or ds is None:
                     print(f"- {arm} {v}: missing\n\nTally: incomplete")
@@ -221,10 +229,10 @@ def tally_h2() -> None:
         order = sorted(p, key=lambda k: p[k])
         holm = {a: min(1.0, max(p[g] * (2 - j) for j, g in enumerate(order[:k + 1]))) for k, a in enumerate(order)}
         for arm in ARMS:
-            print(f"Interaction {arm} ({mode}), 6 F3 files pooled: {_line(inter[arm])}; p {p[arm]:.4f}, Holm {holm[arm]:.4f} "
+            print(f"Interaction {arm} ({mode}), {len(files)} outcome files pooled: {_line(inter[arm])}; p {p[arm]:.4f}, Holm {holm[arm]:.4f} "
                   f"-> {_interaction_verdict(inter[arm])}")
     print("\n### Descriptive: each model on F3 minus on its sibling (macro-F1 of the model itself, A1 then TabPFN native balanced)")
-    for v in run.F3:
+    for v in files:
         own = []
         for s in SEEDS:
             r, rs = c15.readouts("A1", v, s), c15.readouts("A1", sibling[v], s)
@@ -242,7 +250,9 @@ def tally_h2() -> None:
 if __name__ == "__main__":
     argv = sys.argv[1:]
     if argv[:1] == ["run"]:
-        for variant, seed in list(zip(argv[1::2], map(int, argv[2::2]))) or [(v, s) for s in SEEDS for v in ALL if run.machine((v, s)) == run.HOST]:
+        pairs = list(zip(argv[1::2], map(int, argv[2::2]))) or [(v, s) for s in SEEDS for v in ALL if run.machine((v, s)) == run.HOST] + [
+            (v, s) for s in run.CONFIRMATION_SEEDS for v in FRESH if run.machine((v, s)) == run.HOST and c15.readouts("A1", v, s) is not None]
+        for variant, seed in pairs:
             run_pair(variant, seed)
     elif argv[:1] == ["--todo"] and len(argv) == 3:
         todo(int(argv[1]), int(argv[2]))
@@ -250,5 +260,7 @@ if __name__ == "__main__":
         tally()
     elif argv == ["--tally-h2"]:
         tally_h2()
+    elif argv == ["--tally-h2c"]:
+        tally_h2(fresh=True)
     else:
         sys.exit(__doc__)

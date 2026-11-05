@@ -846,11 +846,13 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   seeds 1515/2626/3737 with the validation split scarce too, 48 cells; holds if the plain interval is above 0. Then,
   on the user's go, stage 2 on the 21 confirmatory variants (630 cells, the big tables the bulk). A classification
   result the thesis can state without GBDT or TabPFN in the sentence.
+  **E138 done 2026-11-05 00:29 GMT-3: HOLDS, +0.022 [+0.009, +0.035], 3 files better, none worse.** **Night of 2026-11-05 (the user: "quero te manter ocupado no mínimo até as 7"): E140 ([10](tickets/c1-split/10-label-fraction-curve.md), the fraction curve 0.1/0.5, 96 cells), E141 ([11](tickets/c1-split/11-stage2-21-variants.md), stage 2 on the 21 variants, 5 seeds, 210 cells) and E143 ([12](tickets/c1-split/12-missingness-levels.md), 20/40/80nan, 72 cells) chained on both machines.**
 
 - **T48 · H2 on the outcome-dependent family: same-seed MCAR siblings** (from E137, the user's agreement
   2026-11-04). **E139 ([c15-mnar-prediction/09](tickets/c15-mnar-prediction/09-h2-outcome-siblings.md)), from
   2026-11-04:** `{biodeg,kc2,spambase}_mcar_s2060_60nan` generated; A1 on them (9 cells); TabPFN arms offline; the
   interaction (arm − A1) F3 − sibling, Holm over the two arms: shrinks / grows / holds / no verdict.
+  **E142 ([c15-mnar-prediction/10](tickets/c15-mnar-prediction/10-h2-fresh-draws.md)) pre-registered 2026-11-05, conditional on E139 reading "shrinks": the s4848 fresh draws (odds 3) on the confirmation seeds, 18 A1 cells plus TabPFN.**
 
 ### Process
 

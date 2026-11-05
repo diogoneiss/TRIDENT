@@ -42,3 +42,28 @@ This ticket was written and committed before the cut's first cell (23:37 GMT-3).
 there failed with CUDA out of memory before training (48 fast failures, nothing read). The 48 cells moved whole to
 gorgona8 (`c1_run.py` cut 9 routes to gorgona8): the fresh-seed pairs had no arm on any machine, so ADR 0035 holds.
 The design and the rule are unchanged.
+
+## Outcome (2026-11-05, 00:30 GMT-3; 48 of 48 cells on gorgona8, done 00:28 GMT-3, 0 failed)
+
+Read with `c1_report.py --confirm`. Audit: labelled and validation row counts identical between S25V and B25V on every
+(file, fold). Unedited tally, S25V − B25V in test macro-F1, seeds 1515/2626/3737 × 5 folds:
+
+| file | S25V − B25V | flag |
+|---|---|---|
+| biodeg_probit_60nan | −0.0015 [−0.0368, +0.0337] | no difference |
+| kc2_probit_60nan | +0.0280 [−0.0262, +0.0823] | no difference |
+| vehicle_probit_60nan | +0.0277 [−0.0044, +0.0598] | no difference |
+| spambase_probit_60nan | +0.0171 [+0.0059, +0.0282] | better |
+| biodeg_60nan | +0.0130 [−0.0196, +0.0456] | no difference |
+| kc2_60nan | +0.0281 [−0.0123, +0.0684] | no difference |
+| vehicle_60nan | +0.0501 [+0.0136, +0.0866] | better |
+| spambase_60nan | +0.0119 [+0.0017, +0.0221] | better |
+| **pooled (8 files)** | **+0.0218 [+0.0090, +0.0346]**, NB [−0.0077, +0.0512], p 0.0026 | **HOLDS** |
+
+- Halves: MNAR +0.018, MCAR +0.026. Log loss favours S on 8 of 8 files (B − S from +0.000 to +0.207).
+- **Reading, by the rule:** the quarter-label channel holds on fresh seeds with the kept epoch chosen on a quarter
+  of the validation labels: a deployable reading, larger than E136's oracle one (+0.016). The Nadeau–Bengio interval
+  crosses zero, as pre-stated beside. By the ticket, stage 2 follows: the 21 confirmatory variants, pre-registered as
+  E141 ([11](11-stage2-21-variants.md)) and launched tonight on the user's standing request to keep both machines busy
+  ("quero te manter ocupado no mínimo até as 7", 2026-11-05 00:25 GMT-3). Correction to the stage-2 count above: a
+  cell is one (arm, variant, seed) with five folds inside, so 21 variants × 5 seeds × 2 arms are 210 cells, not 630.

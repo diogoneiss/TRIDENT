@@ -408,6 +408,96 @@ def confirm() -> None:
           + (" (none: identical)" if not audit else f": {sorted(audit)}"))
 
 
+def _gate(a: str, b: str, seeds: tuple[int, ...], files: tuple[str, ...], label: str) -> np.ndarray | None:
+    """Per-file lines of a − b over the seeds and files, returning the pooled per-replicate differences (None if missing)."""
+    rows = []
+    for v in files:
+        f1 = []
+        for seed in seeds:
+            x, y = readouts(a, v, seed), readouts(b, v, seed)
+            if x is None or y is None:
+                print(f"- {label} {v} s{seed}: missing")
+                return None
+            f1.append(c15.scores(x)[0] - c15.scores(y)[0])
+        d = np.concatenate(f1)
+        rows.append(d)
+        m, lo, hi = c15.interval(d, False)
+        flag = "better" if lo > 0 else "worse" if hi < 0 else "no difference"
+        print(f"- {label} {v}: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] ({', '.join(f's{sd} {x.mean():+.4f}' for sd, x in zip(seeds, f1))}) -> {flag}")
+    return np.asarray(np.mean(rows, axis=0))
+
+
+def _holm_lines(name: str, pooled: dict[str, np.ndarray]) -> None:
+    p = {k: float(stats.ttest_1samp(d, 0.0).pvalue) for k, d in pooled.items()}
+    order = sorted(p, key=lambda k: p[k])
+    n = len(p)
+    holm = {k: min(1.0, max(p[g] * (n - j) for j, g in enumerate(order[:i + 1]))) for i, k in enumerate(order)}
+    for k, d in pooled.items():
+        m, lo, hi = c15.interval(d, False)
+        _, nlo, nhi = c15.interval(d)
+        print(f"{name} {k} pooled: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); p {p[k]:.4f}, Holm {holm[k]:.4f} -> "
+              f"{'channel OPEN' if holm[k] < 0.05 and m > 0 else 'channel closed'}")
+
+
+def curve() -> None:
+    """E140 (ticket 10): S − B at a tenth and a half of the labels, validation scarce, fresh seeds; Holm over the two."""
+    seeds = c15_run.CONFIRMATION_SEEDS
+    print("## Label-fraction curve (E140): S(f)V − B(f)V, validation scarce too, seeds 1515/2626/3737 × 5 folds, pooled over "
+          "the eight files; Holm over the two new fractions; E138's quarter beside")
+    pooled = {}
+    for f in ("10", "50"):
+        d = _gate(f"S{f}V", f"B{f}V", seeds, run.MNAR + run.MCAR, f"S{f}V − B{f}V")
+        if d is None:
+            print("\nCurve: incomplete")
+            return
+        pooled[f"{f}%"] = d
+    _holm_lines("Gate", pooled)
+    q = _gate("S25V", "B25V", seeds, run.MNAR + run.MCAR, "S25V − B25V (E138, beside)")
+    if q is not None:
+        m, lo, hi = c15.interval(q, False)
+        print(f"Beside, 25% (E138): {m:+.4f} [{lo:+.4f}, {hi:+.4f}]")
+
+
+def stage2() -> None:
+    """E141 (ticket 11): S25V − B25V on the 21 confirmatory variants, five seeds; holds if the plain interval is above 0."""
+    print("## Stage 2 (E141): S25V − B25V on the 21 confirmatory variants, seeds 42/7/13/101/202 × 5 folds (25 replicates a "
+          "variant), pooled over the 21; holds if the plain 95% interval is above 0; groups beside")
+    d = _gate("S25V", "B25V", run.FIVE_SEEDS, run.CONFIRMATORY_21, "S25V − B25V")
+    if d is None:
+        print("\nStage 2: incomplete")
+        return
+    m, lo, hi = c15.interval(d, False)
+    _, nlo, nhi = c15.interval(d)
+    print(f"Pooled over 21: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]) -> {'HOLDS' if lo > 0 else 'does not hold'}")
+    groups = {"categorical (credit-g, kr-vs-kp)": ("credit-g", "kr-vs-kp"), "small numeric (vehicle, biodeg, kc2)": ("vehicle", "biodeg", "kc2"),
+              "spambase": ("spambase",), "large (pendigits, letter, electricity)": ("pendigits", "letter", "electricity")}
+    for name, bases in groups.items():
+        files = tuple(v for v in run.CONFIRMATORY_21 if v.split("_")[0] in bases)
+        g = _gate("S25V", "B25V", run.FIVE_SEEDS, files, f"  [{name}]")
+        if g is not None:
+            gm, glo, ghi = c15.interval(g, False)
+            print(f"  group {name}: {gm:+.4f} [{glo:+.4f}, {ghi:+.4f}]")
+
+
+def levels() -> None:
+    """E143 (ticket 12): the quarter-label channel at 20/40/80nan on the four tables; Holm over the three levels."""
+    seeds = c15_run.CONFIRMATION_SEEDS
+    print("## Missingness levels (E143): S25V − B25V at 20/40/80nan (MCAR files of the four tables), seeds 1515/2626/3737 × 5 "
+          "folds, pooled over the four tables per level; Holm over the three levels; E138's 60nan MCAR half beside")
+    pooled = {}
+    for r in (20, 40, 80):
+        d = _gate("S25V", "B25V", seeds, tuple(f"{b}_{r}nan" for b in run.TABLES), f"{r}nan")
+        if d is None:
+            print("\nLevels: incomplete")
+            return
+        pooled[f"{r}nan"] = d
+    _holm_lines("Level", pooled)
+    q = _gate("S25V", "B25V", seeds, run.MCAR, "60nan (E138 MCAR half, beside)")
+    if q is not None:
+        m, lo, hi = c15.interval(q, False)
+        print(f"Beside, 60nan MCAR (E138): {m:+.4f} [{lo:+.4f}, {hi:+.4f}]")
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -430,7 +520,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce, "--confirm": confirm}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce, "--confirm": confirm, "--curve": curve, "--stage2": stage2, "--levels": levels}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

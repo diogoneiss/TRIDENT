@@ -3752,7 +3752,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E138 · The quarter-label pre-training channel on fresh seeds, validation scarce too (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (48 of 48 cells, 0 failed; read 00:29 GMT-3)
+- **Results:** S25V − B25V pooled +0.0218 [+0.0090, +0.0346] (NB [−0.0077, +0.0512]), p 0.0026 → HOLDS; better on
+  spambase ×2 and vehicle_60nan, worse on none; MNAR half +0.018, MCAR half +0.026; log loss favours S on 8 of 8; row
+  counts identical between arms.
+- **Conclusion:** the quarter-label channel is a deployable result on the four 60nan tables; stage 2 (E141, 21
+  variants) follows by the rule.
 - **Hypothesis:** E136's S25 − B25 +0.016 holds when the kept epoch is chosen on a quarter of the validation labels
   and the seeds are fresh (1515/2626/3737).
 - **Scenarios:** S25V vs B25V (`FINETUNE_LABEL_FRACTION` 0.25, `FINETUNE_SCARCE_VALIDATION` on, new, default off) on
@@ -3773,3 +3778,38 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   t interval, Holm over the two arms: shrinks / grows / holds (±0.01) / no verdict; each model's own F3 − sibling
   descriptive.
 - **Sources:** [c15-mnar-prediction/09](tickets/c15-mnar-prediction/09-h2-outcome-siblings.md).
+
+### E140 · The label-fraction curve under a scarce validation split: a tenth and a half (2026-11-05)
+
+- **Status:** in progress
+- **Hypothesis:** the channel E138 confirmed at a quarter opens somewhere between a tenth (closed in E136) and a half.
+- **Scenarios:** S10V/B10V and S50V/B50V on the eight C1 files, seeds 1515/2626/3737 × 5 folds, 96 cells.
+- **Measures and decision rule:** S(f)V − B(f)V pooled over the eight files, plain 95% t interval, Holm over the two
+  fractions: open / closed; E138's quarter beside.
+- **Sources:** [c1-split/10](tickets/c1-split/10-label-fraction-curve.md).
+
+### E141 · Stage 2: the quarter-label channel on the 21 confirmatory variants, five seeds (2026-11-05)
+
+- **Status:** in progress
+- **Hypothesis:** S25V − B25V > 0 pooled over E30's 21 variants (E138 held on the four 60nan tables).
+- **Scenarios:** 21 variants × seeds 42/7/13/101/202 × S25V/B25V = 210 cells (gorgona8 seed 42, medusa1 the rest).
+- **Measures and decision rule:** pooled over the 21 per replicate (25 replicates), plain 95% t interval: holds if
+  above 0; per-variant flags, four groups descriptive. Holds → thesis claim proposal; no default change.
+- **Sources:** [c1-split/11](tickets/c1-split/11-stage2-21-variants.md).
+
+### E142 · H2's fresh-draw confirmation (conditional on E139 reading "shrinks") (2026-11-05)
+
+- **Status:** pre-registered, conditional
+- **Scenarios:** A1 on `{biodeg,kc2,spambase}_outcome3p0_s4848_60nan` and `_mcar_s4848_60nan`, seeds 1515/2626/3737 (18
+  cells); TabPFN arms offline on the same pairs.
+- **Measures and decision rule:** E139's interaction rule on the three odds-3 files, Holm over the two arms.
+- **Sources:** [c15-mnar-prediction/10](tickets/c15-mnar-prediction/10-h2-fresh-draws.md).
+
+### E143 · The quarter-label channel at 20, 40 and 80% missingness (2026-11-05)
+
+- **Status:** in progress
+- **Hypothesis:** none directional; the channel's size may grow or shrink with the missingness level.
+- **Scenarios:** `{biodeg,kc2,vehicle,spambase}_{20,40,80}nan` × seeds 1515/2626/3737 × S25V/B25V = 72 cells.
+- **Measures and decision rule:** per level pooled over the four tables, plain 95% t interval, Holm over three levels:
+  open / closed; E138's 60nan MCAR half beside.
+- **Sources:** [c1-split/12](tickets/c1-split/12-missingness-levels.md).
