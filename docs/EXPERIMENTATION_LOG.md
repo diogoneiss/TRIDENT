@@ -3787,7 +3787,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E140 · The label-fraction curve under a scarce validation split: a tenth and a half (2026-11-05)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (96 of 96 cells, 0 failed; read 01:25 GMT-3)
+- **Results:** 10% +0.0290 [+0.0165, +0.0416] (Holm 0.0004, OPEN; kc2_60nan and vehicle_60nan better, none worse);
+  50% +0.0157 [+0.0075, +0.0239] (Holm 0.0010, OPEN; no file better or worse); 25% from E138 +0.022; 100% from E131
+  +0.004 closed.
+- **Conclusion:** the curve is monotone: pre-training is worth more the scarcer the labels (+0.03 at a tenth, +0.004 at
+  every label). A tenth is open under a scarce selector where E136's oracle selector read it closed (hypothesis: B's
+  epoch selection suffers more from few validation rows). Descriptive for the thesis; no ADR.
 - **Hypothesis:** the channel E138 confirmed at a quarter opens somewhere between a tenth (closed in E136) and a half.
 - **Scenarios:** S10V/B10V and S50V/B50V on the eight C1 files, seeds 1515/2626/3737 × 5 folds, 96 cells.
 - **Measures and decision rule:** S(f)V − B(f)V pooled over the eight files, plain 95% t interval, Holm over the two

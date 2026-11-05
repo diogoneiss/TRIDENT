@@ -19,3 +19,26 @@ This ticket was written and committed before the cut's first cell (00:30 GMT-3).
 - **What follows:** descriptive for the thesis (where pre-training pays on these tables); no ADR. kc2 at a tenth
   (5 validation rows) is a stated threat.
 - **Read only with all 96 cells done.**
+
+## Outcome (2026-11-05, 01:25 GMT-3; 96 of 96 cells, gorgona8 32 and medusa1 64, cut 10 done on both by 01:08 GMT-3, 0 failed)
+
+Read with `c1_report.py --curve`. Unedited tally, S(f)V − B(f)V in test macro-F1, seeds 1515/2626/3737 × 5 folds,
+pooled over the eight files:
+
+| labels | pooled S − B | NB | p | Holm | channel | files better / worse |
+|---|---|---|---|---|---|---|
+| 10% (E140) | **+0.0290 [+0.0165, +0.0416]** | [+0.0002, +0.0579] | 0.0002 | 0.0004 | **OPEN** | kc2_60nan (+0.087), vehicle_60nan (+0.044) / none |
+| 25% (E138, beside) | +0.0218 [+0.0090, +0.0346] | [−0.0077, +0.0512] | 0.0026 | — | open | spambase ×2, vehicle_60nan / none |
+| 50% (E140) | **+0.0157 [+0.0075, +0.0239]** | [−0.0031, +0.0345] | 0.0010 | 0.0010 | **OPEN** | none / none |
+| 100% (E131, oracle selector) | +0.004 [−0.008, +0.016] | | | | closed | |
+
+- **The curve is monotone:** the fewer the labels, the more pre-training is worth, from +0.03 at a tenth to +0.004 at
+  every label. No file is worse at any fraction. At a tenth the per-file intervals are wide (kc2 with 36 labelled and
+  5 validation rows: +0.087 [+0.010, +0.165]), but every seed's pooled mean is positive at both new fractions.
+- **A tenth is open here and was closed in E136** (+0.011 [−0.005, +0.026], oracle validation, seeds 42/7/13). Two
+  things differ: the seeds, and the selector. With the whole validation split choosing the kept epoch, B's best
+  epoch is found as reliably as S's; with 5–46 validation rows, B's noisier selection costs it more than S's, so the
+  deployable reading favours pre-training more. That is a hypothesis from two readings, not a tested claim.
+- **Reading, by the rule:** both new fractions open the channel. Descriptive for the thesis: on these four tables at
+  60% missingness, pre-training on all rows pays whenever labels are scarce, and pays more the scarcer they are.
+  No ADR.

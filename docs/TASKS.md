@@ -847,6 +847,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   on the user's go, stage 2 on the 21 confirmatory variants (630 cells, the big tables the bulk). A classification
   result the thesis can state without GBDT or TabPFN in the sentence.
   **E138 done 2026-11-05 00:29 GMT-3: HOLDS, +0.022 [+0.009, +0.035], 3 files better, none worse.** **Night of 2026-11-05 (the user: "quero te manter ocupado no mínimo até as 7"): E140 ([10](tickets/c1-split/10-label-fraction-curve.md), the fraction curve 0.1/0.5, 96 cells), E141 ([11](tickets/c1-split/11-stage2-21-variants.md), stage 2 on the 21 variants, 5 seeds, 210 cells) and E143 ([12](tickets/c1-split/12-missingness-levels.md), 20/40/80nan, 72 cells) chained on both machines.**
+  **E140 done 2026-11-05 01:25 GMT-3: the channel is open at a tenth (+0.029 [+0.017, +0.042]) and at a half (+0.016 [+0.008, +0.024]); with E138's quarter (+0.022) and E131's full labels (+0.004) the curve is monotone: the scarcer the labels, the more pre-training pays; no file worse at any fraction.**
 
 - **T48 · H2 on the outcome-dependent family: same-seed MCAR siblings** (from E137, the user's agreement
   2026-11-04). **E139 ([c15-mnar-prediction/09](tickets/c15-mnar-prediction/09-h2-outcome-siblings.md)), from
