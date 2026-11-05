@@ -3711,7 +3711,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E136 · Label-scarce fine-tuning: does pre-training open a channel at a tenth or a quarter of the labels? (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-04 (144 of 144 cells, 0 failed; read 23:23 GMT-3)
+- **Results:** gate S(f) − B(f): 0.10 +0.011 [−0.005, +0.026] (Holm 0.15, closed); 0.25 +0.016 [+0.007, +0.024]
+  (Holm 0.003, OPEN; better on 4 files, worse on none; every seed positive). Primary at 0.25, S25 − T25 MNAR −0.002
+  [−0.012, +0.007] → Inconclusive; MCAR −0.012 [−0.023, −0.001] descriptive (T ahead, vehicle worse −0.020);
+  interaction +0.010 [−0.008, +0.027]. Cost of scarcity S25 − S −0.094, S10 − S −0.154. labelled_rows audited equal
+  across arms.
+- **Conclusion:** pre-training reaches the head at a quarter of the labels (first positive S − B on classification
+  here); the split S vs T still does not separate (Inconclusive under MNAR, T ahead under MCAR): no evidence for
+  C1's claim where it could be tested. T is never worse than S. Next steps are the user's.
 - **Hypothesis:** with few labels the encoder (pre-trained on every row) carries content the head cannot rebuild, so
   S − B > 0; if so, the `[NULL]`/`[MASK]` split (S − T) becomes testable where E131 could not.
 - **Scenarios:** S10/T10/B10 (`FINETUNE_LABEL_FRACTION` 0.1) and S25/T25/B25 (0.25) on

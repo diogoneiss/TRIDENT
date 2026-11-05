@@ -49,3 +49,37 @@ This ticket was written and committed before the cut's first cell (22:33 GMT-3).
   semi-supervised protocol, whose selector would be scarce too); kc2 at a tenth has 7 positives, so its lines are
   noisy; 0.1 and 0.25 are the first fractions tried; one base rate and budget for every arm.
 - **Read only with all 144 cells done.**
+
+## Outcome (2026-11-04, 23:24 GMT-3; medusa1 120 cells done 23:15 GMT-3, gorgona8 24 done 23:20 GMT-3, 0 failed)
+
+Read with `c1_report.py --scarce` on all 144 cells. Audit: every arm of a fold saw the same `labelled_rows`
+(73 / 36 / 59 / 322 at a tenth, 184 / 91 / 147–148 / 805 at a quarter, biodeg / kc2 / vehicle / spambase).
+
+**Gate G2(f), S(f) − B(f) pooled over the eight files (unedited):**
+
+| fraction | pooled | NB | p | Holm | channel | files better / worse |
+|---|---|---|---|---|---|---|
+| 0.10 | +0.0109 [−0.0046, +0.0264] | [−0.0248, +0.0466] | 0.155 | 0.155 | **closed** | spambase_probit, vehicle_60nan / biodeg_probit (−0.019) |
+| 0.25 | +0.0158 [+0.0072, +0.0244] | [−0.0041, +0.0357] | 0.0015 | 0.0031 | **OPEN** | kc2_probit, vehicle_probit, spambase_probit, spambase_60nan / none |
+
+- **The cost of scarcity, beside:** S10 − S(all labels) −0.154 [−0.171, −0.136]; S25 − S −0.094 [−0.101, −0.086].
+- **Primary at 0.25, S25 − T25 (MNAR files):** pooled **−0.0024 [−0.0121, +0.0073]** (NB [−0.0247, +0.0199]; seeds
+  +0.003, −0.014, +0.004) → **Inconclusive** (the interval reaches beyond the ±0.010 band on the lower side). Per file:
+  biodeg −0.006, kc2 −0.012, vehicle +0.008, spambase +0.000 (equivalent); none better or worse. Log loss within
+  ±0.015 everywhere.
+- **MCAR second step (descriptive, since the fixed sequence stops at an Inconclusive first step):** pooled
+  −0.0119 [−0.0229, −0.0008], the plain interval below zero (Reversed by ticket 03's rule had the sequence reached
+  it), seeds disagree (−0.026, +0.004, −0.014); vehicle_60nan *worse* −0.020 [−0.037, −0.003]; the rest no
+  difference. Interaction (S − T) MNAR − MCAR +0.0095 [−0.0080, +0.0269].
+- **At 0.10 the gate is closed, so S10 − T10 stays unread**, as pre-registered.
+- **Reading, by the rule:** at a quarter of the labels pre-training has a channel for the first time in this project's
+  classification work: S − B +0.016, positive on every seed, better on four files and worse on none, where E131 (all
+  labels) found +0.004 and E71 nothing. The split's claim then gets its first real test and does not pass: S − T is
+  Inconclusive under MNAR (the point estimate is on T's side) and, descriptively, T is ahead under MCAR. No evidence
+  that keeping `[NULL]` apart from `[MASK]` helps where pre-training reaches the head; if anything the tied token
+  does as well or better. A tenth of the labels is too noisy for either question (kc2 with 7 positives; intervals
+  three times wider).
+- **What follows (the user's):** C1's claim is not Supported in the one regime where it could be tested; the
+  tied token (T) is the cheaper design and was never worse than S. The positive by-product, pre-training's +0.016
+  at scarce labels, is a classification result worth confirming on fresh seeds and on the 21 variants before any
+  claim; a deployable version would also shrink the validation split. GPUs idle from 23:21 GMT-3.
