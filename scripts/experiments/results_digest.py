@@ -1,6 +1,6 @@
 """The summary lines of every reader behind the consolidated results report, in one pass. Read-only.
 
-    uv run --python 3.11 python scripts/experiments/results_digest.py
+    uv run --python 3.11 python scripts/experiments/results_digest.py [E136 E141 ...]
 
 Runs each study's pre-registered reader as it is (none is changed) and keeps only its summary
 lines: section headers, tallies and the "Primary" verdict. The per-variant lines stay in each
@@ -20,7 +20,9 @@ if not (ROOT / "train.py").exists():
     sys.exit(f"run from the TRIDENT checkout root, not {ROOT}")
 
 E = "scripts/experiments"
-SUMMARY = re.compile(r"^(##|Primary|- \(|- P − G|- \d+nan: |  - calls that change|  - .*(better|worse|none|reversal|drift|same))")
+SUMMARY = re.compile(r"^(##|Primary|- \(|- P − G|- \d+nan: |  - calls that change|  - .*(better|worse|none|reversal|drift|same)"
+                     # The C1 and TabPFN-under-MNAR readers (E136-E144) name their summary lines by what is pooled.
+                     r"|Pooled (S|over)|Gate (S|\d+%)|Level \d+nan pooled|Selector effect|Beside, |Interaction (native|mask)|  pooled |  group |  \d+% cell means)")
 # (label, ticket, command)
 READERS: list[tuple[str, str, list[str]]] = [
     ("E55/E57: confirmation set against TabPFN and the strong tier", "imputation-protocol/10, 12",
@@ -68,13 +70,27 @@ READERS: list[tuple[str, str, list[str]]] = [
     ("E120: classification, TRIDENT against MLP under MNAR on fresh seeds", "classification-step-zero/16",
      [f"{E}/deep_baselines.py", "--study", "e120", "--tally"]),
     ("E121: ADR 0018's encoder under MAR and MNAR at 20nan", "imputation-protocol/50", [f"{E}/large_batch.py", "--study", "e121", "--tally"]),
+    # Added 2026-11-05: classification at scarce labels (T47) and TabPFN under informative missingness (T44, T48).
+    ("E136: classification, S/T/B at a tenth and a quarter of the labels", "c1-split/08", [f"{E}/c1_report.py", "--scarce"]),
+    ("E137: TabPFN v2 under informative missingness", "c15-mnar-prediction/08", [f"{E}/tabpfn_mnar.py", "--tally"]),
+    ("E138: the quarter-label channel on fresh seeds, validation scarce", "c1-split/09", [f"{E}/c1_report.py", "--confirm"]),
+    ("E139: TabPFN's lead under outcome-dependent MNAR against same-seed MCAR siblings", "c15-mnar-prediction/09",
+     [f"{E}/tabpfn_mnar.py", "--tally-h2"]),
+    ("E140: the label-fraction curve", "c1-split/10", [f"{E}/c1_report.py", "--curve"]),
+    ("E141: the quarter-label channel on the 21 confirmatory variants", "c1-split/11", [f"{E}/c1_report.py", "--stage2"]),
+    ("E142: E139 on a fresh draw and fresh seeds", "c15-mnar-prediction/10", [f"{E}/tabpfn_mnar.py", "--tally-h2c"]),
+    ("E143: the quarter-label channel at 20, 40 and 80nan", "c1-split/12", [f"{E}/c1_report.py", "--levels"]),
+    ("E144: the selector x seeds squares", "c1-split/13", [f"{E}/c1_report.py", "--selector"]),
 ]
 # Readers whose folds live only on medusa1 run there, unchanged, through ssh (its checkout pulled to this commit).
 ON_MEDUSA = {"E118", "E120"}
 
 
 def main() -> int:
+    only = set(sys.argv[1:])  # optional study ids (E136 E141 ...): an update's sections alone
     for label, ticket, command in READERS:
+        if only and label.split(":")[0] not in only:
+            continue
         call = ["uv", "run", "--python", "3.11", "python", "-B", *command]
         if label.split(":")[0] in ON_MEDUSA:
             call = ["ssh", "-o", "BatchMode=yes", "medusa1", "cd /scratch/diogoneiss/TRIDENT && " + shlex.join(call)]

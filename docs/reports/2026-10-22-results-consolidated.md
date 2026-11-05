@@ -1,12 +1,17 @@
-# What the imputation studies support, as of 2026-11-03 (consolidated)
+# What the imputation studies support, as of 2026-11-05 (consolidated)
 
-This report gathers E44–E85 and E118–E121 into one statement for the thesis. It was updated 2026-11-03 22:58 GMT-3 with E121 and ADR 0018's extension, 2026-11-03 21:10 GMT-3 with E118–E120
+This report gathers E44–E85, E118–E121 and E136–E144 into one statement for the thesis. It was updated 2026-11-05 16:02 GMT-3 with
+E136–E144 (classification at scarce labels, TabPFN under informative missingness; ADR 0038 proposed, not accepted),
+2026-11-03 22:58 GMT-3 with E121 and ADR 0018's extension, 2026-11-03 21:10 GMT-3 with E118–E120
 and ADR 0037's extension, updated 2026-10-28, 12:47 GMT-3 with E84 and
 E85, and rebuilt 2026-10-28, 00:39 GMT-3 to add
 E67–E83. It was built 2026-10-23, 07:59 GMT-3, and first built 2026-10-22, 15:12 GMT-3. It adds no
 new analysis.
 
 - **E118–E120 are in** (all complete, 2026-11-03), with ADR 0037 extended to MAR and MNAR (decision 3).
+- **E136–E144 are in** (all complete, 2026-11-05): section 3d. **E122–E135 are not consolidated here:** C15 stopped
+  at its gate (E123–E128, T45 closed) and C1's primary and fine-tuning studies read Inconclusive or no verdict
+  (E129–E135); they are in the experimentation log and their tickets.
 - **E86–E117 are not consolidated here.** They are in the experimentation log and their tickets. Where one of
   them makes a line of this report false, the line is corrected and cites it: E108 (the thesis tables read
   ADR 0036's reruns), E113/E116/E117 (ADR 0037), E90/E91/E95 (ADR 0031 decision 6), E105/E110 (ADR 0030
@@ -103,14 +108,22 @@ new analysis.
 12. **On classification, untuned TabPFN v2 leads TRIDENT under the fork's defaults (E83; ADR
     0032); TRIDENT leads the deep baselines, except MLP under MNAR.**
     - TabPFN's lead is +0.017 to +0.024 macro-F1 at every level. TabPFN is a separate strong tier.
+    - That lead is robust to self-masking (probit) MNAR, and an explicit missingness mask adds nothing to
+      TabPFN (E137). Under outcome-dependent MNAR it shrinks by 0.03–0.05 against same-seed MCAR siblings,
+      on two draws and six seeds (E139, E142); three binary tables at 60nan.
     - At 40–80nan under MCAR, TRIDENT leads MLP, SAINT and TabNet by the majority rule (E99); over MLP
       by +0.013 and +0.008 at 40 and 60nan, no verdict at 80nan.
     - At 60nan, TRIDENT leads MLP and SAINT under MCAR and MAR, and SAINT under MNAR; against MLP under
       MNAR the two are not separable (E115; E120 on fresh seeds, +0.0025 [−0.0090, +0.0141], no
       verdict). No lead over MLP is claimed under MNAR.
-    - Pre-training buys no detectable gain, under the fork's sweep (E71) or the upstream defaults
-      (E118, 40 and 40 epochs). The paper's own tuned per-pair values are not in the repository and stay
-      untested, so this is not a failed replication of the paper.
+    - With every label, pre-training buys no detectable gain, under the fork's sweep (E71) or the upstream
+      defaults (E118, 40 and 40 epochs). The paper's own tuned per-pair values are not in the repository and
+      stay untested, so this is not a failed replication of the paper.
+    - With scarce labels it does. At a quarter of the training labels, the validation split scarce too,
+      pre-training on every row against none is +0.010 [+0.005, +0.016] macro-F1 pooled over the 21
+      confirmatory variants and five seeds, 8 variants better and none worse (E141; Nadeau–Bengio [−0.006,
+      +0.026]). The gain grows as labels thin (E140), is flat from 20 to 60nan and gone at 80nan (E143), and
+      is not the epoch selector's (E144). Measured under `embedding_normalized` pre-training, by override.
 
 ## 1. Against the baselines
 
@@ -259,6 +272,58 @@ Each line cites the study's ticket; the readers' summary lines are in the append
 - **E120, classification, TRIDENT against MLP under MNAR on fresh seeds:** no verdict, as E115
   ([classification-step-zero/16](../tickets/classification-step-zero/16-trident-mlp-mnar-fresh-seeds.md)).
 
+## 3d. 2026-11-05: classification at scarce labels and under informative missingness (E136–E144)
+
+Arms: S pre-trains on every row of the training split and fine-tunes; B is the same model with no pre-training
+(`EPOCHS_PRE 0`). `FINETUNE_LABEL_FRACTION f` lets fine-tuning see a stratified fraction f of the training labels;
+with `FINETUNE_SCARCE_VALIDATION on` (suffix V) the validation split is drawn the same way, the deployable selector.
+Every cell overrides `PRETRAIN_OBJECTIVE` to `embedding_normalized` (the user's C1 decision, 2026-11-04). Differences
+are test macro-F1, plain 95% t intervals over paired (seed, fold) replicates.
+
+- **E136, the gate at scarce labels:** S − B opens at a quarter of the labels (+0.016 [+0.007, +0.024], Holm 0.003)
+  and reads closed at a tenth on seeds 42/7/13, whole validation split. Past the gate the `[NULL]`/`[MASK]` split
+  against a tied token (S − T) is Inconclusive under MNAR and behind under MCAR: no evidence for the split, T46
+  closed ([c1-split/08](../tickets/c1-split/08-label-scarce.md)).
+- **E138, fresh seeds, validation scarce:** holds, +0.022 [+0.009, +0.035] on the four tables at 60nan, MCAR and
+  probit ([09](../tickets/c1-split/09-scarce-confirmation.md)).
+- **E140, the label-fraction curve:** open at a tenth (+0.029 [+0.017, +0.042]) and at a half (+0.016 [+0.008,
+  +0.024]); with E138's quarter and E131's every label (+0.004, closed) the curve is monotone
+  ([10](../tickets/c1-split/10-label-fraction-curve.md)).
+- **E141, the 21 confirmatory variants, five seeds:** holds, +0.010 [+0.005, +0.016]; 8 variants better (spambase at
+  four levels, pendigits, letter, electricity, kr-vs-kp_40nan), none worse. Large tables +0.016 [+0.013, +0.019],
+  small numeric +0.008 [−0.004, +0.020]. The Nadeau–Bengio interval crosses 0
+  ([11](../tickets/c1-split/11-stage2-21-variants.md)).
+- **E143, the missingness level:** +0.025 at 20nan, +0.023 at 40nan (both open, Holm 0.039), +0.026 at 60nan (E138's
+  MCAR half), +0.004 at 80nan (closed); no table worse ([12](../tickets/c1-split/12-missingness-levels.md)).
+- **E144, the selector:** the scarce selector does not widen S − B (−0.006 at a tenth and at a quarter, not
+  supported), so the gain is not B's noisier epoch selection; E136 and E140 differ at a tenth by their seeds
+  ([13](../tickets/c1-split/13-selector-squares.md); 92 of its 168 cells moved to gorgona8, stated there).
+- **E137, TabPFN v2 under informative missingness:** its lead over TRIDENT is +0.028 under MCAR, +0.036 under probit
+  MNAR and +0.048 on the probit scales; the interaction has no verdict and the mask arm adds nothing. On the
+  outcome-dependent files the lead is gone (−0.003 [−0.009, +0.003])
+  ([c15-mnar-prediction/08](../tickets/c15-mnar-prediction/08-tabpfn-arm.md)).
+- **E139 and E142, H2 on the outcome-dependent family:** (TabPFN − TRIDENT) on each outcome file minus the same on
+  its same-seed MCAR sibling shrinks: native −0.045 [−0.056, −0.035] and mask −0.036 [−0.047, −0.026] on six files
+  (E139), native −0.039 [−0.051, −0.028] and mask −0.028 [−0.040, −0.016] on a fresh draw and fresh seeds (E142);
+  Holm ≤ 0.0002 everywhere ([09](../tickets/c15-mnar-prediction/09-h2-outcome-siblings.md),
+  [10](../tickets/c15-mnar-prediction/10-h2-fresh-draws.md)).
+
+**Proposed thesis wording, put to the user 2026-11-05 and not decided** (Portuguese, as proposed):
+
+> Quando apenas um quarto dos rótulos de treino está disponível, pré-treinar o codificador em todas as linhas da
+> tabela, rotuladas ou não, melhora o macro-F1 do classificador em +0,010 [+0,005; +0,016] sobre o mesmo modelo sem
+> pré-treino, em 21 variantes e cinco seeds, sem nenhuma variante pior (8 melhores). O ganho cresce com a escassez
+> (+0,029 a 10%, +0,016 a 50%, +0,004 com todos os rótulos) e se mantém de 20% a 60% de ausência (+0,023 a +0,026),
+> desaparecendo a 80%. O intervalo com a correção de Nadeau–Bengio cruza zero; o ganho é mais nítido nas tabelas
+> grandes (+0,016 [+0,013; +0,019]) e não se decide nas pequenas (+0,008 [−0,004; +0,020]). O seletor de época com
+> validação escassa não explica o ganho.
+
+> Sob ausência dependente do desfecho (razão de chances 3), a vantagem do TabPFN v2 sobre o TRIDENT encolhe entre
+> 0,03 e 0,05 de macro-F1 em relação ao mesmo sorteio MCAR (−0,039 [−0,051; −0,028] no sorteio de confirmação), e
+> anexar a máscara de ausência ao TabPFN não fecha a diferença (−0,028 [−0,040; −0,016]). Sob esse mecanismo os dois
+> modelos empatam (TabPFN − TRIDENT entre −0,013 e +0,005 por tabela no sorteio de confirmação): a vantagem some, sem
+> virar liderança do TRIDENT. Três tabelas binárias a 60% de ausência.
+
 ## 4. Limits the thesis states
 
 - **electricity:** the boosters lead because they look values up by `date`, a 933-level key.
@@ -274,8 +339,15 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   benchmark with complete tables has. H is the deployable readout and reads a little weaker
   (E57: H − TabPFN 5 / 5 / 5).
 - **Pre-training:** washed out by the decode stage (T28,
-  [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53). On classification no gain is
-  detected under the fork's sweep or the upstream defaults (E71, E118); the paper's tuned values are untested.
+  [report](2026-10-19-t28-why-pretraining-adds-little.md); E49–E53). On classification with every label no gain
+  is detected under the fork's sweep or the upstream defaults (E71, E118); the paper's tuned values are untested.
+- **Pre-training at scarce labels (E138–E144):** an internal contrast, S against B, never against a baseline: no
+  baseline or TabPFN arm was run at scarce labels. It is measured under `embedding_normalized` pre-training by
+  override, not the classification default objective; at fractions 0.1–0.5; closed at 80nan; undecided on the small
+  numeric tables; and its Nadeau–Bengio interval crosses 0 on the 21 variants.
+- **TabPFN under outcome-dependent MNAR (E139, E142):** three binary tables at 60nan, odds ratios 1.5 and 3.0 (E139)
+  and 3.0 on a second draw (E142). The lead shrinks to a tie (TabPFN − TRIDENT −0.013 to +0.005 a table on the second
+  draw); it is not a TRIDENT lead.
 - **Classification against MLP under MNAR:** not separable on two seed sets (E115, E120); no lead claim.
 - **The bigger encoder's scope:** pendigits and letter only, 20–60nan, under MCAR, MAR (`marf`) and MNAR
   (`probit`) (ADR 0018 decision 4, ADR 0037 decision 3).
@@ -300,6 +372,9 @@ Each line cites the study's ticket; the readers' summary lines are in the append
   (the deployable `table` hybrid), ADR 0029 (classification step zero, accepted 2026-10-29), ADR 0036 (P600
   on pendigits and letter at 20–40nan; T11 closed), ADR 0037 (T32 closed) and ADR 0018 extended to MAR and MNAR (E121), T41 closed (E118), T14 refuted
   (E100).
+- **Put to the user 2026-11-05, not decided:** ADR 0038 (label-scarce fine-tuning as a documented regime; proposed),
+  the two thesis sentences of section 3d, and whether T46's split is worth a T25V arm on the 21 variants now that a
+  channel exists (not launched; recommendation: no).
 - **The backlog:** T10's evaluation-mask half, T08, T09 and T15.
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)
@@ -804,4 +879,122 @@ Primary (E120, TRIDENT − MLP under MNAR, SESOI 0.01): no verdict
 ## BIG − M on impute/induced/impute_score, relative to M; 15 fold pairs a variant (fold-pair t, seed agreement, SESOI 0.01)
 Primary (E121, BIG − M), MAR (marf): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
 Primary (E121, BIG − M), MNAR (probit): better 2 / no difference 0 / worse 0 (fold-pair t, seed agreement) of 2 -> holds
+```
+
+### E136: classification, S/T/B at a tenth and a quarter of the labels (c1-split/08)
+
+```text
+## Label-scarce (E136): fine-tuning on a tenth / a quarter of the training labels; 15 paired replicates a file, pooled over the eight files; gate S(f) − B(f) with Holm over the two fractions; S(f) − T(f) only past the gate
+Gate S10 − B10 pooled: +0.0109 [-0.0046, +0.0264] (NB [-0.0248, +0.0466]); p 0.1548, Holm 0.1548 -> channel closed
+Gate S25 − B25 pooled: +0.0158 [+0.0072, +0.0244] (NB [-0.0041, +0.0357]); p 0.0015, Holm 0.0031 -> channel OPEN
+Beside, S10 − S(all labels) pooled:  -0.1535 [-0.1708, -0.1361] (NB [-0.1934, -0.1135]; s42 -0.1501, s7 -0.1478, s13 -0.1625) -> worse
+Beside, S25 − S(all labels) pooled:  -0.0935 [-0.1007, -0.0863] (NB [-0.1101, -0.0769]; s42 -0.0950, s7 -0.0963, s13 -0.0892) -> worse
+### S25 − T25 (the gate passed at 25%)
+Pooled S25 − T25 (MNAR):  -0.0024 [-0.0121, +0.0073] (NB [-0.0247, +0.0199]; s42 +0.0032, s7 -0.0138, s13 +0.0035) -> no difference -> Inconclusive (interval reaches beyond the band)
+Pooled S25 − T25 (MCAR):  -0.0119 [-0.0229, -0.0008] (NB [-0.0372, +0.0135]; s42 -0.0258, s7 +0.0041, s13 -0.0139) -> no difference -> Reversed (relevant)
+```
+
+### E137: TabPFN v2 under informative missingness (c15-mnar-prediction/08)
+
+```text
+## TabPFN v2 under informative missingness (E137, T44): arm − A1 in test macro-F1, 15 paired replicates a file; primary the interaction (arm − A1) MNAR − MCAR over the seven probit/MCAR sibling pairs, balanced probabilities, Holm over the two arms; plain beside
+### balanced (primary)
+#### native − A1
+  pooled MCAR controls (F0): +0.0284 [+0.0236, +0.0332] (NB [+0.0174, +0.0394])
+  pooled probit MNAR (F1): +0.0360 [+0.0277, +0.0443] (NB [+0.0170, +0.0551])
+  pooled probit scales (F2): +0.0484 [+0.0371, +0.0597] (NB [+0.0223, +0.0745])
+  pooled outcome-dependent (F3): -0.0031 [-0.0087, +0.0025] (NB [-0.0160, +0.0098])
+#### mask − A1
+  pooled MCAR controls (F0): +0.0295 [+0.0243, +0.0347] (NB [+0.0175, +0.0415])
+  pooled probit MNAR (F1): +0.0333 [+0.0260, +0.0406] (NB [+0.0165, +0.0501])
+  pooled probit scales (F2): +0.0425 [+0.0321, +0.0530] (NB [+0.0184, +0.0666])
+  pooled outcome-dependent (F3): +0.0038 [-0.0010, +0.0086] (NB [-0.0072, +0.0149])
+Interaction native (balanced): (arm − A1) MNAR − MCAR, 7 pairs pooled: +0.0076 [-0.0014, +0.0166] (NB [-0.0131, +0.0283]); p 0.0911, Holm 0.1823 -> no verdict
+Interaction mask (balanced): (arm − A1) MNAR − MCAR, 7 pairs pooled: +0.0038 [-0.0034, +0.0110] (NB [-0.0127, +0.0204]); p 0.2743, Holm 0.2743 -> no verdict
+### plain (beside)
+#### native − A1
+  pooled MCAR controls (F0): +0.0279 [+0.0213, +0.0345] (NB [+0.0127, +0.0430])
+  pooled probit MNAR (F1): +0.0329 [+0.0235, +0.0423] (NB [+0.0113, +0.0546])
+  pooled probit scales (F2): +0.0472 [+0.0354, +0.0591] (NB [+0.0201, +0.0744])
+  pooled outcome-dependent (F3): -0.0001 [-0.0070, +0.0068] (NB [-0.0160, +0.0158])
+#### mask − A1
+  pooled MCAR controls (F0): +0.0289 [+0.0225, +0.0353] (NB [+0.0142, +0.0436])
+  pooled probit MNAR (F1): +0.0300 [+0.0213, +0.0387] (NB [+0.0100, +0.0500])
+  pooled probit scales (F2): +0.0428 [+0.0332, +0.0524] (NB [+0.0208, +0.0648])
+  pooled outcome-dependent (F3): +0.0077 [+0.0017, +0.0136] (NB [-0.0060, +0.0213])
+Interaction native (plain): (arm − A1) MNAR − MCAR, 7 pairs pooled: +0.0051 [-0.0044, +0.0145] (NB [-0.0167, +0.0268]); p 0.2705, Holm 0.5409 -> no verdict
+Interaction mask (plain): (arm − A1) MNAR − MCAR, 7 pairs pooled: +0.0011 [-0.0063, +0.0086] (NB [-0.0160, +0.0182]); p 0.7505, Holm 0.7505 -> lead holds (inside ±0.01)
+```
+
+### E138: the quarter-label channel on fresh seeds, validation scarce (c1-split/09)
+
+```text
+## Scarce-label confirmation (E138): S25V − B25V (a quarter of the training AND validation labels), seeds 1515/2626/3737 × 5 folds, pooled over the eight files; holds if the plain 95% interval is above 0
+Pooled S25V − B25V: +0.0218 [+0.0090, +0.0346] (NB [-0.0077, +0.0512]); p 0.0026 -> HOLDS; MNAR half +0.0178, MCAR half +0.0258
+```
+
+### E139: TabPFN's lead under outcome-dependent MNAR against same-seed MCAR siblings (c15-mnar-prediction/09)
+
+```text
+## H2 under outcome-dependent MNAR (E139): (arm − A1) on each outcome file minus (arm − A1) on its same-seed MCAR sibling (s2060), paired per (table, seed, fold), pooled over the 6 outcome files; balanced primary, plain beside; Holm over the two arms
+### balanced (primary)
+Interaction native (balanced), 6 outcome files pooled: -0.0451 [-0.0555, -0.0347] (NB [-0.0690, -0.0212]); p 0.0000, Holm 0.0000 -> lead SHRINKS under MNAR
+Interaction mask (balanced), 6 outcome files pooled: -0.0364 [-0.0472, -0.0256] (NB [-0.0613, -0.0116]); p 0.0000, Holm 0.0000 -> lead SHRINKS under MNAR
+### plain (beside)
+Interaction native (plain), 6 outcome files pooled: -0.0201 [-0.0335, -0.0068] (NB [-0.0508, +0.0106]); p 0.0060, Holm 0.0120 -> lead SHRINKS under MNAR
+Interaction mask (plain), 6 outcome files pooled: -0.0077 [-0.0204, +0.0050] (NB [-0.0369, +0.0215]); p 0.2145, Holm 0.2145 -> no verdict
+### Descriptive: each model on F3 minus on its sibling (macro-F1 of the model itself, A1 then TabPFN native balanced)
+```
+
+### E140: the label-fraction curve (c1-split/10)
+
+```text
+## Label-fraction curve (E140): S(f)V − B(f)V, validation scarce too, seeds 1515/2626/3737 × 5 folds, pooled over the eight files; Holm over the two new fractions; E138's quarter beside
+Gate 10% pooled: +0.0290 [+0.0165, +0.0416] (NB [+0.0002, +0.0579]); p 0.0002, Holm 0.0004 -> channel OPEN
+Gate 50% pooled: +0.0157 [+0.0075, +0.0239] (NB [-0.0031, +0.0345]); p 0.0010, Holm 0.0010 -> channel OPEN
+Beside, 25% (E138): +0.0218 [+0.0090, +0.0346]
+```
+
+### E141: the quarter-label channel on the 21 confirmatory variants (c1-split/11)
+
+```text
+## Stage 2 (E141): S25V − B25V on the 21 confirmatory variants, seeds 42/7/13/101/202 × 5 folds (25 replicates a variant), pooled over the 21; holds if the plain 95% interval is above 0; groups beside
+Pooled over 21: +0.0101 [+0.0045, +0.0157] (NB [-0.0060, +0.0262]) -> HOLDS
+  group categorical (credit-g, kr-vs-kp): +0.0087 [+0.0003, +0.0171]
+  group small numeric (vehicle, biodeg, kc2): +0.0080 [-0.0040, +0.0201]
+  group spambase: +0.0118 [+0.0061, +0.0175]
+  group large (pendigits, letter, electricity): +0.0159 [+0.0127, +0.0190]
+```
+
+### E142: E139 on a fresh draw and fresh seeds (c15-mnar-prediction/10)
+
+```text
+## H2 under outcome-dependent MNAR (E142, fresh draws): (arm − A1) on each outcome file minus (arm − A1) on its same-seed MCAR sibling (s4848), paired per (table, seed, fold), pooled over the 3 outcome files; balanced primary, plain beside; Holm over the two arms
+### balanced (primary)
+Interaction native (balanced), 3 outcome files pooled: -0.0394 [-0.0513, -0.0275] (NB [-0.0667, -0.0120]); p 0.0000, Holm 0.0000 -> lead SHRINKS under MNAR
+Interaction mask (balanced), 3 outcome files pooled: -0.0278 [-0.0398, -0.0159] (NB [-0.0552, -0.0004]); p 0.0002, Holm 0.0002 -> lead SHRINKS under MNAR
+### plain (beside)
+Interaction native (plain), 3 outcome files pooled: -0.0274 [-0.0482, -0.0067] (NB [-0.0751, +0.0202]); p 0.0132, Holm 0.0263 -> lead SHRINKS under MNAR
+Interaction mask (plain), 3 outcome files pooled: -0.0219 [-0.0422, -0.0016] (NB [-0.0686, +0.0247]); p 0.0361, Holm 0.0361 -> lead SHRINKS under MNAR
+### Descriptive: each model on F3 minus on its sibling (macro-F1 of the model itself, A1 then TabPFN native balanced)
+```
+
+### E143: the quarter-label channel at 20, 40 and 80nan (c1-split/12)
+
+```text
+## Missingness levels (E143): S25V − B25V at 20/40/80nan (MCAR files of the four tables), seeds 1515/2626/3737 × 5 folds, pooled over the four tables per level; Holm over the three levels; E138's 60nan MCAR half beside
+Level 20nan pooled: +0.0246 [+0.0048, +0.0445] (NB [-0.0210, +0.0702]); p 0.0185, Holm 0.0392 -> channel OPEN
+Level 40nan pooled: +0.0234 [+0.0057, +0.0410] (NB [-0.0172, +0.0640]); p 0.0131, Holm 0.0392 -> channel OPEN
+Level 80nan pooled: +0.0040 [-0.0164, +0.0245] (NB [-0.0430, +0.0511]); p 0.6786, Holm 0.6786 -> channel closed
+Beside, 60nan MCAR (E138): +0.0258 [+0.0083, +0.0432]
+```
+
+### E144: the selector x seeds squares (c1-split/13)
+
+```text
+## Selector squares (E144): (S(f)V − B(f)V) − (S(f) − B(f)) paired per (file, seed, fold), seeds 42/7/13 and 1515/2626/3737, pooled over the eight files; Holm over the two fractions; the four cell means beside
+  10% cell means, S − B pooled over files and six seeds: scarce +0.0172, oracle +0.0228
+  25% cell means, S − B pooled over files and six seeds: scarce +0.0142, oracle +0.0198
+Selector effect 10% pooled: -0.0056 [-0.0194, +0.0081] (NB [-0.0482, +0.0369]); p 0.4098, Holm 0.5737 -> not supported
+Selector effect 25% pooled: -0.0056 [-0.0161, +0.0050] (NB [-0.0382, +0.0270]); p 0.2868, Holm 0.5737 -> not supported
 ```
