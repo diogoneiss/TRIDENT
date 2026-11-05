@@ -42,3 +42,7 @@ pooled over the eight files:
 - **Reading, by the rule:** both new fractions open the channel. Descriptive for the thesis: on these four tables at
   60% missingness, pre-training on all rows pays whenever labels are scarce, and pays more the scarcer they are.
   No ADR.
+
+**Note (2026-11-05, 09:40 GMT-3):** the selector hypothesis above was tested by E144 ([13](13-selector-squares.md)) and
+is not supported (selector effect −0.006 [−0.019, +0.008] at a tenth); the E136 / E140 difference is attributed to the
+seeds.

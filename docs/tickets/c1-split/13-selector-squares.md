@@ -47,3 +47,27 @@ medusa para cá") the 92 run on gorgona8 (`home()` returns gorgona8 for cuts 13/
 within one machine; the second-order contrast (scarce − oracle) now crosses machines for every pair whose earlier
 arms ran on medusa1, not only the two stated above. Machines differ per fold (E86), so this is a stated threat to the
 contrast, not to the within-pair differences. The rule and the cell count are unchanged.
+
+## Outcome (2026-11-05, 09:40 GMT-3; 168 of 168 cells, 0 failed; gorgona8's first 76 by 03:56, the moved 92 from 08:30 to 09:34 GMT-3)
+
+Read with `c1_report.py --selector`. Unedited tally, (S(f)V − B(f)V) − (S(f) − B(f)) paired per (file, seed, fold),
+seeds 42/7/13 and 1515/2626/3737, pooled over the eight files (30 replicates), Holm over the two fractions:
+
+| labels | selector effect | NB | p | Holm | verdict | S − B scarce / oracle (six seeds) |
+|---|---|---|---|---|---|---|
+| 10% | −0.0056 [−0.0194, +0.0081] | [−0.0482, +0.0369] | 0.41 | 0.57 | **not supported** | +0.0172 / +0.0228 |
+| 25% | −0.0056 [−0.0161, +0.0050] | [−0.0382, +0.0270] | 0.29 | 0.57 | **not supported** | +0.0142 / +0.0198 |
+
+- **The scarce selector does not widen S − B.** The point estimate is slightly negative at both fractions (the
+  whole-validation selector gives a marginally larger S − B), with no file in either direction (16 of 16 "no
+  difference"). E140's hypothesis, that B's noisier epoch selection under few validation rows is what opened a
+  tenth, is withdrawn.
+- **So the E136 / E140 difference at a tenth was the seeds.** Descriptively, over six seeds the tenth-label channel
+  is about +0.02 under either selector (scarce +0.017, oracle +0.023); E136's closed reading (+0.011 on 42/7/13) and
+  E140's open one (+0.029 on 1515/2626/3737) stand as written on their own seeds, and the seed-to-seed swing (kc2
+  s3737 +0.15 against s7 −0.08 in the contrast) says a tenth of kc2's labels, 36 rows, is where three seeds do not
+  settle a verdict.
+- **Reading for the thesis:** the deployable (scarce-validation) readings E138/E140/E141/E143 need no selector caveat:
+  the gain at scarce labels is pre-training's, not an artefact of B's epoch selection. The 92 moved cells make the
+  contrast cross machines for medusa1-sibling pairs (amendment above); the result is a null well inside the
+  interval, so the threat does not change the reading. No ADR.

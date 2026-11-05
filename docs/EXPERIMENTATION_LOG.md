@@ -3846,7 +3846,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E144 · The selector × seeds squares at a tenth and a quarter of the labels (2026-11-05)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (168 of 168 cells, 0 failed; read 09:40 GMT-3)
+- **Results:** selector effect 10% −0.0056 [−0.0194, +0.0081] (Holm 0.57), 25% −0.0056 [−0.0161, +0.0050] (Holm 0.57)
+  → not supported at both; 16 of 16 file lines no difference. Over six seeds S − B is +0.017 scarce / +0.023 oracle at
+  a tenth, +0.014 / +0.020 at a quarter.
+- **Conclusion:** the scarce selector does not widen S − B; E140's hypothesis is withdrawn and the E136 / E140
+  difference at a tenth is the seeds (kc2's 36 labelled rows swing ±0.1 by seed). The deployable readings
+  E138/E140/E141/E143 need no selector caveat. No ADR.
 - **Hypothesis:** the scarce-validation selector widens S − B relative to the whole-validation selector (E140's
   reading of why a tenth opened where E136 read it closed).
 - **Scenarios:** cut 13: S10/B10 × seeds 1515/2626/3737 and S10V/B10V × seeds 42/7/13 on the eight C1 files (96 cells);
