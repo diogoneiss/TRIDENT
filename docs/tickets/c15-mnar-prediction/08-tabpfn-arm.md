@@ -42,3 +42,33 @@ This ticket was written and committed before the study's first fit (22:33 GMT-3)
 - **Threats stated now:** TabPFN untuned (as in E83/E92); one `random_state`; its context sees no validation rows
   while A1 selected its epoch on them; the mask doubles the feature count (spambase 57 → 114, within v2's 500).
 - **Read only with all 69 pairs done.**
+
+## Outcome (2026-11-04, 23:22 GMT-3; 69 of 69 pairs, gorgona8 10 done 23:09 GMT-3, medusa1 59 done before 23:15 GMT-3)
+
+Read with `tabpfn_mnar.py --tally` (medusa1's pairs copied beside gorgona8's). Unedited tally, balanced probabilities
+(primary), arm − A1 in test macro-F1:
+
+| arm | F0 MCAR controls (7 files) | F1 probit MNAR (7) | F2 probit scales (3) | F3 outcome-dependent (6) |
+|---|---|---|---|---|
+| native | +0.0284 [+0.0236, +0.0332] | +0.0360 [+0.0277, +0.0443] | +0.0484 [+0.0371, +0.0597] | −0.0031 [−0.0087, +0.0025] |
+| mask | +0.0295 [+0.0243, +0.0347] | +0.0333 [+0.0260, +0.0406] | +0.0425 [+0.0321, +0.0530] | +0.0038 [−0.0010, +0.0086] |
+
+| primary: interaction (arm − A1) MNAR − MCAR, 7 sibling pairs | pooled | NB | p | Holm | verdict |
+|---|---|---|---|---|---|
+| native | +0.0076 [−0.0014, +0.0166] | [−0.0131, +0.0283] | 0.091 | 0.182 | **no verdict** |
+| mask | +0.0038 [−0.0034, +0.0110] | [−0.0127, +0.0204] | 0.274 | 0.274 | **no verdict** |
+
+- **Mask − native on the 16 MNAR files:** +0.0003 [−0.0020, +0.0026]: the explicit mask adds nothing TabPFN's own
+  handling does not already use.
+- **Plain probabilities (beside):** the same picture, leads about 0.003 smaller; interaction native +0.0051
+  [−0.0044, +0.0145] no verdict, mask +0.0011 [−0.0063, +0.0086] *lead holds* (inside ±0.01).
+- **Per file, F1:** TabPFN ahead on 6 of 7 (kc2_probit_20nan the exception, +0.002 n.s.); largest on
+  biodeg_probit_60nan +0.061 and vehicle_probit_60nan +0.050. **F3 (outcome-dependent MNAR, draw s2060):** A1 ahead
+  on kc2 at both strengths (−0.019 [−0.037, −0.000], −0.016 [−0.031, −0.001]), TabPFN ahead on spambase 1.5
+  (+0.013) and biodeg 3.0 (+0.008), the rest within ±0.01; log loss favours TabPFN on 5 of 6.
+- **Reading, by the rule:** the primary is *no verdict* for both arms: TabPFN's lead does not shrink under
+  value-dependent (probit) MNAR; if anything it leans larger (+0.008, interval reaching +0.017), and the lead grows
+  with the probit scale (F2). The lead vanishes only under *outcome-dependent* missingness (F3, pooled −0.003 [−0.009,
+  +0.003]), where a gap carries the label directly and TRIDENT's per-column `[NULL]` can read it; that family is
+  descriptive here (no MCAR sibling by draw) and is the place where H2 could be tested with a sibling design.
+  ADR 0032's strong tier is unchanged; adopting the balanced arm there stays the user's decision from E92. T44 done.

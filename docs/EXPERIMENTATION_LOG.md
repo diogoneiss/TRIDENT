@@ -3724,7 +3724,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E137 · TabPFN v2 under informative missingness: native and explicit-mask arms beside A1 (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-04 (69 of 69 pairs; read 23:21 GMT-3)
+- **Results:** balanced, arm − A1 macro-F1: native +0.028 on MCAR controls, +0.036 on probit MNAR, +0.048 on the probit
+  scales, −0.003 [−0.009, +0.003] on outcome-dependent MNAR; mask within 0.003 of native everywhere (mask − native
+  +0.0003 [−0.002, +0.003]). Interaction MNAR − MCAR: native +0.0076 [−0.0014, +0.0166] (Holm 0.18), mask +0.0038
+  [−0.0034, +0.0110] (Holm 0.27): no verdict for both.
+- **Conclusion:** TabPFN's lead is robust to value-dependent MNAR (it leans larger, not smaller) and the explicit
+  mask adds nothing; the lead disappears only where the gap carries the label directly (outcome-dependent F3, A1 ahead
+  on kc2), the regime where H2 could be tested with a sibling design. ADR 0032 unchanged. T44 done.
 - **Hypothesis:** none directional (T44): TabPFN's MCAR lead over TRIDENT (E83, E92) may shrink, hold or grow when
   missingness carries the label, which no published study tests; an explicit 0/1 mask may recover what its
   MCAR-trained indicator leaves unused.

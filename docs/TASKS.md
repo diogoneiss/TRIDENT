@@ -826,7 +826,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     MCAR prior leaves unused.
   - **What it would settle:** whether TabPFN's lead is robust to informative missingness, which
     no published study shows, and whether TRIDENT's per-column `[NULL]` gains ground there (H2).
-  - **Pre-registered 2026-11-04 as E137 ([c15-mnar-prediction/08](tickets/c15-mnar-prediction/08-tabpfn-arm.md)), the user's go ("vamos no 1 e 2 paralelos"): native and explicit-mask arms, balanced primary, on E124's 69 A1 pairs; primary the interaction (arm − A1) MNAR − MCAR over the seven probit/MCAR sibling pairs, Holm over the two arms. Proposal text ported from `origin/docs/wiki-proposed-tasks-t49` (fbcc010) with T43.**
+  - **Pre-registered 2026-11-04 as E137 ([c15-mnar-prediction/08](tickets/c15-mnar-prediction/08-tabpfn-arm.md)), the user's go ("vamos no 1 e 2 paralelos"): native and explicit-mask arms, balanced primary, on E124's 69 A1 pairs; primary the interaction (arm − A1) MNAR − MCAR over the seven probit/MCAR sibling pairs, Holm over the two arms. Proposal text ported from `origin/docs/wiki-proposed-tasks-t49` (fbcc010) with T43.** **Done 2026-11-04: no verdict on the interaction for both arms (native +0.008 [−0.001, +0.017], mask +0.004); TabPFN's lead holds or grows under probit MNAR (+0.028 MCAR → +0.036 MNAR → +0.048 probit scales), the explicit mask adds nothing (+0.0003), and the lead vanishes only under outcome-dependent MNAR (F3 −0.003, A1 ahead on kc2). ADR 0032 unchanged; T44 closed.**
 
 - **T45 · C15: `[NULL]` tokens against missForest + indicator under informative missingness** (the user's
   choice, 2026-11-03: "prefiro começar pelo c15"; the wiki's protocol C15, H2 and H2.2 of the thesis).
