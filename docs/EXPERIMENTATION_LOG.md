@@ -3717,8 +3717,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   [−0.012, +0.007] → Inconclusive; MCAR −0.012 [−0.023, −0.001] descriptive (T ahead, vehicle worse −0.020);
   interaction +0.010 [−0.008, +0.027]. Cost of scarcity S25 − S −0.094, S10 − S −0.154. labelled_rows audited equal
   across arms.
-- **Conclusion:** pre-training reaches the head at a quarter of the labels (first positive S − B on classification
-  here); the split S vs T still does not separate (Inconclusive under MNAR, T ahead under MCAR): no evidence for
+- **Conclusion:** pre-training reaches the head at a quarter of the labels (the first positive S − B under full
+  fine-tuning on classification here; E132's frozen-head +0.009 was the hint); the split S vs T still does not separate (Inconclusive under MNAR, T ahead under MCAR): no evidence for
   C1's claim where it could be tested. T is never worse than S. Next steps are the user's.
 - **Hypothesis:** with few labels the encoder (pre-trained on every row) carries content the head cannot rebuild, so
   S − B > 0; if so, the `[NULL]`/`[MASK]` split (S − T) becomes testable where E131 could not.

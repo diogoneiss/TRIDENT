@@ -26,8 +26,9 @@ This ticket was written and committed before the cut's first cell (22:33 GMT-3).
 - **Labelled rows a fold (seed 42, fold 1; per class):** biodeg 73 [48, 25] / 184 [122, 62]; kc2 36 [29, 7] /
   91 [72, 19]; vehicle 59 [15, 15, 15, 14] / 147 [38, 37, 37, 35]; spambase 322 [195, 127] / 805 [488, 317].
 - **Machines (ADR 0035):** by `c15_run.machine`, as every C1 cut (gorgona8 seed 42 of kc2 and spambase).
-- **A fact fixed now:** at a tenth, every file but spambase has one batch an epoch, so `cosine_legacy`'s sawtooth
-  (period `EPOCH_FINE` steps) becomes one 150-epoch annealing; shared by the three arms, so not a confound for
+- **A fact fixed now:** at a tenth, and at a quarter too (biodeg 184, kc2 91, vehicle 147 rows at batch 256), every
+  file but spambase has one batch an epoch, so `cosine_legacy`'s sawtooth (period `EPOCH_FINE` steps) becomes one
+  150-epoch annealing; shared by the three arms, so not a confound for
   S − B or S − T, but a different regime from E131's, whose kept epochs do not carry over.
 
 ## Rule, fixed now
@@ -72,14 +73,14 @@ Read with `c1_report.py --scarce` on all 144 cells. Audit: every arm of a fold s
   it), seeds disagree (−0.026, +0.004, −0.014); vehicle_60nan *worse* −0.020 [−0.037, −0.003]; the rest no
   difference. Interaction (S − T) MNAR − MCAR +0.0095 [−0.0080, +0.0269].
 - **At 0.10 the gate is closed, so S10 − T10 stays unread**, as pre-registered.
-- **Reading, by the rule:** at a quarter of the labels pre-training has a channel for the first time in this project's
-  classification work: S − B +0.016, positive on every seed, better on four files and worse on none, where E131 (all
-  labels) found +0.004 and E71 nothing. The split's claim then gets its first real test and does not pass: S − T is
+- **Reading, by the rule:** at a quarter of the labels pre-training has a channel under *full fine-tuning* for the
+  first time in this project's classification work: S − B +0.016, positive on every seed, better on four files and
+  worse on none, where E131 (all labels) found +0.004 and E71 nothing; E132's frozen-head +0.009 was the earlier hint. The split's claim then gets its first real test and does not pass: S − T is
   Inconclusive under MNAR (the point estimate is on T's side) and, descriptively, T is ahead under MCAR. No evidence
   that keeping `[NULL]` apart from `[MASK]` helps where pre-training reaches the head; if anything the tied token
   does as well or better. A tenth of the labels is too noisy for either question (kc2 with 7 positives; intervals
   three times wider).
 - **What follows (the user's):** C1's claim is not Supported in the one regime where it could be tested; the
-  tied token (T) is the cheaper design and was never worse than S. The positive by-product, pre-training's +0.016
+  tied token (T) is the simpler design (one token kind for gaps and holes) and was never worse than S. The positive by-product, pre-training's +0.016
   at scarce labels, is a classification result worth confirming on fresh seeds and on the 21 variants before any
   claim; a deployable version would also shrink the validation split. GPUs idle from 23:21 GMT-3.
