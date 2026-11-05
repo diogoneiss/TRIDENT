@@ -297,6 +297,10 @@ class Hyperparameters:
     # fine-tuning sees, a stratified subsample fixed by the fold; 1.0 (every run before it) uses them all.
     # Pre-training, validation and test are untouched.
     finetune_label_fraction: float = 1.0
+    # E138 (docs/tickets/c1-split/09-scarce-confirmation.md): "on" applies ``finetune_label_fraction`` to the
+    # validation rows too (the same fixed stratified draw), so the kept epoch is chosen on scarce labels as well;
+    # "off" (every run before it) keeps the whole validation split.
+    finetune_scarce_validation: str = "off"
     # Nominal share of cells hidden when scoring. Nominal because the masking helper
     # scales it down by each row's null density: asking for 0.2 hides about 20% of a
     # complete variant but about 5% of an 80%-missing one.
@@ -353,6 +357,8 @@ class Hyperparameters:
             raise ValueError(f"The fine-tuning freeze counts epochs, so it cannot be {self.finetune_freeze_epochs}")
         if not 0 < self.finetune_label_fraction <= 1:
             raise ValueError(f"The fine-tuning label fraction must be in (0, 1], not {self.finetune_label_fraction}")
+        if self.finetune_scarce_validation not in ("off", "on"):
+            raise ValueError(f"Unknown scarce-validation setting {self.finetune_scarce_validation!r}; expected off or on")
         if not self.finetune_encoder_lr_scale > 0 or not self.finetune_head_lr_scale > 0:
             raise ValueError("The fine-tuning learning-rate scales must be positive")
         if self.finetune_freeze_encoder not in ("off", "all"):
@@ -432,6 +438,7 @@ class Hyperparameters:
             finetune_head_lr_scale=float(values.get("FINETUNE_HEAD_LR_SCALE", values.get("finetune_head_lr_scale", 1.0))),
             finetune_lr_scheduler=str(values.get("FINETUNE_LR_SCHEDULER", values.get("finetune_lr_scheduler", ""))),
             finetune_label_fraction=float(values.get("FINETUNE_LABEL_FRACTION", values.get("finetune_label_fraction", 1.0))),
+            finetune_scarce_validation=str(values.get("FINETUNE_SCARCE_VALIDATION", values.get("finetune_scarce_validation", "off"))),
             decoder_heads=str(
                 values.get("DECODER_HEADS", values.get("decoder_heads", DEFAULT_DECODER_HEADS))
             ),

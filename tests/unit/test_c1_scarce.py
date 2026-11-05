@@ -32,3 +32,10 @@ def test_the_flag_defaults_to_everything_and_is_validated() -> None:
     for bad in (0.0, 1.5, -0.1):
         with pytest.raises(ValueError):
             Hyperparameters.from_mapping({"FINETUNE_LABEL_FRACTION": bad})
+
+
+def test_scarce_validation_defaults_off_and_is_validated() -> None:
+    assert Hyperparameters.from_mapping({}).finetune_scarce_validation == "off"
+    assert Hyperparameters.from_mapping({"FINETUNE_SCARCE_VALIDATION": "on"}).finetune_scarce_validation == "on"
+    with pytest.raises(ValueError):
+        Hyperparameters.from_mapping({"FINETUNE_SCARCE_VALIDATION": "yes"})

@@ -35,6 +35,7 @@ sys.path.insert(0, str(ROOT))
 
 from scripts.experiments import c1_run as run  # noqa: E402
 from scripts.experiments import c15_report as c15  # noqa: E402
+from scripts.experiments import c15_run  # noqa: E402
 
 ROOTS = (run.STATE, run.STATE / "medusa") if run.HOST == "gorgona8" else (run.STATE,)
 MARGIN = 0.010
@@ -371,6 +372,42 @@ def scarce() -> None:
         print(f"Interaction (S − T) MNAR − MCAR, pooled: {m:+.4f} [{lo:+.4f}, {hi:+.4f}]")
 
 
+def confirm() -> None:
+    """E138 (ticket 09): S25V − B25V on the confirmation seeds, validation scarce too; holds if the plain interval is above 0."""
+    seeds = c15_run.CONFIRMATION_SEEDS
+    print(f"## Scarce-label confirmation (E138): S25V − B25V (a quarter of the training AND validation labels), seeds "
+          f"{'/'.join(map(str, seeds))} × 5 folds, pooled over the eight files; holds if the plain 95% interval is above 0")
+    rows, audit = [], set()
+    for v in run.MNAR + run.MCAR:
+        f1, ll = [], []
+        for seed in seeds:
+            a, b = readouts("S25V", v, seed), readouts("B25V", v, seed)
+            if a is None or b is None:
+                print(f"- {v} s{seed}: missing\n\nConfirmation: incomplete")
+                return
+            audit |= {(v, x["labelled_rows"], x["validation_rows"]) for x in a} ^ {(v, x["labelled_rows"], x["validation_rows"]) for x in b}
+            (fa, la), (fb, lb) = c15.scores(a), c15.scores(b)
+            f1.append(fa - fb)
+            ll.append(lb - la)
+        d = np.concatenate(f1)
+        rows.append(d)
+        m, lo, hi = c15.interval(d, False)
+        _, nlo, nhi = c15.interval(d)
+        per_seed = ", ".join(f"s{sd} {x.mean():+.4f}" for sd, x in zip(seeds, f1))
+        flag = "better" if lo > 0 else "worse" if hi < 0 else "no difference"
+        print(f"- {v}: F1 {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]; {per_seed}) -> {flag}; "
+              f"LL(B) − LL(S) {c15.interval(np.concatenate(ll), False)[0]:+.4f}")
+    pooled = np.mean(rows, axis=0)
+    m, lo, hi = c15.interval(pooled, False)
+    _, nlo, nhi = c15.interval(pooled)
+    p_value = float(stats.ttest_1samp(pooled, 0.0).pvalue)
+    print(f"Pooled S25V − B25V: {m:+.4f} [{lo:+.4f}, {hi:+.4f}] (NB [{nlo:+.4f}, {nhi:+.4f}]); p {p_value:.4f} -> "
+          f"{'HOLDS' if lo > 0 else 'does not hold'}; MNAR half {c15.interval(np.mean(rows[:4], axis=0), False)[0]:+.4f}, "
+          f"MCAR half {c15.interval(np.mean(rows[4:], axis=0), False)[0]:+.4f}")
+    print(f"Audit: labelled/validation rows differ between S25V and B25V on {len(audit)} (file, rows) entries"
+          + (" (none: identical)" if not audit else f": {sorted(audit)}"))
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -393,7 +430,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept, "--scarce": scarce, "--confirm": confirm}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

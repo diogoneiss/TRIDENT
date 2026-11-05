@@ -123,6 +123,12 @@ def train_and_evaluate_classifier(
     if len(kept_rows) < len(processed_train):
         processed_train = processed_train.iloc[kept_rows].reset_index(drop=True)
         train_labels = train_labels[torch.as_tensor(kept_rows, device=device)]
+    # E138: the validation split scarce too, the same draw, so the kept epoch is chosen on few labels as well.
+    if hyperparameters.finetune_scarce_validation == "on":
+        kept_validation_rows = labelled_rows(validation_labels.cpu().numpy(), hyperparameters.finetune_label_fraction)
+        if len(kept_validation_rows) < len(processed_validation):
+            processed_validation = processed_validation.iloc[kept_validation_rows].reset_index(drop=True)
+            validation_labels = validation_labels[torch.as_tensor(kept_validation_rows, device=device)]
 
     number_of_labels = len(dataset.label_classes)
     present_classes = np.unique(train_labels.cpu().numpy())
@@ -266,6 +272,7 @@ def train_and_evaluate_classifier(
             "test_log_loss": test_log_loss,
             "val_log_loss": val_log_loss,
             "labelled_rows": int(len(train_labels)),
+            "validation_rows": int(len(validation_labels)),
         }
     result = build_fold_result(
         fold="single_split",

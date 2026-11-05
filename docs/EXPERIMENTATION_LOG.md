@@ -3749,3 +3749,27 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   pairs, pooled per replicate, plain 95% t interval, Holm over the two arms: shrinks / grows / holds (±0.01) / no
   verdict; leads per group, F2/F3 per file and mask − native descriptive.
 - **Sources:** [c15-mnar-prediction/08](tickets/c15-mnar-prediction/08-tabpfn-arm.md).
+
+### E138 · The quarter-label pre-training channel on fresh seeds, validation scarce too (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** E136's S25 − B25 +0.016 holds when the kept epoch is chosen on a quarter of the validation labels
+  and the seeds are fresh (1515/2626/3737).
+- **Scenarios:** S25V vs B25V (`FINETUNE_LABEL_FRACTION` 0.25, `FINETUNE_SCARCE_VALIDATION` on, new, default off) on
+  the eight C1 files, 3 seeds × 5 folds, 48 cells on medusa1.
+- **Measures and decision rule:** S25V − B25V macro-F1 pooled over the eight files, plain 95% t interval: holds if
+  above 0, else does not hold; halves and log loss flags; rows audited. Holds → stage 2 proposal (21 variants, 630
+  cells) for the user's go.
+- **Sources:** [c1-split/09](tickets/c1-split/09-scarce-confirmation.md).
+
+### E139 · H2 under outcome-dependent MNAR: F3 against same-seed MCAR siblings, TabPFN beside A1 (2026-11-04)
+
+- **Status:** in progress
+- **Hypothesis:** TabPFN's lead over A1 shrinks where the gap carries the label (E137's F3 reading, −0.003, made
+  paired by MCAR siblings of the same seed).
+- **Scenarios:** new files `{biodeg,kc2,spambase}_mcar_s2060_60nan`; A1 on them (9 cells, seeds 42/7/13); TabPFN native
+  and mask arms offline on the 9 pairs; F3's cells reused.
+- **Measures and decision rule:** interaction (arm − A1) F3 − sibling macro-F1 pooled over the six F3 files, plain 95%
+  t interval, Holm over the two arms: shrinks / grows / holds (±0.01) / no verdict; each model's own F3 − sibling
+  descriptive.
+- **Sources:** [c15-mnar-prediction/09](tickets/c15-mnar-prediction/09-h2-outcome-siblings.md).
