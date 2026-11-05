@@ -3769,7 +3769,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E139 · H2 under outcome-dependent MNAR: F3 against same-seed MCAR siblings, TabPFN beside A1 (2026-11-04)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (9 A1 cells, 9 TabPFN pairs; read 00:34 GMT-3)
+- **Results:** interaction (arm − A1) F3 − sibling, balanced: native −0.0451 [−0.0555, −0.0347], mask −0.0364
+  [−0.0472, −0.0256], Holm < 0.0001, all twelve per-file intervals below zero → the lead SHRINKS for both arms. On the
+  siblings TabPFN leads by +0.03 to +0.05; on the outcome files it is within ±0.013 and behind A1 on kc2. Plain
+  probabilities: native shrinks (−0.020), mask no verdict. Both models gain from outcome-dependent gaps; A1 gains more.
+- **Conclusion:** the first positive H2 reading: TRIDENT's per-column `[NULL]` gains ground where the gap carries the
+  label, and an explicit mask does not give TabPFN the same. E142 (fresh draw s4848, confirmation seeds) runs now.
 - **Hypothesis:** TabPFN's lead over A1 shrinks where the gap carries the label (E137's F3 reading, −0.003, made
   paired by MCAR siblings of the same seed).
 - **Scenarios:** new files `{biodeg,kc2,spambase}_mcar_s2060_60nan`; A1 on them (9 cells, seeds 42/7/13); TabPFN native
@@ -3799,7 +3805,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E142 · H2's fresh-draw confirmation (conditional on E139 reading "shrinks") (2026-11-05)
 
-- **Status:** pre-registered, conditional
+- **Status:** in progress (condition met by E139 at 00:34 GMT-3; launched on medusa1)
 - **Scenarios:** A1 on `{biodeg,kc2,spambase}_outcome3p0_s4848_60nan` and `_mcar_s4848_60nan`, seeds 1515/2626/3737 (18
   cells); TabPFN arms offline on the same pairs.
 - **Measures and decision rule:** E139's interaction rule on the three odds-3 files, Holm over the two arms.

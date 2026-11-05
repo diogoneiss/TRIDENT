@@ -853,6 +853,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   2026-11-04:** `{biodeg,kc2,spambase}_mcar_s2060_60nan` generated; A1 on them (9 cells); TabPFN arms offline; the
   interaction (arm − A1) F3 − sibling, Holm over the two arms: shrinks / grows / holds / no verdict.
   **E142 ([c15-mnar-prediction/10](tickets/c15-mnar-prediction/10-h2-fresh-draws.md)) pre-registered 2026-11-05, conditional on E139 reading "shrinks": the s4848 fresh draws (odds 3) on the confirmation seeds, 18 A1 cells plus TabPFN.**
+  **E139 done 2026-11-05 00:34 GMT-3: the lead SHRINKS under outcome-dependent MNAR for both TabPFN arms (native −0.045 [−0.056, −0.035], mask −0.036 [−0.047, −0.026], Holm < 0.0001; 12 of 12 file intervals below zero): the first positive H2 reading. E142 launched on medusa1 (stage h2c).**
 
 ### Process
 
