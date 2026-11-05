@@ -3868,7 +3868,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E145 · Choosing the decode checkpoint by a distributional score (2026-11-05)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (72 of 72 cells on medusa1, 0 failed; read 20:22 GMT-3)
+- **Results:** B − A pooled over the 12 variants: `dist_score` −0.1875 [−0.1941, −0.1808] (better on 12 of 12; Wasserstein
+  −0.096, total variation −0.107, dispersion +0.148 toward 1); `impute_score` +0.0397 [+0.0374, +0.0421], worse on 7
+  (kr-vs-kp and spambase at 60/80nan, credit-g at 40/60/80nan; up to +0.162), no different on 5 → improves the
+  distribution at a cost in point accuracy.
+- **Conclusion:** the selector does what it is asked, at four times the margin in point accuracy. At 80nan
+  `impute_score` keeps an epoch near the start (10 to 56 of 450) whose fills are almost the mean/mode fill (credit-g:
+  dispersion 0.07, `impute_score` 1.007), and `dist_score` a late one whose fills spread like the truths but lose to
+  the mean/mode fill cell by cell (about 1.17): ADR 0025's caveat on the 80nan wins, measured. A trade-off, recorded;
+  the flag stays off by default, no ADR. Open: a criterion between the two, KC, the large tables, fresh seeds.
 - **Hypothesis:** keeping the decode epoch whose validation gaps score best by `dist_score` (per-column Wasserstein
   distance and category total variation, as a ratio to the mean/mode fill) improves the test fills' distribution
   without a relevant cost in `impute_score`.

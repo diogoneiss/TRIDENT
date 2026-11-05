@@ -91,3 +91,58 @@ and seed 42's 24 cells run on medusa1 too, on four queues added beside the four 
 finished three arm-A cells (kr-vs-kp at 40, 60 and 80nan, seed 42) and was inside their arm-B cells; all of that is
 discarded and those pairs are trained whole on medusa1, so every pair still has both arms on one machine (ADR 0035).
 The cells, the readout and the rule are unchanged; the reading runs on medusa1's ledgers.
+
+## The tag's backfill (2026-11-05, applied 18:53 to 19:54 GMT-3, verified 20:03 GMT-3)
+
+`scripts/backfill_decode_metric_tag.py --apply`, through the leader's server: `decode_metric=impute_score`, marked
+`decode_metric_backfilled=true`, on 3690 imputation runs (parents and Optuna trials, 2286 trees) and their 3675 active
+mirrors. A second dry run finds nothing; no active mirror lacks the tag; no run of another task was touched. The 15
+stamped runs without an active mirror are 11 failed runs, 3 a kill left `RUNNING`, and one trial of a deleted study.
+The study's own cells run with MLflow off and carry no tag.
+
+## Outcome (2026-11-05, 20:22 GMT-3; 72 of 72 cells on medusa1, 0 failed, the last queue done 20:12 GMT-3)
+
+Read with `decode_metric_report.py` on medusa1, both arms from their five fold ledgers. Unedited tally, B − A over 15
+(seed, fold) replicates a variant, K's induced fills; the table is built from the reader's lines by script:
+
+| variant | B − A `dist_score` | B − A `impute_score` | A: `dist_score` / `impute_score` | dispersion A → B | mean kept epoch A → B |
+|---|---|---|---|---|---|
+| kr-vs-kp_40nan | −0.0410 [−0.0607 −0.0213] better | +0.0029 [−0.0073 +0.0131] no difference | 0.2801 / 0.7239 | n/a (no numerical column) | 260 → 259 |
+| kr-vs-kp_60nan | −0.1676 [−0.1979 −0.1374] better | +0.0299 [+0.0237 +0.0360] worse | 0.4211 / 0.8668 | n/a (no numerical column) | 103 → 305 |
+| kr-vs-kp_80nan | −0.6013 [−0.6552 −0.5474] better | +0.1581 [+0.1483 +0.1678] worse | 0.8018 / 0.9775 | n/a (no numerical column) | 19 → 286 |
+| spambase_40nan | −0.0258 [−0.0362 −0.0153] better | +0.0009 [−0.0025 +0.0043] no difference | 0.5350 / 0.9014 | 0.479 → 0.510 | 271 → 356 |
+| spambase_60nan | −0.0742 [−0.1004 −0.0480] better | +0.0017 [+0.0002 +0.0031] worse | 0.6226 / 0.9414 | 0.406 → 0.424 | 138 → 338 |
+| spambase_80nan | −0.2027 [−0.2357 −0.1697] better | +0.0200 [+0.0160 +0.0240] worse | 0.7526 / 0.9872 | 0.264 → 0.448 | 56 → 392 |
+| credit-g_40nan | −0.1525 [−0.1945 −0.1104] better | +0.0300 [+0.0188 +0.0412] worse | 0.5539 / 0.9209 | 0.472 → 0.586 | 77 → 267 |
+| credit-g_60nan | −0.2892 [−0.3607 −0.2178] better | +0.0739 [+0.0599 +0.0878] worse | 0.6162 / 0.9886 | 0.396 → 0.646 | 56 → 323 |
+| credit-g_80nan | −0.6398 [−0.6695 −0.6101] better | +0.1619 [+0.1519 +0.1719] worse | 0.9222 / 1.0066 | 0.074 → 0.758 | 10 → 262 |
+| vehicle_60nan | −0.0227 [−0.0334 −0.0120] better | +0.0011 [−0.0051 +0.0073] no difference | 0.2307 / 0.6392 | 0.828 → 0.856 | 219 → 317 |
+| biodeg_60nan | −0.0069 [−0.0116 −0.0023] better | −0.0012 [−0.0033 +0.0009] no difference | 0.3195 / 0.7589 | 0.743 → 0.748 | 333 → 368 |
+| kc2_60nan | −0.0257 [−0.0412 −0.0102] better | −0.0022 [−0.0109 +0.0064] no difference | 0.2661 / 0.5750 | 0.897 → 0.913 | 201 → 343 |
+
+```text
+Pooled B − A dist_score: -0.1875 [-0.1941, -0.1808] (NB [-0.2026, -0.1723])
+Pooled B − A impute_score: +0.0397 [+0.0374, +0.0421] (NB [+0.0343, +0.0452])
+Pooled B − A wd_num_z: -0.0960 [-0.1023, -0.0896] (NB [-0.1105, -0.0814])
+Pooled B − A tv_cat: -0.1074 [-0.1133, -0.1016] (NB [-0.1209, -0.0940])
+Pooled B − A dispersion: +0.1478 [+0.1386, +0.1570] (NB [+0.1267, +0.1689])
+Primary: dist_score improves (interval below 0: True); impute_score cost not inside +0.01 (upper bound +0.0421, lower +0.0374) -> improves the distribution at a cost in point accuracy
+```
+
+- **By the rule: it improves the distribution at a cost in point accuracy.** `dist_score` is better on 12 of 12
+  variants and by −0.19 pooled; both of its parts move (Wasserstein −0.096, total variation −0.107), and the
+  dispersion, the fills' sd over the truths', rises by 0.15 toward 1 (the reader's header calls every score "lower is
+  better"; for the dispersion 1 is the truth's). `impute_score` is +0.040 worse pooled, four times the margin.
+- **The cost is at heavy missingness on three tables.** `impute_score` is worse on 7 variants
+  (kr-vs-kp_60nan, kr-vs-kp_80nan, spambase_60nan, spambase_80nan, credit-g_40nan, credit-g_60nan, credit-g_80nan) and no different on 5 (kr-vs-kp_40nan, spambase_40nan, vehicle_60nan, biodeg_60nan, kc2_60nan), where the distribution improves for
+  nothing measurable. spambase_60nan's flag is a cost of +0.002, inside the margin; the six others cost +0.020 to
+  +0.162.
+- **What the two selectors keep differs most where the cost is largest.** At 80nan `impute_score` keeps a very early
+  epoch (credit-g 10, kr-vs-kp 19, spambase 56 of 450) whose fills are almost the mean/mode fill: on credit-g_80nan
+  `impute_score` 1.007, `dist_score` 0.92, dispersion 0.07. `dist_score` keeps a late epoch (262 to 392) whose fills
+  spread like the truths (dispersion 0.45 to 0.76) and are worse than the mean/mode fill cell by cell (credit-g_80nan:
+  about 1.17). Neither end is a good output there: one is a collapsed fill that ties the naive one, the other a
+  realistic-looking fill that loses to it. This is ADR 0025's caveat on the 80nan wins, measured.
+- **What follows, by the ticket:** recorded as a trade-off, with its size. The flag stays an option, off by default;
+  no default change and no ADR. Not read here and open: a criterion between the two (for instance the best
+  `dist_score` among the epochs within a tolerance of the best `impute_score`), KC, the large tables, fresh seeds.

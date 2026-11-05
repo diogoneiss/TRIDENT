@@ -869,6 +869,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   untouched. **E145 ([imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md)), from 2026-11-05:**
   checkpoint by `dist_score` against by `impute_score` on E40's 12 variants, seeds 42/7/13, 72 cells on both machines.
   Cut for now: energy distance, I-Scores, row-level sliced Wasserstein, downstream utility, CRPS.
+  **E145 done 2026-11-05 20:22 GMT-3: improves the distribution at a cost (`dist_score` −0.19, better on 12 of 12;
+  `impute_score` +0.040, worse on 7, all at 40–80nan on kr-vs-kp, spambase and credit-g; free on the other 5). At
+  80nan the two selectors keep opposite ends of the trajectory (a near-naive early epoch against a spread-out late
+  one that loses to the naive fill). The flag stays off; no ADR. The `decode_metric` tag is backfilled on 3690 runs.
+  Next, the user's: a criterion between the two, KC, large tables, fresh seeds.**
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
