@@ -3802,7 +3802,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E141 · Stage 2: the quarter-label channel on the 21 confirmatory variants, five seeds (2026-11-05)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (210 of 210 cells, 0 failed; read 02:43 GMT-3)
+- **Results:** pooled over 21: +0.0101 [+0.0045, +0.0157] (NB [−0.0060, +0.0262]) → HOLDS; 8 variants better
+  (spambase ×4, pendigits, letter, electricity, kr-vs-kp_40nan), none worse. Groups: categorical +0.009, small numeric
+  +0.008 [−0.004, +0.020], spambase +0.012, large +0.016 [+0.013, +0.019].
+- **Conclusion:** the quarter-label channel holds on the confirmatory set: smaller than on the four 60nan tables
+  (+0.010 against +0.022, the 21 being mostly 20–40nan and large), tightest on the large tables, NB interval crossing 0
+  (caveat for the sentence). Thesis-claim proposal and optional ADR for the label-scarce path put to the user; no
+  default change.
 - **Hypothesis:** S25V − B25V > 0 pooled over E30's 21 variants (E138 held on the four 60nan tables).
 - **Scenarios:** 21 variants × seeds 42/7/13/101/202 × S25V/B25V = 210 cells (gorgona8 seed 42, medusa1 the rest).
 - **Measures and decision rule:** pooled over the 21 per replicate (25 replicates), plain 95% t interval: holds if
@@ -3825,7 +3832,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E143 · The quarter-label channel at 20, 40 and 80% missingness (2026-11-05)
 
-- **Status:** in progress
+- **Status:** done 2026-11-05 (72 of 72 cells, 0 failed; read 02:43 GMT-3)
+- **Results:** 20nan +0.0246 [+0.0048, +0.0445] (Holm 0.039, OPEN); 40nan +0.0234 [+0.0057, +0.0410] (Holm 0.039,
+  OPEN; kc2_40nan better); 80nan +0.0040 [−0.0164, +0.0245] (Holm 0.68, closed; spambase_80nan better); E138's 60nan
+  MCAR half beside +0.0258 [+0.0083, +0.0432]. No table worse at any level.
+- **Conclusion:** the channel is flat at +0.023…+0.026 from 20 to 60% missingness and closes at 80%, where only
+  spambase still gains; it does not grow with the missingness level. Descriptive for the thesis; no ADR.
 - **Hypothesis:** none directional; the channel's size may grow or shrink with the missingness level.
 - **Scenarios:** `{biodeg,kc2,vehicle,spambase}_{20,40,80}nan` × seeds 1515/2626/3737 × S25V/B25V = 72 cells.
 - **Measures and decision rule:** per level pooled over the four tables, plain 95% t interval, Holm over three levels:

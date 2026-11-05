@@ -27,3 +27,31 @@ This ticket was written and committed before the cut's first cell (00:30 GMT-3).
 - **Threats stated now:** letter's 26 classes at a quarter of the labels; electricity's drift; one fraction; the
   machines differ per fold (E86), handled by keeping every pair's arms on one machine.
 - **Read only with all 210 cells done.**
+
+## Outcome (2026-11-05, 02:43 GMT-3; 210 of 210 cells, gorgona8 42 and medusa1 168, cut 11 done on medusa1 02:13 and on gorgona8 02:20 GMT-3, 0 failed)
+
+Read with `c1_report.py --stage2` after syncing medusa1's S25V/B25V readouts. Unedited tally, S25V − B25V in test
+macro-F1, seeds 42/7/13/101/202 × 5 folds, pooled over the 21 variants per replicate:
+
+**Pooled over 21: +0.0101 [+0.0045, +0.0157] (NB [−0.0060, +0.0262]) → HOLDS.**
+
+| group | pooled | variants better / worse |
+|---|---|---|
+| categorical (credit-g, kr-vs-kp) | +0.0087 [+0.0003, +0.0171] | kr-vs-kp_40nan (+0.012) / none |
+| small numeric (vehicle, biodeg, kc2) | +0.0080 [−0.0040, +0.0201] | none / none (biodeg_60nan −0.036 [−0.093, +0.020], no verdict) |
+| spambase | +0.0118 [+0.0061, +0.0175] | all four levels (+0.011 to +0.015) / none |
+| large (pendigits, letter, electricity) | +0.0159 [+0.0127, +0.0190] | all three (+0.010, +0.017, +0.021) / none |
+
+- **8 of 21 variants better, none worse.** Every seed's pooled mean is positive on the large tables and on spambase;
+  the small tables are noisy per variant (biodeg_60nan's s13 at −0.10 is one 25-row-labelled fold set) and net to
+  about +0.008.
+- **The channel is smaller on the 21 than on the four 60nan tables** (+0.010 against E138's +0.022): the 21 are mostly
+  20–40nan and large, where a quarter of the labels is still thousands of rows. The large tables nevertheless give
+  the tightest and most consistent gain (electricity +0.021 [+0.019, +0.023]).
+- **The Nadeau–Bengio interval crosses 0** (fold-overlap correction, printed beside by design); the pre-registered rule
+  is the plain interval, which holds. Said here so the thesis sentence carries the caveat.
+- **Reading, by the rule:** HOLDS. Proposal for the user (no default change; the default regime has every label): a
+  thesis claim of the form "with a quarter of the training labels, pre-training on all rows adds +0.010 [+0.005,
+  +0.016] macro-F1 over no pre-training, pooled over the 21 confirmatory variants and five seeds, with no variant
+  worse", and, if wanted, an ADR documenting `FINETUNE_LABEL_FRACTION` / `FINETUNE_SCARCE_VALIDATION` as the
+  label-scarce fine-tuning path. The user decides both.
