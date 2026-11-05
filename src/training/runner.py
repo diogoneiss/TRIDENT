@@ -23,6 +23,8 @@ from src.mlflow_utils import (
     PRETRAIN_OBJECTIVE_TAG,
     PRETRAIN_GAP_TOKEN_TAG,
     ENCODER_FINAL_NORM_TAG,
+    FINETUNE_LABEL_FRACTION_TAG,
+    FINETUNE_SCARCE_VALIDATION_TAG,
 )
 from src.utils import set_global_seed
 
@@ -177,7 +179,10 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     ),
                 }
                 if task.name == "imputation"
-                else {}
+                else {
+                    FINETUNE_LABEL_FRACTION_TAG: str(request.hyperparameters.finetune_label_fraction),
+                    FINETUNE_SCARCE_VALIDATION_TAG: request.hyperparameters.finetune_scarce_validation,
+                }
             ),
         },
         task=task.name,

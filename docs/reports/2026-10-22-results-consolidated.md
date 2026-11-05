@@ -1,7 +1,7 @@
 # What the imputation studies support, as of 2026-11-05 (consolidated)
 
 This report gathers E44–E85, E118–E121 and E136–E144 into one statement for the thesis. It was updated 2026-11-05 16:02 GMT-3 with
-E136–E144 (classification at scarce labels, TabPFN under informative missingness; ADR 0038 proposed, not accepted),
+E136–E144 (classification at scarce labels, TabPFN under informative missingness; ADR 0038, accepted 2026-11-05),
 2026-11-03 22:58 GMT-3 with E121 and ADR 0018's extension, 2026-11-03 21:10 GMT-3 with E118–E120
 and ADR 0037's extension, updated 2026-10-28, 12:47 GMT-3 with E84 and
 E85, and rebuilt 2026-10-28, 00:39 GMT-3 to add
@@ -372,9 +372,10 @@ are test macro-F1, plain 95% t intervals over paired (seed, fold) replicates.
   (the deployable `table` hybrid), ADR 0029 (classification step zero, accepted 2026-10-29), ADR 0036 (P600
   on pendigits and letter at 20–40nan; T11 closed), ADR 0037 (T32 closed) and ADR 0018 extended to MAR and MNAR (E121), T41 closed (E118), T14 refuted
   (E100).
-- **Put to the user 2026-11-05, not decided:** ADR 0038 (label-scarce fine-tuning as a documented regime; proposed),
-  the two thesis sentences of section 3d, and whether T46's split is worth a T25V arm on the 21 variants now that a
-  channel exists (not launched; recommendation: no).
+- **Decided 2026-11-05:** ADR 0038 (label-scarce fine-tuning as a documented regime; no default changes; the
+  `finetune_label_fraction` and `finetune_scarce_validation` tags on every classification run, backfilled).
+- **Put to the user 2026-11-05, not decided:** the two thesis sentences of section 3d, and whether T46's split is
+  worth a T25V arm on the 21 variants now that a channel exists (not launched; recommendation: no).
 - **The backlog:** T10's evaluation-mask half, T08, T09 and T15.
 
 ## Appendix: every reader's summary lines (`results_digest.py`, unedited)

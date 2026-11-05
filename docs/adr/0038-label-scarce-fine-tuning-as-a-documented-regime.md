@@ -1,7 +1,7 @@
 # ADR 0038: Label-scarce fine-tuning as a documented regime for classification
 
-- **Status:** **proposed 2026-11-05, 16:02 GMT-3; not accepted.** Written after the proposal put to the user that
-  morning; it takes the user's word to become a decision, as every ADR here.
+- **Status:** **accepted 2026-11-05** by the user ("aceito a adr"), recorded 16:58 GMT-3; proposed the same day
+  at 16:02 GMT-3 from E138, E140, E141, E143 and E144.
 - **Builds on:** ADR 0029 (classification step zero), ADR 0032 (TabPFN v2 as a separate strong tier), ADR 0035
   (studies split between servers by seed). It amends none of them and changes no default.
 
@@ -48,7 +48,7 @@ Selector effect 25% pooled: -0.0056 [-0.0161, +0.0050] (NB [-0.0382, +0.0270]); 
   the classification default objective was not run at scarce labels.
 - **No baseline was run at scarce labels.** The contrast is internal, S against B.
 
-## Decision (proposed)
+## Decision
 
 1. **The regime's definition.** Pre-training sees every row of the fold's training split, labels unused.
    Fine-tuning sees a stratified fraction f of that split's labels (`FINETUNE_LABEL_FRACTION f`), drawn once per
@@ -59,9 +59,13 @@ Selector effect 25% pooled: -0.0056 [-0.0161, +0.0050] (NB [-0.0382, +0.0270]); 
    with labels a label-scarce user would not have.
 3. **No default changes.** The flags stay at `1.0` and `off`; no promoted file changes; classification stays
    bit-identical.
-4. **On acceptance, tags.** `finetune_label_fraction` and `finetune_scarce_validation` become run tags, backfilled
-   as `1.0` and `off` on the classification runs through the leader, by the standing rule for training-behaviour
-   flags. Not done yet: E136–E144 ran with MLflow off, from readout files.
+4. **Tags.** `finetune_label_fraction` and `finetune_scarce_validation` are run tags on every classification parent
+   and trial (`runner.py`), by the standing rule for training-behaviour flags. Runs recorded before them are stamped
+   `1.0` and `off` and marked `finetune_label_backfilled=true` by `scripts/backfill_finetune_label_tags.py`: applied
+   2026-11-05 17:34 GMT-3 through the leader's server on 2906 runs (1986 parents, 920 Optuna trials) and their 2888
+   active mirrors. The 18 without an active mirror are 16 runs a kill left `RUNNING` and 2 failed runs whose mirrors
+   were deleted. No run in the store had used another fraction. E136–E144 ran with MLflow off, from readout files,
+   and carry no tag.
 5. **The claim's scope.** Fractions 0.1 to 0.5; 20 to 60nan (closed at 80nan); MCAR on the 21 confirmatory variants
    and probit MNAR on four tables; `embedding_normalized` pre-training.
 

@@ -295,6 +295,8 @@ Every key is optional and defaulted, so a file written before a key existed keep
 - `DECODE_CHECKPOINT`: `induced` or `loss`, see `--decode_checkpoint` (default: `induced`; `loss` before ADR 0015)
 - `PRETRAIN_GAP_TOKEN`: `null` or `mask`, see `--pretrain_gap_token` (default: `null`)
 - `ENCODER_FINAL_NORM`: `none` or `layer`, see `--encoder_final_norm` (default: `none`)
+- `FINETUNE_LABEL_FRACTION`: Classification only. The stratified share of the training labels fine-tuning sees, in (0, 1]; pre-training still sees every row (default: `1.0`; the label-scarce regime of [ADR 0038](docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md))
+- `FINETUNE_SCARCE_VALIDATION`: `off` or `on`. With `on` the validation split is drawn by the same fraction, the deployable form of the regime (default: `off`)
 - `WEIGHT_DECAY_DECODE`: Decode-stage weight decay (default: `0.0019`)
 - `LAMBDA_NUM`: Weight on the numerical reconstruction term, each term already averaged over its own hidden cells (default: `1.0`)
 - `EVAL_MASK_RATE`: **Nominal** share of cells hidden for scoring (default: `0.2`). Nominal because the masking helper scales it down by each row's null density and never hides an already-missing cell, so asking for `0.2` hides about 20% of a `_00nan` variant but about 5% of an `_80nan` one. Each run logs the realised share as `impute/masked/realised_rate`. This is the evaluation counterpart of `PROB_MASCARA`, which governs training corruption

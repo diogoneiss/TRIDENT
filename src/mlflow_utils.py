@@ -136,6 +136,13 @@ PRETRAIN_GAP_TOKEN_BACKFILLED_TAG = "pretrain_gap_token_backfilled"
 # ``scripts/backfill_encoder_final_norm_tag.py`` and marked ENCODER_FINAL_NORM_BACKFILLED_TAG.
 ENCODER_FINAL_NORM_TAG = "encoder_final_norm"
 ENCODER_FINAL_NORM_BACKFILLED_TAG = "encoder_final_norm_backfilled"
+# The share of the training labels fine-tuning saw, and whether the validation split was drawn the
+# same way: "1.0" and "off" unless the label-scarce regime is on (ADR 0038). On every classification
+# parent and trial; runs recorded before them are stamped "1.0" and "off" by
+# ``scripts/backfill_finetune_label_tags.py`` and marked FINETUNE_LABEL_BACKFILLED_TAG.
+FINETUNE_LABEL_FRACTION_TAG = "finetune_label_fraction"
+FINETUNE_SCARCE_VALIDATION_TAG = "finetune_scarce_validation"
+FINETUNE_LABEL_BACKFILLED_TAG = "finetune_label_backfilled"
 # Whether a run is a mirror run (ADR 0006). Dense: "true" on every mirror run, "false" on
 # every other run, because a mirror copies ``run_role`` verbatim and a cross-experiment
 # query could not tell the copy from its source otherwise. Backfilled as "false" onto
