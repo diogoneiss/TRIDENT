@@ -120,6 +120,10 @@ def home(pair: tuple[str, int]) -> str:
     """The machine a (variant, seed) pair's arms run on (ADR 0035): the one its earlier arms already sit on."""
     c = cut()
     if c in SQUARE_SIBLINGS:
+        # Amendment 2026-11-05 08:15 GMT-3 (the user: "passe as coisas da medusa para cá"): another user's job held both
+        # of medusa1's GPUs from about 02:40, so E144's remaining 92 cells run on gorgona8; each new S − B pair still
+        # sits on one machine, the second-order contrast against E136/E140 arms crosses machines (ticket 13 amendment).
+        return "gorgona8"
         if pair[1] in SEEDS:
             return c15_run.machine(pair)
         c = SQUARE_SIBLINGS[c]

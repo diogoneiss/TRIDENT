@@ -3855,4 +3855,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** per fraction (S(f)V − B(f)V) − (S(f) − B(f)) paired per (file, seed, fold), pooled
   over the eight files (30 replicates), plain 95% t interval, Holm over the two fractions: supported / not supported.
   E136's and E140's verdicts stand as written. No ADR.
+- **Amendment 2026-11-05 08:15 GMT-3:** medusa1's GPUs held by another user's job since ~02:40; its 92 cells moved to
+  gorgona8 on the user's decision. Within-pair differences stay on one machine; the second-order contrast crosses
+  machines for every medusa1-sibling pair (stated threat).
 - **Sources:** [c1-split/13](tickets/c1-split/13-selector-squares.md).

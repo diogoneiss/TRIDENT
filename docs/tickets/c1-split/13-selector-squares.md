@@ -38,3 +38,12 @@ This ticket was written and committed before the cut's first cell (about 03:00 G
   *Not supported* → the E136/E140 difference is attributed to seeds; the hypothesis in E140's Outcome is withdrawn.
   No ADR either way.
 - **Read only with all 168 cells done.**
+
+## Amendment (2026-11-05, 08:15 GMT-3)
+
+Another user's job (31.7 GB on each of medusa1's two GPUs) held medusa1 from about 02:40 and was still there at 08:12;
+medusa1 ran none of its 92 cells (gorgona8's 76 were done by 03:56). On the user's decision ("passe as coisas da
+medusa para cá") the 92 run on gorgona8 (`home()` returns gorgona8 for cuts 13/14). Each new S − B pair is still
+within one machine; the second-order contrast (scarce − oracle) now crosses machines for every pair whose earlier
+arms ran on medusa1, not only the two stated above. Machines differ per fold (E86), so this is a stated threat to the
+contrast, not to the within-pair differences. The rule and the cell count are unchanged.
