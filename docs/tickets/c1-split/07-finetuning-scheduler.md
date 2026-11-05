@@ -50,7 +50,8 @@ pooled over the eight files (15 replicates), Holm over the six:
 | CONST150 | −0.0026 [−0.0062, +0.0011] | [−0.0110, +0.0058] | 0.150 | 0.847 | **no verdict** | none / spambase_60nan (−0.004) |
 
 - **Halves (flags):** every MNAR and MCAR half spans zero; the widest is WUC50 MNAR +0.003 [−0.006, +0.013].
-- **Kept epochs (median [min, max] over 15 replicates; biodeg/kc2/vehicle/spambase probit, then MCAR):** S 11 / 13 /
+- **Kept epochs (`c1_report.py --kept`; median [min, max] over 15 replicates; biodeg/kc2/vehicle/spambase probit,
+  then MCAR):** S 11 / 13 /
   32 / 25 / 13 / 11 / 31 / 20; COS150 11 / 12 / 21 / 12 / 13 / 11 / 25 / 9; COS50 11 / 14 / 27 / 11 / 14 / 12 / 27 /
   11; WUC150 17 / 18 / 31 / 16 / 18 / 20 / 29 / 15; WUC50 12 / 12 / 33 / 16 / 14 / 13 / 28 / 11; PLAT150 12 / 12 / 23 /
   11 / 13 / 11 / 25 / 8; CONST150 12 / 12 / 23 / 11 / 13 / 11 / 25 / 8. The single annealings keep an earlier epoch

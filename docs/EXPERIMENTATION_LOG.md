@@ -3680,7 +3680,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   +0.019); S50 − S −0.0009 [−0.0049, +0.0031], p 0.64 → no verdict, no file better or worse. S(k) − B(k) small and of
   both signs on every file.
 - **Conclusion:** no budget is better; S30 is not a cost argument (two files worse); S50 is a cost argument only (a
-  third of fine-tuning's time, within ±0.005 pooled of 150), the user's call. No ADR change.
+  third of fine-tuning's time, within ±0.005 pooled of 150), the user's call, with a caveat: vehicle's kept epoch
+  still reaches the 50 cap on some replicates and both vehicle files lean −0.013/−0.016. No ADR change.
 - **Scenarios:** S30, S50, B30, B50 (`EPOCH_FINE` 30/50, with and without pre-training) on
   `{biodeg,kc2,vehicle,spambase}_probit_60nan` and `_60nan`, seeds 42/7/13 × 5 folds (96 cells); S and B at 150 reused.
 - **Measures and decision rule:** S(k) − S(150) macro-F1 pooled over the eight files, plain 95% t interval, Holm over

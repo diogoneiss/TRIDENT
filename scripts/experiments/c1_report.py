@@ -297,6 +297,26 @@ def scheduler() -> None:
                    "eight files, Holm over the six arms", ("COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150"))
 
 
+def _kept_epochs(arm: str, variant: str) -> list[int]:
+    """The kept epoch of every fold of the arm's 15 replicates, from the fold metrics CSVs."""
+    import pandas as pd
+    roots = c15.ROOTS if arm == "S" else ROOTS
+    name = "A1" if arm == "S" else arm
+    files = [root / name / f"{variant}_s{seed}" / "metrics" / f"{variant}_metrics.csv" for root in roots for seed in SEEDS]
+    return [int(k) for f in files if f.exists() for k in pd.read_csv(f)["kept_epoch"]]
+
+
+def kept() -> None:
+    print("## Kept epochs (E134/E135, descriptive): median [min, max] over 15 replicates a file; S is E124's A1 under "
+          "cosine_legacy at 150")
+    for arm in ("S", "S30", "S50", "B30", "B50", "COS150", "COS50", "WUC150", "WUC50", "PLAT150", "CONST150"):
+        cells = []
+        for v in run.MNAR + run.MCAR:
+            k = _kept_epochs(arm, v)
+            cells.append(f"{int(np.median(k))} [{min(k)}, {max(k)}]" if len(k) == 15 else f"missing ({len(k)})")
+        print(f"- {arm}: " + " | ".join(cells))
+
+
 def _fmt(cs: list[tuple[np.ndarray, np.ndarray]]) -> str:
     if not cs:
         return "missing"
@@ -319,7 +339,7 @@ def cosine() -> None:
 
 
 if __name__ == "__main__":
-    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler}
+    readers = {"--primary": primary, "--anchor": anchor, "--smoke": smoke, "--cosine": cosine, "--channel": channel, "--fix": fix, "--budget": budget, "--scheduler": scheduler, "--kept": kept}
     if len(sys.argv) != 2 or sys.argv[1] not in readers:
         sys.exit(__doc__)
     readers[sys.argv[1]]()

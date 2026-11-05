@@ -51,7 +51,7 @@ Read with `c1_report.py --budget` on all 96 cells (medusa1's copied under `<stat
 - **Channel beside, S(k) − B(k) per file (probit then MCAR, biodeg/kc2/vehicle/spambase):** S30: −0.020, +0.009,
   +0.005, +0.005, −0.002, +0.013, +0.019, +0.007; S50: −0.006, +0.012, −0.000, +0.007, +0.010, −0.000, +0.019, +0.008.
   As at 150 (E131, E132): small and of both signs; no budget opens a pre-training channel.
-- **Kept epochs (median [min, max] over 15 replicates; files in the order above):** S(150) 11 / 13 / 32 / 25 / 13 /
+- **Kept epochs (`c1_report.py --kept`; median [min, max] over 15 replicates; files in the order above):** S(150) 11 / 13 / 32 / 25 / 13 /
   11 / 31 / 20; S30 20 / 23 / 27 / 21 / 21 / 21 / 29 / 15, with vehicle's maxima at the cap (29); S50 27 / 13 / 36 / 22
   / 28 / 12 / 35 / 18. Vehicle's validation minimum sits at epoch 30–35, so a 30-epoch budget truncates it, which is
   where S30's two *worse* files come from; the other files keep their minimum well inside 30.
@@ -59,5 +59,9 @@ Read with `c1_report.py --budget` on all 96 cells (medusa1's copied under `<stat
   threshold by 0.008 and is worse on vehicle), so it is not a cost argument; S50 is *no verdict* with no file worse or
   better, which the rule calls a cost argument only: about a third of fine-tuning's time at a score this study cannot
   tell from 150's, within ±0.005 pooled. No ADR change follows from this ticket; whether to spend a 21-variant
-  confirmation on a budget of 50 is the user's call. The budget question under `cosine_legacy` is otherwise closed:
+  confirmation on a budget of 50 is the user's call, with a caveat: at 50 vehicle's kept epoch still reaches the
+  cap on some replicates (S50 36 [30, 49], B50 39 [34, 49] and [12, 49]) and both vehicle files lean negative
+  (−0.013, −0.016), so the truncation threat stated above is visibly active at 50 too; the 21 variants include
+  larger files (pendigits, letter) with more batches an epoch, where the sawtooth's period is shorter still, so
+  transfer is untested. The E132 window of 13–24 was seed 42 on four files; S's 15-replicate medians run 11–32. The budget question under `cosine_legacy` is otherwise closed:
   the sawtooth's shorter period at 30 did not help.
