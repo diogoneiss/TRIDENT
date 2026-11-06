@@ -46,3 +46,4 @@ Written and committed before either table exists; blocked on [01](01-external-da
 - Runner `scripts/experiments/mimic_run.py` through `c15_queue.sh`, two queues (one table each); state directory
   `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148`. Tracked in MLflow on the leader (medusa1): tag
   `experiment = mimic-natural-gaps-2026-11-06`, arm `M`.
+- Read by `scripts/experiments/mimic_report.py e148`, from the state directory's fold tables.

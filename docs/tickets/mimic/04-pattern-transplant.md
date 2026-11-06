@@ -63,7 +63,8 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   in the datasets root.
 - No donor row is left complete under `tmatch` or `trand`; `mcar` leaves 21 cardio rows and 190 SOFA rows complete.
 - Runner: `scripts/experiments/mimic_transplant_run.py`, one arm (`D`, the defaults), MLflow tag
-  `experiment = mimic-pattern-transplant-2026-11-06`.
+  `experiment = mimic-pattern-transplant-2026-11-06`. `scripts/experiments/run_mimic_chain.sh` starts its two queues
+  when E148's have ended; `scripts/experiments/mimic_report.py e149` reads it.
 - Smoke on `mimic-sofa-donor_tmatch_20nan`, the table with a categorical column among the gaps (2026-11-06, CPU, two
   folds, 5 pre-training and 10 decode epochs, MLflow off): the gaps are scored against the donor table with the
   bar's baselines, and the `induced` checkpoint is the one kept (`decode/induced_checkpoint_epoch` is logged).

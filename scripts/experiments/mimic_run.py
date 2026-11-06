@@ -36,8 +36,13 @@ def cell_dir(arm: str, variant: str, seed: int) -> Path:
     return STATE / "results" / f"{variant}_s{seed}_{arm}"
 
 
+def finished(arm: str, variant: str, seed: int) -> list[Path]:
+    """The cell's run directories that reached the cross-validation summary; a run that died leaves none."""
+    return [path.parents[1] for path in (cell_dir(arm, variant, seed) / variant).glob("*/metrics/cv_summary.json")]
+
+
 def done(arm: str, variant: str, seed: int) -> bool:
-    return any((cell_dir(arm, variant, seed) / variant).glob("*/metrics/cv_summary.json"))
+    return bool(finished(arm, variant, seed))
 
 
 def train(arm: str, variant: str, seed: int) -> None:

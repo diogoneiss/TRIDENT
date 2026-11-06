@@ -92,9 +92,11 @@ def run() -> pd.DataFrame:
         table = pd.read_csv(Path(os.environ["TRIDENT_DATASETS_ROOT"]) / base / f"{variant}.csv")
         features, labels = table.drop(columns=[LABEL]), table[LABEL].to_numpy()
         for seed in mimic_run.SEEDS:
-            partitions = sorted((mimic_run.cell_dir("M", variant, seed) / variant).glob("*/imputation/*_partition.csv"))
-            if not mimic_run.done("M", variant, seed) or len(partitions) != 5:
-                sys.exit(f"{variant} seed {seed} is not done: the ticket reads only with every cell done")
+            runs = mimic_run.finished("M", variant, seed)
+            if len(runs) != 1:
+                sys.exit(f"{variant} seed {seed}: {len(runs)} finished runs; the ticket reads only with every cell done")
+            partitions = sorted((runs[0] / "imputation").glob("*_partition.csv"))
+            assert len(partitions) == 5, f"{runs[0]} holds {len(partitions)} partitions"
             for fold, path in enumerate(partitions, start=1):
                 split = pd.read_csv(path).set_index("row")["split"].reindex(range(len(table)))
                 assert split.notna().all(), f"{path} does not cover the table"

@@ -3961,7 +3961,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `--export_gap_fills`, the fills E150 reads, which changes no score. Cost from the store: about 40 minutes a run
   on `pendigits`, a table of this size; one to two hours a cell expected beside the other trainers.
 - **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
-  [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`; MLflow tag
+  [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`, report `mimic_report.py e148`; MLflow tag
   `experiment = mimic-natural-gaps-2026-11-06`; state `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148`.
 
 ### E149 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)

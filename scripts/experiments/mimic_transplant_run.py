@@ -23,7 +23,8 @@ from scripts.experiments import mimic_run as run  # noqa: E402
 
 run.EXPERIMENT = "mimic-pattern-transplant-2026-11-06"
 run.VARIANTS = tuple(
-    f"{table}-donor_{variant}_20nan" for table in ("mimic-cardio", "mimic-sofa") for variant in ("tmatch", "trand", "mcar")
+    f"{table}-donor_{variant}_20nan"
+    for table in ("mimic-cardio", "mimic-sofa") for variant in ("tmatch", "trand", "mcar")
 )
 run.ARMS = {"D": {}}
 
