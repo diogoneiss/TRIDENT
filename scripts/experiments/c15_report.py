@@ -129,8 +129,8 @@ def check() -> None:
         print(f"- {variant}: largest |reloaded - written| test probability {worst:.2e}")
 
 
-def contrast(variant: str, fold_number: int, fold: dict[str, Any], seed: int = 42) -> float:
-    """G1's direct contrast on the noise column for one A1 fold (module docstring)."""
+def contrast(variant: str, fold_number: int, fold: dict[str, Any], seed: int = 42, column: str = NOISE) -> float:
+    """G1's direct contrast on ``column`` (the noise column unless E152 names another) for one A1 fold (module docstring)."""
     from sklearn.experimental import enable_iterative_imputer  # type: ignore[import-untyped]  # noqa: F401
     from sklearn.impute import IterativeImputer  # type: ignore[attr-defined]
 
@@ -144,17 +144,17 @@ def contrast(variant: str, fold_number: int, fold: dict[str, Any], seed: int = 4
     features = data.frame[columns]
     train = features.iloc[np.asarray(split.train_indices)].to_numpy(dtype=float)
     test = features.iloc[np.asarray(split.test_indices)].reset_index(drop=True)
-    rows = np.where(test[NOISE].isna().to_numpy())[0]
+    rows = np.where(test[column].isna().to_numpy())[0]
     if len(rows) == 0:
         return float("nan")
-    j = columns.index(NOISE)
+    j = columns.index(column)
     p_null = probabilities(model, test.iloc[rows].reset_index(drop=True))[:, 1]
     drawn = np.zeros((K, len(rows)))
     imputer = IterativeImputer(sample_posterior=True, random_state=0).fit(train)
     for k in range(K):
         filled = imputer.transform(test.iloc[rows].to_numpy(dtype=float))  # a fresh posterior draw each call
         frame = test.iloc[rows].reset_index(drop=True).copy()
-        frame[NOISE] = filled[:, j]
+        frame[column] = filled[:, j]
         drawn[k] = probabilities(model, frame)[:, 1]
     eps = 1e-7
     def logit(p: np.ndarray) -> np.ndarray:

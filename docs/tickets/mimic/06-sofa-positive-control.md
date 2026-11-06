@@ -16,7 +16,7 @@ This ticket was written and committed before the study's first cell.
 ## Design (fixed before the first cell)
 
 - **Table:** `mimic-sofa-num_natural`, `mimic-sofa_natural` with its three categorical columns made numerical, since
-  the C15 arms take numerical tables only (`src/training/c15_inputs.py`): `gender` 0/1 (F/M), `pf_on_vent` 0/1 with
+  the C15 arms take numerical tables only (`src/training/c15_inputs.py`): `gender` 0/1 (F/M), `pf_on_vent` 0/1 (no/yes) with
   its gaps kept, `admission_type` one-hot over its 9 values. Same 11,082 rows, label and gaps otherwise. Written by
   `datasets/make_mimic_numeric.py` into the study's own data root (`TRIDENT_DATASETS_ROOT` set to it for these cells
   only), outside the shared root and its manifest.
@@ -50,3 +50,13 @@ done.**
 
 **Not here:** `mimic-cardio`, where E150's indicators did not help (a negative control, 9 more cells); A4's MICE
 draws; any TabPFN arm.
+
+## Launch note (2026-11-06 13:19 GMT-3, before the first cell)
+
+- **Smoke** (3 pre-training and 3 fine-tuning epochs, seed 42, five folds, into `STATE/smoke`, beside E149's two
+  queues): A2 453 s, A1 31 s, both to the end with five readouts each; E124's contrast scorer ran on one smoke fold
+  of A1 with `bilirubin_max` and returned a finite number, not read. So about 1 s per epoch and fold: about 37
+  minutes an A1 cell at 300 + 150 epochs, and about 7 minutes more for A2's and A3's missForest fits.
+- **Queues:** three, one seed each, instead of the two written above, so the 9 cells take about 2.3 h rather than 3.5;
+  started by `scripts/experiments/run_sofa_g1_chain.sh` (run from a copy in the state dir), which waits until no
+  E149 cell is running. Nothing else changes.
