@@ -84,8 +84,8 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   `logs/D_mimic-cardio-donor_tmatch_20nan_s42.failed-1015.log`. A detached waiter relaunches the two queues when the
   first pass ends, and a relaunch runs only the cells not done. The race is in `get_or_create_experiment`
   (`src/mlflow_utils.py`) and is left as it is until this study ends, so every cell runs on one version of `src/`.
-  Fixed after the last cell, with a test (commit 1a7f674): a refused create looks the experiment up again. It
-  reaches the main checkout when E152's cells, which import `src/` from there, have ended.
+  Fixed after the last cell, with a test (commit 9bdeb13): a refused create looks the experiment up again. It
+  reached the main checkout on 2026-11-06 after E152's cells ended.
 - **The relaunch ran that cell 2026-11-06 14:37 to 15:06 GMT-3,** on its second attempt, and the queues were
   complete. E152's chain ([06](06-sofa-positive-control.md)) waits for "no E149 cell running" and fired at 14:37:23,
   in the eight seconds between the first pass's end and the relaunched cell's start at 14:37:31: that cell ran its
