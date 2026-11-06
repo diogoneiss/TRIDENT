@@ -3944,10 +3944,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   kept is the user's verdict.
 - **Sources:** [imputation-protocol/53](tickets/imputation-protocol/53-imputer-utility.md).
 
-### E148 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05)
+### E148 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05; 2026-11-06 –)
 
-- **Status:** pre-registered 2026-11-05 as E150 (renumbered 2026-11-06 to keep the ids contiguous, the user's
-  decision); not started, blocked on T50's stage 0 (the datasets root outside the checkout and the two tables)
+- **Status:** in progress since 2026-11-06 07:20 GMT-3; pre-registered 2026-11-05 as E150 (renumbered 2026-11-06 to
+  keep the ids contiguous, the user's decision)
 - **Hypothesis:** on a clinical table whose gaps are natural, the decoder's fills of hidden observed cells (the
   masked population; the natural gaps stay `[NULL]` inputs) are better than the best baseline of the bar's.
 - **Scenarios:** `mimic-cardio_natural` and `mimic-sofa_natural` (the kg-impute cohort, 11,082 ICU stays; about a
@@ -3956,13 +3956,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** per table, the masked population's `impute_score` minus the best baseline's,
   paired per (seed, fold), 15 replicates, plain 95% t interval, Holm over the two tables: better, worse or no
   different. The hidden cells are draws among measured values; the true gaps are not scored.
+- **Amendment 2026-11-06 07:20 GMT-3:** the cells share gorgona8's GPU with kg-impute's training queue (the user:
+  "Comece a rodar em paralelo com o kg impute") instead of waiting for a free one; the design is unchanged. They carry
+  `--export_gap_fills`, the fills E150 reads, which changes no score. Cost from the store: about 40 minutes a run
+  on `pendigits`, a table of this size; one to two hours a cell expected beside the other trainers.
 - **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
-  [mimic/02](tickets/mimic/02-tables.md).
+  [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`; MLflow tag
+  `experiment = mimic-natural-gaps-2026-11-06`; state `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148`.
 
 ### E149 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)
 
 - **Status:** pre-registered 2026-11-05 as E151 (renumbered 2026-11-06 to keep the ids contiguous, the user's
-  decision); not started, blocked on T50's stage 0
+  decision); not started: stage 0 was merged on 2026-11-06, the script that cuts the variants is next
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
 - **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only
@@ -3978,7 +3983,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 ### E150 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05)
 
 - **Status:** pre-registered 2026-11-05 as E152 (renumbered 2026-11-06 to keep the ids contiguous, the user's
-  decision); not started, blocked on T50's stage 0 and on E148's runs
+  decision); not started, waits for E148's runs
 - **Hypothesis:** (i) a logistic regression fed the decoder's fills of the natural gaps predicts death in hospital
   better than one fed the mean/mode fill; (ii) the mean/mode fill with one indicator per column does better than
   without them (the pattern carries signal: deaths 19.9% with a lactate measured, 7.9% without, by the probe).

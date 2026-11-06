@@ -17,7 +17,9 @@ Written and committed before either table exists; blocked on [01](01-external-da
 - **Arm:** the imputation defaults with `--decode_checkpoint masked`. The default, `induced` (ADR 0015), needs a
   complete sibling and falls back to the epoch of the lowest loss without one (`decoding.py`, `kept_criterion`);
   `masked` keeps the epoch whose validation mask scores best, the same selection on the population this study
-  scores. The baselines of the bar are scored on the same cells by the run itself.
+  scores. The baselines of the bar are scored on the same cells by the run itself. The cells also carry
+  `--export_gap_fills` (ticket 01): the fills of the natural gaps, which [05](05-downstream-mortality.md) reads.
+  It changes no score.
 - **Cells:** 2 tables × seeds 42/7/13, five folds each: 6 runs.
 - **Primary:** per table, the masked population's `impute_score` minus the best baseline's on the same cells, paired
   per (seed, fold), 15 replicates, plain 95% t interval; Holm over the two tables. **Better** with the upper bound
@@ -27,7 +29,20 @@ Written and committed before either table exists; blocked on [01](01-external-da
   the strong-tier script scores this population.
 - **What this cannot say:** the hidden cells are a uniform draw among values that were measured. An unmeasured
   lactate is not a measured one (deaths 7.9% against 19.9%), so nothing here says how well the true gaps are filled.
-- **Cost:** not estimated; ticket 01's smoke gives minutes per cell, recorded here before the first one.
+- **Cost:** estimated from the store on 2026-11-06, before the first cell. A default imputation run of the same
+  configuration took about 40 minutes on gorgona8 on `pendigits` (10,992 rows, 16 columns; means of 38 to 43
+  minutes by level, 75 runs) and about 60 on `letter` (20,000 rows). These cells share the GPU with another
+  project's trainers (see Run), so one to two hours a cell is expected. The measured time is recorded here when
+  the first cell ends.
 - **What follows:** no default change and no ADR either way. A first reading on clinical data; a claim needs fresh
   seeds.
 - **Read only with all 6 runs done.**
+
+## Run
+
+- **Started 2026-11-06 07:20 GMT-3**, on the user's instruction ("Comece a rodar em paralelo com o kg impute"): the
+  cells share gorgona8's GPU with kg-impute's training queue instead of waiting for a free one, as ticket 01's
+  item (c) had asked. Nothing in the design changes; only how long a cell takes.
+- Runner `scripts/experiments/mimic_run.py` through `c15_queue.sh`, two queues (one table each); state directory
+  `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148`. Tracked in MLflow on the leader (medusa1): tag
+  `experiment = mimic-natural-gaps-2026-11-06`, arm `M`.

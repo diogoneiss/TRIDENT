@@ -74,9 +74,11 @@ under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top o
   suffix (`missingness_percent` will read `unknown`); E148's first cell is the first tracked run.
 - [x] Smoke on an external table: `mimic-cardio-donor_00nan` read from `$TRIDENT_DATASETS_ROOT` (CPU, two folds,
   40 decode epochs) trains and scores; a complete table exports no fills and its partition.
-- [ ] (c) minutes per cell on the 11,082-row tables, on a free GPU.
+- [ ] (c) minutes per cell on the 11,082-row tables. Amended 2026-11-06 (the user: "Comece a rodar em paralelo com
+  o kg impute"): measured on E148's first cells, which share the GPU with kg-impute's queue, not on a free GPU.
 
 ## When
 
 Built in the worktree `feat/mimic-stage0` while the detached chain of 2026-11-05 launched cells from the main
-checkout; merged after it ends.
+checkout; merged after it ends. Rebased onto the pilots' commit and fast-forwarded into `feat/imputation-task` on
+2026-11-06 07:03 GMT-3, after the chain's last cell (04:51 GMT-3).

@@ -33,6 +33,6 @@ Written and committed before any table exists; blocked on [01](01-external-datas
     donors and 25.4% among the 2,143 SOFA donors, against 16.5% in the cohort.
   - A transplant carries where the gaps fall, not what the missing values were: `tmatch` is at most missing at
     random given the matching columns. Nothing here is a measurement under the true mechanism.
-- **Cost:** not estimated; from ticket 01's smoke, recorded here before the first cell.
+- **Cost:** not estimated; from E148's first cells (ticket 01's item (c)), recorded here before the first cell.
 - **What follows:** no default change and no ADR either way.
 - **Read only with all 18 runs done.**
