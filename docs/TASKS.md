@@ -803,6 +803,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     (ADR 0024); MCAR first, then E84's MNAR and MAR variants. The decision rule is the ticket's.
   - **What it would settle:** whether the decoder's uncertainty can become an interval at all
     (ADR 0030's "a rank, not an interval"), and whether binning by row missingness fixes E80.
+  - **Started 2026-11-06 as E151** ([imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md)), on
+    the user's go ("vou na sua sugestão, vá"): bins by the row's gap count only; the top-3-sources bin and the
+    deployable calibration on hidden validation cells are left out (the latter needs new runs).
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork

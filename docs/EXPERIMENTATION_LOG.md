@@ -4029,3 +4029,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   nothing of how close the fills are to the unmeasured values. No default change, no ADR.
 - **Sources:** [mimic/05](tickets/mimic/05-downstream-mortality.md); reader `scripts/experiments/mimic_mortality.py`;
   per fold in `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148/mortality.csv`.
+
+### E151 · Intervals calibrated per bin of a row's gaps (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vou na sua sugestão, vá"). T43. Offline on
+  E75's, E76's and E84's fold ledgers; no training. Disclosure: E77's and E80's results are known and motivate it.
+- **Hypothesis:** (Q1) E77's per-column constant 90% interval under-covers the rows that miss the most, and
+  calibrating per column and per tertile of the row's gap count (Mondrian conformal, Zaffran et al. 2023) fixes it;
+  (Q2) inside a bin, where E80's confound is held fixed, the re-masking spread adapts a width better than a constant.
+- **Scenarios:** primary E75's 15 confirmation variants (MCAR, 707/808/909, five folds), numerical gaps, K's fill
+  with K's spread; E76's 17 development variants with numerical gaps by the same rules, reported beside; E84's MNAR
+  and MAR variants and H descriptive. Four arms cross-fitted on the same seed's other folds at the split-conformal
+  level: C and S per column (E77's constant and spread-scaled), MC and MS per column and bin (groups under 30 fit
+  cells fall back to the column's).
+- **Measures and decision rule:** Q1, per fold, worst-bin under-coverage u(MC) − u(C), SESOI 0.01; Q2, per fold,
+  (width MS − width MC) / width MC, SESOI 0.01; lower is better; per variant the project's verdict rule over 15 fold
+  differences. Each question: supported if better on 10 or more of 15 and worse on at most 1, refuted if better on 5
+  or fewer or worse on 4 or more, mixed otherwise. Oracle calibration (other test folds' gaps), as E77.
+- **Sources:** [imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md); reader
+  `scripts/experiments/conformal_row_gaps.py`.
