@@ -903,6 +903,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   complete rows; in progress since 2026-11-06) and E150 ([05](tickets/mimic/05-downstream-mortality.md), fills and
   patterns judged by a mortality classifier; done 2026-11-06, the fills do not help, the indicators help on the SOFA
   table only).
+  **E152 pre-registered 2026-11-06** ([06](tickets/mimic/06-sofa-positive-control.md), the user's go): C15's gate G1
+  (T45's, E128's form) on the SOFA table's natural gaps, A1/A2/A3 × 42/7/13; if it passes, RQ2's H2 has its first
+  table; it starts on gorgona8 when E149's cells end.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

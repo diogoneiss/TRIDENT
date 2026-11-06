@@ -1,0 +1,52 @@
+# C15's positive-control gate on the SOFA table's natural gaps (E152; pre-registered 2026-11-06)
+
+This ticket was written and committed before the study's first cell.
+
+- **Why:** the thesis's main question (RQ2, H2: per-column `[NULL]` tokens predict as well as imputation plus an
+  indicator when the gaps carry information) has had no live test since C15 stopped at its gate G1 (E124, E128;
+  T45). G1 asks whether the pipeline can see informative missingness at all, and on the injected noise controls the
+  indicator arm did not beat the plain fill on 2 of 3. [E150](05-downstream-mortality.md) found a natural case: on
+  `mimic-sofa_natural`, a logistic regression with one indicator per column beats one without them by +0.0087 macro-F1
+  (Holm p 0.0012). This runs G1, as E128 ran it, on that table.
+- **The user's go:** "vou na sua sugestão, vá" (2026-11-06, after 12:21 GMT-3), on the proposal to pre-register G1 on
+  the SOFA table and run it when E149 ends.
+- **Disclosure:** E150's result and [ticket 02](02-tables.md)'s whole-cohort death rates by gap are known: bilirubin
+  22.0% where measured, 10.3% where not. No TRIDENT classification cell has run on these tables.
+
+## Design (fixed before the first cell)
+
+- **Table:** `mimic-sofa-num_natural`, `mimic-sofa_natural` with its three categorical columns made numerical, since
+  the C15 arms take numerical tables only (`src/training/c15_inputs.py`): `gender` 0/1 (F/M), `pf_on_vent` 0/1 with
+  its gaps kept, `admission_type` one-hot over its 9 values. Same 11,082 rows, label and gaps otherwise. Written by
+  `datasets/make_mimic_numeric.py` into the study's own data root (`TRIDENT_DATASETS_ROOT` set to it for these cells
+  only), outside the shared root and its manifest.
+- **Arms (C15's, unchanged):** A1, the shipped `[NULL]`; A2, missForest's fill plus a gap indicator read by each
+  column's value MLP; A3, missForest's fill, no indicator. The fills are fitted on each fold's training rows.
+- **Configuration:** the table's resolved classification configuration (no promoted file), `PRETRAIN_OBJECTIVE
+  embedding_normalized`, the shipped checkpoint rule, `--cv_folds 5`, MLflow off, as E124 and E128.
+- **Cells:** A1, A2, A3 × seeds 42/7/13: 9 cells, 45 folds. Runner and reader: `scripts/experiments/sofa_g1.py`.
+- **Machine (ADR 0035):** all 9 on gorgona8, two queues, started when E149's cells end (medusa1's GPUs are taken by
+  another user's job). Cost not measured; the smoke's epoch times are recorded before the first cell.
+
+## Rule, fixed now (E128's, one table)
+
+**G1 passes if both hold:**
+1. **A2 beats A3 on test log loss:** the per-cell relative difference (LL_A2 − LL_A3) / LL_A3 over 15 cells, paired
+   by seed and fold, its 95% t interval with the Nadeau–Bengio correction (1/15 + 0.286) below 0;
+2. **A1 reads the gap with the cohort's sign:** E124's direct contrast on `bilirubin_max` (logit P(death) with the
+   gap as `[NULL]` minus the logit of the mean P(death) over 20 MICE draws of that cell given the row, the row's
+   other gaps left `[NULL]`, averaged over the fold's test rows with that gap), over 15 cells, its corrected interval
+   below 0. Bilirubin is fixed now as the one column: the largest gap share among the single numerical columns
+   whose gap tracks death in ticket 02 (PaO2/FiO2's gap comes with its ventilation flag's, so its contrast would
+   leave half the gap visible).
+
+Plain intervals, per-seed means and macro-F1 are printed beside; they decide nothing. **Read only with all 9 cells
+done.**
+
+**What each reading leads to:**
+- **passes:** H2's own test on this table (A1 against A2, non-inferiority at −0.01 macro-F1 and +2% relative log
+  loss, C15's margins) is pre-registered on fresh seeds, for the user's go.
+- **fails:** RQ2 stops at the gate on natural gaps too; recorded in T45 and T50.
+
+**Not here:** `mimic-cardio`, where E150's indicators did not help (a negative control, 9 more cells); A4's MICE
+draws; any TabPFN arm.

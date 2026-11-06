@@ -4059,3 +4059,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   stays a rank for the spread.
 - **Sources:** [imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md); reader
   `scripts/experiments/conformal_row_gaps.py`.
+
+### E152 · C15's positive-control gate on the SOFA table's natural gaps (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vou na sua sugestão, vá"); starts on gorgona8
+  when E149's cells end. T50, and RQ2 after T45. Disclosure: E150's result and the cohort's death rates by gap are known.
+- **Hypothesis:** on `mimic-sofa_natural`, where E150 found the gap pattern informative for death in hospital, the
+  pipeline sees it: the indicator arm beats the plain fill, and the `[NULL]` arm reads the bilirubin gap with the
+  cohort's sign.
+- **Scenarios:** `mimic-sofa-num_natural` (the three categorical columns made numerical, as the C15 arms need); C15's
+  A1 (`[NULL]`), A2 (missForest fill + indicator), A3 (missForest fill) × seeds 42/7/13 × five folds, 9 cells; the
+  table's classification defaults with `embedding_normalized`, MLflow off.
+- **Measures and decision rule:** E128's G1 on one table. Passes if both hold over 15 cells with Nadeau–Bengio
+  corrected 95% t intervals: (1) (LL_A2 − LL_A3) / LL_A3 below 0; (2) A1's direct contrast on `bilirubin_max` (`[NULL]`
+  against the mean over 20 MICE draws) below 0. Passing leads to H2's A1-against-A2 test on fresh seeds, for the
+  user's go; failing stops RQ2 at the gate on natural gaps too.
+- **Sources:** [mimic/06](tickets/mimic/06-sofa-positive-control.md); `datasets/make_mimic_numeric.py`,
+  `scripts/experiments/sofa_g1.py`.
