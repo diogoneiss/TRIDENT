@@ -806,6 +806,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   - **Started 2026-11-06 as E151** ([imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md)), on
     the user's go ("vou na sua sugestão, vá"): bins by the row's gap count only; the top-3-sources bin and the
     deployable calibration on hidden validation cells are left out (the latter needs new runs).
+  - **Done 2026-11-06 13:05 GMT-3 by E151: Q1 supported** (binning by the row's gaps restores the top tertile's
+    coverage on 11 of 15, from 0.81–0.87 to 0.90, no width cost on the large tables), **Q2 refuted** (the spread
+    still loses to a constant inside a bin, 15 of 15). An ADR 0030 amendment offering the binned interval is the
+    user's call; a deployable reading needs new runs.
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork

@@ -4032,7 +4032,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E151 · Intervals calibrated per bin of a row's gaps (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vou na sua sugestão, vá"). T43. Offline on
+- **Status:** done 2026-11-06 13:05 GMT-3: Q1 supported, Q2 refuted. Pre-registered 2026-11-06 on the user's go ("vou na sua sugestão, vá"). T43. Offline on
   E75's, E76's and E84's fold ledgers; no training. Disclosure: E77's and E80's results are known and motivate it.
 - **Hypothesis:** (Q1) E77's per-column constant 90% interval under-covers the rows that miss the most, and
   calibrating per column and per tertile of the row's gap count (Mondrian conformal, Zaffran et al. 2023) fixes it;
@@ -4046,5 +4046,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (width MS − width MC) / width MC, SESOI 0.01; lower is better; per variant the project's verdict rule over 15 fold
   differences. Each question: supported if better on 10 or more of 15 and worse on at most 1, refuted if better on 5
   or fewer or worse on 4 or more, mixed otherwise. Oracle calibration (other test folds' gaps), as E77.
+- **Results:** Q1 better on 11 of 15 under K, worse on none (H 11); Q2 better on 0, worse on 15 (H worse on 13).
+  Development: Q1 7 of 17 better, worse on credit-g_80nan (+0.007), mixed; Q2 0 better, 15 worse. The per-column
+  constant covers 0.81 to 0.87 in the top tertile of the row's gaps on pendigits, letter, electricity and vehicle
+  (0.92 to 0.94 in the bottom one); binned, 0.900 to 0.905. On biodeg, kc2, spambase and credit-g under MCAR it already
+  covers (0.88 to 0.91). E84, descriptive: better on all 7 self-masking variants (kc2_probit_60nan 0.776 against
+  0.907), C already covers under MAR. Post hoc width: binning costs −0.022 to +0.001 on the large tables, 1 to 12% on
+  the small. Inside a bin the spread interval is still wider than a constant everywhere (+0.06 to +1.57 at 40nan).
+- **Conclusion:** a 90% interval around the fill, calibrated per column and per tertile of the row's gaps, restores
+  coverage on the rows that miss the most, at no width cost on the large tables; the spread still does not adapt a
+  width. Oracle calibration as E77. An ADR 0030 amendment for the binned interval is the user's decision; ADR 0030
+  stays a rank for the spread.
 - **Sources:** [imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md); reader
   `scripts/experiments/conformal_row_gaps.py`.
