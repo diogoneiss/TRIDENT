@@ -4128,7 +4128,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E154 · ADR 0030's binned interval on the natural gaps' rows (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("ok va"); offline. T43 after ADR 0030's
+- **Status:** done 2026-11-06 18:08 GMT-3: refuted, one width per column already covers. Pre-registered 2026-11-06 on the
+  user's go ("ok va"); offline. T43 after ADR 0030's
   decision 8, on T50's E148 ledgers. Disclosure: E148's error by the row's natural gaps is known (highest in rows with
   none); E151 and E153 known.
 - **Hypothesis:** on the cohort's own rows, whose natural gaps vary widely, one width per column under-covers some
@@ -4139,3 +4140,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Supported if better on both tables, mixed if better on one and worse on neither, refuted otherwise. Supported leads
   to proposing decision 8's scope include MIMIC-IV's natural gaps, for the user's decision.
 - **Sources:** [mimic/08](tickets/mimic/08-conformal-natural-gaps.md); `scripts/experiments/conformal_natural_gaps.py`.
+- **Results:** u(MC) − u(C) cardio +0.0006 [−0.0035, +0.0048], SOFA −0.0000 [−0.0036, +0.0036], both equivalent.
+  u(C) 0.009 and 0.008; C's worst bin mostly the rows with the fewest gaps (9 and 11 of 15 folds), top tertile 0.898
+  and 0.905. Width (MC − C) / C +0.012 and +0.013, worse.
+- **Conclusion:** refuted, on the "u(C) near 0" branch. With E153: on MIMIC-IV one width per column already covers;
+  proposed that decision 8 states it, for the user's decision; ADR 0030 not edited.

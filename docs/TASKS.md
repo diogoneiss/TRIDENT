@@ -815,7 +815,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     refuted, one width per column already covers** (MC equivalent to C on both tables, top tertile 0.900 and 0.909
     under C, MC 0.6–3% wider); stating it in decision 8 is the user's call. **E154 pre-registered 2026-11-06**
     ([mimic/08](tickets/mimic/08-conformal-natural-gaps.md), the user's "ok va"): the same reading on E148's natural
-    tables, hidden observed cells, offline.
+    tables, hidden observed cells, offline. **Done 2026-11-06 18:08 GMT-3: refuted, one width per column already covers** (MC
+    equivalent on both natural tables, u(C) under 0.01, MC 1.2–1.3% wider).
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork

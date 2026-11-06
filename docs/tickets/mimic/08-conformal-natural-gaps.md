@@ -48,3 +48,32 @@ position under C; the width (MC − C) / C with its verdict; the fallback share.
 **Limits, stated now:** the oracle calibration of E151 (other test folds' cells). The hidden cells are measured
 values, so the interval's coverage on a true natural gap is not read (E148's own limit: an unmeasured lactate is not
 a measured one).
+
+## Outcome (2026-11-06 18:08 GMT-3): refuted, one width per column already covers
+
+The reader ran once, at 18:08 GMT-3, on all 30 ledgers (no ledger missing, fallback 0.00; the row-mapping assert,
+each hidden cell's original-unit truth against the table's value at the mapped row, held on every fold). The
+self-check's line is the first.
+
+**By the rule, refuted:** MC is equivalent to C on both tables (cardio +0.0006 [−0.0035, +0.0048], SOFA −0.0000
+[−0.0036, +0.0036]), better on neither, worse on neither.
+
+- **Which branch:** "refuted with u(C) near 0". One width per column misses no tertile by more than a point: u(C)
+  0.009 and 0.008. Its worst bin is, as the disclosure foresaw, mostly the rows with the fewest gaps (9 and 11 of 15
+  folds; bottom-bin coverage 0.893 and 0.894), and the top tertile is covered (0.898, 0.905).
+- **The width:** MC costs 1.2% and 1.3% more, worse beyond the SESOI.
+- **With E153:** on MIMIC-IV, transplanted patterns and natural rows alike, the tertiles buy no coverage and cost
+  1 to 3% of width.
+- **Leads to, as fixed:** with E153, decision 8 is proposed to state that on MIMIC-IV one width per column already
+  covers, for the user's decision. ADR 0030 is not edited.
+
+**The printout** (`scripts/experiments/conformal_natural_gaps.py`, unedited):
+
+```text
+check passed: {'u_C': 0.17, 'top_C': 0.73, 'width_C': 6.872, 'u_S': 0.007, 'top_S': 0.9, 'width_S': 6.001, 'u_MC': 0.008, 'top_MC': 0.899, 'width_MC': 6.783, 'u_MS': 0.008, 'top_MS': 0.899, 'width_MS': 5.998}
+- `mimic-cardio_natural`: Q1 u(MC) − u(C) +0.0006 [-0.0035, +0.0048] equivalent, u(C) 0.009, u(MC) 0.010; C's worst bin per fold (0 fewest gaps) {0: 9, 2: 6}; width (MC − C) / C +0.012 [+0.009, +0.015] worse; coverage C 0.900 (low bin 0.893, top 0.898), MC 0.900 (low bin 0.900, top 0.900); fallback 0.00
+- `mimic-sofa_natural`: Q1 u(MC) − u(C) -0.0000 [-0.0036, +0.0036] equivalent, u(C) 0.008, u(MC) 0.008; C's worst bin per fold (0 fewest gaps) {0: 11, 1: 1, 2: 3}; width (MC − C) / C +0.013 [+0.010, +0.016] worse; coverage C 0.900 (low bin 0.894, top 0.905), MC 0.901 (low bin 0.900, top 0.901); fallback 0.00
+- Q1: better 0 / no difference 0 / equivalent 2 / worse 0 (fold-pair t, seed agreement)
+
+Primary (E154, Q1 on the two natural tables): {'mimic-cardio_natural': 'equivalent', 'mimic-sofa_natural': 'equivalent'} -> refuted (fold-pair t, seed agreement)
+```
