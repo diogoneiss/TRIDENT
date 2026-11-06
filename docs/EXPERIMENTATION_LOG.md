@@ -3890,3 +3890,46 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment 2026-11-05 19:29 GMT-3:** gorgona8's queues stopped on the user's decision (30 minutes a cell there);
   all 72 cells on medusa1, gorgona8's three finished arm-A cells discarded and their pairs trained whole on medusa1.
 - **Sources:** [imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md).
+
+### E150 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05)
+
+- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0 (the datasets root outside the
+  checkout and the two tables)
+- **Hypothesis:** on a clinical table whose gaps are natural, the decoder's fills of hidden observed cells (the
+  masked population; the natural gaps stay `[NULL]` inputs) are better than the best baseline of the bar's.
+- **Scenarios:** `mimic-cardio_natural` and `mimic-sofa_natural` (the kg-impute cohort, 11,082 ICU stays; about a
+  fifth of the cardio table's measured cells missing by the probe) × seeds 42/7/13, five folds, imputation defaults
+  with `--decode_checkpoint masked` (ADR 0015's criterion needs a sibling), 6 runs.
+- **Measures and decision rule:** per table, the masked population's `impute_score` minus the best baseline's,
+  paired per (seed, fold), 15 replicates, plain 95% t interval, Holm over the two tables: better, worse or no
+  different. The hidden cells are draws among measured values; the true gaps are not scored.
+- **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
+  [mimic/02](tickets/mimic/02-tables.md).
+
+### E151 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)
+
+- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0
+- **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
+  are better than the best baseline of the bar's.
+- **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows by the probe) and `mimic-sofa-donor` (at most
+  2,561), run only at 1,000 rows or more × variants `tmatch` (the pattern of the nearest incomplete stay), `trand`
+  (the same patterns permuted) and `mcar` (the same count per column, uniform) × seeds 42/7/13, five folds,
+  imputation defaults, 18 runs.
+- **Measures and decision rule:** per donor table, on `tmatch`, the induced cells' `impute_score` minus the best
+  baseline's, paired per (seed, fold), 15 replicates, plain 95% t interval, Holm over the two tables. Descriptive:
+  `tmatch − trand`, `trand − mcar`, TabPFN on `tmatch`. Threats stated: the donors are the sicker patients, and a
+  transplant carries where gaps fall, not the missing values.
+- **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md).
+
+### E152 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05)
+
+- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0 and on E150's runs
+- **Hypothesis:** (i) a logistic regression fed the decoder's fills of the natural gaps predicts death in hospital
+  better than one fed the mean/mode fill; (ii) the mean/mode fill with one indicator per column does better than
+  without them (the pattern carries signal: deaths 19.9% with a lactate measured, 7.9% without, by the probe).
+- **Scenarios:** the two natural tables × seeds 42/7/13 × five folds × inputs `N`, `NI`, `T`, `TI`; one fixed
+  logistic regression; fills from E150's runs, fold k from fold k's decoder alone; no new training.
+- **Measures and decision rule:** `T − N` and `NI − N` in macro-F1 per table, paired per (seed, fold), 15
+  replicates, Holm over the four tests; each holds with Holm p < 0.05 and a mean above 0. Descriptive: `TI − NI`,
+  AUROC, AUPRC, and as levels TRIDENT's classifier and TabPFN on the natural table.
+- **Sources:** [mimic/05](tickets/mimic/05-downstream-mortality.md).

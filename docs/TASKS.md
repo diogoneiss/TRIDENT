@@ -874,6 +874,15 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   80nan the two selectors keep opposite ends of the trajectory (a near-naive early epoch against a spread-out late
   one that loses to the naive fill). The flag stays off; no ADR. The `decode_metric` tag is backfilled on 3690 runs.
   Next, the user's: a criterion between the two, KC, large tables, fresh seeds.**
+- **T50 · Tables with natural gaps, from MIMIC-IV** (the user, 2026-11-05). Two tables on the kg-impute cohort
+  (11,082 ICU stays, label death in hospital): `mimic-cardio` (the 19 cardiovascular variables over 30 h) and
+  `mimic-sofa` (the SOFA components' raw values over 24 h). The user's rule: such tables are read from outside the
+  checkout, and only a toy problem lives in the repository. **Stage 0, next:** the datasets root
+  ([mimic/01](tickets/mimic/01-external-datasets-root.md)) and the tables ([mimic/02](tickets/mimic/02-tables.md)).
+  **Pre-registered 2026-11-05, blocked on stage 0:** E150 ([03](tickets/mimic/03-masked-cells-natural-gaps.md),
+  observed cells hidden), E151 ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto
+  complete rows) and E152 ([05](tickets/mimic/05-downstream-mortality.md), fills and patterns judged by a mortality
+  classifier).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
