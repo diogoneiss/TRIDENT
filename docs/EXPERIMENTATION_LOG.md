@@ -3959,15 +3959,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment 2026-11-06 07:20 GMT-3:** the cells share gorgona8's GPU with kg-impute's training queue (the user:
   "Comece a rodar em paralelo com o kg impute") instead of waiting for a free one; the design is unchanged. They carry
   `--export_gap_fills`, the fills E150 reads, which changes no score. Cost from the store: about 40 minutes a run
-  on `pendigits`, a table of this size; one to two hours a cell expected beside the other trainers.
+  on `pendigits`, a table of this size; one to two hours a cell expected beside the other trainers. Measured on the
+  first two cells: 33 and 36 minutes.
 - **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
-  [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`, report `mimic_report.py e148`; MLflow tag
+  [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`, report `mimic_report.py e148`;
+  MLflow tag
   `experiment = mimic-natural-gaps-2026-11-06`; state `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148`.
 
 ### E149 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)
 
 - **Status:** pre-registered 2026-11-05 as E151 (renumbered 2026-11-06 to keep the ids contiguous, the user's
-  decision); not started: stage 0 was merged on 2026-11-06, the script that cuts the variants is next
+  decision); the variants were cut on 2026-11-06 07:27 GMT-3 (30 and 29 distinct row patterns, 12.9% and 10.5% of
+  feature cells, named `_20nan`); its two queues start when E148's end (`run_mimic_chain.sh`)
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
 - **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only

@@ -74,8 +74,12 @@ under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top o
   suffix (`missingness_percent` will read `unknown`); E148's first cell is the first tracked run.
 - [x] Smoke on an external table: `mimic-cardio-donor_00nan` read from `$TRIDENT_DATASETS_ROOT` (CPU, two folds,
   40 decode epochs) trains and scores; a complete table exports no fills and its partition.
-- [ ] (c) minutes per cell on the 11,082-row tables. Amended 2026-11-06 (the user: "Comece a rodar em paralelo com
+- [x] (c) minutes per cell on the 11,082-row tables. Amended 2026-11-06 (the user: "Comece a rodar em paralelo com
   o kg impute"): measured on E148's first cells, which share the GPU with kg-impute's queue, not on a free GPU.
+  `mimic-sofa_natural` took 33 minutes (07:22 to 07:54 GMT-3) and `mimic-cardio_natural` 36 (07:21 to 07:56), five
+  folds each, two cells at a time beside kg-impute's four trainers. They were also the first tracked runs of a
+  name without a `_NNnan` suffix: the parents and their mirrors finished on the leader, `missingness_percent`
+  reading `unknown`.
 
 ## When
 

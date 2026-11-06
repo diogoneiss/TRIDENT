@@ -33,7 +33,9 @@ Written and committed before any table exists; blocked on [01](01-external-datas
     donors and 25.4% among the 2,143 SOFA donors, against 16.5% in the cohort.
   - A transplant carries where the gaps fall, not what the missing values were: `tmatch` is at most missing at
     random given the matching columns. Nothing here is a measurement under the true mechanism.
-- **Cost:** not estimated; from E148's first cells (ticket 01's item (c)), recorded here before the first cell.
+- **Cost:** estimated on 2026-11-06 from E148's first cells, before the first cell here: 33 and 36 minutes for
+  11,082 rows. A donor table has a fifth to an eighth of the rows and the same epochs, so 5 to 15 minutes a cell
+  and one to two and a half hours for the 18 on two queues, more if the other project's ten trainers slow them.
 - **What follows:** no default change and no ADR either way.
 - **Read only with all 18 runs done.**
 
