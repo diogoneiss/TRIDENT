@@ -3,10 +3,9 @@
 Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](04-pattern-transplant.md),
 [05](05-downstream-mortality.md)) need before their first cell. Not an experiment.
 
-- **Why:** the user wants tables derived from MIMIC-IV studied here (2026-11-05), and set the rule: such tables are
-  always read from a path outside the project folder; only a small toy problem may live in the repository.
-  `datasets/datasets_raw/` is tracked and goes to GitHub, and PhysioNet's data use agreement forbids putting
-  credentialed data on a third party's servers.
+- **Why:** the user wants tables derived from MIMIC-IV studied here (2026-11-05), and set the rule: the full tables
+  are always read from a path outside the project folder; a small real cohort lives in the repository as a toy
+  problem. The repository is private, exists to sync the user's machines and will be deleted later.
 - **What reads a dataset today** (hard-coded, relative to the checkout): `src/training/data.py`
   (`PROCESSED_DATASETS`, the variant's CSV and `splits/<base>_split.json`), `src/training/discovery.py`
   (`_PROCESSED_DIR`), `src/training/data.py` (`datasets/categorical_columns/<base>.txt`) and
@@ -45,18 +44,17 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
 
 ## The toy problem
 
-`toy-icu`: about 1,000 synthetic rows with the cardio table's column types, gap patterns drawn at the cohort's
-measured pattern frequencies (55 distinct patterns on the non-drug columns, the top five 81% of rows) and a binary
-outcome that depends on both values and pattern. Written by a seeded script to `datasets/datasets_raw/toy-icu.csv`
-like the other raw tables. Synthetic because of the agreement above, and because the unit suite also runs on
-Windows, where MIMIC is not. The user allowed a small real cohort in the private repository; swapping it in is
-their call.
+`mimic-cardio-toy`: 1,000 real stays of `mimic-cardio` ([02](02-tables.md)), drawn with a fixed seed and stratified
+by the label, with the table's columns and its natural gaps as they are. No identifier and no date: the table's
+columns are aggregates, age, sex, admission type and the label. Written by the builder to
+`datasets/datasets_raw/mimic-cardio-toy.csv`, tracked like the other raw tables, so it reaches Windows and medusa1
+through git. The user's decision of 2026-11-05 (a real cohort, not a synthetic one).
 
 ## Done when
 
 - A unit test on the resolver: two roots, the ambiguous base, the variable unset.
 - `pytest -m "not integration"` (with the mypy gate) and `pytest -m integration` pass.
-- A smoke on `toy-icu` and one on an external table, both short imputation runs, answer and record here:
+- A smoke on `mimic-cardio-toy` and one on an external table, both short imputation runs, answer and record here:
   (a) a table with natural gaps and no `_00nan` sibling trains and scores the masked population with its baseline
   bar, and a name without a `_NNnan` suffix passes the tags and the baseline cache; (b) `--decode_checkpoint masked`
   logs `masked` as the criterion kept; (c) minutes per cell on the 11,082-row tables.
