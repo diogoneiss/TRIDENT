@@ -4081,8 +4081,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E152 · C15's positive-control gate on the SOFA table's natural gaps (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vou na sua sugestão, vá"); starts on gorgona8
-  when E149's cells end. T50, and RQ2 after T45. Disclosure: E150's result and the cohort's death rates by gap are known.
+- **Status:** done 2026-11-06 16:34 GMT-3: G1 fails (condition 2 holds, condition 1 does not). Pre-registered
+  2026-11-06 on the user's go ("vou na sua sugestão, vá"); ran on gorgona8 after E149's cells, 9 of 9 cells. T50, and
+  RQ2 after T45. Disclosure: E150's result and the cohort's death rates by gap are known.
 - **Hypothesis:** on `mimic-sofa_natural`, where E150 found the gap pattern informative for death in hospital, the
   pipeline sees it: the indicator arm beats the plain fill, and the `[NULL]` arm reads the bilirubin gap with the
   cohort's sign.
@@ -4095,3 +4096,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   user's go; failing stops RQ2 at the gate on natural gaps too.
 - **Sources:** [mimic/06](tickets/mimic/06-sofa-positive-control.md); `datasets/make_mimic_numeric.py`,
   `scripts/experiments/sofa_g1.py`.
+- **Results:** (1) A2 − A3 relative test log loss −0.0153, corrected 95% interval [−0.1066, +0.0760] (plain [−0.0550,
+  +0.0244]); per seed s42 +0.0311, s7 −0.0399, s13 −0.0371. (2) A1's `bilirubin_max` contrast −0.651 logit, corrected
+  [−0.851, −0.452]; per seed −0.644, −0.695, −0.615. Macro-F1, descriptive: A1 0.6568, A2 0.6684, A3 0.6664.
+- **Conclusion:** G1 fails, with E128's split: the `[NULL]` arm reads the gap with the cohort's sign, and the
+  indicator arm is not shown to beat the plain fill on log loss. By the rule RQ2 stops at the gate on natural gaps too;
+  H2's A1-against-A2 test is not pre-registered.

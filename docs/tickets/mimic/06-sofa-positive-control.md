@@ -60,3 +60,29 @@ draws; any TabPFN arm.
 - **Queues:** three, one seed each, instead of the two written above, so the 9 cells take about 2.3 h rather than 3.5;
   started by `scripts/experiments/run_sofa_g1_chain.sh` (run from a copy in the state dir), which waits until no
   E149 cell is running. Nothing else changes.
+
+## Outcome (2026-11-06 16:34 GMT-3): G1 fails
+
+All 9 cells ended without a failure (the chain started its queues when E149's cells ended; the last cell ended 16:16
+GMT-3). The reader's printout, unedited (the loader's label-mapping lines left out):
+
+```
+## G1 on mimic-sofa-num_natural (E152, seeds 42/7/13 x 5 folds): (1) A2 − A3 relative test log loss below 0; (2) A1's bilirubin_max contrast below 0; Nadeau–Bengio corrected 95% t intervals over 15 cells; passes if both hold
+- A2 − A3 -0.0153 [-0.1066, +0.0760] (plain [-0.0550, +0.0244])
+- A1 contrast on bilirubin_max -0.651 [-0.851, -0.452] logit (plain [-0.738, -0.564])
+- per seed: s42 A2 − A3 +0.0311, contrast -0.644; s7 A2 − A3 -0.0399, contrast -0.695; s13 A2 − A3 -0.0371, contrast -0.615
+- macro-F1 (descriptive): A1 0.6568, A2 0.6684, A3 0.6664
+
+Primary (G1): fails
+```
+
+- **By the rule, G1 fails:** condition (2) holds, condition (1) does not. A1 reads the bilirubin gap with the cohort's
+  sign on every seed (−0.651 logit, corrected interval [−0.851, −0.452]). A2 does not beat A3 on test log loss: −0.0153,
+  corrected interval [−0.1066, +0.0760], the plain one across 0 too, and the seeds disagree (s42 +0.0311, s7 and s13
+  about −0.04).
+- **The same split as E128:** the `[NULL]` arm sees the gap; missForest's fill plus an indicator is not shown to use
+  it better than the fill alone. E150's logistic regression did gain from the indicators on this table, so the gap
+  carries information that this pipeline's indicator arm does not turn into a measurable log-loss gain at 15 cells.
+- **Macro-F1, descriptive, decides nothing:** A1 0.6568, A2 0.6684, A3 0.6664.
+- **Leads to, as written:** RQ2 stops at the gate on natural gaps too; recorded in T45 and T50. H2's A1-against-A2
+  test is not pre-registered.
