@@ -3986,8 +3986,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 - **Status:** pre-registered 2026-11-05 as E151 (renumbered 2026-11-06 to keep the ids contiguous, the user's
   decision); the variants were cut on 2026-11-06 07:27 GMT-3 (30 and 29 distinct row patterns, 12.9% and 10.5% of
-  feature cells, named `_20nan`); in progress since 2026-11-06 10:15 GMT-3, started by `run_mimic_chain.sh` when
-  E148's queues ended
+  feature cells, named `_20nan`); started 2026-11-06 10:15 GMT-3 by `run_mimic_chain.sh` when E148's queues ended;
+  **done 2026-11-06 15:14 GMT-3, supported on both donor tables**
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
 - **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only
@@ -4001,6 +4001,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment 2026-11-06 10:26 GMT-3:** one cell (`mimic-cardio-donor_tmatch_20nan`, seed 42) failed at its start,
   before any training: both queues asked the tracking server to create the table's experiment in the same second.
   The queues are relaunched when the first pass ends and run it again; nothing in the design changes.
+- **Results:** complete, 18 of 18 runs (17 on the first attempt, the failed cell on its second, 14:37 to 15:06
+  GMT-3). Decoder minus the bar's best baseline on `tmatch`'s induced cells, 15 replicates: `mimic-cardio-donor`
+  0.8606 against 0.9061, −0.0455 [−0.0604, −0.0307], Holm p below 0.0001, better; `mimic-sofa-donor` 0.9209 against
+  0.9481, −0.0272 [−0.0423, −0.0122], Holm p 0.0017, better. Descriptive: on `tmatch` the decoder has the lowest mean
+  of every imputer the runs scored (nearest: the strong tier's `condexp`, 0.8616 on the cardio table, not told
+  apart by levels, and 0.9305 on the SOFA one); on `mimic-sofa-donor_mcar` missForest's mean is lower (0.9151
+  against 0.9237). `trand − mcar`: the decoder's score is higher under the real blocks on the cardio table (+0.0660
+  [+0.0465, +0.0854]) and its gap to the bar is not (−0.0161 [−0.0374, +0.0052]); both hold zero on the SOFA table.
+  `tmatch − trand`: every interval holds zero, with opposite signs for the decoder's score on the two tables.
+  TabPFN on `tmatch`: the offline pass started 15:07 GMT-3 and is added when it ends. Cost: 19 to 33 minutes for 16
+  cells and 57 and 59 for two, against an estimate of 5 to 15; 4 h 51 min of wall time.
+- **Conclusion:** supported on both donor tables, by about 5% and 3% of the bar's score: under gap patterns copied
+  from real stays, with a ground truth, the decoder is better than the bar's best baseline. The stated threats
+  stand (sicker donors; a transplant carries where gaps fall, not the missing values), and the two descriptive
+  contrasts support no reading of a mechanism. One seed set, two views of one cohort; no default change, no ADR.
 - **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md); runner `mimic_transplant_run.py`, report
   `mimic_report.py e149`; MLflow tag `experiment = mimic-pattern-transplant-2026-11-06`; state
   `/scratch2/diogoneiss/trident-2026-11-06-mimic-e149`.

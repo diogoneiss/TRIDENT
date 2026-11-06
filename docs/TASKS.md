@@ -900,9 +900,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   tables ([mimic/02](tickets/mimic/02-tables.md)). **Pre-registered 2026-11-05:** E148
   ([03](tickets/mimic/03-masked-cells-natural-gaps.md), observed cells hidden; done 2026-11-06, the decoder better
   than the bar on both tables), E149 ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto
-  complete rows; in progress since 2026-11-06) and E150 ([05](tickets/mimic/05-downstream-mortality.md), fills and
-  patterns judged by a mortality classifier; done 2026-11-06, the fills do not help, the indicators help on the SOFA
-  table only).
+  complete rows; done 2026-11-06, the decoder better than the bar on both donor tables) and E150
+  ([05](tickets/mimic/05-downstream-mortality.md), fills and patterns judged by a mortality classifier; done
+  2026-11-06, the fills do not help, the indicators help on the SOFA table only).
   **E152 pre-registered 2026-11-06** ([06](tickets/mimic/06-sofa-positive-control.md), the user's go): C15's gate G1
   (T45's, E128's form) on the SOFA table's natural gaps, A1/A2/A3 × 42/7/13; if it passes, RQ2's H2 has its first
   table; it starts on gorgona8 when E149's cells end.

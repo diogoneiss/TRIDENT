@@ -84,3 +84,69 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   `logs/D_mimic-cardio-donor_tmatch_20nan_s42.failed-1015.log`. A detached waiter relaunches the two queues when the
   first pass ends, and a relaunch runs only the cells not done. The race is in `get_or_create_experiment`
   (`src/mlflow_utils.py`) and is left as it is until this study ends, so every cell runs on one version of `src/`.
+- **The relaunch ran that cell 2026-11-06 14:37 to 15:06 GMT-3,** on its second attempt, and the queues were
+  complete. E152's chain ([06](06-sofa-positive-control.md)) waits for "no E149 cell running" and fired at 14:37:23,
+  in the eight seconds between the first pass's end and the relaunched cell's start at 14:37:31: that cell ran its
+  29 minutes beside E152's first three trainers. The fold's cells and seeds do not depend on the load; only its wall
+  time does.
+
+## Outcome (2026-11-06 15:14 GMT-3)
+
+**Supported on both donor tables.** All 18 runs done: 17 on the first attempt, one on its second (see Run). 18
+parent runs FINISHED on the leader under the study's tag, none from the failed attempt. The report, as
+`mimic_report.py e149` prints it:
+
+```
+mimic-cardio-donor_tmatch_20nan: decoder 0.8606, bar 0.9061 (best baseline by run: ['hgb', 'knn10', 'lgbm'])
+  mean impute_score over 15 folds: decoder 0.8606, condexp 0.8616, missforest 0.8964, hgb 0.9080, lgbm 0.9104, knn10 0.9122, knn5 0.9395, ice 0.9992, mean_mode 1.0000, softimpute 1.2209
+mimic-cardio-donor_trand_20nan: decoder 0.8491, bar 0.9078 (best baseline by run: ['knn10'])
+  mean impute_score over 15 folds: decoder 0.8491, condexp 0.8657, knn10 0.9078, missforest 0.9089, lgbm 0.9122, hgb 0.9127, knn5 0.9430, mean_mode 1.0000, ice 1.0983, softimpute 1.1978
+mimic-cardio-donor_mcar_20nan: decoder 0.7831, bar 0.8257 (best baseline by run: ['hgb', 'lgbm'])
+  mean impute_score over 15 folds: decoder 0.7831, condexp 0.7930, missforest 0.8004, ice 0.8259, hgb 0.8263, lgbm 0.8288, knn10 0.8771, knn5 0.9171, mean_mode 1.0000, softimpute 1.0124
+mimic-sofa-donor_tmatch_20nan: decoder 0.9209, bar 0.9481 (best baseline by run: ['knn10', 'lgbm'])
+  mean impute_score over 15 folds: decoder 0.9209, condexp 0.9305, knn10 0.9482, hgb 0.9579, lgbm 0.9629, missforest 0.9822, knn5 0.9943, mean_mode 1.0000, softimpute 1.2129, ice 1.9002
+mimic-sofa-donor_trand_20nan: decoder 0.9339, bar 0.9730 (best baseline by run: ['knn10', 'lgbm'])
+  mean impute_score over 15 folds: decoder 0.9339, condexp 0.9423, missforest 0.9711, knn10 0.9754, hgb 0.9902, lgbm 0.9908, mean_mode 1.0000, knn5 1.0042, softimpute 1.0711, ice 1.5812
+mimic-sofa-donor_mcar_20nan: decoder 0.9237, bar 0.9473 (best baseline by run: ['hgb', 'knn10'])
+  mean impute_score over 15 folds: missforest 0.9151, decoder 0.9237, condexp 0.9318, hgb 0.9482, lgbm 0.9521, knn10 0.9546, ice 0.9615, knn5 0.9856, mean_mode 1.0000, softimpute 1.0529
+PRIMARY mimic-cardio-donor_tmatch_20nan (n=15): -0.0455 [-0.0604, -0.0307], Holm p 0.0000 -> better
+PRIMARY mimic-sofa-donor_tmatch_20nan (n=15): -0.0272 [-0.0423, -0.0122], Holm p 0.0017 -> better
+mimic-cardio-donor tmatch - trand, decoder's score (n=15): +0.0115 [-0.0083, +0.0314]
+mimic-cardio-donor tmatch - trand, gap to the bar (n=15): +0.0132 [-0.0061, +0.0325]
+mimic-cardio-donor trand - mcar, decoder's score (n=15): +0.0660 [+0.0465, +0.0854]
+mimic-cardio-donor trand - mcar, gap to the bar (n=15): -0.0161 [-0.0374, +0.0052]
+mimic-sofa-donor tmatch - trand, decoder's score (n=15): -0.0130 [-0.0286, +0.0027]
+mimic-sofa-donor tmatch - trand, gap to the bar (n=15): +0.0119 [-0.0130, +0.0368]
+mimic-sofa-donor trand - mcar, decoder's score (n=15): +0.0102 [-0.0020, +0.0224]
+mimic-sofa-donor trand - mcar, gap to the bar (n=15): -0.0155 [-0.0401, +0.0092]
+```
+
+- **Primary, `tmatch`'s induced cells, decoder minus the bar's best baseline, 15 replicates:**
+  - `mimic-cardio-donor`: 0.8606 against 0.9061, −0.0455 [−0.0604, −0.0307], Holm p below 0.0001, **better**.
+  - `mimic-sofa-donor`: 0.9209 against 0.9481, −0.0272 [−0.0423, −0.0122], Holm p 0.0017, **better**.
+
+  About 5% and 3% of the bar's score. The bar's best baseline changes with the run here (`hgb`, `knn10` or `lgbm`),
+  where E148's was `hgb` in every run.
+- **Every imputer the runs scored, levels only, no test.** On `tmatch` the decoder has the lowest mean on both
+  tables. The nearest is the strong tier's conditional expectation (`condexp`): 0.8616 against 0.8606 on the cardio
+  table, which these levels do not tell apart, and 0.9305 against 0.9209 on the SOFA one. Over the six variants the
+  decoder's mean is the lowest on five; on `mimic-sofa-donor_mcar` missForest's is lower (0.9151 against 0.9237).
+  ICE and SoftImpute are above the mean/mode fill on every transplanted variant (ICE 1.90 on the SOFA `tmatch`).
+- **`trand − mcar`, what the blocks cost, descriptive.** On the cardio table the decoder's score is higher under
+  the permuted real patterns than under uniform gaps, +0.0660 [+0.0465, +0.0854], and its gap to the bar does not
+  move with it (−0.0161 [−0.0374, +0.0052]): the bar's score rises as much. On the SOFA table both intervals hold
+  zero (+0.0102 [−0.0020, +0.0224] and −0.0155 [−0.0401, +0.0092]).
+- **`tmatch − trand`, what the dependence on the row costs, descriptive.** Every interval holds zero. The decoder's
+  score moves in opposite directions on the two tables (+0.0115 [−0.0083, +0.0314] cardio, −0.0130 [−0.0286,
+  +0.0027] SOFA); its gap to the bar, +0.0132 [−0.0061, +0.0325] and +0.0119 [−0.0130, +0.0368]. No reading of a
+  mechanism follows from either contrast (the second threat above).
+- **TabPFN on `tmatch`, descriptive:** the offline pass (`tabpfn_run.py`, ADR 0028's settings) started 2026-11-06
+  15:07 GMT-3 on the two `tmatch` variants and is added below when it ends.
+- **What this cannot say** stands as the threats above: the donors are the sicker patients, and a transplant
+  carries where the gaps fall, not what the missing values were. With [E148](03-masked-cells-natural-gaps.md) this
+  makes two readings on one cohort where the decoder is better than the bar; neither scores a true gap.
+- **Cost, measured, against the estimate of 5 to 15 minutes a cell:** 16 of the 18 cells took 19 to 33 minutes and
+  two took 57 and 59 (both from about 12:27 to 13:26 GMT-3; what else loaded the GPU then was not looked into).
+  The estimate scaled E148's cells by the rows; the time did not fall with them. 4 h 21 min of wall time for the
+  first pass, 4 h 51 min with the relaunched cell.
+- No default change and no ADR, as fixed above. One seed set on two views of one cohort.
