@@ -3891,6 +3891,58 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   all 72 cells on medusa1, gorgona8's three finished arm-A cells discarded and their pairs trained whole on medusa1.
 - **Sources:** [imputation-protocol/51](tickets/imputation-protocol/51-decode-metric.md).
 
+### E146 · Which fills serve a downstream classifier: the checkpoint by `impute_score` or by `dist_score`? (pilot, 2026-11-05)
+
+- **Status:** done 2026-11-05 (36 of 36 files; read 21:12 GMT-3); a pilot, pre-registered and read on a local branch
+  on the user's instruction and kept on the record on their decision of 2026-11-06
+- **Results:** classifier fitted on complete rows: F1(B) − F1(A) +0.0141 [+0.0107, +0.0175], B better on 5 variants,
+  A on none; `dist_score` on the right side on 5 of 5 verdicts, `impute_score` on 0; Spearman +0.42 against −0.23.
+  Fitted on each fill's own table: +0.0029 [−0.0011, +0.0069], no difference.
+- **Conclusion:** the checkpoint chosen by `dist_score` gives fills a classifier trained on real rows reads better,
+  most where `impute_score` charged the most; under impute-then-learn the two are not separable. Exploratory; a claim
+  needs a pre-registered rerun on fresh seeds.
+- **Hypothesis:** none directional; the vault's review expects imputation quality to couple weakly to downstream
+  accuracy.
+- **Scenarios:** E145's 12 variants × seeds 42/7/13 × 5 folds, K's fills under both selectors; logistic regression and
+  a small MLP fitted on the truth-filled rows outside the test fold, scored on the test fold filled with the truth,
+  arm A's fills, arm B's and the mean/mode; an impute-then-learn protocol beside. CPU on medusa1, no store write.
+- **Measures and decision rule:** F1(B) − F1(A), mean of the two learners, pooled over the 12 variants per replicate,
+  plain 95% t interval; per variant, which score favoured the more useful arm; replicate-level Spearman correlations.
+- **Sources:** [imputation-protocol/52](tickets/imputation-protocol/52-downstream-utility.md).
+
+### E147 · Which score orders imputers as a classifier does, across TRIDENT, the strong baselines and three mechanisms? (pilot, 2026-11-05 – 2026-11-06)
+
+- **Status:** done 2026-11-06 06:27 GMT-3, mixed; a pilot, pre-registered, run and read as E149 on a local branch, kept on
+  the record and renumbered on the user's decision of 2026-11-06 (E148 and E149 are unused ids)
+- **Hypothesis:** from E146's sign, `dist_score` orders imputers more like a downstream classifier than `impute_score`.
+- **Scenarios:** MCAR (E145's 12 variants), MAR (`marf_60nan`, six tables) and MNAR (`probit_60nan`, four tables),
+  seeds 42/7/13 × 5 folds; 60 new TRIDENT cells for MAR and MNAR under E145's two arms; per fold TRIDENT A and B, the
+  mean/mode, knn5, knn10, hgb, lgbm, missForest, condexp, SoftImpute, ICE, the sequential missForest and TabPFN v2,
+  each with `impute_score`, `dist_score` and the macro-F1 of logistic regression and an MLP fitted on complete rows.
+- **Measures and decision rule:** per mechanism, rho(`dist_score`) − rho(`impute_score`), each the within-fold
+  Spearman correlation with the macro-F1 across the imputers, pooled over the variants per replicate, plain 95% t
+  interval, Holm over the mechanisms read complete. Secondary: the F1 lost by each score's best imputer; TRIDENT
+  against the best strong baseline on `dist_score`; B against A a mechanism.
+- **Amendment 2026-11-05 22:39 GMT-3:** on the user's decision the 60 MAR/MNAR cells and everything after them run
+  on gorgona8 (four queues), without waiting for medusa1's GPUs; the MCAR CPU imputers had already finished on medusa1.
+- **Results:** complete, 60 of 60 cells and 396 of 396 files, none failed; twelve imputers a fold, not thirteen
+  (the sequential missForest was listed but no group fitted it, my error). Primary, rho(`dist_score`) −
+  rho(`impute_score`): MCAR +0.1543 [+0.0983, +0.2103], Holm 0.0001, `dist_score`; MAR −0.1195 [−0.1830, −0.0559],
+  Holm 0.0012, `impute_score`; MNAR −0.2206 [−0.2538, −0.1873], Holm 0.0000, `impute_score`; beside, MCAR at 60nan
+  +0.0475 [−0.0208, +0.1157], no difference. Taking each score's best imputer, `impute_score` loses less F1 in every
+  mechanism (0.030 against 0.042, 0.016 against 0.025, 0.014 against 0.032). B against A on F1: MCAR +0.0141, MNAR
+  +0.0050, MAR +0.0020 (no difference). Against the best strong baseline of each variant on F1, A trails in all
+  three mechanisms (−0.015, −0.007, −0.011) and B ties under MCAR (−0.001) and trails under MAR (−0.005) and MNAR
+  (−0.006); on `dist_score` B leads under MCAR only (+0.054). Post hoc, descriptive: inside MCAR the primary is −0.110
+  at 40nan, +0.048 at 60nan and +0.632 at 80nan, where `impute_score`'s correlation with the F1 is negative (−0.18).
+- **Conclusion:** mixed; the hypothesis is not supported as a general statement. The MCAR verdict is a matter of the
+  level, not the mechanism: at 60nan there is no difference under MCAR and `impute_score` orders the imputers better
+  under MAR and MNAR. `dist_score`'s ordering is steadier (+0.45 to +0.53 everywhere) and `impute_score`'s is higher
+  at moderate levels and breaks at 80nan, the regime of E145's near-naive fills. Nothing argues for replacing
+  `impute_score` as the reported score (ADR 0025). MAR and MNAR at one level, one seed set. Whether the pilots are
+  kept is the user's verdict.
+- **Sources:** [imputation-protocol/53](tickets/imputation-protocol/53-imputer-utility.md).
+
 ### E150 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05)
 
 - **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0 (the datasets root outside the

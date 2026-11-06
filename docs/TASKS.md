@@ -874,6 +874,17 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   80nan the two selectors keep opposite ends of the trajectory (a near-naive early epoch against a spread-out late
   one that loses to the naive fill). The flag stays off; no ADR. The `decode_metric` tag is backfilled on 3690 runs.
   Next, the user's: a criterion between the two, KC, large tables, fresh seeds.**
+  **Downstream use of the fills, two pilots kept on the user's decision of 2026-11-06 (exploratory; a claim needs a
+  pre-registered rerun on fresh seeds).** E146 ([imputation-protocol/52](tickets/imputation-protocol/52-downstream-utility.md)),
+  on E145's cells: a classifier fitted on complete rows reads the `dist_score` checkpoint's fills better than the
+  `impute_score` one's (macro-F1 +0.014 [+0.011, +0.018]; better on 5 of 12 variants, worse on none), with no
+  difference when it is fitted on the fills themselves. E147
+  ([imputation-protocol/53](tickets/imputation-protocol/53-imputer-utility.md); run as E149), twelve imputers a
+  fold under MCAR, MAR and MNAR: mixed. `dist_score` orders the imputers more like the classifier under MCAR
+  (+0.154), `impute_score` under MAR (−0.120) and MNAR (−0.221); at 60nan MCAR shows no difference, and post hoc the
+  MCAR verdict is carried by 80nan, where `impute_score`'s order turns against the classifier's. Taking each
+  score's best imputer, `impute_score` loses less F1 in every mechanism. Nothing argues for replacing
+  `impute_score` (ADR 0025 stands). Scripts: `scripts/experiments/downstream_utility.py` and `imputer_utility.py`.
 - **T50 · Tables with natural gaps, from MIMIC-IV** (the user, 2026-11-05). Two tables on the kg-impute cohort
   (11,082 ICU stays, label death in hospital): `mimic-cardio` (the 19 cardiovascular variables over 30 h) and
   `mimic-sofa` (the SOFA components' raw values over 24 h). The user's rule: the full tables are read from outside
