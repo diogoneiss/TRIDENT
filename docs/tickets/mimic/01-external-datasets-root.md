@@ -63,7 +63,8 @@ under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top o
 
 - [x] A unit test on the resolver (two roots, the ambiguous base, the variable unset) and one on the export (every
   gap once, each with its split): `tests/unit/test_training_data.py`, `tests/unit/test_training_decoding.py`.
-- [ ] `pytest -m "not integration"` (with the mypy gate) and `pytest -m integration` pass.
+- [x] `pytest -m "not integration"` (497 passed, with the mypy gate; the export's test, added during that run,
+  passed on its own) and `pytest -m integration` (both fixtures, the variable unset), 2026-11-06 00:16 GMT-3.
 - [x] Smoke on `mimic-cardio-toy_natural` (2026-11-05, CPU, two folds, 40 decode epochs, MLflow off, 9 minutes
   beside the night's trainers): (a) a table with natural gaps and no `_00nan` sibling trains and scores the masked
   population with its baseline bar; (b) `--decode_checkpoint masked` keeps the masked criterion's epoch
@@ -71,7 +72,9 @@ under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top o
   twice, every split agreeing with the partition file. The fills of so short a run are close to the column mean;
   the smoke checks the plumbing, not the model. Not exercised: the MLflow tags of a name without a `_NNnan`
   suffix (`missingness_percent` will read `unknown`); E150's first cell is the first tracked run.
-- [ ] Smoke on an external table, and (c) minutes per cell on the 11,082-row tables, on a free GPU.
+- [x] Smoke on an external table: `mimic-cardio-donor_00nan` read from `$TRIDENT_DATASETS_ROOT` (CPU, two folds,
+  40 decode epochs) trains and scores; a complete table exports no fills and its partition.
+- [ ] (c) minutes per cell on the 11,082-row tables, on a free GPU.
 
 ## When
 
