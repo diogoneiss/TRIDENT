@@ -137,8 +137,9 @@ gaps
   [−0.0443, −0.0331] on the cardio table (TabPFN 0.8459, above `hgb` too) and −0.0108 [−0.0165, −0.0052] on the SOFA
   one (0.8956); no test in the rule. The lead is in squared error, not in absolute error: TabPFN's RMSE is higher
   on both (0.852 against 0.812, 0.900 against 0.886), while its MAE is level on the cardio table (0.451 both) and
-  lower on the SOFA one (0.467 against 0.493). On the project's benchmark tables TabPFN leads the decoder on the
-  induced cells (ADR 0028); this is the masked population of one cohort, and no claim against TabPFN follows.
+  lower on the SOFA one (0.467 against 0.493). E56 saw the same split on two benchmark variants, where MAE reversed
+  the decoder's wins over TabPFN (ADR 0028). One cohort, the masked population, one seed set: no claim against
+  TabPFN follows.
 - **What this cannot say** stands as written above: the hidden cells are a draw among measured values, so this is
   not a reading of how well the true gaps are filled. [05](05-downstream-mortality.md) is the only reading of what
   is done with the true gaps.
