@@ -1,4 +1,4 @@
-# Fills and gap patterns judged by a mortality classifier (E152; pre-registered 2026-11-05)
+# Fills and gap patterns judged by a mortality classifier (E150; pre-registered 2026-11-05 as E152)
 
 Written and committed before any table exists; blocked on [01](01-external-datasets-root.md) and
 [02](02-tables.md). The third way: no ground truth for the cells at all, only the outcome.
@@ -17,11 +17,11 @@ Written and committed before any table exists; blocked on [01](01-external-datas
 - **Inputs, four:**
   - `N`: mean/mode fill.
   - `NI`: `N` and one indicator for each column with gaps.
-  - `T`: the decoder's fills of the natural gaps, from [E150](03-masked-cells-natural-gaps.md)'s run of the same
-    seed. Fold k reads fold k's export alone: that fold's decoder (checkpoint by `masked`, as E150) fills the gaps
+  - `T`: the decoder's fills of the natural gaps, from [E148](03-masked-cells-natural-gaps.md)'s run of the same
+    seed. Fold k reads fold k's export alone: that fold's decoder (checkpoint by `masked`, as E148) fills the gaps
     of its training, validation and test rows, and the export carries the fold's partition. A row's fill from
     another fold's decoder would come from a model trained on this fold's test rows. The export of ticket 01 lands
-    before E150's first cell, so both studies read the same runs.
+    before E148's first cell, so both studies read the same runs.
   - `TI`: `T` and the indicators.
 - **Leakage:** the mean/mode fill, the scaler and the decoder are fitted on the fold's training rows (the decoder
   also selects its epoch on the fold's validation rows); the label never enters an imputer.

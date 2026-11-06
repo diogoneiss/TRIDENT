@@ -7,7 +7,7 @@ gaps as the hospital left them:
   mimic-sofa     the SOFA components' raw worst values over the first 24 h
 
 and, cut from each, the rows with every measured column present (``<base>-donor``, the complete
-tables E151 transplants gap patterns onto). These go under ``$TRIDENT_DATASETS_ROOT``, outside
+tables E149 transplants gap patterns onto). These go under ``$TRIDENT_DATASETS_ROOT``, outside
 the checkout. A 1,000-stay sample of ``mimic-cardio`` is written into the checkout as the toy
 problem, ``mimic-cardio-toy``.
 

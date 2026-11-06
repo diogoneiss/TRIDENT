@@ -1,4 +1,4 @@
-# Observed cells hidden on tables with natural gaps (E150; pre-registered 2026-11-05)
+# Observed cells hidden on tables with natural gaps (E148; pre-registered 2026-11-05 as E150)
 
 Written and committed before either table exists; blocked on [01](01-external-datasets-root.md) and
 [02](02-tables.md). The first of three ways to study tables whose gaps have no ground truth (the user's agreement,

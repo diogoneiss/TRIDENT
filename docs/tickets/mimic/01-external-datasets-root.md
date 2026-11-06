@@ -1,6 +1,6 @@
 # Datasets read from outside the checkout (T50, stage 0; written 2026-11-05)
 
-Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](04-pattern-transplant.md),
+Stage 0 of T50: what E148 to E150 ([03](03-masked-cells-natural-gaps.md), [04](04-pattern-transplant.md),
 [05](05-downstream-mortality.md)) need before their first cell. Not an experiment.
 
 - **Why:** the user wants tables derived from MIMIC-IV studied here (2026-11-05), and set the rule: the full tables
@@ -30,7 +30,7 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
   `imputation_fold_<k>_gap_fills.csv`, its kept checkpoint's fill for every gap of the table (training, validation
   and test rows; `row`, `split`, `column`, `kind`, `imputed`, `confidence`, `imputed_original_units`), and
   `imputation_fold_<k>_partition.csv`, every row's split. The gaps are shown as `[MASK]`, as the induced scoring
-  shows them. Nothing is scored. E152 needs it: the ledger holds scored cells only.
+  shows them. Nothing is scored. E150 needs it: the ledger holds scored cells only.
 
 ## Where things live
 
@@ -71,7 +71,7 @@ under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top o
   (`decode/masked_checkpoint_epoch` is logged); the export holds 2,894 fills for the table's 2,894 gaps, none
   twice, every split agreeing with the partition file. The fills of so short a run are close to the column mean;
   the smoke checks the plumbing, not the model. Not exercised: the MLflow tags of a name without a `_NNnan`
-  suffix (`missingness_percent` will read `unknown`); E150's first cell is the first tracked run.
+  suffix (`missingness_percent` will read `unknown`); E148's first cell is the first tracked run.
 - [x] Smoke on an external table: `mimic-cardio-donor_00nan` read from `$TRIDENT_DATASETS_ROOT` (CPU, two folds,
   40 decode epochs) trains and scores; a complete table exports no fills and its partition.
 - [ ] (c) minutes per cell on the 11,082-row tables, on a free GPU.

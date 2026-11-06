@@ -1,9 +1,9 @@
-# Real gap patterns transplanted onto complete rows (E151; pre-registered 2026-11-05)
+# Real gap patterns transplanted onto complete rows (E149; pre-registered 2026-11-05 as E151)
 
 Written and committed before any table exists; blocked on [01](01-external-datasets-root.md) and
 [02](02-tables.md). The second way: give the natural patterns a ground truth.
 
-- **Why:** [E150](03-masked-cells-natural-gaps.md) scores uniform draws among measured values. The cohort's real gaps
+- **Why:** [E148](03-masked-cells-natural-gaps.md) scores uniform draws among measured values. The cohort's real gaps
   come in blocks (55 distinct patterns on the cardio table, five of them 81% of the rows) and fall on particular
   patients. Rows with everything measured can carry those patterns and keep the truth.
 - **Hypothesis:** under gap patterns copied from real stays, the decoder's fills are better than the best baseline
@@ -25,7 +25,7 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   donor table is the complete sibling, so ADR 0015's `induced` checkpoint applies).
 - **Primary:** per donor table, on `tmatch`, the induced cells' `impute_score` minus the best baseline's, paired per
   (seed, fold), 15 replicates, plain 95% t interval; Holm over the two tables. Better, worse or no different as in
-  E150.
+  E148.
 - **Beside it, descriptive:** `tmatch − trand` and `trand − mcar` for the decoder's score and for its gap to the bar
   (what the dependence on the row costs, and what the blocks cost); TabPFN (ADR 0028) on `tmatch`.
 - **Threats, stated:**

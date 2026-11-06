@@ -3,7 +3,8 @@
 **Kept on the record, and renumbered (2026-11-06, 06:47 GMT-3).** The user's decision ("quero 146 e 149 mantidos (talvez reindexar o
 149 pra ele ser 147)"): this pilot joins `feat/imputation-task` as **E147**, ticket 53. It was pre-registered, run
 and read as E149, ticket 55, on the local branch named below (commits 8f009d4 at 22:19 and fbca27d at 22:40 GMT-3 on
-2026-11-05, 0a1747a at 06:28 GMT-3 on 2026-11-06), deleted after this merge. E148 and E149 are unused ids. What
+2026-11-05, 0a1747a at 06:28 GMT-3 on 2026-11-06), deleted after this merge. E148 and E149 went to T50's MIMIC
+experiments the same day, so "E149" below is always this pilot. What
 follows is that branch's text; only the title, the links and one cross-reference changed. The unedited tallies keep
 "E149" in their heading, and the old names (`55-imputer-utility.py`, `chain_e149.log`) are the ones a reader finds in
 the state directories.

@@ -1,6 +1,6 @@
 # Two tables from the kg-impute cohort (T50, stage 0; written 2026-11-05)
 
-The tables E150 to E152 run on. Built by `datasets/build_mimic.py` from `MIMIC_ROOT` and the files named below,
+The tables E148 to E150 run on. Built by `datasets/build_mimic.py` from `MIMIC_ROOT` and the files named below,
 written under `TRIDENT_DATASETS_ROOT` ([01](01-external-datasets-root.md)):
 
     uv run --no-project --with h5py --with pandas python datasets/build_mimic.py
@@ -62,22 +62,22 @@ its ventilation flag 56.5%, bilirubin 47.0%, urine output 28.6%, platelets 4.1%,
 against 10.3% for bilirubin; urine output runs the other way (15.2% against 19.7%), its gap being mostly a stay
 too short to have 22 hours of it.
 
-## Donor tables, for E151
+## Donor tables, for E149
 
 Rows with every feature present, cut from each table: `mimic-cardio-donor` (1,292 rows, 33.5% deaths) and
-`mimic-sofa-donor` (2,143 rows, 25.4% deaths). Both pass E151's floor of 1,000, and both are sicker than the cohort
+`mimic-sofa-donor` (2,143 rows, 25.4% deaths). Both pass E149's floor of 1,000, and both are sicker than the cohort
 (16.5%).
 
 ## Names and files
 
 `<base>/<base>_natural.csv` for the two natural tables and the toy; `<base>-donor/<base>-donor_00nan.csv` for the
-donors, with E151's variants beside them. Base names carry a hyphen, never an underscore, because `DatasetSpec` splits on the
+donors, with E149's variants beside them. Base names carry a hyphen, never an underscore, because `DatasetSpec` splits on the
 first one.
 
 **Row index.** Every column of a table but the label is a feature (`declared_column_types`), so the identifiers do
 not sit in the table. Each table has a row-aligned index beside it, `<base>/<base>_index.csv`: `stay_id`,
 `subject_id` and `hadm_id` of row *i* on line *i*. It is what joins a row back to MIMIC-IV, the cardio view to the
-SOFA view, a donor row to its stay and to the stay whose pattern it took (E151), and a ledger's `row` to a patient.
+SOFA view, a donor row to its stay and to the stay whose pattern it took (E149), and a ledger's `row` to a patient.
 
 Five-fold cross-validation (`--cv_folds 5`), so no split file. `categorical_columns/<base>.txt` in the
 repository.

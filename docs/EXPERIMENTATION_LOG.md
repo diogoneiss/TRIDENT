@@ -3913,7 +3913,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 ### E147 · Which score orders imputers as a classifier does, across TRIDENT, the strong baselines and three mechanisms? (pilot, 2026-11-05 – 2026-11-06)
 
 - **Status:** done 2026-11-06 06:27 GMT-3, mixed; a pilot, pre-registered, run and read as E149 on a local branch, kept on
-  the record and renumbered on the user's decision of 2026-11-06 (E148 and E149 are unused ids)
+  the record and renumbered on the user's decision of 2026-11-06 (E148 and E149 went to T50's experiments the same
+  day, so "E149" in this pilot's tallies and logs is this entry)
 - **Hypothesis:** from E146's sign, `dist_score` orders imputers more like a downstream classifier than `impute_score`.
 - **Scenarios:** MCAR (E145's 12 variants), MAR (`marf_60nan`, six tables) and MNAR (`probit_60nan`, four tables),
   seeds 42/7/13 × 5 folds; 60 new TRIDENT cells for MAR and MNAR under E145's two arms; per fold TRIDENT A and B, the
@@ -3943,10 +3944,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   kept is the user's verdict.
 - **Sources:** [imputation-protocol/53](tickets/imputation-protocol/53-imputer-utility.md).
 
-### E150 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05)
+### E148 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05)
 
-- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0 (the datasets root outside the
-  checkout and the two tables)
+- **Status:** pre-registered 2026-11-05 as E150 (renumbered 2026-11-06 to keep the ids contiguous, the user's
+  decision); not started, blocked on T50's stage 0 (the datasets root outside the checkout and the two tables)
 - **Hypothesis:** on a clinical table whose gaps are natural, the decoder's fills of hidden observed cells (the
   masked population; the natural gaps stay `[NULL]` inputs) are better than the best baseline of the bar's.
 - **Scenarios:** `mimic-cardio_natural` and `mimic-sofa_natural` (the kg-impute cohort, 11,082 ICU stays; about a
@@ -3958,9 +3959,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
   [mimic/02](tickets/mimic/02-tables.md).
 
-### E151 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)
+### E149 · Real gap patterns transplanted onto complete rows (pre-registered 2026-11-05)
 
-- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0
+- **Status:** pre-registered 2026-11-05 as E151 (renumbered 2026-11-06 to keep the ids contiguous, the user's
+  decision); not started, blocked on T50's stage 0
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
 - **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only
@@ -3973,14 +3975,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   transplant carries where gaps fall, not the missing values.
 - **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md).
 
-### E152 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05)
+### E150 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05)
 
-- **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0 and on E150's runs
+- **Status:** pre-registered 2026-11-05 as E152 (renumbered 2026-11-06 to keep the ids contiguous, the user's
+  decision); not started, blocked on T50's stage 0 and on E148's runs
 - **Hypothesis:** (i) a logistic regression fed the decoder's fills of the natural gaps predicts death in hospital
   better than one fed the mean/mode fill; (ii) the mean/mode fill with one indicator per column does better than
   without them (the pattern carries signal: deaths 19.9% with a lactate measured, 7.9% without, by the probe).
 - **Scenarios:** the two natural tables × seeds 42/7/13 × five folds × inputs `N`, `NI`, `T`, `TI`; one fixed
-  logistic regression; fills from E150's runs, fold k from fold k's decoder alone; no new training.
+  logistic regression; fills from E148's runs, fold k from fold k's decoder alone; no new training.
 - **Measures and decision rule:** `T − N` and `NI − N` in macro-F1 per table, paired per (seed, fold), 15
   replicates, Holm over the four tests; each holds with Holm p < 0.05 and a mean above 0. Descriptive: `TI − NI`,
   AUROC, AUPRC, and as levels TRIDENT's classifier and TabPFN on the natural table.

@@ -890,9 +890,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   `mimic-sofa` (the SOFA components' raw values over 24 h). The user's rule: the full tables are read from outside
   the checkout; a 1,000-stay real cohort (`mimic-cardio-toy`) lives in the repository as the toy problem. **Stage 0, next:** the datasets root
   ([mimic/01](tickets/mimic/01-external-datasets-root.md)) and the tables ([mimic/02](tickets/mimic/02-tables.md)).
-  **Pre-registered 2026-11-05, blocked on stage 0:** E150 ([03](tickets/mimic/03-masked-cells-natural-gaps.md),
-  observed cells hidden), E151 ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto
-  complete rows) and E152 ([05](tickets/mimic/05-downstream-mortality.md), fills and patterns judged by a mortality
+  **Pre-registered 2026-11-05, blocked on stage 0:** E148 ([03](tickets/mimic/03-masked-cells-natural-gaps.md),
+  observed cells hidden), E149 ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto
+  complete rows) and E150 ([05](tickets/mimic/05-downstream-mortality.md), fills and patterns judged by a mortality
   classifier).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
