@@ -40,15 +40,16 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
 - A MIMIC run's cell ledgers and previews hold patient values. `results/`, `metrics/` and `mlruns/` are ignored by
   git, so they do not reach GitHub; the runner still passes `--output_dir` and `--metrics_dir` under
   `/scratch/diogoneiss/` so nothing of the kind sits in the checkout.
-- Tickets, the log and reports carry aggregates only: no `stay_id`, no row.
+- Tickets, the log and reports quote aggregates, not a stay's values. This is about prose; the tables keep their
+  identifiers in the row index.
 
 ## The toy problem
 
 `mimic-cardio-toy`: 1,000 real stays of `mimic-cardio` ([02](02-tables.md)), drawn with a fixed seed and stratified
-by the label, with the table's columns and its natural gaps as they are. No identifier and no date: the table's
-columns are aggregates, age, sex, admission type and the label. Written by the builder to
+by the label, with the table's columns and its natural gaps as they are. Written by the builder to
 `datasets/datasets_raw/mimic-cardio-toy.csv`, tracked like the other raw tables, so it reaches Windows and medusa1
-through git. The user's decision of 2026-11-05 (a real cohort, not a synthetic one).
+through git; its row index ([02](02-tables.md)), with the identifiers, is tracked beside the column declarations
+as `datasets/row_index/mimic-cardio-toy.csv`. The user's decision of 2026-11-05 (a real cohort, not a synthetic one).
 
 ## Done when
 

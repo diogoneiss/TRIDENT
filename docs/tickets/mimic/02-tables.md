@@ -61,7 +61,14 @@ so its count will be lower). The builder's count stands.
 
 `<base>/<base>_natural.csv` for the two natural tables; `<base>-donor/<base>-donor_00nan.csv` for the donors, with
 E151's variants beside them. Base names carry a hyphen, never an underscore, because `DatasetSpec` splits on the
-first one. Five-fold cross-validation (`--cv_folds 5`), so no split file. `categorical_columns/<base>.txt` in the
+first one.
+
+**Row index.** Every column of a table but the label is a feature (`declared_column_types`), so the identifiers do
+not sit in the table. Each table has a row-aligned index beside it, `<base>/<base>_index.csv`: `stay_id`,
+`subject_id` and `hadm_id` of row *i* on line *i*. It is what joins a row back to MIMIC-IV, the cardio view to the
+SOFA view, a donor row to its stay and to the stay whose pattern it took (E151), and a ledger's `row` to a patient.
+
+Five-fold cross-validation (`--cv_folds 5`), so no split file. `categorical_columns/<base>.txt` in the
 repository.
 
 ## Limits
