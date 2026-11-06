@@ -4102,3 +4102,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** G1 fails, with E128's split: the `[NULL]` arm reads the gap with the cohort's sign, and the
   indicator arm is not shown to beat the plain fill on log loss. By the rule RQ2 stops at the gate on natural gaps too;
   H2's A1-against-A2 test is not pre-registered.
+
+### E153 · ADR 0030's binned interval under real gap patterns (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vamos no 1, faça pull antes"); offline. T43
+  after ADR 0030's decision 8, on T50's E149 ledgers. Disclosure: E149's scores and E151's results are known; one
+  ledger per donor table was opened to see what it holds, no coverage computed.
+- **Hypothesis:** under gap patterns copied from real ICU stays, one width per column under-covers the rows with the
+  most gaps, and decision 8's per-tertile width fixes it.
+- **Scenarios:** E149's 18 runs (`mimic-cardio-donor`, `mimic-sofa-donor` × `tmatch`, `trand`, `mcar` × seeds
+  42/7/13, five folds), the `induced` numerical cells; arms C (per column) and MC (per column and tertile of the row's
+  gaps), cross-fitted as E151.
+- **Measures and decision rule:** E151's Q1, u(MC) − u(C) per fold, SESOI 0.01, `report_common.verdict` per variant.
+  On `tmatch`: supported if better on both tables, mixed if better on one and worse on neither, refuted otherwise.
+  Q2 is not read (no `spread` in these ledgers). Supported leads to proposing decision 8's scope include real
+  transplanted patterns, for the user's decision.
+- **Sources:** [mimic/07](tickets/mimic/07-conformal-real-patterns.md); `scripts/experiments/conformal_real_patterns.py`.

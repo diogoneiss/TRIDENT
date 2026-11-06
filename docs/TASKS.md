@@ -810,7 +810,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     coverage on 11 of 15, from 0.81–0.87 to 0.90, no width cost on the large tables), **Q2 refuted** (the spread
     still loses to a constant inside a bin, 15 of 15). **ADR 0030 amended 2026-11-06 16:55 GMT-3 (decision 8),
     the user's "faça a emenda da 030":** the binned interval is the fill's interval, oracle-calibrated; a deployable
-    reading needs new runs.
+    reading needs new runs. **E153 pre-registered 2026-11-06** ([mimic/07](tickets/mimic/07-conformal-real-patterns.md),
+    the user's go): decision 8 read on E149's real transplanted patterns, offline.
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork
