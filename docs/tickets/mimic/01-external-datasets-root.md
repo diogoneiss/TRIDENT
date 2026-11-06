@@ -37,11 +37,9 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
   builder takes the raw tree from `MIMIC_ROOT`.
 - The tables are built on gorgona8 (the SOFA component files and the kg-impute tensors exist only there) and reach
   medusa1 by `rsync` over ssh, never through git and never through `sync_remote.py`.
-- A MIMIC run's cell ledgers and previews hold patient values. `results/`, `metrics/` and `mlruns/` are ignored by
-  git, so they do not reach GitHub; the runner still passes `--output_dir` and `--metrics_dir` under
-  `/scratch/diogoneiss/` so nothing of the kind sits in the checkout.
-- Tickets, the log and reports quote aggregates, not a stay's values. This is about prose; the tables keep their
-  identifiers in the row index.
+- The runner keeps its state directory outside the checkout, as every study's does.
+- Rows, values and identifiers may be read, printed and quoted like any other dataset's (the user's decision of
+  2026-11-05, in `AGENTS.md`).
 
 ## The toy problem
 
