@@ -808,8 +808,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     deployable calibration on hidden validation cells are left out (the latter needs new runs).
   - **Done 2026-11-06 13:05 GMT-3 by E151: Q1 supported** (binning by the row's gaps restores the top tertile's
     coverage on 11 of 15, from 0.81–0.87 to 0.90, no width cost on the large tables), **Q2 refuted** (the spread
-    still loses to a constant inside a bin, 15 of 15). An ADR 0030 amendment offering the binned interval is the
-    user's call; a deployable reading needs new runs.
+    still loses to a constant inside a bin, 15 of 15). **ADR 0030 amended 2026-11-06 16:55 GMT-3 (decision 8),
+    the user's "faça a emenda da 030":** the binned interval is the fill's interval, oracle-calibrated; a deployable
+    reading needs new runs.
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork

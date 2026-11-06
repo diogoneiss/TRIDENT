@@ -7,7 +7,9 @@
   to MAR and self-masking MNAR at 60% missing (decision 7), on the user's decision ("apoio fazer
   o 3.2 e 3.1, nessa ordem", 2026-10-31).** **Amended 2026-10-31 16:56 GMT-3 with E105: decision 7 covers 40nan
   too, on the user's decision ("aprovo, Extenda", 2026-10-31).** **Amended 2026-11-03 09:43 GMT-3 with E110: decision 7 covers
-  20nan too, on the user's decision ("sim, de acordo", 2026-11-03).** The user asked for the proposal
+  20nan too, on the user's decision ("sim, de acordo", 2026-11-03).** **Amended 2026-11-06 16:55 GMT-3 with E151:
+  an interval for the fill, calibrated per column and per tertile of the row's gaps, without the spread (decision 8),
+  on the user's decision ("faça a emenda da 030", 2026-11-06).** The user asked for the proposal
   ("Podemos propor essa ADR", 2026-10-25) on E75's Outcome
   ([imputation-protocol/28](../tickets/imputation-protocol/28-remask-ensemble.md)), T36.
 - **Builds on:** ADR 0024 (a claim that must transfer is read on H), ADR 0025 (the offline panel)
@@ -101,6 +103,30 @@
      on biodeg at 20nan.
    - **Not covered:** other MAR draws and MNAR mechanisms other than self-masking. Decision 5's 60%
      ceiling stands.
+8. **An interval for a numerical fill is a split-conformal one, per column and per tertile of the row's gap count,
+   and it does not use the spread** (amended 2026-11-06, from E151,
+   [imputation-protocol/54](../tickets/imputation-protocol/54-conformal-by-row-gaps.md), Q1 supported, Q2 refuted).
+   - **The interval:** fill ± w, w the ⌈(n + 1) × 0.9⌉-th smallest absolute error among the n calibration cells of the
+     same column whose row's gap count falls in the same tertile; the tertile edges are cut on the calibration cells.
+     A column-and-tertile group with fewer than 30 cells uses its column's width. Reader:
+     `scripts/experiments/conformal_row_gaps.py` (arm MC).
+   - **Why per tertile:** a single width per column, E77's, keeps 90% overall but under-covers the rows that miss the
+     most: 0.81 to 0.87 in the top tertile on pendigits, letter, electricity and vehicle (electricity_60nan 0.812),
+     0.92 to 0.94 in the bottom one. Per tertile, the top tertile is at 0.900 to 0.905 on every one of them. E151's
+     primary set: better on 11 of 15, worse on none, under K and H alike.
+   - **What it costs:** nothing on the large tables ((MC − C) / C −0.022 to +0.001); 1 to 12% wider on the small
+     ones (vehicle_40nan +0.027, biodeg_40nan +0.053, kc2_40nan +0.116), post hoc.
+   - **Where it is not needed:** biodeg, kc2, spambase and credit-g under MCAR, where the column's width already
+     covers every tertile (0.88 to 0.91). The development set read Q1 mixed (7 of 17 better), worse only on
+     credit-g_80nan (+0.007 of under-coverage). Under MAR (E84, descriptive) the column's width already covers.
+   - **Under self-masking MNAR** (E84 at 60nan, descriptive): better on all 7 variants; kc2_probit_60nan's top tertile
+     goes from 0.776 to 0.907.
+   - **Decision 3 stands:** the spread is still a rank. Inside a tertile, a spread-scaled interval is wider than the
+     constant on 15 of 15 (Q2 refuted), so E77's conclusion extends to binned intervals.
+   - **It is an oracle calibration:** the calibration cells are the other test folds' gaps, whose truth a deployed
+     model would not have. A report that uses the interval says so. The deployable form needs observed cells hidden
+     on purpose in the training or validation rows, which no run writes yet; it is a follow-up with new runs.
+   - **No code in the pipeline changes:** the interval is computed offline from a run's ledger, as E151 does.
 
 ## Considered options
 
@@ -114,7 +140,9 @@
   40–60nan, and calibration already takes its 80nan gain.
 - **Scaled into intervals.** Rejected on E77: a cross-fitted spread interval is wider than a
   constant one at the same coverage on 15 of 15. A per-column constant interval needs no passes at
-  all.
+  all. Rejected again inside a tertile of the row's gaps on E151 (Q2).
+- **One width per column, E77's, as the interval** (2026-11-06). Rejected on E151: it under-covers the rows with the
+  most gaps on the large tables and under self-masking MNAR, which decision 8's tertiles fix.
 
 ## Consequences
 
@@ -123,6 +151,9 @@
   it.
 - **What it cannot claim:** a better interval. E77 found a constant per-column width narrower at the
   same coverage, so the signal's use is to flag cells (which fills to check first), not to size them.
+- **What the thesis can claim about intervals (decision 8):** a 90% interval for the fill, calibrated per column
+  and per tertile of the row's gaps, holds its coverage in the rows that miss the most, where one width per column
+  falls to 0.81 to 0.87; stated with its oracle calibration.
 - **Limits that travel with the claim:**
   - Under MCAR: E75 on the 15 confirmation variants (707/808/909), E76 on the 21 development
     variants (101/202/303). credit-g_60nan shows no signal.

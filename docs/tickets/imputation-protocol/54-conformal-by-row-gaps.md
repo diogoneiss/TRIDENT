@@ -233,3 +233,9 @@ E76, development (MCAR) Q2 (K): better on 0 of 17, worse on ['spambase_20nan', '
 - Q1, H: better 9 / no difference 1 / equivalent 2 / worse 0 (fold-pair t, seed agreement)
 - Q2, H: better 2 / no difference 1 / worse 9 (fold-pair t, seed agreement)
 ```
+
+## ADR 0030 amended (2026-11-06 16:55 GMT-3)
+
+On the user's decision ("faça a emenda da 030"), ADR 0030 gains decision 8: the interval for a numerical fill is MC,
+per column and per tertile of the row's gaps, without the spread, stated with its oracle calibration. Decision 3
+(the spread is a rank) stands.

@@ -4074,8 +4074,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   the small. Inside a bin the spread interval is still wider than a constant everywhere (+0.06 to +1.57 at 40nan).
 - **Conclusion:** a 90% interval around the fill, calibrated per column and per tertile of the row's gaps, restores
   coverage on the rows that miss the most, at no width cost on the large tables; the spread still does not adapt a
-  width. Oracle calibration as E77. An ADR 0030 amendment for the binned interval is the user's decision; ADR 0030
-  stays a rank for the spread.
+  width. Oracle calibration as E77. ADR 0030 stays a rank for the spread. **ADR 0030 amended 2026-11-06 16:55
+  GMT-3 on the user's decision (decision 8): the binned interval, without the spread, is the fill's interval.**
 - **Sources:** [imputation-protocol/54](tickets/imputation-protocol/54-conformal-by-row-gaps.md); reader
   `scripts/experiments/conformal_row_gaps.py`.
 
