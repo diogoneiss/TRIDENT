@@ -71,7 +71,8 @@ Rows with every feature present, cut from each table: `mimic-cardio-donor` (1,29
 ## Names and files
 
 `<base>/<base>_natural.csv` for the two natural tables and the toy; `<base>-donor/<base>-donor_00nan.csv` for the
-donors, with E149's variants beside them. Base names carry a hyphen, never an underscore, because `DatasetSpec` splits on the
+donors, with E149's variants beside them and `<base>-donor_sources.csv`, the stay each donor row took its pattern
+from. Base names carry a hyphen, never an underscore, because `DatasetSpec` splits on the
 first one.
 
 **Row index.** Every column of a table but the label is a feature (`declared_column_types`), so the identifiers do

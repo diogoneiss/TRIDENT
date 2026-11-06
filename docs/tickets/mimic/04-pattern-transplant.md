@@ -36,3 +36,34 @@ Written and committed before any table exists; blocked on [01](01-external-datas
 - **Cost:** not estimated; from E148's first cells (ticket 01's item (c)), recorded here before the first cell.
 - **What follows:** no default change and no ADR either way.
 - **Read only with all 18 runs done.**
+
+## Implementation (2026-11-06, before any cell)
+
+`datasets/make_mimic_variants.py` cut the variants on 2026-11-06 07:27 GMT-3. It fixes what the design left open:
+
+- The pool is every stay with a gap in any feature (9,790 on the cardio table, 8,939 on the SOFA one); the donors
+  are the other stays.
+- The matching columns are the numeric ones with under 1% of gaps, each standardised over the whole cohort. On the
+  cardio table: heart rate, SpO2, potassium, hemoglobin, hematocrit, sodium, the four vasopressors and age. On the
+  SOFA table: the lowest mean pressure, the four vasopressor rates, the lowest GCS, the SpO2/FiO2 ratio and age.
+- A gap in a matching column counts as the column's mean. Of equally near stays, the first in the table's order.
+- A pattern is a stay's whole row of gaps, so the matching columns receive the few gaps the pool has in them.
+- One seed, 42, draws `trand`'s permutation and `mcar`'s positions.
+
+| donor table | rows | stays the patterns came from | gaps | share of feature cells | row patterns in `tmatch` / `trand` / `mcar` |
+|---|---|---|---|---|---|
+| `mimic-cardio-donor` | 1,292 | 1,052 | 3,659 | 12.9% | 30 / 30 / 171 |
+| `mimic-sofa-donor` | 2,143 | 1,513 | 3,830 | 10.5% | 29 / 29 / 74 |
+
+- Both shares are nearest to 20 of 20/40/60/80, so the files are `<base>-donor_{tmatch,trand,mcar}_20nan.csv`.
+  `<base>-donor_sources.csv` names, row by row, the stay each pattern came from.
+- The donors' neighbours are not the average stay, so a column's share of gaps differs from the cohort's. Cardio:
+  troponin 68.0% (cohort 65.8%), arterial systolic pressure 57.7% (60.3%), lactate 18.0% (28.5%). SOFA: bilirubin
+  64.8% (47.0%), PaO2/FiO2 35.4% (56.5%), urine output 33.3% (28.6%). The script's report is `variants_report.txt`
+  in the datasets root.
+- No donor row is left complete under `tmatch` or `trand`; `mcar` leaves 21 cardio rows and 190 SOFA rows complete.
+- Runner: `scripts/experiments/mimic_transplant_run.py`, one arm (`D`, the defaults), MLflow tag
+  `experiment = mimic-pattern-transplant-2026-11-06`.
+- Smoke on `mimic-sofa-donor_tmatch_20nan`, the table with a categorical column among the gaps (2026-11-06, CPU, two
+  folds, 5 pre-training and 10 decode epochs, MLflow off): the gaps are scored against the donor table with the
+  bar's baselines, and the `induced` checkpoint is the one kept (`decode/induced_checkpoint_epoch` is logged).

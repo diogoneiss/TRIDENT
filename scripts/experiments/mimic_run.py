@@ -27,7 +27,7 @@ if not os.environ.get("QUEUE_STATE") or not os.environ.get("TRIDENT_DATASETS_ROO
 
 STATE = Path(os.environ["QUEUE_STATE"])
 EXPERIMENT = "mimic-natural-gaps-2026-11-06"
-VARIANTS = ("mimic-cardio_natural", "mimic-sofa_natural")
+VARIANTS: tuple[str, ...] = ("mimic-cardio_natural", "mimic-sofa_natural")
 SEEDS = (42, 7, 13)
 ARMS: dict[str, dict[str, object]] = {"M": {"decode_checkpoint": "masked", "export_gap_fills": True}}
 
