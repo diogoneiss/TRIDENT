@@ -670,6 +670,8 @@ class DecodingOutcome:
     # Per population (``masked``, ``induced``), every baseline imputer's per-column errors
     # in long form (``column``, ``metric``, ``value``), for the per-column artifact.
     baseline_per_column: Mapping[str, Any] = field(default_factory=dict)
+    # ``--export_gap_fills``: one row per gap of the whole table, filled by this fold's model.
+    gap_fills: Any = None
 
 
 @dataclass(frozen=True)
@@ -710,6 +712,10 @@ class TrainingRequest:
     # T36's diagnostic (E75): the induced test cells also filled by re-masking passes, averaged, at
     # the run's checkpoint and at every other criterion's. Never ranks a fold.
     score_remask: bool = False
+    # ``--export_gap_fills`` (tickets/mimic/01): each fold also writes its kept checkpoint's fill
+    # for every gap of the table, training rows included, with the fold's partition. For a table
+    # whose gaps have no truth, where a later reader judges the fills. Scores nothing.
+    export_gap_fills: bool = False
     # Programmatic only, set by a hyper-parameter search (ADR 0005): score the validation
     # split too, so the search ranks trials on it and never on the test split. No flag
     # reaches it, so an ordinary run never carries a validation score.

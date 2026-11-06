@@ -236,6 +236,7 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                         score_masked_calibration=request.score_masked_calibration,
                         score_checkpoints=request.score_checkpoints,
                         score_remask=request.score_remask,
+                        export_gap_fills=request.export_gap_fills,
                         score_search_objective=request.score_search_objective,
                         baseline_cache_dir=request.runtime.baseline_cache_dir,
                     )
@@ -290,6 +291,15 @@ def run_training(request: TrainingRequest) -> TrainingResult:
                     per_column[ordinal] = _per_column_scores(
                         dataset, fold, finetuning.scored_cells, finetuning.baseline_per_column
                     )
+                    if finetuning.gap_fills is not None:
+                        for path in artifacts.write_gap_fills(
+                            f"imputation{suffix}",
+                            finetuning.gap_fills,
+                            fold,
+                            scaler=dataset.scaler,
+                            numerical_columns=dataset.numerical_columns,
+                        ):
+                            fold_tracker.log_artifact(str(path), artifact_path="imputation")
                 if isinstance(finetuning, FinetuningOutcome) and finetuning.readout is not None:
                     artifacts.metrics_dir.mkdir(parents=True, exist_ok=True)
                     torch.save(finetuning.readout, artifacts.metrics_dir / f"c15_readout_fold_{ordinal}.pt")

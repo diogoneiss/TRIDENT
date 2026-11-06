@@ -29,8 +29,8 @@ Written and committed before any table exists; blocked on [01](01-external-datas
 - **Beside it, descriptive:** `tmatch − trand` and `trand − mcar` for the decoder's score and for its gap to the bar
   (what the dependence on the row costs, and what the blocks cost); TabPFN (ADR 0028) on `tmatch`.
 - **Threats, stated:**
-  - Donors are the patients who had everything measured, and those are sicker (deaths 19.9% with a lactate against
-    7.9% without). 1,292 of 11,082 on the cardio table by the probe.
+  - Donors are the patients who had everything measured, and those are sicker: deaths 33.5% among the 1,292 cardio
+    donors and 25.4% among the 2,143 SOFA donors, against 16.5% in the cohort.
   - A transplant carries where the gaps fall, not what the missing values were: `tmatch` is at most missing at
     random given the matching columns. Nothing here is a measurement under the true mechanism.
 - **Cost:** not estimated; from ticket 01's smoke, recorded here before the first cell.

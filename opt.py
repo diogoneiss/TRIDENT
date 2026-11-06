@@ -34,7 +34,7 @@ from src.training.config import (
     load_hyperparameters,
     validate_parsed_args,
 )
-from src.training.data import PROCESSED_DATASETS, declared_column_types, has_complete_sibling
+from src.training.data import dataset_directory, declared_column_types, has_complete_sibling
 from src.training.tracking import execution_tags, mirror_root_safely
 from src.training.types import (
     CLASSIFICATION_VALIDATION_OBJECTIVE,
@@ -482,7 +482,7 @@ def run_hyperparameter_optimization(args: argparse.Namespace) -> None:
     # declared categorical) and never per trial.
     base_dataset_name = args.dataset_name.split('_')[0]
     header = pd.read_csv(
-        PROCESSED_DATASETS / base_dataset_name / f"{args.dataset_name}.csv", nrows=0
+        dataset_directory(base_dataset_name) / f"{args.dataset_name}.csv", nrows=0
     ).columns.tolist()
     categorical_columns, numerical_columns = declared_column_types(
         header, getattr(args, "label_column", None) or "class", base_dataset_name

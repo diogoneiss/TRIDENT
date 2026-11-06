@@ -236,6 +236,7 @@ def resolve_training_request(args: argparse.Namespace) -> TrainingRequest:
         score_masked_calibration=getattr(args, "score_masked_calibration", False),
         score_checkpoints=getattr(args, "score_checkpoints", False),
         score_remask=getattr(args, "score_remask", False),
+        export_gap_fills=getattr(args, "export_gap_fills", False),
         # Programmatic only (set by opt.py), like ``hyperparams_override``.
         score_search_objective=getattr(args, "score_search_objective", False),
         config_source=config_source,
@@ -264,7 +265,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         raise SystemExit("error: --score_null_path requires --task imputation")
     if getattr(args, "score_column_wise", False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
         raise SystemExit("error: --score_column_wise requires --task imputation")
-    for flag in ("score_induced_checkpoint", "score_calibrated", "score_masked_calibration", "score_checkpoints", "score_remask"):
+    for flag in ("score_induced_checkpoint", "score_calibrated", "score_masked_calibration", "score_checkpoints", "score_remask", "export_gap_fills"):
         if getattr(args, flag, False) and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -651,6 +652,16 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Also score the test split at the epoch every other decode checkpoint criterion "
             "would keep (loss, induced, masked), on the same trajectory, as "
             "impute/*/<criterion>_checkpoint/*. A diagnostic (E43). Requires --task imputation."
+        ),
+    )
+    parser.add_argument(
+        "--export_gap_fills",
+        action="store_true",
+        help=(
+            "Each fold also writes its kept checkpoint's fill for every gap of the table, "
+            "training and validation rows included, and the fold's row partition "
+            "(imputation_fold_<k>_gap_fills.csv and _partition.csv). For a table whose gaps "
+            "have no truth (tickets/mimic/01). Scores nothing. Requires --task imputation."
         ),
     )
     parser.add_argument(

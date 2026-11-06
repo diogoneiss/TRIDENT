@@ -138,6 +138,38 @@ def _maskable() -> pd.DataFrame:
     return pd.DataFrame({"amount": [float(index) for index in range(20)], "fee": [1.0] * 20})
 
 
+def test_a_dataset_outside_the_checkout_is_found_through_the_external_root(tmp_path, monkeypatch) -> None:
+    """Tables too large to track live under ``$TRIDENT_DATASETS_ROOT`` (tickets/mimic/01).
+
+    The checkout's own datasets must resolve exactly as before, with the variable set or not,
+    and a base that sits in both roots must be refused rather than picked by search order.
+    """
+    local, external = tmp_path / "local", tmp_path / "external"
+    monkeypatch.setattr(data, "PROCESSED_DATASETS", local)
+    for root, base in ((local, "here"), (external, "there"), (local, "both"), (external, "both")):
+        (root / base).mkdir(parents=True)
+    pd.DataFrame({"amount": [1.0, None], "class": [0, 1]}).to_csv(
+        external / "there" / "there_natural.csv", index=False
+    )
+
+    monkeypatch.delenv(data.EXTERNAL_DATASETS_VARIABLE, raising=False)
+    assert data.dataset_directory("here") == local / "here"
+    assert data.dataset_directory("there") == local / "there"
+
+    monkeypatch.setenv(data.EXTERNAL_DATASETS_VARIABLE, str(external))
+    assert data.dataset_directory("here") == local / "here"
+    assert data.dataset_directory("there") == external / "there"
+    with pytest.raises(ValueError, match="both"):
+        data.dataset_directory("both")
+
+    prepared = data.prepare_dataset(DatasetSpec.from_name("there_natural", "class"))
+    assert prepared.source_path == external / "there" / "there_natural.csv"
+    assert prepared.splits_path == external / "splits" / "there_split.json"
+    # No ``there_00nan`` beside it: a natural table has no sibling, so only hidden observed
+    # cells are scored.
+    assert load_complete_sibling(DatasetSpec.from_name("there_natural", "class")) is None
+
+
 def test_scoring_the_same_fold_twice_asks_the_same_question() -> None:
     """Which cells a fold is scored on is fixed, so its numbers can be compared at all.
 

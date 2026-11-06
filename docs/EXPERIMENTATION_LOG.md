@@ -3963,8 +3963,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Status:** pre-registered 2026-11-05; not started, blocked on T50's stage 0
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
-- **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows by the probe) and `mimic-sofa-donor` (at most
-  2,561), run only at 1,000 rows or more × variants `tmatch` (the pattern of the nearest incomplete stay), `trand`
+- **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only
+  at 1,000 rows or more × variants `tmatch` (the pattern of the nearest incomplete stay), `trand`
   (the same patterns permuted) and `mcar` (the same count per column, uniform) × seeds 42/7/13, five folds,
   imputation defaults, 18 runs.
 - **Measures and decision rule:** per donor table, on `tmatch`, the induced cells' `impute_score` minus the best

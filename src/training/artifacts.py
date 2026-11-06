@@ -18,6 +18,7 @@ from .types import (
     CLASSIFICATION,
     CrossValidationSummary,
     FoldResult,
+    FoldSplit,
     FoldTrackingRecord,
     Hyperparameters,
     PreparedDataset,
@@ -239,6 +240,31 @@ class ArtifactWriter:
         )
         return preview_path, ledger_path
 
+    def write_gap_fills(
+        self,
+        name: str,
+        gap_fills: pd.DataFrame,
+        fold: FoldSplit,
+        scaler: StandardScaler | None = None,
+        numerical_columns: Sequence[str] = (),
+    ) -> tuple[Path, Path]:
+        """One fold's fills for the table's own gaps, and the row partition they were made under.
+
+        A reader that fits something on the fills (tickets/mimic/05) needs both: the fills of
+        fold k come from a model that trained on fold k's training rows alone.
+        """
+        directory = self.results_dir / "imputation"
+        directory.mkdir(parents=True, exist_ok=True)
+        fills = gap_fills.copy()
+        fills["imputed_original_units"] = _to_original_units(
+            fills, "imputed", scaler, numerical_columns
+        )
+        fills_path = directory / f"{name}_gap_fills.csv"
+        fills.to_csv(fills_path, index=False)
+        partition_path = directory / f"{name}_partition.csv"
+        _partition(fold).to_csv(partition_path, index=False)
+        return fills_path, partition_path
+
     def write_per_column_imputation(
         self, per_fold: Mapping[int | str, Mapping[str, pd.DataFrame]]
     ) -> Path:
@@ -266,6 +292,21 @@ class ArtifactWriter:
         torch.save(model, path)
         print(f"Final model saved to: {path}")
         return path
+
+
+def _partition(fold: FoldSplit) -> pd.DataFrame:
+    """Which split of the fold each row of the table fell in, by its position in the table."""
+    parts = (
+        ("train", fold.train_indices),
+        ("validation", fold.validation_indices),
+        ("test", fold.test_indices),
+    )
+    return pd.DataFrame(
+        {
+            "row": np.concatenate([np.asarray(rows, dtype=np.int64) for _, rows in parts]),
+            "split": np.concatenate([np.full(len(rows), name) for name, rows in parts]),
+        }
+    ).sort_values("row", ignore_index=True)
 
 
 def _to_original_units(

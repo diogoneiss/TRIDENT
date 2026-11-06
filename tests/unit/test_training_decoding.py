@@ -128,6 +128,31 @@ def test_the_decode_stage_reports_a_loss_for_every_epoch_it_trained() -> None:
     assert {"decode/train_loss", "decode/val_loss", "decode/learning_rate"} <= logged
 
 
+def test_the_gap_fill_export_covers_every_gap_of_the_table_and_names_its_split() -> None:
+    """A table whose gaps have no truth is judged by what a later reader does with the fills
+    (tickets/mimic/05), so the export must hold every gap exactly once, training rows included,
+    each tagged with the split its row fell in. A run that does not ask carries none."""
+    dataset = _dataset()
+    fold = _fold(len(dataset.frame))
+    outcome, _ = _run(dataset=dataset, hyperparameters=_hyperparameters(EPOCHS_DECODE=2), export_gap_fills=True)
+
+    fills = outcome.gap_fills
+    features = dataset.frame.drop(columns=["class"])
+    gaps = {(row, column) for column in features for row in np.flatnonzero(features[column].isna())}
+    assert set(zip(fills["row"], fills["column"])) == gaps
+    assert len(fills) == len(gaps)
+    split_of = {
+        int(row): name
+        for name, rows in (("train", fold.train_indices), ("validation", fold.validation_indices), ("test", fold.test_indices))
+        for row in rows
+    }
+    assert (fills["split"] == fills["row"].map(split_of)).all()
+    assert set(fills.loc[fills["column"] == "colour", "imputed"]) <= {"red", "blue", "green"}
+    assert fills.loc[fills["column"] == "size", "imputed"].map(np.isfinite).all()
+
+    assert _run(dataset=dataset, hyperparameters=_hyperparameters(EPOCHS_DECODE=2))[0].gap_fills is None
+
+
 def test_the_decode_stage_scores_the_validation_split_only_when_asked() -> None:
     """A search ranks trials on the validation split, so the test split never chooses
     hyperparameters. Every other run carries no validation score at all, so the

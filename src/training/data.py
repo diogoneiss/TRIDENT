@@ -1,6 +1,7 @@
 """Dataset preparation and fold construction for the training workflow."""
 
 import json
+import os
 from collections import Counter
 from pathlib import Path
 from typing import Sequence
@@ -18,6 +19,30 @@ from .types import DatasetSpec, FoldSplit, PreparedDataset
 # Where prepared dataset variants live. A module constant so a test can point the loader
 # at a fabricated pair of tables without inventing a whole datasets directory.
 PROCESSED_DATASETS = Path("datasets/processed_datasets")
+# A second root, outside the checkout, for tables too large to track (docs/tickets/mimic/01).
+EXTERNAL_DATASETS_VARIABLE = "TRIDENT_DATASETS_ROOT"
+
+
+def dataset_directory(base_dataset_name: str) -> Path:
+    """Where a base dataset's variants live: in the checkout, or under the external root.
+
+    With the variable unset, or the base absent from the external root, this is the checkout's
+    path, so every earlier dataset resolves as it always did. A base present in both roots is
+    refused: which table a run read must never depend on a search order.
+    """
+    local = PROCESSED_DATASETS / base_dataset_name
+    root = os.environ.get(EXTERNAL_DATASETS_VARIABLE)
+    if not root:
+        return local
+    external = Path(root) / base_dataset_name
+    if not external.is_dir():
+        return local
+    if local.is_dir():
+        raise ValueError(
+            f"{base_dataset_name} exists both in {PROCESSED_DATASETS} and under "
+            f"${EXTERNAL_DATASETS_VARIABLE} ({root}); keep it in one of them."
+        )
+    return external
 
 
 def declared_column_types(
@@ -47,7 +72,9 @@ def declared_column_types(
 def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
     """Load, encode, and scale a dataset before constructing its folds."""
     dataset_path = _variant_path(spec.base_dataset_name, spec.dataset_name)
-    splits_path = PROCESSED_DATASETS / "splits" / f"{spec.base_dataset_name}_split.json"
+    splits_path = (
+        dataset_directory(spec.base_dataset_name).parent / "splits" / f"{spec.base_dataset_name}_split.json"
+    )
 
     if not dataset_path.exists():
         raise FileNotFoundError(f"Dataset not found: {dataset_path}")
@@ -88,7 +115,7 @@ def prepare_dataset(spec: DatasetSpec) -> PreparedDataset:
 
 
 def _variant_path(base_dataset_name: str, dataset_name: str) -> Path:
-    return PROCESSED_DATASETS / base_dataset_name / f"{dataset_name}.csv"
+    return dataset_directory(base_dataset_name) / f"{dataset_name}.csv"
 
 
 def has_complete_sibling(spec: DatasetSpec) -> bool:

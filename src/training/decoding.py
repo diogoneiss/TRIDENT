@@ -56,6 +56,7 @@ def train_and_evaluate_decoder(
     score_masked_calibration: bool = False,
     score_checkpoints: bool = False,
     score_remask: bool = False,
+    export_gap_fills: bool = False,
 ) -> DecodingOutcome:
     """Train the decoder on this fold and score what it reconstructs on the test split.
 
@@ -563,7 +564,65 @@ def train_and_evaluate_decoder(
         validation_losses=validation_losses,
         scored_cells=cells,
         baseline_per_column=baseline_per_column,
+        gap_fills=_fill_gaps(model, features, fold, device) if export_gap_fills else None,
     )
+
+
+# Rows asked in one pass by ``_fill_gaps``: the training split of a large table is several
+# times a test split, the only thing the scoring ever asks at once.
+_FILL_ROWS = 4096
+
+
+def _fill_gaps(model, features: pd.DataFrame, fold: FoldSplit, device: torch.device) -> pd.DataFrame:
+    """The kept checkpoint's fill for every gap of the table, whichever split its row is in.
+
+    The gaps are shown as ``[MASK]``, as the induced scoring shows them. ``row`` is the row's
+    position in the whole table, and ``imputed`` is in the scaled space the model works in, as
+    in the cell ledger. There is no truth here and nothing is scored (``--export_gap_fills``).
+    """
+    embedder = model.embedder
+    cells: list[dict] = []
+    for split, indices in (
+        ("train", fold.train_indices),
+        ("validation", fold.validation_indices),
+        ("test", fold.test_indices),
+    ):
+        positions = np.asarray(indices, dtype=np.int64)
+        for start in range(0, len(positions), _FILL_ROWS):
+            rows = positions[start : start + _FILL_ROWS]
+            frame = features.iloc[rows].reset_index(drop=True)
+            if not bool(frame.isna().to_numpy().any()):
+                continue
+            hidden = embedder.encode(frame.mask(frame.isna(), "[MASK]"), device)
+            with torch.no_grad():
+                prediction = model.predict(hidden)
+            mask = hidden.masked_positions
+            for index, column in enumerate(embedder.categorical_columns):
+                selected = mask[:, index]
+                where = torch.nonzero(selected, as_tuple=False).squeeze(1).tolist()
+                imputed = embedder.label_encoders[column].inverse_transform(
+                    prediction.categorical_ids[index][selected].tolist()
+                )
+                confidence = prediction.categorical_confidence[index][selected].tolist()
+                cells.extend(
+                    {
+                        "row": int(rows[at]), "split": split, "column": column, "kind": CATEGORICAL,
+                        "imputed": str(value), "confidence": float(sure),
+                    }
+                    for at, value, sure in zip(where, imputed, confidence)
+                )
+            offset = len(embedder.categorical_columns)
+            for index, column in enumerate(embedder.numerical_columns):
+                selected = mask[:, offset + index]
+                where = torch.nonzero(selected, as_tuple=False).squeeze(1).tolist()
+                cells.extend(
+                    {
+                        "row": int(rows[at]), "split": split, "column": column, "kind": NUMERICAL,
+                        "imputed": float(value), "confidence": float("nan"),
+                    }
+                    for at, value in zip(where, prediction.numerical_values[index][selected].tolist())
+                )
+    return pd.DataFrame(cells, columns=["row", "split", "column", "kind", "imputed", "confidence"])
 
 
 def _score_induced_missing(

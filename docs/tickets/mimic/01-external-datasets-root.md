@@ -13,18 +13,24 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
 
 ## The change
 
-- One resolver for a base dataset's directory, over a list of roots: the in-repo `datasets/processed_datasets`
-  first, then `$TRIDENT_DATASETS_ROOT` when it is set. `data.py` (variant and splits) and `discovery.py` use it. A
-  base name present in both roots is an error, not a silent choice.
+- `dataset_directory(base)` in `src/training/data.py`: the checkout's `datasets/processed_datasets/<base>`, or
+  `$TRIDENT_DATASETS_ROOT/<base>` when the variable is set and the base is there. A base present in both is an
+  error, not a silent choice. The variant's CSV, its `_00nan` sibling, the split file and `opt.py`'s header read all
+  go through it.
 - The variable unset leaves every path as it is today: classification stays bit-identical and both integration
   fixtures are untouched.
+- `discover_datasets` (`main.py --all`) still lists the checkout only. With the variable exported from `~/.bashrc`,
+  listing the external root would add the donor tables to every `--all --nan_level 0` run. External tables are run
+  by name.
 - `categorical_columns/<base>.txt` and `hiperparams/<base>/` stay in the repository: they hold column names and
   settings, no patient value.
 - Out of scope: the 20 scripts under `scripts/`, `datasets/` and `tests/` that name `processed_datasets` themselves.
   They belong to earlier studies; the MIMIC studies get their own runner.
-- Export of the model's fills for a table's **natural** gaps (the ledger holds scored cells only; E152 needs the
-  fills). Behind a flag that is off by default. Per fold, it writes that fold's decoder's fills for every row's
-  natural gaps (training, validation and test) and the fold's row partition.
+- `--export_gap_fills` (off by default, imputation only): each fold writes
+  `imputation_fold_<k>_gap_fills.csv`, its kept checkpoint's fill for every gap of the table (training, validation
+  and test rows; `row`, `split`, `column`, `kind`, `imputed`, `confidence`, `imputed_original_units`), and
+  `imputation_fold_<k>_partition.csv`, every row's split. The gaps are shown as `[MASK]`, as the induced scoring
+  shows them. Nothing is scored. E152 needs it: the ledger holds scored cells only.
 
 ## Where things live
 
@@ -44,20 +50,30 @@ Stage 0 of T50: what E150 to E152 ([03](03-masked-cells-natural-gaps.md), [04](0
 ## The toy problem
 
 `mimic-cardio-toy`: 1,000 real stays of `mimic-cardio` ([02](02-tables.md)), drawn with a fixed seed and stratified
-by the label, with the table's columns and its natural gaps as they are. Written by the builder to
-`datasets/datasets_raw/mimic-cardio-toy.csv`, tracked like the other raw tables, so it reaches Windows and medusa1
-through git; its row index ([02](02-tables.md)), with the identifiers, is tracked beside the column declarations
-as `datasets/row_index/mimic-cardio-toy.csv`. The user's decision of 2026-11-05 (a real cohort, not a synthetic one).
+by the label (16.5% deaths, 122 rows with every feature), with the table's columns and its natural gaps as they are.
+The user's decision of 2026-11-05 (a real cohort, not a synthetic one).
+
+It is tracked where the loader reads it, `datasets/processed_datasets/mimic-cardio-toy/mimic-cardio-toy_natural.csv`,
+with its row index ([02](02-tables.md)) beside it, so it reaches Windows and medusa1 through git and needs no
+generation step. That directory is ignored (`.gitignore`, and `.git/info/exclude`, which a later rule cannot
+undo), so the two files were added with `git add -f`; once tracked, the ignore rules no longer apply to them. Not
+under `datasets_raw/`: `generate_splits.py` would cut `_NNnan` variants on top of the natural gaps.
 
 ## Done when
 
-- A unit test on the resolver: two roots, the ambiguous base, the variable unset.
-- `pytest -m "not integration"` (with the mypy gate) and `pytest -m integration` pass.
-- A smoke on `mimic-cardio-toy` and one on an external table, both short imputation runs, answer and record here:
-  (a) a table with natural gaps and no `_00nan` sibling trains and scores the masked population with its baseline
-  bar, and a name without a `_NNnan` suffix passes the tags and the baseline cache; (b) `--decode_checkpoint masked`
-  logs `masked` as the criterion kept; (c) minutes per cell on the 11,082-row tables.
+- [x] A unit test on the resolver (two roots, the ambiguous base, the variable unset) and one on the export (every
+  gap once, each with its split): `tests/unit/test_training_data.py`, `tests/unit/test_training_decoding.py`.
+- [ ] `pytest -m "not integration"` (with the mypy gate) and `pytest -m integration` pass.
+- [x] Smoke on `mimic-cardio-toy_natural` (2026-11-05, CPU, two folds, 40 decode epochs, MLflow off, 9 minutes
+  beside the night's trainers): (a) a table with natural gaps and no `_00nan` sibling trains and scores the masked
+  population with its baseline bar; (b) `--decode_checkpoint masked` keeps the masked criterion's epoch
+  (`decode/masked_checkpoint_epoch` is logged); the export holds 2,894 fills for the table's 2,894 gaps, none
+  twice, every split agreeing with the partition file. The fills of so short a run are close to the column mean;
+  the smoke checks the plumbing, not the model. Not exercised: the MLflow tags of a name without a `_NNnan`
+  suffix (`missingness_percent` will read `unknown`); E150's first cell is the first tracked run.
+- [ ] Smoke on an external table, and (c) minutes per cell on the 11,082-row tables, on a free GPU.
 
 ## When
 
-Not while the detached chain of 2026-11-05 launches cells from this checkout: after it ends, or in a worktree.
+Built in the worktree `feat/mimic-stage0` while the detached chain of 2026-11-05 launched cells from the main
+checkout; merged after it ends.
