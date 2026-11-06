@@ -4125,3 +4125,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** refuted, on the "u(C) near 0" branch: on these tables near 20nan one width per column covers every
   tertile, and the tertiles only cost width. Proposed: decision 8 states it, for the user's decision; ADR 0030 not
   edited.
+
+### E154 · ADR 0030's binned interval on the natural gaps' rows (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("ok va"); offline. T43 after ADR 0030's
+  decision 8, on T50's E148 ledgers. Disclosure: E148's error by the row's natural gaps is known (highest in rows with
+  none); E151 and E153 known.
+- **Hypothesis:** on the cohort's own rows, whose natural gaps vary widely, one width per column under-covers some
+  tertile of the row's gaps, and decision 8's per-tertile width fixes it.
+- **Scenarios:** E148's 6 runs (`mimic-cardio_natural`, `mimic-sofa_natural` × seeds 42/7/13, five folds), the
+  `masked` numerical cells; b = the row's natural gaps plus its masked cells; arms C and MC as E153.
+- **Measures and decision rule:** E151's Q1, u(MC) − u(C) per fold, SESOI 0.01, `report_common.verdict` per table.
+  Supported if better on both tables, mixed if better on one and worse on neither, refuted otherwise. Supported leads
+  to proposing decision 8's scope include MIMIC-IV's natural gaps, for the user's decision.
+- **Sources:** [mimic/08](tickets/mimic/08-conformal-natural-gaps.md); `scripts/experiments/conformal_natural_gaps.py`.

@@ -813,7 +813,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
     reading needs new runs. **E153 pre-registered 2026-11-06** ([mimic/07](tickets/mimic/07-conformal-real-patterns.md),
     the user's go): decision 8 read on E149's real transplanted patterns, offline. **Done 2026-11-06 17:13 GMT-3:
     refuted, one width per column already covers** (MC equivalent to C on both tables, top tertile 0.900 and 0.909
-    under C, MC 0.6–3% wider); stating it in decision 8 is the user's call.
+    under C, MC 0.6–3% wider); stating it in decision 8 is the user's call. **E154 pre-registered 2026-11-06**
+    ([mimic/08](tickets/mimic/08-conformal-natural-gaps.md), the user's "ok va"): the same reading on E148's natural
+    tables, hidden observed cells, offline.
 
 - **T44 · A TabPFN arm in the MNAR prediction protocol** (proposed 2026-10-29 from the wiki's
   claims ledger, C14 and C15, batch t49; for the user's decision; after the protocol's own fork
