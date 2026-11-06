@@ -4,8 +4,9 @@
         uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149>
 
 - ``e148``: per natural table, the masked population's ``impute_score`` minus the bar's best baseline on the same
-  cells, every scored imputer's mean, the RMSE of the sparse columns, and the decoder's error by a row's count of
-  natural gaps.
+  cells, every scored imputer's mean, the decoder against TabPFN where ``<state>/tabpfn`` holds the offline pass
+  (``tabpfn_run.py <state>/tabpfn <variant> <seeds>``), the RMSE of the sparse columns, and the decoder's error by a
+  row's count of natural gaps.
 - ``e149``: per donor table, the same contrast on ``tmatch``'s induced cells, and ``tmatch − trand`` and
   ``trand − mcar`` for the decoder's score and for its gap to the bar.
 
@@ -86,6 +87,7 @@ def main(study: str) -> None:
     arm = next(iter(run.ARMS))
     gaps: dict[str, Floats] = {}
     model: dict[str, Floats] = {}
+    folds: dict[str, pd.DataFrame] = {}
     for variant in run.VARIANTS:
         own, bar, names, frames = [], [], set(), []
         for seed in run.SEEDS:
@@ -103,14 +105,28 @@ def main(study: str) -> None:
         model[variant], gaps[variant] = np.concatenate(own), np.concatenate(own) - np.concatenate(bar)
         print(f"{variant}: decoder {model[variant].mean():.4f}, bar {np.concatenate(bar).mean():.4f} "
               f"(best baseline by run: {sorted(names)})")
+        folds[variant] = pd.concat(frames)
         if study == "e148":  # every imputer the runs scored, the strong tier's too, as levels
-            every = pd.concat(frames).filter(regex=rf"^impute/{population}/(baseline/[^/]+/)?impute_score$").mean()
+            every = folds[variant].filter(regex=rf"^impute/{population}/(baseline/[^/]+/)?impute_score$").mean()
             every.index = pd.Index([name.split("/")[-2].replace(population, "decoder") for name in every.index])
             levels = ", ".join(f"{name} {value:.4f}" for name, value in every.sort_values().items())
             print(f"  mean impute_score over 15 folds: {levels}")
 
     if study == "e148":
         verdicts({variant: gaps[variant] for variant in run.VARIANTS})
+        if (run.STATE / "tabpfn").is_dir():  # the offline pass (tabpfn_run.py) on the same cells, descriptive
+            for variant in run.VARIANTS:
+                theirs = pd.concat(
+                    pd.read_csv(run.STATE / "tabpfn" / f"{variant}_s{seed}.csv").sort_values("fold")
+                    for seed in run.SEEDS
+                )
+                score = theirs[f"impute/{population}/baseline/tabpfn/impute_score"].to_numpy(float)
+                print(f"TabPFN {score.mean():.4f}; " + line(f"{variant}, decoder - TabPFN", model[variant] - score)[0])
+                print("  decoder against TabPFN: " + ", ".join(
+                    f"{metric} {folds[variant][f'impute/{population}/{metric}'].mean():.4f} against "
+                    f"{theirs[f'impute/{population}/baseline/tabpfn/{metric}'].mean():.4f}"
+                    for metric in ("rmse_num_z", "mae_num_z", "acc_cat")
+                ))
         for variant in run.VARIANTS:
             columns = pd.concat(
                 pd.read_csv(run.finished(arm, variant, seed)[0] / "metrics" / "per_column_imputation.csv")

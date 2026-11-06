@@ -3970,7 +3970,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   bar's on seven (not PaO2/FiO2: `lgbm` 0.797, decoder 0.820), and ICE is lower on three of the cardio table's five;
   troponin is near the mean fill for every imputer (best 1.007 z). By a row's count of natural gaps (a form chosen
   after the primary: numerical cells, RMSE over the training-mean fill's) the ratio shows no trend, 0.76 to 0.85 and
-  0.87 to 0.89. TabPFN's offline pass started 10:17 GMT-3 and is added to the ticket when it ends.
+  0.87 to 0.89. TabPFN (offline pass, same cells; added 2026-11-06 after it ended at 11:41 GMT-3): the decoder's
+  score is lower on both, −0.0387 [−0.0443, −0.0331] and −0.0108 [−0.0165, −0.0052] (TabPFN 0.8459 and 0.8956); the
+  lead is in RMSE (0.812 against 0.852, 0.886 against 0.900), not in MAE (0.451 both; 0.493 against TabPFN's 0.467).
 - **Conclusion:** supported on both tables, by about 1.5% of the bar's score. The first reading of the decoder on
   clinical data with natural gaps left in the input. It says nothing of the true gaps: the hidden cells are a draw
   among measured values, and E150 is the only reading of what is done with the unmeasured ones. One seed set, two

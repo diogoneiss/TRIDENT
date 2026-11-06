@@ -61,6 +61,10 @@ mimic-sofa_natural: decoder 0.8848, bar 0.8984 (best baseline by run: ['hgb'])
   mean impute_score over 15 folds: decoder 0.8848, hgb 0.8984, lgbm 0.9083, ice 0.9246, condexp 0.9348, missforest 0.9391, softimpute 0.9706, knn10 0.9802, mean_mode 1.0000, knn5 1.0250
 PRIMARY mimic-cardio_natural (n=15): -0.0127 [-0.0177, -0.0076], Holm p 0.0002 -> better
 PRIMARY mimic-sofa_natural (n=15): -0.0137 [-0.0202, -0.0072], Holm p 0.0005 -> better
+TabPFN 0.8459; mimic-cardio_natural, decoder - TabPFN (n=15): -0.0387 [-0.0443, -0.0331]
+  decoder against TabPFN: rmse_num_z 0.8116 against 0.8520, mae_num_z 0.4513 against 0.4511, acc_cat 0.5824 against 0.5685
+TabPFN 0.8956; mimic-sofa_natural, decoder - TabPFN (n=15): -0.0108 [-0.0165, -0.0052]
+  decoder against TabPFN: rmse_num_z 0.8855 against 0.8999, mae_num_z 0.4925 against 0.4665, acc_cat 0.6099 against 0.6117
 
 mimic-cardio_natural, sparse columns on the masked cells, RMSE in z units (mean over 15 folds):
 column      abp_diastolic  abp_mean  abp_systolic  lactate  troponin_t
@@ -126,8 +130,15 @@ gaps
   on the cardio table and between 0.87 and 0.89 on the SOFA one. Rows with every value have the largest error in z
   units on both tables, and the largest mean-fill error too. Confounded by composition: a row with more gaps has
   fewer and different columns left to hide.
-- **TabPFN:** the offline pass (`tabpfn_run.py`) scores this population, so it was started on both tables at
-  2026-11-06 10:17 GMT-3 (`<state>/tabpfn/`); its reading is added below when it ends.
+- **TabPFN, descriptive** (added 2026-11-06 11:43 GMT-3; the block above was printed again with it). The offline
+  pass (`tabpfn_run.py`, ADR 0028's settings) scores this population, so it ran on both tables, 2026-11-06 10:17 to
+  11:41 GMT-3, 30 folds in `<state>/tabpfn/`. Its hidden cells are the runs': the rebuilt folds hold the ledgers'
+  cell counts in the ten folds checked. The decoder's `impute_score` is below TabPFN's on both tables: −0.0387
+  [−0.0443, −0.0331] on the cardio table (TabPFN 0.8459, above `hgb` too) and −0.0108 [−0.0165, −0.0052] on the SOFA
+  one (0.8956); no test in the rule. The lead is in squared error, not in absolute error: TabPFN's RMSE is higher
+  on both (0.852 against 0.812, 0.900 against 0.886), while its MAE is level on the cardio table (0.451 both) and
+  lower on the SOFA one (0.467 against 0.493). On the project's benchmark tables TabPFN leads the decoder on the
+  induced cells (ADR 0028); this is the masked population of one cohort, and no claim against TabPFN follows.
 - **What this cannot say** stands as written above: the hidden cells are a draw among measured values, so this is
   not a reading of how well the true gaps are filled. [05](05-downstream-mortality.md) is the only reading of what
   is done with the true gaps.
