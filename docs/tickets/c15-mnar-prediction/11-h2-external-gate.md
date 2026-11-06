@@ -100,3 +100,14 @@ where the gap is not shown to carry information); plain intervals.
   where the gap carries information".
 
 **Not here:** H2.2 (E126's direct-contrast secondary), A3 and A4, TabPFN arms, H2b's shift grid.
+
+## Launch note (2026-11-06 18:21 GMT-3, before any cell ended)
+
+- **Started 18:21:36 GMT-3** by `scripts/experiments/run_e155_chain.sh`, run from a copy in
+  `/scratch2/diogoneiss/trident-2026-11-06-h2-natural` (its `progress.log` and `logs/`): three queues of 22 cells each,
+  spambase's pairs first. Synthetic cells write under C15's own state dir (`trident-2026-11-04-c15-stage1/A1`, `/A2`,
+  at the new seeds); natural cells under the new one.
+- **The GPU is shared:** another user's three trainers (`10_cv.py`, about 0.5 GB each) held gorgona8's 3090 Ti at 97%
+  when the chain started. medusa1's GPUs were still held by another user's job.
+- **No smoke:** A1 and A2 are C15's arms unchanged; A2 never ran on the s4848 files nor on the cardio copy, so the first
+  cell of each is watched for a failure at its start.
