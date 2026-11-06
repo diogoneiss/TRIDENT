@@ -4145,3 +4145,22 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   and 0.905. Width (MC − C) / C +0.012 and +0.013, worse.
 - **Conclusion:** refuted, on the "u(C) near 0" branch. With E153: on MIMIC-IV one width per column already covers;
   proposed that decision 8 states it, for the user's decision; ADR 0030 not edited.
+
+### E155 · H2 behind an external gate: A1 against A2 on fresh seeds (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vamos no 1"). T51. **A deviation:** E128's
+  binding stop (C15 ends if G1 fails again) and E152's leads-to are overridden; the gate moves outside the pipeline
+  (E123's G2 for P, E150's logistic regression for the SOFA table, its null on cardio as the negative control).
+  Disclosure: E124's Stage 1b (A1 inferior on 5 of 23 development variants, non-inferior on none) and E152's SOFA
+  macro-F1 (A1 −0.012 against A2) lean against A1.
+- **Hypothesis (H2):** under informative missingness, `[NULL]` tokens (A1) are non-inferior to missForest + indicator
+  (A2) in the same encoder.
+- **Scenarios:** A1 and A2 at seeds 8282/8383/9292 (new), five folds, E124's configuration. Synthetic: P's fresh draws
+  (s4848: biodeg and vehicle probit 0.5, biodeg/kc2/spambase outcome odds 3) and four MCAR siblings, 54 cells. Natural:
+  `mimic-sofa-num_natural`, `mimic-cardio-num_natural`, 12 cells. All on gorgona8.
+- **Measures and decision rule:** margins −0.01 macro-F1, +2% relative log loss, Nadeau–Bengio corrected. Two
+  primaries with Holm (97.5% first): (1) E126's pooled H2 over P, supported / reversed / inconclusive; (2) the SOFA
+  table's per-variant call, non-inferior / inferior / inconclusive. Secondary: E139's interaction, (A1 − A2) informative
+  minus MCAR sibling, gains / loses / holds / no verdict. Cardio descriptive. Read once with all 66 cells.
+- **Sources:** [c15-mnar-prediction/11](tickets/c15-mnar-prediction/11-h2-external-gate.md); `C15_STAGE=5 c15_run.py`,
+  `scripts/experiments/h2_natural.py`, `c15_report.py --h2`.

@@ -848,7 +848,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   `embedding_normalized` by explicit flag, GBDT internal only, margins fixed (−0.01 macro-F1, +2% log loss).
   **Stage 0 (E122, [c15-mnar-prediction/01](tickets/c15-mnar-prediction/01-stage0.md)), from 2026-11-03:** the
   driving columns and gate G2 (CPU), which define the primary set P. **Done 2026-11-03: G2 invalid** (positive controls fail on biodeg and kc2, intervals below 0); by the rule C15 stops; the next step is the user's. **E123 ([02](tickets/c15-mnar-prediction/02-g2-out-of-fold.md)), from 2026-11-03: G2 read out of fold over the training and validation rows (the user's "opção 1"); if the controls fail again, C15 stops for good.** **Done 2026-11-04: G2 valid, P = 5** (biodeg_probit_60nan, vehicle_probit_60nan, the odds-3 outcome variants of biodeg, kc2, spambase). **Stage 1 (E124, [03](tickets/c15-mnar-prediction/03-stage1.md)), from 2026-11-04:** `C15_ARM` behind a default-off setting; G1 on F5 and A1 − A2 on the development set. **G1 failed 2026-11-04 (1 of 3): C15 stops before Stage 2; E125–E127 withdrawn unrun; Stage 1b finishes descriptively.** **E128 ([07](tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md)), from 2026-11-04: G1 again, A2 against A3 in decision mode (the user's option 4, a deviation); if it fails, C15 stops for good.** **Done 2026-11-04: G1 fails again (1 of 3: A1's contrast holds on 3 of 3, A2 beats A3 only on spambase); by the binding clause C15 stops for good. T45 closed.** Note 2026-11-06: E152 ran the same G1 on the SOFA table's
-  natural gaps (T50, [mimic/06](tickets/mimic/06-sofa-positive-control.md)) and it failed the same way.
+  natural gaps (T50, [mimic/06](tickets/mimic/06-sofa-positive-control.md)) and it failed the same way. Superseded for H2
+  only on 2026-11-06 by T51 (the user's go): the gate moves outside the pipeline.
 
 - **T46 · C1: does the `[NULL]`/`[MASK]` split earn its place?** (the user's choice after C15 closed,
   2026-11-04: "vamos trabalhar no c1"; the wiki's protocol C1, the thesis's main claim). [Plan](plans/2026-11-04-c1-split.md):
@@ -916,6 +917,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   table; it starts on gorgona8 when E149's cells end. **Done 2026-11-06 16:34 GMT-3: G1 fails** (A1's bilirubin
   contrast −0.651 logit, below 0; A2 − A3 −0.0153, corrected interval across 0, seeds disagree): RQ2 stops at the
   gate on natural gaps too, as for C15.
+- **T51 · H2 behind an external gate** (the user's "vamos no 1", 2026-11-06). C15's G1 failed three times on the
+  comparator's indicator (A2 against A3), never on A1's reading of the gap, so H2 could never run. The gate moves to the
+  data (E123's G2 for P, E150's logistic regression for the SOFA table); a named deviation from E128's binding stop.
+  **E155 pre-registered 2026-11-06** ([c15-mnar-prediction/11](tickets/c15-mnar-prediction/11-h2-external-gate.md)):
+  A1 against A2 at fresh seeds 8282/8383/9292 on P's s4848 draws and siblings (54 cells) and on the SOFA and cardio
+  numerical tables (12), all on gorgona8; two primaries with Holm, read once.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
