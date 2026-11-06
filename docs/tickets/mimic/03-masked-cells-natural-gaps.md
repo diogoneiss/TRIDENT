@@ -32,8 +32,9 @@ Written and committed before either table exists; blocked on [01](01-external-da
 - **Cost:** estimated from the store on 2026-11-06, before the first cell. A default imputation run of the same
   configuration took about 40 minutes on gorgona8 on `pendigits` (10,992 rows, 16 columns; means of 38 to 43
   minutes by level, 75 runs) and about 60 on `letter` (20,000 rows). These cells share the GPU with another
-  project's trainers (see Run), so one to two hours a cell was expected. Measured on the first two cells (2026-11-06): 33 minutes on the SOFA table
-  and 36 on the cardio one, two cells at a time beside four of the other project's trainers.
+  project's trainers (see Run), so one to two hours a cell was expected. Measured on the first two cells
+  (2026-11-06): 33 minutes on the SOFA table and 36 on the cardio one, two cells at a time beside four of the
+  other project's trainers.
 - **What follows:** no default change and no ADR either way. A first reading on clinical data; a claim needs fresh
   seeds.
 - **Read only with all 6 runs done.**

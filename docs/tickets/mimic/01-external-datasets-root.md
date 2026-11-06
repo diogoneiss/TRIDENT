@@ -39,10 +39,16 @@ Stage 0 of T50: what E148 to E150 ([03](03-masked-cells-natural-gaps.md), [04](0
 | raw MIMIC-IV 3.1 (read-only) | `/scratch2/pedrobacelar/mimic/physionet.org/files/mimiciv/3.1` (another user's tree, not writable) | `/scratch/diogoneiss/mimic/physionet.org/...` |
 | derived tables, `TRIDENT_DATASETS_ROOT` | `/scratch/diogoneiss/trident-data` | `/scratch/diogoneiss/trident-data` |
 
-- One path for the derived tables on both machines, as ADR 0033's canonical root; exported from `~/.bashrc`. The
-  builder takes the raw tree from `MIMIC_ROOT`.
+- One path for the derived tables on both machines, as ADR 0033's canonical root; exported from `~/.bashrc` on both
+  since 2026-11-06 (above the interactive guard). The builder takes the raw tree from `MIMIC_ROOT`.
 - The tables are built on gorgona8 (the SOFA component files and the kg-impute tensors exist only there) and reach
-  medusa1 by `rsync` over ssh, never through git and never through `sync_remote.py`.
+  medusa1 by `rsync` over ssh, never through git and never through `sync_remote.py`. First copied on
+  2026-11-06 08:24 GMT-3: 18 files, 6.2 MB, every hash verified there.
+- **Knowing when a copy is stale.** `bash datasets/tables_manifest.sh write` lists the tables' SHA-256 in the data
+  root (`SHA256SUMS`, copied with them) and in `datasets/external_tables.sha256`, which is tracked. After a pull,
+  `bash datasets/tables_manifest.sh check` fails on a machine whose tables differ from the tracked list, and the
+  answer is to rsync the data root again from gorgona8. Whoever rebuilds or adds a table (`build_mimic.py`,
+  `make_mimic_variants.py`) runs `write` and commits the list.
 - The runner keeps its state directory outside the checkout, as every study's does.
 - Rows, values and identifiers may be read, printed and quoted like any other dataset's (the user's decision of
   2026-11-05, in `AGENTS.md`).
