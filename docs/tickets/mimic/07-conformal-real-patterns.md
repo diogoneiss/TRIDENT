@@ -58,3 +58,50 @@ dependence on the row, change what one width per column misses?).
 patients with everything measured, so a transplanted pattern is at most missing at random given the matching
 columns (E149's threat). The rates are near 20nan (10.5% and 12.9% of feature cells), with few gaps in most columns,
 so many column-and-bin groups may fall back.
+
+## Outcome (2026-11-06 17:13 GMT-3): refuted, one width per column already covers
+
+The reader ran once, at 17:12 GMT-3, on all 90 ledgers (no ledger missing; fallback shares 0.01 to 0.07). The
+self-check's line is the first.
+
+**By the rule, refuted:** on `tmatch` MC is equivalent to C on both tables (cardio −0.0016 [−0.0075, +0.0044], SOFA
++0.0009 [−0.0052, +0.0070]), better on neither, worse on neither.
+
+- **Which branch:** "refuted with u(C) near 0". One width per column covers the top tertile of the row's gaps on both
+  tables (0.900 cardio, 0.909 SOFA); its worst bin is the bottom one (0.894, 0.889), u(C) 0.027 and 0.018. That is
+  the range E151 read as "C already covers" on biodeg, kc2, spambase and credit-g (u(C) 0.006 to 0.037). MC is not
+  worse, so the "MC worse" branch does not apply.
+- **The width:** MC costs 0.6% (SOFA) to 3.0% (cardio) more, every verdict worse beyond the SESOI; no coverage is
+  bought with it here.
+- **`trand` and `mcar`, descriptive:** the same, no variant better or worse; the blocks and their dependence on the
+  row do not change it.
+- **A reading, not tested:** at these rates a row has one to five gaps (59% of SOFA rows one), so the tertiles
+  separate rows that differ little; E151's under-coverage appeared on large tables at 40 to 80nan.
+- **Leads to, as fixed:** decision 8 is proposed to state that on MIMIC-IV's transplanted patterns, near 20nan, one
+  width per column already covers every tertile, for the user's decision. ADR 0030 is not edited.
+
+**The printout** (`scripts/experiments/conformal_real_patterns.py`, unedited):
+
+```text
+check passed: {'u_C': 0.17, 'top_C': 0.73, 'width_C': 6.872, 'u_S': 0.007, 'top_S': 0.9, 'width_S': 6.001, 'u_MC': 0.008, 'top_MC': 0.899, 'width_MC': 6.783, 'u_MS': 0.008, 'top_MS': 0.899, 'width_MS': 5.998}
+
+## tmatch (primary)
+
+- `mimic-cardio-donor_tmatch_20nan`: Q1 u(MC) − u(C) -0.0016 [-0.0075, +0.0044] equivalent, u(C) 0.027, u(MC) 0.026; width (MC − C) / C +0.030 [+0.023, +0.037] worse; coverage C 0.899 (low bin 0.894, top 0.900), MC 0.902 (low bin 0.904, top 0.899); fallback 0.05
+- `mimic-sofa-donor_tmatch_20nan`: Q1 u(MC) − u(C) +0.0009 [-0.0052, +0.0070] equivalent, u(C) 0.018, u(MC) 0.019; width (MC − C) / C +0.006 [+0.001, +0.010] worse; coverage C 0.900 (low bin 0.889, top 0.909), MC 0.900 (low bin 0.901, top 0.905); fallback 0.01
+- Q1: better 0 / no difference 0 / equivalent 2 / worse 0 (fold-pair t, seed agreement)
+
+## trand (descriptive)
+
+- `mimic-cardio-donor_trand_20nan`: Q1 u(MC) − u(C) -0.0044 [-0.0112, +0.0023] none, u(C) 0.024, u(MC) 0.019; width (MC − C) / C +0.017 [+0.013, +0.022] worse; coverage C 0.900 (low bin 0.912, top 0.893), MC 0.902 (low bin 0.902, top 0.895); fallback 0.04
+- `mimic-sofa-donor_trand_20nan`: Q1 u(MC) − u(C) -0.0015 [-0.0056, +0.0026] equivalent, u(C) 0.022, u(MC) 0.020; width (MC − C) / C +0.014 [+0.011, +0.017] worse; coverage C 0.901 (low bin 0.904, top 0.894), MC 0.903 (low bin 0.902, top 0.901); fallback 0.01
+- Q1: better 0 / no difference 1 / equivalent 1 / worse 0 (fold-pair t, seed agreement)
+
+## mcar (descriptive)
+
+- `mimic-cardio-donor_mcar_20nan`: Q1 u(MC) − u(C) -0.0062 [-0.0144, +0.0021] none, u(C) 0.034, u(MC) 0.027; width (MC − C) / C +0.020 [+0.012, +0.027] worse; coverage C 0.901 (low bin 0.906, top 0.888), MC 0.901 (low bin 0.901, top 0.904); fallback 0.06
+- `mimic-sofa-donor_mcar_20nan`: Q1 u(MC) − u(C) +0.0053 [-0.0082, +0.0188] none, u(C) 0.022, u(MC) 0.028; width (MC − C) / C +0.008 [+0.002, +0.013] worse; coverage C 0.901 (low bin 0.908, top 0.902), MC 0.901 (low bin 0.902, top 0.894); fallback 0.07
+- Q1: better 0 / no difference 2 / worse 0 (fold-pair t, seed agreement)
+
+Primary (E153, Q1 on tmatch): {'mimic-cardio-donor': 'equivalent', 'mimic-sofa-donor': 'equivalent'} -> refuted (fold-pair t, seed agreement)
+```

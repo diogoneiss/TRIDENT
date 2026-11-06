@@ -4105,7 +4105,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E153 · ADR 0030's binned interval under real gap patterns (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vamos no 1, faça pull antes"); offline. T43
+- **Status:** done 2026-11-06 17:13 GMT-3: refuted, one width per column already covers. Pre-registered 2026-11-06
+  on the user's go ("vamos no 1, faça pull antes"); offline. T43
   after ADR 0030's decision 8, on T50's E149 ledgers. Disclosure: E149's scores and E151's results are known; one
   ledger per donor table was opened to see what it holds, no coverage computed.
 - **Hypothesis:** under gap patterns copied from real ICU stays, one width per column under-covers the rows with the
@@ -4118,3 +4119,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Q2 is not read (no `spread` in these ledgers). Supported leads to proposing decision 8's scope include real
   transplanted patterns, for the user's decision.
 - **Sources:** [mimic/07](tickets/mimic/07-conformal-real-patterns.md); `scripts/experiments/conformal_real_patterns.py`.
+- **Results:** on `tmatch`, u(MC) − u(C) cardio −0.0016 [−0.0075, +0.0044], SOFA +0.0009 [−0.0052, +0.0070], both
+  equivalent. C's top tertile 0.900 and 0.909, u(C) 0.027 and 0.018. Width (MC − C) / C +0.030 and +0.006, worse.
+  `trand` and `mcar` the same, none better or worse; fallback 0.01 to 0.07.
+- **Conclusion:** refuted, on the "u(C) near 0" branch: on these tables near 20nan one width per column covers every
+  tertile, and the tertiles only cost width. Proposed: decision 8 states it, for the user's decision; ADR 0030 not
+  edited.
