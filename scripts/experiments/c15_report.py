@@ -53,10 +53,10 @@ def readouts(arm: str, variant: str, seed: int) -> list[dict[str, Any]] | None:
     return None
 
 
-def interval(values: np.ndarray, corrected: bool = True) -> tuple[float, float, float]:
+def interval(values: np.ndarray, corrected: bool = True, level: float = 0.95) -> tuple[float, float, float]:
     n = len(values)
     factor = (1 / n + RATIO) if corrected else 1 / n
-    half = float(stats.t.ppf(0.975, n - 1) * np.sqrt(factor * values.var(ddof=1)))
+    half = float(stats.t.ppf(1 - (1 - level) / 2, n - 1) * np.sqrt(factor * values.var(ddof=1)))
     mean = float(values.mean())
     return mean, mean - half, mean + half
 
@@ -251,42 +251,45 @@ def tally() -> None:
         print(f"\n- missing: {missing} (variant, seed) pairs\n\nPrimary: incomplete")
 
 
-def h2() -> None:
+def noninferiority(f1d: list[np.ndarray], lld: list[np.ndarray], level: float = 0.95) -> tuple[str, str]:
+    """Ticket 05's per-variant call on per-seed fold differences (A1 − A2 macro-F1, relative log loss), and its line."""
+    f, ll = np.concatenate(f1d), np.concatenate(lld)
+    fm, flo, fhi = interval(f, level=level)
+    lm, llo, lhi = interval(ll, level=level)
+    agree = all(x.mean() > F1_MARGIN for x in f1d) and all(x.mean() < LL_MARGIN for x in lld)
+    call = ("non-inferior" if flo > F1_MARGIN and lhi < LL_MARGIN and agree else
+            "inferior" if fhi < F1_MARGIN or llo > LL_MARGIN else "inconclusive")
+    return call, (f"F1 {fm:+.4f} [{flo:+.4f}, {fhi:+.4f}]; LL {lm:+.4f} [{llo:+.4f}, {lhi:+.4f}]; seeds F1 "
+                  + ", ".join(f"{x.mean():+.4f}" for x in f1d) + "; LL " + ", ".join(f"{x.mean():+.4f}" for x in lld))
+
+
+def h2(seeds: tuple[int, ...] = run.CONFIRMATION_SEEDS, level: float = 0.95, study: str = "E126") -> str:
     """Ticket 05's rule: per-variant calls over P's fresh draws, then the pooled D_c, the guard and the call."""
-    print("## H2 (E126, confirmation, read once): A1 − A2 on P's fresh draws, 15 cells (seeds 1515/2626/3737 x 5 "
-          "folds), Nadeau–Bengio corrected 95% t; margins −0.01 macro-F1, +0.02 relative log loss")
+    print(f"## H2 ({study}, confirmation, read once): A1 − A2 on P's fresh draws, 15 cells (seeds "
+          f"{'/'.join(map(str, seeds))} x 5 folds), Nadeau–Bengio corrected {level:.1%} t; margins −0.01 macro-F1, "
+          "+0.02 relative log loss")
     per_f1: dict[str, np.ndarray] = {}
     per_ll: dict[str, np.ndarray] = {}
     calls: dict[str, str] = {}
     for variant in run.P_FRESH:
-        f1d, lld = [], []
-        for seed in run.CONFIRMATION_SEEDS:
+        f1d, lld, absolute = [], [], []
+        for seed in seeds:
             a1, a2 = readouts("A1", variant, seed), readouts("A2", variant, seed)
             if a1 is None or a2 is None:
                 print(f"- {variant} s{seed}: missing\n\nPrimary (H2): incomplete")
-                return
+                return "incomplete"
             f1_1, ll_1 = scores(a1)
             f1_2, ll_2 = scores(a2)
             f1d.append(f1_1 - f1_2)
             lld.append((ll_1 - ll_2) / ll_2)
-        f, ll = np.concatenate(f1d), np.concatenate(lld)
-        per_f1[variant], per_ll[variant] = f, ll
-        fm, flo, fhi = interval(f)
-        lm, llo, lhi = interval(ll)
-        agree = all(x.mean() > F1_MARGIN for x in f1d) and all(x.mean() < LL_MARGIN for x in lld)
-        if flo > F1_MARGIN and lhi < LL_MARGIN and agree:
-            calls[variant] = "non-inferior"
-        elif fhi < F1_MARGIN or llo > LL_MARGIN:
-            calls[variant] = "inferior"
-        else:
-            calls[variant] = "inconclusive"
-        print(f"- {variant}: F1 {fm:+.4f} [{flo:+.4f}, {fhi:+.4f}]; LL {lm:+.4f} [{llo:+.4f}, {lhi:+.4f}]; seeds F1 "
-              + ", ".join(f"{x.mean():+.4f}" for x in f1d) + "; LL " + ", ".join(f"{x.mean():+.4f}" for x in lld)
-              + f" -> {calls[variant]}")
+            absolute.append(ll_1 - ll_2)
+        per_f1[variant], per_ll[variant] = np.concatenate(f1d), np.concatenate(lld)
+        calls[variant], text = noninferiority(f1d, lld, level)
+        print(f"- {variant}: {text}; absolute LL {np.concatenate(absolute).mean():+.4f} -> {calls[variant]}")
     pooled_f1 = np.mean(list(per_f1.values()), axis=0)
     pooled_ll = np.mean(list(per_ll.values()), axis=0)
-    fm, flo, fhi = interval(pooled_f1)
-    lm, llo, lhi = interval(pooled_ll)
+    fm, flo, fhi = interval(pooled_f1, level=level)
+    lm, llo, lhi = interval(pooled_ll, level=level)
     inferior = [v for v, c in calls.items() if c == "inferior"]
     if flo > F1_MARGIN and lhi < LL_MARGIN and not inferior:
         verdict = "supported"
@@ -311,6 +314,7 @@ def h2() -> None:
     print("- sensitivity, per table: " + "; ".join(
         f"{t} F1 {np.mean([per_f1[v].mean() for v in vs]):+.4f}, LL {np.mean([per_ll[v].mean() for v in vs]):+.4f}"
         for t, vs in tables.items()))
+    return verdict.split(";")[0].split(" (")[0]
 
 
 if __name__ == "__main__":

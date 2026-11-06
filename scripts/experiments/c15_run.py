@@ -4,6 +4,7 @@
     uv run --python 3.11 python -B scripts/experiments/c15_run.py --todo <n> <queues>
     C15_STAGE=2 ... --todo <n> <queues>    # Stage 2's cells (ticket 04); 3 for confirmation (ticket 05)
     C15_STAGE=1c ... --todo <n> <queues>   # G1 again, A2 against A3 in decision mode (ticket 07)
+    C15_STAGE=5 ... --todo <n> <queues>    # E155, H2 behind an external gate, seeds 8282/8383/9292 (ticket 11)
 
 A cell is one (arm, variant, seed) at ``--cv_folds 5``; the arm is ``C15_ARM`` (``src/training/c15_inputs.py``)
 over the variant's resolved classification configuration with ``PRETRAIN_OBJECTIVE embedding_normalized``
@@ -83,13 +84,16 @@ STAGE_H2: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1",) for v in SIB
 OUTCOME_4848 = tuple(f"{b}_outcome3p0_s4848_60nan" for b in ("biodeg", "kc2", "spambase"))
 SIBLINGS_4848 = tuple(f"{b}_mcar_s4848_60nan" for b in ("biodeg", "kc2", "spambase"))
 STAGE_H2C: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1",) for v in OUTCOME_4848 + SIBLINGS_4848 for s in CONFIRMATION_SEEDS}
+# E155 (ticket 11): E126's 9 files at seeds in no earlier study, all on gorgona8.
+E155_SEEDS = (8282, 8383, 9292)
+STAGE5: dict[tuple[str, int], tuple[str, ...]] = {(v, s): ("A1", "A2") for v in P_FRESH + SIBLINGS_FRESH for s in E155_SEEDS}
 STAGES: dict[str, dict[tuple[str, int], tuple[str, ...]]] = {"1": PAIRS, "1c": STAGE1C, "2": STAGE2, "3": STAGE3,
-                                                             "4": STAGE4, "h2": STAGE_H2, "h2c": STAGE_H2C}
+                                                             "4": STAGE4, "h2": STAGE_H2, "h2c": STAGE_H2C, "5": STAGE5}
 
 
 def machine(pair: tuple[str, int]) -> str:
     """ADR 0035: every arm of a (variant, seed) pair, across stages, on one machine."""
-    if pair in STAGE1C_GORGONA8:
+    if pair in STAGE1C_GORGONA8 or pair in STAGE5:
         return "gorgona8"
     if pair in MACHINE:
         return MACHINE[pair]
