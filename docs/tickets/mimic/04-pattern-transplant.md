@@ -84,6 +84,8 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   `logs/D_mimic-cardio-donor_tmatch_20nan_s42.failed-1015.log`. A detached waiter relaunches the two queues when the
   first pass ends, and a relaunch runs only the cells not done. The race is in `get_or_create_experiment`
   (`src/mlflow_utils.py`) and is left as it is until this study ends, so every cell runs on one version of `src/`.
+  Fixed after the last cell, with a test, on the branch `fix/mlflow-experiment-race` (512f5e3): a refused create
+  looks the experiment up again. It is merged when E152's cells, which import `src/` from the main checkout, end.
 - **The relaunch ran that cell 2026-11-06 14:37 to 15:06 GMT-3,** on its second attempt, and the queues were
   complete. E152's chain ([06](06-sofa-positive-control.md)) waits for "no E149 cell running" and fired at 14:37:23,
   in the eight seconds between the first pass's end and the relaunched cell's start at 14:37:31: that cell ran its
@@ -111,6 +113,10 @@ mimic-sofa-donor_mcar_20nan: decoder 0.9237, bar 0.9473 (best baseline by run: [
   mean impute_score over 15 folds: missforest 0.9151, decoder 0.9237, condexp 0.9318, hgb 0.9482, lgbm 0.9521, knn10 0.9546, ice 0.9615, knn5 0.9856, mean_mode 1.0000, softimpute 1.0529
 PRIMARY mimic-cardio-donor_tmatch_20nan (n=15): -0.0455 [-0.0604, -0.0307], Holm p 0.0000 -> better
 PRIMARY mimic-sofa-donor_tmatch_20nan (n=15): -0.0272 [-0.0423, -0.0122], Holm p 0.0017 -> better
+TabPFN 0.9206; mimic-cardio-donor_tmatch_20nan, decoder - TabPFN (n=15): -0.0600 [-0.0698, -0.0503]
+  decoder against TabPFN: rmse_num_z 0.8580 against 0.9176, mae_num_z 0.5521 against 0.5776
+TabPFN 0.8944; mimic-sofa-donor_tmatch_20nan, decoder - TabPFN (n=15): +0.0265 [+0.0155, +0.0375]
+  decoder against TabPFN: rmse_num_z 0.8158 against 0.7936, mae_num_z 0.5484 against 0.5173, acc_cat 0.7386 against 0.7470
 mimic-cardio-donor tmatch - trand, decoder's score (n=15): +0.0115 [-0.0083, +0.0314]
 mimic-cardio-donor tmatch - trand, gap to the bar (n=15): +0.0132 [-0.0061, +0.0325]
 mimic-cardio-donor trand - mcar, decoder's score (n=15): +0.0660 [+0.0465, +0.0854]
@@ -140,8 +146,18 @@ mimic-sofa-donor trand - mcar, gap to the bar (n=15): -0.0155 [-0.0401, +0.0092]
   score moves in opposite directions on the two tables (+0.0115 [−0.0083, +0.0314] cardio, −0.0130 [−0.0286,
   +0.0027] SOFA); its gap to the bar, +0.0132 [−0.0061, +0.0325] and +0.0119 [−0.0130, +0.0368]. No reading of a
   mechanism follows from either contrast (the second threat above).
-- **TabPFN on `tmatch`, descriptive:** the offline pass (`tabpfn_run.py`, ADR 0028's settings) started 2026-11-06
-  15:07 GMT-3 on the two `tmatch` variants and is added below when it ends.
+- **TabPFN on `tmatch`, descriptive** (added 2026-11-06 15:44 GMT-3; the block above was printed again with it). The
+  offline pass (`tabpfn_run.py`, ADR 0028's settings) ran 2026-11-06 15:07 to 15:43 GMT-3, 30 folds in
+  `<state>/tabpfn/`. Its induced cells are the runs': the rebuilt folds score the mean/mode fill as the runs did on
+  all 30 folds (120 values, largest difference 2e-16). No test in the rule. The two tables disagree:
+  - `mimic-cardio-donor`: the decoder's score is lower, −0.0600 [−0.0698, −0.0503] (TabPFN 0.9206, above the bar's
+    0.9061 too); lower in RMSE (0.858 against 0.918) and in MAE (0.552 against 0.578).
+  - `mimic-sofa-donor`: TabPFN's score is lower, +0.0265 [+0.0155, +0.0375] (TabPFN 0.8944, the lowest of every
+    imputer on this variant); lower in RMSE (0.794 against 0.816) and in MAE (0.517 against 0.548), and its
+    categorical accuracy is higher (0.747 against 0.739).
+
+  So the claim of this ticket is against the bar, as registered. Against the strong tier's TabPFN the decoder
+  leads on one donor table and trails on the other; on E148's hidden observed cells it led on both.
 - **What this cannot say** stands as the threats above: the donors are the sicker patients, and a transplant
   carries where the gaps fall, not what the missing values were. With [E148](03-masked-cells-natural-gaps.md) this
   makes two readings on one cohort where the decoder is better than the bar; neither scores a true gap.

@@ -4010,12 +4010,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   against 0.9237). `trand − mcar`: the decoder's score is higher under the real blocks on the cardio table (+0.0660
   [+0.0465, +0.0854]) and its gap to the bar is not (−0.0161 [−0.0374, +0.0052]); both hold zero on the SOFA table.
   `tmatch − trand`: every interval holds zero, with opposite signs for the decoder's score on the two tables.
-  TabPFN on `tmatch`: the offline pass started 15:07 GMT-3 and is added when it ends. Cost: 19 to 33 minutes for 16
+  TabPFN on `tmatch` (offline pass, same cells; added 2026-11-06 15:44 GMT-3): the two tables disagree, the decoder
+  lower on the cardio table (−0.0600 [−0.0698, −0.0503], TabPFN 0.9206) and TabPFN lower on the SOFA one (+0.0265
+  [+0.0155, +0.0375], TabPFN 0.8944), in RMSE and in MAE alike. Cost: 19 to 33 minutes for 16
   cells and 57 and 59 for two, against an estimate of 5 to 15; 4 h 51 min of wall time.
 - **Conclusion:** supported on both donor tables, by about 5% and 3% of the bar's score: under gap patterns copied
   from real stays, with a ground truth, the decoder is better than the bar's best baseline. The stated threats
   stand (sicker donors; a transplant carries where gaps fall, not the missing values), and the two descriptive
-  contrasts support no reading of a mechanism. One seed set, two views of one cohort; no default change, no ADR.
+  contrasts support no reading of a mechanism. Against TabPFN the decoder leads on one donor table and trails on
+  the other, so the claim is against the bar alone. One seed set, two views of one cohort; no default change, no
+  ADR.
 - **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md); runner `mimic_transplant_run.py`, report
   `mimic_report.py e149`; MLflow tag `experiment = mimic-pattern-transplant-2026-11-06`; state
   `/scratch2/diogoneiss/trident-2026-11-06-mimic-e149`.

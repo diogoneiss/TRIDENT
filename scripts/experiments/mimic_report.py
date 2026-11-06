@@ -126,6 +126,7 @@ def main(study: str) -> None:
                 f"{metric} {folds[variant][f'impute/{population}/{metric}'].mean():.4f} against "
                 f"{theirs[f'impute/{population}/baseline/tabpfn/{metric}'].mean():.4f}"
                 for metric in ("rmse_num_z", "mae_num_z", "acc_cat")
+                if f"impute/{population}/{metric}" in folds[variant]  # the cardio donors' gaps hold no category
             ))
     if study == "e148":
         for variant in run.VARIANTS:
