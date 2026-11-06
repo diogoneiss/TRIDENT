@@ -70,3 +70,17 @@ Written and committed before any table exists; blocked on [01](01-external-datas
 - Smoke on `mimic-sofa-donor_tmatch_20nan`, the table with a categorical column among the gaps (2026-11-06, CPU, two
   folds, 5 pre-training and 10 decode epochs, MLflow off): the gaps are scored against the donor table with the
   bar's baselines, and the `induced` checkpoint is the one kept (`decode/induced_checkpoint_epoch` is logged).
+
+## Run
+
+- **Started 2026-11-06 10:15 GMT-3** by `run_mimic_chain.sh`, when E148's queues ended: two queues, 18 cells, state
+  directory `/scratch2/diogoneiss/trident-2026-11-06-mimic-e149`; MLflow tag
+  `experiment = mimic-pattern-transplant-2026-11-06`, arm `D`. The GPU is shared with kg-impute's trainers and, from
+  10:17, with E148's TabPFN pass.
+- **One cell failed at its start and is run again** (2026-11-06 10:15 GMT-3): `mimic-cardio-donor_tmatch_20nan`,
+  seed 42. Both queues opened with a cell of the cardio donor table in the same second, both asked the tracking
+  server to create the experiment `TRIDENT/mimic-cardio-donor`, and the second was refused
+  (`RESOURCE_ALREADY_EXISTS`). It stopped before its parent run existed and before any training; its log is kept as
+  `logs/D_mimic-cardio-donor_tmatch_20nan_s42.failed-1015.log`. A detached waiter relaunches the two queues when the
+  first pass ends, and a relaunch runs only the cells not done. The race is in `get_or_create_experiment`
+  (`src/mlflow_utils.py`) and is left as it is until this study ends, so every cell runs on one version of `src/`.

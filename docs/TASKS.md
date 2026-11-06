@@ -891,9 +891,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   the checkout; a 1,000-stay real cohort (`mimic-cardio-toy`) lives in the repository as the toy problem.
   **Stage 0, done 2026-11-06:** the datasets root ([mimic/01](tickets/mimic/01-external-datasets-root.md)) and the
   tables ([mimic/02](tickets/mimic/02-tables.md)). **Pre-registered 2026-11-05:** E148
-  ([03](tickets/mimic/03-masked-cells-natural-gaps.md), observed cells hidden; in progress since 2026-11-06), E149
-  ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto complete rows) and E150
-  ([05](tickets/mimic/05-downstream-mortality.md), fills and patterns judged by a mortality classifier).
+  ([03](tickets/mimic/03-masked-cells-natural-gaps.md), observed cells hidden; done 2026-11-06, the decoder better
+  than the bar on both tables), E149 ([04](tickets/mimic/04-pattern-transplant.md), real patterns transplanted onto
+  complete rows; in progress since 2026-11-06) and E150 ([05](tickets/mimic/05-downstream-mortality.md), fills and
+  patterns judged by a mortality classifier; done 2026-11-06, the fills do not help, the indicators help on the SOFA
+  table only).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

@@ -48,3 +48,41 @@ Written and committed before any table exists; blocked on [01](01-external-datas
 - The reader refuses to run unless all six of E148's cells are done, and checks that the fills cover every gap of
   the table once and no measured cell.
 - Checked on the toy smoke's exports (two folds, a decoder of 40 epochs): the four inputs are built and scored.
+
+## Outcome (2026-11-06 10:27 GMT-3)
+
+**(i) not supported on either table; (ii) holds on the SOFA table only.** Read from E148's six runs once all were
+done: 2 tables × 3 seeds × 5 folds × 4 inputs, 120 fits, per fold in `<E148's state>/mortality.csv`. As
+`mimic_mortality.py` prints it (levels are means over 15 folds):
+
+```
+                    macro_f1   auroc   auprc
+table        input                          
+mimic-cardio N        0.6566  0.8020  0.5438
+             NI       0.6581  0.8110  0.5503
+             T        0.6580  0.8056  0.5471
+             TI       0.6588  0.8121  0.5520
+mimic-sofa   N        0.6629  0.8148  0.5082
+             NI       0.6716  0.8226  0.5287
+             T        0.6649  0.8180  0.5203
+             TI       0.6701  0.8250  0.5371
+mimic-cardio T - N (macro-F1, n=15): +0.0014 [-0.0012, +0.0040], Holm p 0.3532 -> does not hold
+mimic-cardio NI - N (macro-F1, n=15): +0.0014 [-0.0005, +0.0034], Holm p 0.3532 -> does not hold
+mimic-cardio TI - NI (macro-F1, n=15): +0.0008 [-0.0007, +0.0023]
+mimic-sofa T - N (macro-F1, n=15): +0.0020 [-0.0006, +0.0046], Holm p 0.3532 -> does not hold
+mimic-sofa NI - N (macro-F1, n=15): +0.0087 [+0.0047, +0.0126], Holm p 0.0012 -> holds
+mimic-sofa TI - NI (macro-F1, n=15): -0.0014 [-0.0032, +0.0003]
+```
+
+- **(i) The decoder's fills against the mean/mode fill, `T − N`:** +0.0014 [−0.0012, +0.0040] on the cardio table
+  and +0.0020 [−0.0006, +0.0046] on the SOFA one, Holm p 0.35 for both. Does not hold.
+- **(ii) The indicators, `NI − N`:** +0.0087 [+0.0047, +0.0126] on the SOFA table, Holm p 0.0012, holds; +0.0014
+  [−0.0005, +0.0034] on the cardio table, Holm p 0.35, does not.
+- **Beside it, `TI − NI`:** +0.0008 [−0.0007, +0.0023] and −0.0014 [−0.0032, +0.0003]. Once the pattern is given,
+  the fills add nothing. AUROC and AUPRC order the inputs the same way on both tables (`N` lowest, then `T`, `NI`,
+  `TI`), all within 0.011 of AUROC; levels only, no test.
+- Every macro-F1 difference is under 0.01: to this classifier, what fills the gaps barely matters on either table.
+- **Not run:** the two levels, TRIDENT's own classifier and TabPFN on the natural tables. Both are new GPU work
+  (six trainings; `tabpfn_classification.py` is built on other studies' folds) and would slow E149's cells, which
+  share the GPU. They change no verdict here; whether to run them after E149 is the user's call.
+- **What this cannot say** stands as written above. No default change and no ADR.

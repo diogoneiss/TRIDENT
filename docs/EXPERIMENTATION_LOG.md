@@ -3944,9 +3944,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   kept is the user's verdict.
 - **Sources:** [imputation-protocol/53](tickets/imputation-protocol/53-imputer-utility.md).
 
-### E148 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05; 2026-11-06 –)
+### E148 · Observed cells hidden on MIMIC-IV tables with natural gaps (pre-registered 2026-11-05; 2026-11-06)
 
-- **Status:** in progress since 2026-11-06 07:20 GMT-3; pre-registered 2026-11-05 as E150 (renumbered 2026-11-06 to
+- **Status:** done 2026-11-06 10:27 GMT-3, supported on both tables; ran 2026-11-06 07:20 to 10:14 GMT-3; pre-registered
+  2026-11-05 as E150 (renumbered 2026-11-06 to
   keep the ids contiguous, the user's decision)
 - **Hypothesis:** on a clinical table whose gaps are natural, the decoder's fills of hidden observed cells (the
   masked population; the natural gaps stay `[NULL]` inputs) are better than the best baseline of the bar's.
@@ -3961,6 +3962,19 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `--export_gap_fills`, the fills E150 reads, which changes no score. Cost from the store: about 40 minutes a run
   on `pendigits`, a table of this size; one to two hours a cell expected beside the other trainers. Measured on the
   first two cells: 33 and 36 minutes.
+- **Results:** complete, 6 of 6 runs, none failed. Decoder minus the bar's best baseline (`hgb` in every run), 15
+  replicates: `mimic-cardio_natural` 0.8072 against 0.8199, −0.0127 [−0.0177, −0.0076], Holm p 0.0002, better;
+  `mimic-sofa_natural` 0.8848 against 0.8984, −0.0137 [−0.0202, −0.0072], Holm p 0.0005, better. Descriptive: the
+  decoder has the lowest mean score of every imputer the runs scored, the strong tier's four included (nearest: ICE
+  0.8191 on the cardio table, `hgb` on the SOFA one); on the eight sparse columns it has the lowest RMSE of the
+  bar's on seven (not PaO2/FiO2: `lgbm` 0.797, decoder 0.820), and ICE is lower on three of the cardio table's five;
+  troponin is near the mean fill for every imputer (best 1.007 z). By a row's count of natural gaps (a form chosen
+  after the primary: numerical cells, RMSE over the training-mean fill's) the ratio shows no trend, 0.76 to 0.85 and
+  0.87 to 0.89. TabPFN's offline pass started 10:17 GMT-3 and is added to the ticket when it ends.
+- **Conclusion:** supported on both tables, by about 1.5% of the bar's score. The first reading of the decoder on
+  clinical data with natural gaps left in the input. It says nothing of the true gaps: the hidden cells are a draw
+  among measured values, and E150 is the only reading of what is done with the unmeasured ones. One seed set, two
+  views of one cohort; no default change, no ADR.
 - **Sources:** [mimic/03](tickets/mimic/03-masked-cells-natural-gaps.md); tables in
   [mimic/02](tickets/mimic/02-tables.md); runner `scripts/experiments/mimic_run.py`, report `mimic_report.py e148`;
   MLflow tag
@@ -3970,7 +3984,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 - **Status:** pre-registered 2026-11-05 as E151 (renumbered 2026-11-06 to keep the ids contiguous, the user's
   decision); the variants were cut on 2026-11-06 07:27 GMT-3 (30 and 29 distinct row patterns, 12.9% and 10.5% of
-  feature cells, named `_20nan`); its two queues start when E148's end (`run_mimic_chain.sh`)
+  feature cells, named `_20nan`); in progress since 2026-11-06 10:15 GMT-3, started by `run_mimic_chain.sh` when
+  E148's queues ended
 - **Hypothesis:** under gap patterns copied from real ICU stays onto rows that have every value, the decoder's fills
   are better than the best baseline of the bar's.
 - **Scenarios:** donor tables `mimic-cardio-donor` (1,292 complete rows) and `mimic-sofa-donor` (2,143), run only
@@ -3981,12 +3996,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   baseline's, paired per (seed, fold), 15 replicates, plain 95% t interval, Holm over the two tables. Descriptive:
   `tmatch − trand`, `trand − mcar`, TabPFN on `tmatch`. Threats stated: the donors are the sicker patients, and a
   transplant carries where gaps fall, not the missing values.
-- **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md).
+- **Amendment 2026-11-06 10:26 GMT-3:** one cell (`mimic-cardio-donor_tmatch_20nan`, seed 42) failed at its start,
+  before any training: both queues asked the tracking server to create the table's experiment in the same second.
+  The queues are relaunched when the first pass ends and run it again; nothing in the design changes.
+- **Sources:** [mimic/04](tickets/mimic/04-pattern-transplant.md); runner `mimic_transplant_run.py`, report
+  `mimic_report.py e149`; MLflow tag `experiment = mimic-pattern-transplant-2026-11-06`; state
+  `/scratch2/diogoneiss/trident-2026-11-06-mimic-e149`.
 
-### E150 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05)
+### E150 · Fills and gap patterns judged by a mortality classifier (pre-registered 2026-11-05; 2026-11-06)
 
 - **Status:** pre-registered 2026-11-05 as E152 (renumbered 2026-11-06 to keep the ids contiguous, the user's
-  decision); not started, waits for E148's runs
+  decision); done 2026-11-06 10:27 GMT-3: (i) not supported, (ii) holds on the SOFA table only
 - **Hypothesis:** (i) a logistic regression fed the decoder's fills of the natural gaps predicts death in hospital
   better than one fed the mean/mode fill; (ii) the mean/mode fill with one indicator per column does better than
   without them (the pattern carries signal: deaths 19.9% with a lactate measured, 7.9% without, by the probe).
@@ -3995,4 +4015,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** `T − N` and `NI − N` in macro-F1 per table, paired per (seed, fold), 15
   replicates, Holm over the four tests; each holds with Holm p < 0.05 and a mean above 0. Descriptive: `TI − NI`,
   AUROC, AUPRC, and as levels TRIDENT's classifier and TabPFN on the natural table.
-- **Sources:** [mimic/05](tickets/mimic/05-downstream-mortality.md).
+- **Results:** complete, 120 fits from E148's six runs. Macro-F1 levels `N`, `NI`, `T`, `TI`: cardio 0.6566, 0.6581,
+  0.6580, 0.6588; SOFA 0.6629, 0.6716, 0.6649, 0.6701. `T − N`: +0.0014 [−0.0012, +0.0040] and +0.0020 [−0.0006,
+  +0.0046], Holm p 0.35 both, does not hold. `NI − N`: cardio +0.0014 [−0.0005, +0.0034], Holm p 0.35, does not
+  hold; SOFA +0.0087 [+0.0047, +0.0126], Holm p 0.0012, holds. Descriptive: `TI − NI` +0.0008 [−0.0007, +0.0023]
+  and −0.0014 [−0.0032, +0.0003]; AUROC 0.802 to 0.812 (cardio) and 0.815 to 0.825 (SOFA), ordered `N`, `T`, `NI`,
+  `TI` on both. The two levels (TRIDENT's classifier, TabPFN) were not run: new GPU work beside E149.
+- **Conclusion:** the decoder's fills of the natural gaps do not help a logistic regression predict death over the
+  mean/mode fill, and add nothing once the pattern is given; the pattern itself helps on the SOFA table only, by
+  0.009 of macro-F1. Every effect is under 0.01. One linear reader, one seed set; a better or equal classifier says
+  nothing of how close the fills are to the unmeasured values. No default change, no ADR.
+- **Sources:** [mimic/05](tickets/mimic/05-downstream-mortality.md); reader `scripts/experiments/mimic_mortality.py`;
+  per fold in `/scratch2/diogoneiss/trident-2026-11-06-mimic-e148/mortality.csv`.

@@ -4,7 +4,8 @@
         uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149>
 
 - ``e148``: per natural table, the masked population's ``impute_score`` minus the bar's best baseline on the same
-  cells, and the scores of the sparse columns.
+  cells, every scored imputer's mean, the RMSE of the sparse columns, and the decoder's error by a row's count of
+  natural gaps.
 - ``e149``: per donor table, the same contrast on ``tmatch``'s induced cells, and ``tmatch − trand`` and
   ``trand − mcar`` for the decoder's score and for its gap to the bar.
 
@@ -15,6 +16,7 @@ read a study with a cell missing. Run from the checkout root.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -48,6 +50,33 @@ def verdicts(primaries: dict[str, Floats]) -> None:
         print(f"PRIMARY {lines[name][0]}, Holm p {adjusted[name]:.4f} -> {call}")
 
 
+def by_row_gaps(variant: str, runs: list[Path]) -> pd.DataFrame:
+    """The decoder's error on the masked numerical cells, by how many natural gaps the cell's row has.
+
+    Beside it, the error of filling 0 on the same cells: the cells are in training-set z units, so that is the
+    training mean, and the ratio says how much of a group's error is the group's own spread.
+    """
+    table = pd.read_csv(Path(os.environ["TRIDENT_DATASETS_ROOT"]) / variant.rsplit("_", 1)[0] / f"{variant}.csv")
+    row_gaps = table.drop(columns=["class"]).isna().sum(axis=1).to_numpy()
+    parts = []
+    for directory in runs:
+        for fold in range(1, 6):
+            cells = pd.read_csv(directory / "imputation" / f"imputation_fold_{fold}_cells.csv")
+            split = pd.read_csv(directory / "imputation" / f"imputation_fold_{fold}_partition.csv")
+            test = split.loc[split["split"] == "test", "row"].to_numpy()
+            cells = cells[(cells["population"] == "masked") & (cells["kind"] == "numerical")]
+            # The ledger numbers a row by its position among the fold's test rows.
+            gaps = np.minimum(row_gaps[test[cells["row"].to_numpy()]], 4)
+            actual, imputed = cells["actual"].to_numpy(float), cells["imputed"].to_numpy(float)
+            parts.append(pd.DataFrame({"gaps": gaps, "decoder": (actual - imputed) ** 2, "mean": actual**2}))
+    groups = pd.concat(parts).groupby("gaps")
+    out: pd.DataFrame = groups[["decoder", "mean"]].mean().pow(0.5)
+    out = out.rename(columns={"decoder": "rmse_z", "mean": "mean_fill_rmse_z"})
+    out.insert(0, "cells", groups.size())
+    out["ratio"] = out["rmse_z"] / out["mean_fill_rmse_z"]
+    return out.rename(index={4: "4+"})
+
+
 def main(study: str) -> None:
     from scripts.experiments import mimic_run as run  # needs QUEUE_STATE and TRIDENT_DATASETS_ROOT
 
@@ -58,13 +87,14 @@ def main(study: str) -> None:
     gaps: dict[str, Floats] = {}
     model: dict[str, Floats] = {}
     for variant in run.VARIANTS:
-        own, bar, names = [], [], set()
+        own, bar, names, frames = [], [], set(), []
         for seed in run.SEEDS:
             runs = run.finished(arm, variant, seed)
             if len(runs) != 1:
                 sys.exit(f"{variant} seed {seed}: {len(runs)} finished runs; the tickets read only complete studies")
             frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
             assert len(frame) == 5
+            frames.append(frame)
             source = report_common.Run(variant, seed, "", "masked" if study == "e148" else "induced")
             own.append(report_common.model(frame, source, readout, population))
             name, values = report_common.opponent(frame, "bar", population)
@@ -73,6 +103,11 @@ def main(study: str) -> None:
         model[variant], gaps[variant] = np.concatenate(own), np.concatenate(own) - np.concatenate(bar)
         print(f"{variant}: decoder {model[variant].mean():.4f}, bar {np.concatenate(bar).mean():.4f} "
               f"(best baseline by run: {sorted(names)})")
+        if study == "e148":  # every imputer the runs scored, the strong tier's too, as levels
+            every = pd.concat(frames).filter(regex=rf"^impute/{population}/(baseline/[^/]+/)?impute_score$").mean()
+            every.index = pd.Index([name.split("/")[-2].replace(population, "decoder") for name in every.index])
+            levels = ", ".join(f"{name} {value:.4f}" for name, value in every.sort_values().items())
+            print(f"  mean impute_score over 15 folds: {levels}")
 
     if study == "e148":
         verdicts({variant: gaps[variant] for variant in run.VARIANTS})
@@ -81,9 +116,14 @@ def main(study: str) -> None:
                 pd.read_csv(run.finished(arm, variant, seed)[0] / "metrics" / "per_column_imputation.csv")
                 for seed in run.SEEDS
             )
-            sparse = columns[(columns["population"] == population) & columns["column"].isin(SPARSE)]
-            print(f"\n{variant}, sparse columns on the {population} cells (mean over 15 folds):")
-            print(sparse.pivot_table(index="column", columns="metric", values="value").round(4).to_string())
+            sparse = columns[(columns["population"] == population) & columns["column"].isin(SPARSE)
+                             & columns["metric"].str.endswith("rmse_num_z")]
+            sparse = sparse.assign(imputer=sparse["metric"].str.split("/").str[-2].fillna("decoder"))
+            print(f"\n{variant}, sparse columns on the {population} cells, RMSE in z units (mean over 15 folds):")
+            print(sparse.pivot_table(index="imputer", columns="column", values="value").round(4).to_string())
+            print(f"\n{variant}, the decoder's numerical cells by the row's count of natural gaps (15 folds pooled):")
+            finished = [run.finished(arm, variant, seed)[0] for seed in run.SEEDS]
+            print(by_row_gaps(variant, finished).round(4).to_string())
     else:
         verdicts({variant: gaps[variant] for variant in run.VARIANTS if "_tmatch_" in variant})
         for table in ("mimic-cardio-donor", "mimic-sofa-donor"):
