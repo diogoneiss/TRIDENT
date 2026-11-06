@@ -36,3 +36,15 @@ Written and committed before any table exists; blocked on [01](01-external-datas
   linear classifier is one reader among many.
 - **What follows:** no default change and no ADR either way.
 - **Read only with all cells done.**
+
+## Implementation (2026-11-06, before any cell)
+
+`scripts/experiments/mimic_mortality.py` reads E148's state directory and fixes what the design left open:
+
+- The classifier is fitted on the fold's training rows and scored on its test rows. The validation rows, on which
+  the decoder chose its epoch, are left out of both.
+- The numerical columns are standardised by the training rows after the fill; the categories are one-hot; an
+  indicator is 0 or 1, unscaled, for each column with a gap anywhere in the table.
+- The reader refuses to run unless all six of E148's cells are done, and checks that the fills cover every gap of
+  the table once and no measured cell.
+- Checked on the toy smoke's exports (two folds, a decoder of 40 epochs): the four inputs are built and scored.

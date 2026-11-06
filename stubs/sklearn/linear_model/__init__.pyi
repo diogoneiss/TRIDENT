@@ -31,6 +31,7 @@ class LogisticRegression:
         fit_intercept: bool = ...,
         solver: str = ...,
         max_iter: int = ...,
+        class_weight: str | dict[Any, float] | None = ...,
         tol: float = ...,
         random_state: int | None = ...,
         n_jobs: int | None = ...,
