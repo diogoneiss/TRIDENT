@@ -999,3 +999,12 @@ def test_every_run_stores_its_metrics_in_the_order_they_were_logged(
     ]
     # The summary's emission order is not a contract, only that no two rows tie.
     _rows_in_stored_order(client, parents["cross_validation"].info.run_id)
+
+
+def test_an_experiment_another_run_created_in_the_same_instant_is_reused(mlflow_backend, monkeypatch) -> None:
+    setup_mlflow()
+    theirs = mlflow.create_experiment("TRIDENT/vehicle")
+    lookup, early = mlflow.get_experiment_by_name, iter([None])  # this run looked before their create landed
+    monkeypatch.setattr(mlflow, "get_experiment_by_name", lambda name: next(early, lookup(name)))
+
+    assert get_or_create_experiment("vehicle_00nan") == theirs

@@ -22,6 +22,7 @@ Usage example (in train.py):
 import os
 import re
 import mlflow
+from mlflow.exceptions import MlflowException
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -232,12 +233,21 @@ def get_or_create_experiment(dataset_name: str) -> str:
     base_name = dataset_name.split("_")[0]
     experiment_name = f"{EXPERIMENT_PREFIX}/{base_name}"
 
-    experiment = mlflow.get_experiment_by_name(experiment_name)
-    if experiment is not None:
-        return experiment.experiment_id
+    return _experiment_id(experiment_name)
 
-    experiment_id = mlflow.create_experiment(experiment_name)
-    return experiment_id
+
+def _experiment_id(experiment_name: str) -> str:
+    """The id of the experiment of this name, created if absent."""
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if experiment is None:
+        try:
+            return str(mlflow.create_experiment(experiment_name))
+        except MlflowException:
+            # Two runs starting in the same second both find no experiment; the second create is refused.
+            experiment = mlflow.get_experiment_by_name(experiment_name)
+            if experiment is None:
+                raise
+    return str(experiment.experiment_id)
 
 
 def mirror_experiment_name(task: str) -> str:
@@ -257,11 +267,7 @@ def get_or_create_mirror_experiment(task: str) -> str:
     cannot produce ``TRIDENT/mirror/<task>``. The task is the literal value of the
     ``task`` tag, so the experiment name and the tag can never disagree.
     """
-    experiment_name = mirror_experiment_name(task)
-    experiment = mlflow.get_experiment_by_name(experiment_name)
-    if experiment is not None:
-        return str(experiment.experiment_id)
-    return str(mlflow.create_experiment(experiment_name))
+    return _experiment_id(mirror_experiment_name(task))
 
 
 # ---------------------------------------------------------------------------
