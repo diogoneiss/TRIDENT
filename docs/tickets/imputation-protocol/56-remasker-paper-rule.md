@@ -120,3 +120,10 @@ Decision input: ReMasker better than the strong tier's best on 2 of 9 variants (
 **What it leads to (fixed in the design):** E158 is the thesis's ReMasker comparison at every level, and E157 stays on
 the record as the reference code's count. K − ReMasker is better on all 9 variants under either rule. The thesis
 sentence is the user's call, asked after this read. No default changes, no bar change, no ADR.
+
+## The thesis sentence (accepted 2026-11-07 12:00 GMT-3)
+
+On the user's decision ("aprovo a formulação"), E158 is the ReMasker comparison at every level, and E157 is cited as the
+reference code's count. The sentence:
+
+> TRIDENT supera o ReMasker nas 9 variantes numéricas do conjunto de confirmação, de 40% a 80% de lacunas; o ReMasker supera a faixa forte apenas no pendigits a 40% e 60%.

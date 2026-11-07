@@ -4248,5 +4248,6 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   of all better 7, worse 2 (vehicle_80nan, biodeg_80nan; missForest). Paper − reference rule: better on the four 80nan
   variants (−0.52 to −1.07) and pendigits_60nan (−0.14), worse on pendigits_40nan (+0.006) and biodeg_40nan (+0.066).
 - **Conclusion:** an external deep baseline only, no ADR. The paper's rule fixes E157's 80nan collapse; K beats
-  ReMasker on every variant under both rules. E158 is the thesis's ReMasker comparison; the sentence is the user's call.
+  ReMasker on every variant under both rules. E158 is the thesis's ReMasker comparison. The thesis sentence was accepted
+  2026-11-07 12:00 GMT-3 ("aprovo a formulação"); it is in ticket 56.
 
