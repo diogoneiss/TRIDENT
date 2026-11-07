@@ -4206,7 +4206,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E157 · ReMasker as an external deep baseline (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("Vamos fazer o 1 e 3 até amanhã a tarde"). T53.
+- **Status:** done 2026-11-07 06:12 GMT-3; external deep baseline only (strong-tier rule 1 of 9); 60–80nan readings flagged
+  (the arm barely trained there). Pre-registered 2026-11-06 on the user's go ("Vamos fazer o 1 e 3 até amanhã a
+  tarde"). T53.
 - **Hypothesis:** none directional; E48's measurement for MaCoDE repeated for ReMasker (Du, Melis and Wang, ICLR 2024),
   the nearest masked-autoencoder imputer.
 - **Scenarios:** ReMasker at the reference code's settings (600 epochs, batch 64), written in `src/training/remasker.py`
@@ -4218,4 +4220,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   best on at least 3 of 9. Read once with all pairs in, by 14:00 GMT-3 on 2026-11-07, else partial.
 - **Sources:** [imputation-protocol/55](tickets/imputation-protocol/55-remasker.md); `remasker_run.py`,
   `run_remasker_lanes.py`, `remasker_report.py`.
+- **Results:** 27 pairs. K − ReMasker better on 9/9. ReMasker − the strong tier's best: better 1 (pendigits_40nan
+  −0.075), no difference 1, worse 7. ReMasker − the bar: better 1, no difference 2, worse 6; the same against the
+  tuned bar. K − best of all: better 7, worse 2 (vehicle_80nan, biodeg_80nan; missForest). At 80nan ReMasker is worse
+  than the mean fill by 0.58–1.11. Found at the read: the reference's keep count of `int(L·0.5)` tokens re-masks
+  0.0–0.1% of observed cells at 80% missing and 1–4% at 60%, against 19–22% at 40%. The paper defines the ratio over
+  observed values (§4.4).
+- **Conclusion:** an external deep baseline only; no ADR. Only the 40nan readings describe ReMasker (K better on 4/4,
+  ReMasker above the strong tier on pendigits only). The 60–80nan readings measure an arm with almost no
+  reconstruction signal. A per-row observed-cell re-mask rerun is proposed for the user's decision.
 

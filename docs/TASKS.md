@@ -937,6 +937,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 - **T53 · ReMasker as an external deep baseline** (the user's "Vamos fazer o 1 e 3", 2026-11-06; BACKLOG I3).
   **E157 pre-registered 2026-11-06** ([imputation-protocol/55](tickets/imputation-protocol/55-remasker.md)): written in
   `src/training/remasker.py`, E48's design on 9 numerical confirmation variants, 27 pairs on gorgona8.
+  **E157 done 2026-11-07 06:12 GMT-3:** K better than ReMasker on 9/9; ReMasker above the strong tier's best on 1/9 (pendigits_40nan),
+  so an external deep baseline only, no ADR. At 60–80nan the reference's keep count re-masks almost no observed cell
+  (the paper counts the ratio over observed values), so only the 40nan readings describe ReMasker. **Next, the
+  user's call:** a rerun with the paper's per-row re-mask, under a new pre-registration with a scored 80nan smoke.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
