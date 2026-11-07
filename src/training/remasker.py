@@ -30,6 +30,11 @@ What differs from the reference code, and why:
 - **Its own random streams.** Training runs inside ``torch.random.fork_rng`` from a fixed seed with cuDNN's flags saved
   and restored, so the global streams every seeded result depends on are untouched (ADR 0007 decision 6).
 - **Numerical tables only,** as the reference ("only support numerical values"); a categorical column is refused.
+
+The re-mask count has two rules (``remask``). ``reference``, the default and E157's, keeps the reference code's count
+of half a row's tokens, so a row with fewer observed cells than half its columns re-masks none: at 80% missing almost
+no observed cell is ever re-masked (E157's Outcome). ``paper``, E158's, counts the ratio over the row's observed cells,
+as the paper's §4.4 states.
 """
 
 from __future__ import annotations
@@ -117,21 +122,37 @@ def _learning_rate(epoch: float) -> float:
     return MIN_LR + (LEARNING_RATE - MIN_LR) * 0.5 * (1 + math.cos(math.pi * (epoch - WARMUP_EPOCHS) / (EPOCHS - WARMUP_EPOCHS)))
 
 
-def _remask(observed: torch.Tensor) -> torch.Tensor:
-    """The cells left visible: of a row's L tokens the reference keeps int(L * (1 - ratio)), drawn at random with the
-    gaps sorted last; here only the observed ones among them."""
+REMASK_RULES = ("reference", "paper")
+
+
+def _remask(observed: torch.Tensor, rule: str = "reference") -> torch.Tensor:
+    """The cells left visible, drawn at random with the gaps sorted last.
+
+    ``reference`` (E157): the reference code's count, int(L * (1 - ratio)) of a row's L tokens, the observed ones among
+    them; a row with fewer observed cells than that re-masks none. ``paper`` (E158): the paper's §4.4, the ratio counted
+    "after excluding missing values", so a row keeps int(n_obs * (1 - ratio)) of its n_obs observed cells and re-masks
+    the rest; on a complete row the two agree.
+    """
+    if rule not in REMASK_RULES:
+        raise ValueError(f"remask rule {rule!r} is not one of {REMASK_RULES}")
     noise = torch.rand(observed.shape, device=observed.device).masked_fill(~observed, 1.0)
     rank = noise.argsort(dim=1).argsort(dim=1)
-    return (rank < int(observed.size(1) * (1 - MASK_RATIO))) & observed
+    if rule == "reference":
+        return (rank < int(observed.size(1) * (1 - MASK_RATIO))) & observed
+    keep = (observed.sum(dim=1, keepdim=True) * (1 - MASK_RATIO)).floor()
+    return (rank < keep) & observed
 
 
 class RemaskerImputer:
     name = "remasker"
 
     def __init__(self, numerical_columns: Sequence[str], categorical_columns: Sequence[str] = (), epochs: int = EPOCHS,
-                 device: torch.device | None = None) -> None:
+                 device: torch.device | None = None, remask: str = "reference") -> None:
         if categorical_columns:
             raise ValueError("ReMasker takes numerical columns only, as its reference code")
+        if remask not in REMASK_RULES:
+            raise ValueError(f"remask rule {remask!r} is not one of {REMASK_RULES}")
+        self._remask = remask
         self._numerical = list(numerical_columns)
         self._epochs = epochs
         self._device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -179,7 +200,7 @@ class RemaskerImputer:
                     group["lr"] = _learning_rate(epoch + step / steps)
                 index = order[step * BATCH:(step + 1) * BATCH]
                 x, seen = values[index], observed[index]
-                visible = _remask(seen)
+                visible = _remask(seen, self._remask)
                 remasked = seen & ~visible
                 with torch.autocast("cuda", dtype=torch.float16, enabled=cuda):
                     error = (model(x, visible).float() - x) ** 2
@@ -213,8 +234,9 @@ class RemaskerImputer:
 
 
 def fit_remasker_imputers(train_frame: pd.DataFrame, numerical_columns: Sequence[str],
-                          categorical_columns: Sequence[str], epochs: int = EPOCHS) -> list[BaselineImputer]:
+                          categorical_columns: Sequence[str], epochs: int = EPOCHS,
+                          remask: str = "reference") -> list[BaselineImputer]:
     """ReMasker, fit on this fold's training split. Once per fold."""
-    imputer = RemaskerImputer(numerical_columns, categorical_columns, epochs=epochs)
+    imputer = RemaskerImputer(numerical_columns, categorical_columns, epochs=epochs, remask=remask)
     imputer.fit(train_frame)
     return [imputer]

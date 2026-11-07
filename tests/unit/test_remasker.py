@@ -56,3 +56,18 @@ def test_a_gap_is_never_visible_and_half_the_tokens_at_most_are() -> None:
 def test_refuses_a_categorical_column() -> None:
     with pytest.raises(ValueError, match="numerical columns only"):
         fit_remasker_imputers(_frame(), ["a", "b"], ["c"], epochs=1)
+
+
+def test_the_paper_rule_remasks_half_of_each_rows_observed_cells() -> None:
+    observed = torch.rand(500, 8) < 0.2
+    visible = _remask(observed, "paper")
+    assert not (visible & ~observed).any()
+    count = observed.sum(dim=1)
+    assert torch.equal(visible.sum(dim=1), count // 2)
+    complete = torch.ones(50, 8, dtype=torch.bool)
+    assert torch.equal(_remask(complete, "paper").sum(dim=1), _remask(complete).sum(dim=1))
+
+
+def test_refuses_an_unknown_rule() -> None:
+    with pytest.raises(ValueError, match="remask rule"):
+        RemaskerImputer(["a"], remask="half")

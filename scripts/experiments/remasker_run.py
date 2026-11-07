@@ -11,11 +11,15 @@ One CSV per (variant, seed), ``<out_dir>/<variant>_s<seed>.csv``, one row per fo
 run's ``raw_fold_metrics.csv`` (``impute/<population>/baseline/remasker/<metric>``) plus the fit's
 seconds. A finished file is skipped, so a relaunch resumes. Nothing is written to the store.
 Run from the checkout root.
+
+``REMASKER_REMASK=paper`` in the environment selects the paper's re-mask count (E158); the default is the reference
+code's (E157). Each row records it as ``baseline/remasker/remask_paper`` (1 or 0).
 """
 
 from __future__ import annotations
 
 import csv
+import os
 import sys
 import time
 import warnings
@@ -35,16 +39,17 @@ from src.training.remasker import fit_remasker_imputers  # noqa: E402
 
 FOLDS = 5
 RATE = 0.2
+REMASK = os.environ.get("REMASKER_REMASK", "reference")
 
 
 def _scorer(train: pd.DataFrame, numerical: Sequence[str], categorical: Sequence[str]) -> FoldScorer:
     started = time.time()
-    imputers = fit_remasker_imputers(train, numerical, categorical)
+    imputers = fit_remasker_imputers(train, numerical, categorical, remask=REMASK)
     seconds = time.time() - started
 
     def score(test: pd.DataFrame, cells: pd.DataFrame, naive: Mapping[str, float | str]) -> Mapping[str, float]:
         metrics = {key: float(value) for key, value in score_baselines(imputers, test, cells, naive).metrics.items()}
-        return metrics | {"baseline/remasker/fit_seconds": seconds}
+        return metrics | {"baseline/remasker/fit_seconds": seconds, "baseline/remasker/remask_paper": float(REMASK == "paper")}
 
     return score
 

@@ -18,6 +18,10 @@ SESOI (ADR 0020):
 3. K − the best of all, ReMasker included.
 
 Also the fit time per fold.
+
+E158 (imputation-protocol/56) reads its own CSVs, the paper's re-mask count, with ``--remasker DIR --against E157``:
+``--against DIR`` merges E157's CSVs as ``remasker_reference`` and adds paper − reference per variant, descriptive.
+Every CSV read must carry the rule its directory claims (``remask_paper``), or the report stops.
 """
 
 from __future__ import annotations
@@ -43,7 +47,7 @@ REMASKER = "impute/induced/baseline/remasker/impute_score"
 Cells = list[tuple[common.Run, pd.DataFrame]]
 
 
-def _with_remasker(cells: Cells | None, directory: Path) -> Cells | None:
+def _with_remasker(cells: Cells | None, directory: Path, paper: bool, name: str = "remasker") -> Cells | None:
     if cells is None:
         return None
     out = []
@@ -52,6 +56,10 @@ def _with_remasker(cells: Cells | None, directory: Path) -> Cells | None:
         if not path.exists():
             return None
         extra = pd.read_csv(path).sort_values("fold").reset_index(drop=True)
+        rule = extra["baseline/remasker/remask_paper"] if "baseline/remasker/remask_paper" in extra else pd.Series([0.0])
+        if not (rule == float(paper)).all():
+            raise SystemExit(f"{path} does not carry the {'paper' if paper else 'reference'} re-mask rule")
+        extra = extra.rename(columns=lambda c: c.replace("/baseline/remasker/", f"/baseline/{name}/").replace("baseline/remasker/", f"baseline/{name}/"))
         new = [c for c in extra.columns if c.startswith(("impute/", "baseline/")) and c not in frame.columns]
         out.append((run, pd.concat([frame.reset_index(drop=True), extra[new]], axis=1)))
     return out
@@ -62,6 +70,8 @@ def _values(run: common.Run, frame: pd.DataFrame, name: str) -> np.ndarray:
         return common.model(frame, run, "K")
     if name == "remasker":
         return np.asarray(frame[REMASKER], dtype=float)
+    if name == "remasker_reference":
+        return np.asarray(frame[REMASKER.replace("/remasker/", "/remasker_reference/")], dtype=float)
     if name == "tuned":
         return np.asarray(frame[TUNED_BAR], dtype=float)
     return common.opponent(frame, name)[1]
@@ -108,9 +118,26 @@ SCOPE = [v for v in confirmation.VARIANTS if v.split("_")[0] in ("pendigits", "v
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--remasker", type=Path, default=DEFAULT_REMASKER)
+    parser.add_argument("--paper", action="store_true", help="the CSVs carry the paper's re-mask rule (E158)")
+    parser.add_argument("--against", type=Path, help="E157's CSVs, merged as remasker_reference")
     options = parser.parse_args()
-    found = [(v, _with_remasker(confirmation.cells(v), options.remasker)) for v in SCOPE]
-    report("Confirmation set (E44), seeds 707/808/909, E157's 9 variants", found)
+    found = [(v, _with_remasker(confirmation.cells(v), options.remasker, options.paper)) for v in SCOPE]
+    study = "E158, the paper's re-mask rule" if options.paper else "E157"
+    report(f"Confirmation set (E44), seeds 707/808/909, {study}, 9 variants", found)
+    if options.against is not None:
+        # Descriptive, after the read and apart from it, so the best of all above never holds E157's arm.
+        print("## ReMasker, the paper's rule − the reference code's (E158 − E157), descriptive")
+        side = []
+        for v, cells in found:
+            both = _with_remasker(cells, options.against, False, "remasker_reference")
+            if both is None:
+                print(f"- `{v}`: incomplete")
+                continue
+            d = contrast(both, "remasker", "remasker_reference")
+            side.append(d.call)
+            print(f"- `{v}`: {d.mean:+.4f} [{d.low:+.4f}, {d.high:+.4f}] {d.call}")
+        print(f"  - {common.tally(side)}")
+        print()
     calls = [contrast(c, "remasker", "strong").call for _, c in found if c is not None]
     if len(calls) == len(SCOPE):
         better = calls.count("better")

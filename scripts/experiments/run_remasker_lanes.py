@@ -1,6 +1,9 @@
 """Start E157's offline ReMasker pass in GPU lanes (imputation-protocol/55), detached.
 
-    python3 scripts/experiments/run_remasker_lanes.py [<lanes>]
+    python3 scripts/experiments/run_remasker_lanes.py [<lanes>] [--out DIR] [--rule paper] [--host gorgona8|medusa1]
+
+With no option it is E157's launch. E158 (imputation-protocol/56) passes ``--rule paper``, its own ``--out``, and
+``--host``, which keeps that machine's share of the pairs (``MEDUSA1``; every arm of a pair on one machine, ADR 0035).
 
 Splits the 27 (variant, seed) pairs into lanes balanced by estimated minutes (the pre-launch smoke), largest first,
 and starts each lane as one detached shell running ``remasker_run.py`` item by item. Progress goes to
@@ -9,6 +12,7 @@ and starts each lane as one detached shell running ``remasker_run.py`` item by i
 
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
 from pathlib import Path
@@ -21,30 +25,45 @@ CONFIRMATION = [
     *(f"{t}_{level}nan" for t in ("vehicle", "biodeg", "kc2") for level in (40, 80)),
 ]
 
+# E158's pairs on medusa1 (its two GPUs, one lane each); the rest stay on gorgona8.
+MEDUSA1 = {("pendigits_80nan", 707), ("pendigits_80nan", 808), ("pendigits_80nan", 909), ("pendigits_60nan", 909)}
+
 
 def main(argv: list[str]) -> int:
-    lanes = int(argv[0]) if argv else 4
+    parser = argparse.ArgumentParser()
+    parser.add_argument("lanes", nargs="?", type=int, default=4)
+    parser.add_argument("--out", type=Path, default=OUT)
+    parser.add_argument("--rule", choices=("reference", "paper"), default="reference")
+    parser.add_argument("--host", choices=("gorgona8", "medusa1"))
+    options = parser.parse_args(argv)
+    lanes, out = options.lanes, options.out
     if not Path("train.py").exists():
         sys.exit("run from the TRIDENT checkout root")
     items = [(v, s, "confirmation") for v in CONFIRMATION for s in (707, 808, 909)]
+    if options.host is not None:
+        items = [i for i in items if ((i[0], i[1]) in MEDUSA1) == (options.host == "medusa1")]
     loads = [0.0] * lanes
     assigned: list[list[tuple[str, int, str]]] = [[] for _ in range(lanes)]
     for item in sorted(items, key=lambda i: -MINUTES[i[0].split("_")[0]]):
         k = loads.index(min(loads))
         loads[k] += MINUTES[item[0].split("_")[0]]
         assigned[k].append(item)
-    OUT.mkdir(parents=True, exist_ok=True)
-    env = "export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4"
+    out.mkdir(parents=True, exist_ok=True)
+    env = f"export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 REMASKER_REMASK={options.rule}"
     for k, group in enumerate(assigned, start=1):
         group.sort(key=lambda i: (i[2] != "confirmation", -MINUTES[i[0].split("_")[0]]))
         steps = [
-            f"echo \"$(date '+%F %T %z') start {v} s{s} ({label})\" >> {OUT}/progress.log; "
-            f"uv run --python 3.11 python -B scripts/experiments/remasker_run.py {OUT}/csv {v} {s} >> {OUT}/lane{k}.log 2>&1 "
-            f"&& echo \"$(date '+%F %T %z') done {v} s{s} ({label})\" >> {OUT}/progress.log "
-            f"|| echo \"$(date '+%F %T %z') FAILED {v} s{s} ({label})\" >> {OUT}/progress.log"
+            f"echo \"$(date '+%F %T %z') start {v} s{s} ({label})\" >> {out}/progress.log; "
+            f"uv run --python 3.11 python -B scripts/experiments/remasker_run.py {out}/csv {v} {s} >> {out}/lane{k}.log 2>&1 "
+            f"&& echo \"$(date '+%F %T %z') done {v} s{s} ({label})\" >> {out}/progress.log "
+            f"|| echo \"$(date '+%F %T %z') FAILED {v} s{s} ({label})\" >> {out}/progress.log"
             for v, s, label in group
         ]
-        script = f"{env}; " + "; ".join(steps) + f"; echo \"$(date '+%F %T %z') lane {k} complete\" >> {OUT}/progress.log"
+        if options.host == "medusa1":
+            env_k = f"{env} CUDA_VISIBLE_DEVICES={(k - 1) % 2}"
+        else:
+            env_k = env
+        script = f"{env_k}; " + "; ".join(steps) + f"; echo \"$(date '+%F %T %z') lane {k} complete\" >> {out}/progress.log"
         subprocess.Popen(["setsid", "nohup", "bash", "-c", script], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          start_new_session=True)
         print(f"lane {k}: {len(group)} items, about {loads[k - 1]:.0f} min")

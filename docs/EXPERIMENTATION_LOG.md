@@ -4230,3 +4230,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   ReMasker above the strong tier on pendigits only). The 60–80nan readings measure an arm with almost no
   reconstruction signal. A per-row observed-cell re-mask rerun is proposed for the user's decision.
 
+### E158 · ReMasker with the paper's re-mask count (pre-registered 2026-11-07 08:15 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-07 08:15 GMT-3 on the user's go ("Rode de novo com a regra do artigo para vermos").
+  T53.
+- **Hypothesis:** none directional; E157 repeated with the re-mask ratio counted over each row's observed cells, as
+  the paper states (§4.4), since E157's reference-code count re-masks almost nothing at 60–80% missing.
+- **Scenarios:** E157's 9 variants × 707/808/909, 27 pairs; `remask="paper"`, everything else E157's. medusa1 runs
+  `pendigits_80nan` × 3 and `pendigits_60nan` s909, gorgona8 the other 23 (ADR 0035). Toy check before launch:
+  RMSE at 80% missing, paper rule 0.648, reference 0.896, mean fill 0.750.
+- **Measures and decision rule:** E157's: K − ReMasker (primary), ReMasker − strong / bar / tuned bar, K − best of all,
+  strong-tier proposal at 3 of 9; paper − reference descriptive. Read once with all pairs in.
+- **Sources:** [imputation-protocol/56](tickets/imputation-protocol/56-remasker-paper-rule.md); `remasker_run.py`
+  (`REMASKER_REMASK`), `run_remasker_lanes.py --rule paper --host`, `remasker_report.py --paper --against`.
+

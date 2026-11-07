@@ -941,6 +941,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   so an external deep baseline only, no ADR. At 60–80nan the reference's keep count re-masks almost no observed cell
   (the paper counts the ratio over observed values), so only the 40nan readings describe ReMasker. **Next, the
   user's call:** a rerun with the paper's per-row re-mask, under a new pre-registration with a scored 80nan smoke.
+  **E158 pre-registered 2026-11-07 08:15 GMT-3** ([imputation-protocol/56](tickets/imputation-protocol/56-remasker-paper-rule.md)), on the
+  user's go: the paper's rule, same 27 pairs, gorgona8 and medusa1. The thesis sentence on ReMasker: ask the user again
+  after E158's read (their request, 2026-11-07).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

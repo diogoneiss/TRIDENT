@@ -53,9 +53,9 @@ STRONG = STRONG_BASELINES
 # diagnostic arm, and E42's tuned families with their bar.
 WEAK = ("mean_mode", "knn5", "knn10", "hgb", "lgbm")
 DIAGNOSTIC = ("missforest_seq",)
-# Deep baselines read from offline passes (E48's MaCoDE, E157's ReMasker): outside the bar and the
-# strong tier, compared on their own and in the best of all.
-DEEP = ("macode", "remasker")
+# Deep baselines read from offline passes (E48's MaCoDE, E157's ReMasker, E158's beside E157's as
+# remasker_reference): outside the bar and the strong tier, compared on their own and in the best of all.
+DEEP = ("macode", "remasker", "remasker_reference")
 # ADR 0028: the strong tier's offline member, read wherever a study's offline pass merged its
 # columns into the frame; the runs never log it, so ``baseline/best_strong`` stays the live four.
 OFFLINE_STRONG = ("tabpfn",)
