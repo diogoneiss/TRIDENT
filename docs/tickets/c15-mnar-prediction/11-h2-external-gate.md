@@ -111,3 +111,66 @@ where the gap is not shown to carry information); plain intervals.
   when the chain started. medusa1's GPUs were still held by another user's job.
 - **No smoke:** A1 and A2 are C15's arms unchanged; A2 never ran on the s4848 files nor on the cardio copy, so the first
   cell of each is watched for a failure at its start.
+
+## Outcome (2026-11-06 21:48 GMT-3): inconclusive on both primaries; the secondary reads *gains*
+
+The chain ended at 21:45 GMT-3 with all 66 cells done and no FAILED line in `progress.log`. The reader ran once, at
+21:46 GMT-3; its completeness check passed. Neither primary read its favourable call at 97.5%, so Holm's second step
+did not open.
+
+**By the rule:**
+- **Primary 1 (H2 pooled over P): inconclusive**, and it leans against A1. The pooled macro-F1 difference is −0.0269,
+  2.7 times the margin; its corrected 97.5% upper bound, −0.0076, misses *reversed* by 0.0024. The plain interval
+  printed beside, [−0.0341, −0.0197], lies wholly below −0.01 (descriptive, decides nothing). The guard also fails:
+  A1 is inferior on `vehicle_probit0p5_s4848_60nan` (F1 −0.098, LL +22%). The pooled log-loss ratio is noise, as the
+  disclosure foresaw: spambase's odds-3 file gives +20.8 (one seed +57.7) while every absolute log-loss difference is
+  under 0.2.
+- **Primary 2 (`mimic-sofa-num_natural`): inconclusive**, F1 +0.0021 [−0.0285, +0.0326], LL −0.7% [−9.3%, +7.9%].
+  E152 gave −0.012 at seeds 42/7/13; this is +0.002 at 8282/8383/9292. The 0.014 swing between seed triples lies
+  inside either interval; it is not a correction of E152.
+- **Secondary: gains**, +0.0155 [+0.0018, +0.0291] on the plain 95% t the rule named. Two facts go with it:
+  - The Nadeau–Bengio interval printed beside, [−0.0160, +0.0469], crosses 0; under the primaries' correction it
+    would read *no verdict*.
+  - The pairs split by mechanism. The three outcome-dependent files are positive (+0.041, +0.061, +0.011): there A1 is
+    at parity with A2 (F1 +0.000, +0.020, −0.000), while on their MCAR siblings A1 trails by 0.012 to 0.042. The two
+    probit files are negative (−0.015, −0.021): there A1 trails more than under MCAR. (Sibling differences are the
+    printout's per-file means minus the per-pair interactions.)
+- **Cardio (negative control, beside):** inconclusive, F1 +0.0083 [−0.0124, +0.0290].
+
+**Leads to, as fixed:** H2 has no confirmatory answer at this power; no extension of seeds. The secondary is reported
+with the primaries: A1 trails A2 under MCAR on all four siblings, and the gap closes where missingness depends on the
+outcome, not where it depends on the value (probit). The thesis sentence is the user's call; no ADR changes.
+
+**The printout** (`scripts/experiments/h2_natural.py --read`, unedited):
+
+```text
+## E155: two primaries, Holm: each read at 97.5% first; a favourable call there lets the other be read at 95%
+## H2 (E155, confirmation, read once): A1 − A2 on P's fresh draws, 15 cells (seeds 8282/8383/9292 x 5 folds), Nadeau–Bengio corrected 97.5% t; margins −0.01 macro-F1, +0.02 relative log loss
+- biodeg_probit0p5_s4848_60nan: F1 -0.0559 [-0.1169, +0.0052]; LL +0.1590 [-0.0924, +0.4103]; seeds F1 -0.0509, -0.0597, -0.0570; LL +0.1358, +0.2003, +0.1408; absolute LL +0.0715 -> inconclusive
+- vehicle_probit0p5_s4848_60nan: F1 -0.0982 [-0.1682, -0.0282]; LL +0.2194 [+0.0740, +0.3649]; seeds F1 -0.0870, -0.0908, -0.1168; LL +0.1668, +0.2263, +0.2651; absolute LL +0.1805 -> inferior
+- biodeg_outcome3p0_s4848_60nan: F1 +0.0000 [-0.0112, +0.0113]; LL +0.0893 [-1.3899, +1.5685]; seeds F1 -0.0011, +0.0032, -0.0021; LL -0.0141, -0.2260, +0.5081; absolute LL -0.0041 -> inconclusive
+- kc2_outcome3p0_s4848_60nan: F1 +0.0197 [-0.0191, +0.0586]; LL +0.7412 [-2.6056, +4.0879]; seeds F1 +0.0083, +0.0291, +0.0217; LL +1.4058, +0.0838, +0.7339; absolute LL -0.0160 -> inconclusive
+- spambase_outcome3p0_s4848_60nan: F1 -0.0002 [-0.0038, +0.0033]; LL +20.7835 [-75.5251, +117.0922]; seeds F1 +0.0002, -0.0002, -0.0007; LL -0.2307, +4.8401, +57.7413; absolute LL +0.0019 -> inconclusive
+
+Pooled over P (5 variants): F1 -0.0269 [-0.0463, -0.0076] (plain [-0.0341, -0.0197]); LL +4.3985 [-14.8592, +23.6562] (plain [-2.7603, +11.5572])
+Primary (H2): inconclusive (guard: inferior on vehicle_probit0p5_s4848_60nan)
+- sensitivity, count rule: non-inferior on 0 of 5, inferior on 1 -> inconclusive
+- sensitivity, per table: biodeg F1 -0.0279, LL +0.1242; vehicle F1 -0.0982, LL +0.2194; kc2 F1 +0.0197, LL +0.7412; spambase F1 -0.0002, LL +20.7835
+
+- mimic-sofa-num_natural (97.5%): F1 +0.0021 [-0.0285, +0.0326]; LL -0.0066 [-0.0925, +0.0793]; seeds F1 -0.0000, -0.0020, +0.0082; LL +0.0076, -0.0034, -0.0240; absolute LL -0.0043 -> inconclusive
+
+Primary 1 (H2, synthetic, pooled over P): inconclusive
+Primary 2 (H2, mimic-sofa-num_natural): inconclusive
+
+## Secondary: does A1 gain ground on A2 where the gap is informative? (A1 − A2) on P's file minus on its MCAR sibling, macro-F1, plain 95% t over 15 cells (Nadeau–Bengio beside)
+- biodeg_probit0p5_s4848_60nan − biodeg_mcar_s4848_60nan: -0.0154
+- vehicle_probit0p5_s4848_60nan − vehicle_mcar_s4848_60nan: -0.0205
+- biodeg_outcome3p0_s4848_60nan − biodeg_mcar_s4848_60nan: +0.0405
+- kc2_outcome3p0_s4848_60nan − kc2_mcar_s4848_60nan: +0.0613
+- spambase_outcome3p0_s4848_60nan − spambase_mcar_s4848_60nan: +0.0114
+- pooled (5 pairs): +0.0155 [+0.0018, +0.0291] (NB [-0.0160, +0.0469]) -> gains
+
+## Beside, decides nothing
+- mimic-cardio-num_natural (negative control, 95%): F1 +0.0083 [-0.0124, +0.0290]; LL -0.0152 [-0.0772, +0.0469]; seeds F1 +0.0131, +0.0131, -0.0013; LL -0.0348, -0.0118, +0.0011; absolute LL -0.0081 -> inconclusive
+- (A1 − A2) SOFA minus cardio, macro-F1 per cell: -0.0062 (different tables, descriptive)
+```

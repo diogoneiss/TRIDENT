@@ -4148,7 +4148,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E155 · H2 behind an external gate: A1 against A2 on fresh seeds (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("vamos no 1"). T51. **A deviation:** E128's
+- **Status:** done 2026-11-06 21:48 GMT-3: inconclusive on both primaries, secondary *gains*. Pre-registered
+  2026-11-06 on the user's go ("vamos no 1"). T51. **A deviation:** E128's
   binding stop (C15 ends if G1 fails again) and E152's leads-to are overridden; the gate moves outside the pipeline
   (E123's G2 for P, E150's logistic regression for the SOFA table, its null on cardio as the negative control).
   Disclosure: E124's Stage 1b (A1 inferior on 5 of 23 development variants, non-inferior on none) and E152's SOFA
@@ -4164,3 +4165,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   minus MCAR sibling, gains / loses / holds / no verdict. Cardio descriptive. Read once with all 66 cells.
 - **Sources:** [c15-mnar-prediction/11](tickets/c15-mnar-prediction/11-h2-external-gate.md); `C15_STAGE=5 c15_run.py`,
   `scripts/experiments/h2_natural.py`, `c15_report.py --h2`.
+- **Results:** all 66 cells, read once 21:46 GMT-3. Primary 1, pooled over P: F1 −0.0269 [−0.0463, −0.0076]
+  (97.5% corrected; plain [−0.0341, −0.0197]), LL ratio noise (spambase odds 3 +20.8); A1 inferior on vehicle probit
+  (F1 −0.098, LL +22%), inconclusive on the other four. Primary 2, SOFA: F1 +0.0021 [−0.0285, +0.0326], LL −0.7%
+  [−9.3%, +7.9%] (E152 at seeds 42/7/13: −0.012). Secondary: +0.0155 [+0.0018, +0.0291] plain (NB [−0.0160, +0.0469]);
+  outcome files +0.041/+0.061/+0.011, probit files −0.015/−0.021. Cardio: F1 +0.0083 [−0.0124, +0.0290], inconclusive.
+- **Conclusion:** inconclusive on both primaries (Holm's second step never opened); H2 has no confirmatory answer at
+  this power, and no seeds are added. Primary 1 leans against A1: point estimate 2.7 times the margin, *reversed*
+  missed by 0.0024. The secondary reads *gains* by the plain interval the rule named (the corrected one crosses 0): A1
+  trails A2 under MCAR on all four siblings and reaches parity on the outcome-dependent files, not on the probit ones.
+  Thesis sentence the user's call; no ADR. [Outcome](tickets/c15-mnar-prediction/11-h2-external-gate.md).

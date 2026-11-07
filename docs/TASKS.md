@@ -923,6 +923,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E155 pre-registered 2026-11-06** ([c15-mnar-prediction/11](tickets/c15-mnar-prediction/11-h2-external-gate.md)):
   A1 against A2 at fresh seeds 8282/8383/9292 on P's s4848 draws and siblings (54 cells) and on the SOFA and cardio
   numerical tables (12), all on gorgona8; two primaries with Holm, read once.
+  **E155 done 2026-11-06 21:48 GMT-3: inconclusive on both primaries** (pooled over P F1 −0.027, *reversed* missed
+  by 0.0024, A1 inferior on vehicle probit; SOFA +0.002); the secondary reads *gains* (+0.016, plain interval; the
+  corrected one crosses 0): A1 reaches parity with A2 on the outcome-dependent files and trails under MCAR. No seeds
+  added, no ADR; the thesis sentence is the user's call. T51 done.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
