@@ -56,7 +56,8 @@ def _with_remasker(cells: Cells | None, directory: Path, paper: bool, name: str 
         if not path.exists():
             return None
         extra = pd.read_csv(path).sort_values("fold").reset_index(drop=True)
-        rule = extra["baseline/remasker/remask_paper"] if "baseline/remasker/remask_paper" in extra else pd.Series([0.0])
+        key = "impute/induced/baseline/remasker/remask_paper"  # score_baselines prefixes the population
+        rule = extra[key] if key in extra else pd.Series([0.0])
         if not (rule == float(paper)).all():
             raise SystemExit(f"{path} does not carry the {'paper' if paper else 'reference'} re-mask rule")
         extra = extra.rename(columns=lambda c: c.replace("/baseline/remasker/", f"/baseline/{name}/").replace("baseline/remasker/", f"baseline/{name}/"))

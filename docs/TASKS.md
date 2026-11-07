@@ -944,6 +944,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E158 pre-registered 2026-11-07 08:15 GMT-3** ([imputation-protocol/56](tickets/imputation-protocol/56-remasker-paper-rule.md)), on the
   user's go: the paper's rule, same 27 pairs, gorgona8 and medusa1. The thesis sentence on ReMasker: ask the user again
   after E158's read (their request, 2026-11-07).
+  **E158 done 2026-11-07 11:42 GMT-3:** K better than ReMasker on 9/9; strong-tier rule 2/9 (pendigits 40/60nan), external deep
+  baseline only, no ADR; the paper's rule ends the 80nan collapse (paper − reference −0.52 to −1.07). T53 done but
+  for the thesis sentence (asked).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

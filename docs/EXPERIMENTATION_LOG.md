@@ -4232,8 +4232,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E158 · ReMasker with the paper's re-mask count (pre-registered 2026-11-07 08:15 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-07 08:15 GMT-3 on the user's go ("Rode de novo com a regra do artigo para vermos").
-  T53.
+- **Status:** done 2026-11-07 11:42 GMT-3; external deep baseline only (strong-tier rule 2 of 9). Pre-registered 2026-11-07 08:15
+  GMT-3 on the user's go ("Rode de novo com a regra do artigo para vermos"). T53.
 - **Hypothesis:** none directional; E157 repeated with the re-mask ratio counted over each row's observed cells, as
   the paper states (§4.4), since E157's reference-code count re-masks almost nothing at 60–80% missing.
 - **Scenarios:** E157's 9 variants × 707/808/909, 27 pairs; `remask="paper"`, everything else E157's. medusa1 runs
@@ -4243,4 +4243,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   strong-tier proposal at 3 of 9; paper − reference descriptive. Read once with all pairs in.
 - **Sources:** [imputation-protocol/56](tickets/imputation-protocol/56-remasker-paper-rule.md); `remasker_run.py`
   (`REMASKER_REMASK`), `run_remasker_lanes.py --rule paper --host`, `remasker_report.py --paper --against`.
+- **Results:** 27 pairs (4 on medusa1), none failed. K − ReMasker better on 9/9. ReMasker − strong tier: better 2
+  (pendigits 40/60nan), no difference 2, worse 5. ReMasker − bar and − tuned bar: better 3, no difference 2, worse 4. K − best
+  of all better 7, worse 2 (vehicle_80nan, biodeg_80nan; missForest). Paper − reference rule: better on the four 80nan
+  variants (−0.52 to −1.07) and pendigits_60nan (−0.14), worse on pendigits_40nan (+0.006) and biodeg_40nan (+0.066).
+- **Conclusion:** an external deep baseline only, no ADR. The paper's rule fixes E157's 80nan collapse; K beats
+  ReMasker on every variant under both rules. E158 is the thesis's ReMasker comparison; the sentence is the user's call.
 

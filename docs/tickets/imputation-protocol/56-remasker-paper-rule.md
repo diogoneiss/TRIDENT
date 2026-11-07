@@ -64,3 +64,59 @@ the user requested). No default changes, no bar change, no ADR unless the strong
 - medusa1's GPUs are RTX 5090s, gorgona8's an RTX 3090 Ti; fills differ per fold between GPUs (E86), so a pair's
   machine is fixed and recorded, and the four pendigits pairs on medusa1 are not compared with gorgona8's seed by seed.
 - Untuned, as E157; TRIDENT's configuration was tuned on the development set.
+
+## Outcome (2026-11-07 11:42 GMT-3): K better than ReMasker on 9 of 9; ReMasker better than the strong tier's best on 2 of 9, so an external deep baseline only. The paper's rule removes E157's collapse at 80nan
+
+All 27 pairs in, none failed: gorgona8's five lanes ended 11:37, medusa1's four 09:25 GMT-3. medusa1's four CSVs were
+copied to gorgona8's directory with matching SHA-256, and every row of the 27 carries `remask_paper` 1. The first run of
+the report stopped at its rule check before printing any reading. It looked up `baseline/remasker/remask_paper`, but
+`score_baselines` prefixes the population (`impute/induced/...`). The key was fixed, and the report then ran once. The
+unedited printout:
+
+```text
+## Confirmation set (E44), seeds 707/808/909, E158, the paper's re-mask rule, 9 variants
+- `pendigits_40nan`: K − remasker -0.0392 [-0.0431, -0.0354] better; remasker − strong -0.0695 [-0.0738, -0.0652] better; remasker − bar -0.0643 [-0.0663, -0.0623] better; remasker − tuned -0.0517 [-0.0536, -0.0498] better; K − best_of_all -0.0392 [-0.0431, -0.0354] better; best of all remasker; fit 1807 s a fold
+- `pendigits_60nan`: K − remasker -0.0315 [-0.0354, -0.0276] better; remasker − strong -0.1076 [-0.1120, -0.1032] better; remasker − bar -0.0429 [-0.0457, -0.0401] better; remasker − tuned -0.0398 [-0.0426, -0.0370] better; K − best_of_all -0.0315 [-0.0354, -0.0276] better; best of all remasker; fit 1483 s a fold
+- `pendigits_80nan`: K − remasker -0.0823 [-0.0863, -0.0783] better; remasker − strong +0.0645 [+0.0601, +0.0689] worse; remasker − bar +0.0578 [+0.0540, +0.0616] worse; remasker − tuned +0.0785 [+0.0743, +0.0827] worse; K − best_of_all -0.0178 [-0.0197, -0.0159] better; best of all condexp; fit 827 s a fold
+- `vehicle_40nan`: K − remasker -0.0754 [-0.0995, -0.0514] better; remasker − strong +0.0498 [+0.0313, +0.0684] worse; remasker − bar +0.0020 [-0.0186, +0.0226] none; remasker − tuned +0.0016 [-0.0197, +0.0229] none; K − best_of_all -0.0256 [-0.0466, -0.0045] better; best of all missforest; fit 155 s a fold
+- `vehicle_80nan`: K − remasker -0.0695 [-0.0892, -0.0499] better; remasker − strong +0.1120 [+0.0937, +0.1303] worse; remasker − bar +0.0618 [+0.0449, +0.0787] worse; remasker − tuned +0.0598 [+0.0425, +0.0772] worse; K − best_of_all +0.0425 [+0.0343, +0.0506] worse; best of all missforest; fit 151 s a fold
+- `biodeg_40nan`: K − remasker -0.2074 [-0.2599, -0.1549] better; remasker − strong +0.1832 [+0.1358, +0.2306] worse; remasker − bar +0.1315 [+0.0928, +0.1701] worse; remasker − tuned +0.1349 [+0.0963, +0.1734] worse; K − best_of_all -0.0242 [-0.0390, -0.0094] better; best of all missforest; fit 183 s a fold
+- `biodeg_80nan`: K − remasker -0.0636 [-0.0775, -0.0497] better; remasker − strong +0.1125 [+0.0987, +0.1263] worse; remasker − bar +0.0348 [+0.0224, +0.0472] worse; remasker − tuned +0.0661 [+0.0542, +0.0780] worse; K − best_of_all +0.0489 [+0.0395, +0.0582] worse; best of all missforest; fit 161 s a fold
+- `kc2_40nan`: K − remasker -0.1025 [-0.1414, -0.0635] better; remasker − strong +0.0421 [-0.0221, +0.1063] none; remasker − bar +0.0169 [-0.0573, +0.0911] none; remasker − tuned +0.0043 [-0.0693, +0.0780] none; K − best_of_all -0.0550 [-0.1099, -0.0002] better; best of all knn5/softimpute; fit 95 s a fold
+- `kc2_80nan`: K − remasker -0.0589 [-0.0989, -0.0189] better; remasker − strong +0.0002 [-0.0490, +0.0493] none; remasker − bar -0.0977 [-0.1394, -0.0560] better; remasker − tuned -0.1070 [-0.1491, -0.0648] better; K − best_of_all -0.0479 [-0.0890, -0.0067] better; best of all missforest/remasker; fit 96 s a fold
+  - K − remasker: better 9 / no difference 0 / worse 0 (fold-pair t, seed agreement)
+  - remasker − strong: better 2 / no difference 2 / worse 5 (fold-pair t, seed agreement)
+  - remasker − bar: better 3 / no difference 2 / worse 4 (fold-pair t, seed agreement)
+  - remasker − tuned: better 3 / no difference 2 / worse 4 (fold-pair t, seed agreement)
+  - K − best_of_all: better 7 / no difference 0 / worse 2 (fold-pair t, seed agreement)
+
+## ReMasker, the paper's rule − the reference code's (E158 − E157), descriptive
+- `pendigits_40nan`: +0.0056 [+0.0033, +0.0079] worse
+- `pendigits_60nan`: -0.1410 [-0.1455, -0.1365] better
+- `pendigits_80nan`: -0.5185 [-0.5638, -0.4732] better
+- `vehicle_40nan`: +0.0013 [-0.0201, +0.0227] none
+- `vehicle_80nan`: -0.5422 [-0.6125, -0.4720] better
+- `biodeg_40nan`: +0.0664 [+0.0359, +0.0969] worse
+- `biodeg_80nan`: -1.0485 [-1.1338, -0.9633] better
+- `kc2_40nan`: +0.0349 [-0.0043, +0.0742] none
+- `kc2_80nan`: -1.0673 [-1.3909, -0.7437] better
+  - better 5 / no difference 2 / worse 2 (fold-pair t, seed agreement)
+
+Decision input: ReMasker better than the strong tier's best on 2 of 9 variants (fewer than 3: an external deep baseline only).
+```
+
+- **Primary, K − ReMasker: better on 9 of 9,** at every level now that the arm trains at every level.
+- **Strong-tier rule: 2 of 9** (pendigits_40nan −0.070, pendigits_60nan −0.108); fewer than 3, so ReMasker stays an
+  external deep baseline and no ADR is proposed.
+- ReMasker beats the bar on 3 of 9 (pendigits 40/60, kc2_80nan) and the tuned bar on the same 3; it is the best of all on
+  pendigits 40/60, and tied for best on kc2_80nan. K − the best of all is unchanged from E157: better 7, worse 2
+  (vehicle_80nan and biodeg_80nan, missForest).
+- **Paper − reference (descriptive):** better on all four 80nan variants (−0.52 to −1.07) and on pendigits_60nan
+  (−0.141). Worse on pendigits_40nan (+0.006) and biodeg_40nan (+0.066), where the paper's rule re-masks half the
+  observed cells against the reference's fifth. At 80nan ReMasker is now within 0.035–0.062 of the bar on three
+  variants and better than it on kc2, instead of 0.58–1.11 worse.
+- Fit time 14–30 min a fold on pendigits, 1.5–3 min on the small tables.
+
+**What it leads to (fixed in the design):** E158 is the thesis's ReMasker comparison at every level, and E157 stays on
+the record as the reference code's count. K − ReMasker is better on all 9 variants under either rule. The thesis
+sentence is the user's call, asked after this read. No default changes, no bar change, no ADR.
