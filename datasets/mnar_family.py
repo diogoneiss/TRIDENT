@@ -173,14 +173,16 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--odds", type=float, default=3.0)
     parser.add_argument("--slope", type=float, default=0.5)
+    parser.add_argument("--root", type=Path, default=ROOT, help="the tables' root (default processed_datasets)")
     o = parser.parse_args(argv)
     level = f"{round(o.pct * 100):02d}nan"
+    root = o.root
     for base in o.bases:
-        complete = pd.read_csv(ROOT / base / f"{base}_00nan.csv")
+        complete = pd.read_csv(root / base / f"{base}_00nan.csv")
         if o.family == "outcome":
             frame, name = outcome(complete, o.pct, o.odds, o.seed), f"{base}_outcome{dial(o.odds)}_s{o.seed}_{level}"
         elif o.family == "noise":
-            frame = noise(pd.read_csv(ROOT / base / f"{base}_{level}.csv"), o.pct, o.odds, o.seed)
+            frame = noise(pd.read_csv(root / base / f"{base}_{level}.csv"), o.pct, o.odds, o.seed)
             name = f"{base}_noise{dial(o.odds)}_s{o.seed}_{level}"
         elif o.family == "sign":
             frame, name = sign(complete, o.pct, o.direction, o.seed), f"{base}_sign{o.direction}_s{o.seed}_{level}"
@@ -188,7 +190,7 @@ def main(argv: list[str]) -> int:
             frame, name = mcar(complete, o.pct, o.seed), f"{base}_mcar_s{o.seed}_{level}"
         else:
             frame, name = probit(complete, o.pct, o.slope, o.seed), f"{base}_probit{dial(o.slope)}_s{o.seed}_{level}"
-        write(frame, ROOT / base / f"{name}.csv")
+        write(frame, root / base / f"{name}.csv")
         report(frame, complete, name)
     return 0
 

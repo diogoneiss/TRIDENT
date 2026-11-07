@@ -927,6 +927,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   by 0.0024, A1 inferior on vehicle probit; SOFA +0.002); the secondary reads *gains* (+0.016, plain interval; the
   corrected one crosses 0): A1 reaches parity with A2 on the outcome-dependent files and trails under MCAR. No seeds
   added, no ADR; the thesis sentence is the user's call. T51 done.
+- **T52 · E155's mechanism split, confirmed on new tables** (the user's "Vamos fazer o 1 e 3", 2026-11-06). E155's
+  secondary found A1 at parity with A2 on outcome-dependent files and further behind on self-masking ones, in its own
+  data. **E156 pre-registered 2026-11-06** ([c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md)):
+  MIMIC-IV complete tables with injected mechanisms, seeds 2525/4747/6969, 36 cells on gorgona8, E123's G2 beside.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

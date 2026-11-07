@@ -4175,3 +4175,21 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   missed by 0.0024. The secondary reads *gains* by the plain interval the rule named (the corrected one crosses 0): A1
   trails A2 under MCAR on all four siblings and reaches parity on the outcome-dependent files, not on the probit ones.
   Thesis sentence the user's call; no ADR. [Outcome](tickets/c15-mnar-prediction/11-h2-external-gate.md).
+
+### E156 · Does A1 close on A2 where the gap depends on the outcome? MIMIC-IV complete tables, known mechanisms (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("Vamos fazer o 1 e 3 até amanhã a tarde"). T52.
+  Confirms on new tables the split E155's secondary found in its own data.
+- **Hypothesis:** A1 (`[NULL]`) trails A2 (missForest + indicator) under MCAR and closes the gap where missingness
+  depends on the outcome, not where it depends on the value (self-masking).
+- **Scenarios:** `mimic-sofa-semi` (10,553 rows, 6 columns) and `mimic-cardio-semi` (10,795 rows, 8 columns), cut
+  complete from the natural tables by `datasets/make_mimic_complete.py`; gaps injected at 60% by `mnar_family.py`
+  (data seed 5858): outcome odds 3, probit slope 0.5, MCAR. A1 and A2 at seeds 2525/4747/6969, five folds, 36 cells on
+  gorgona8; E123's G2 on the six files (90 CPU cells).
+- **Measures and decision rule:** macro-F1 differences of differences per (seed, fold), Nadeau–Bengio corrected 95%;
+  gains / loses / holds (±0.01) / no verdict. Primary: (A1 − A2) outcome minus MCAR, pooled over the tables whose
+  outcome file passes G2, predicted gains. Secondary 1: probit minus MCAR, predicted not gains. Secondary 2: outcome
+  minus probit, predicted gains. Read once with all cells in.
+- **Sources:** [c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md);
+  `scripts/experiments/mechanism_split.py`, `run_e156_chain.sh`.
+
