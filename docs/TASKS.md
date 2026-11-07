@@ -931,6 +931,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   secondary found A1 at parity with A2 on outcome-dependent files and further behind on self-masking ones, in its own
   data. **E156 pre-registered 2026-11-06** ([c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md)):
   MIMIC-IV complete tables with injected mechanisms, seeds 2525/4747/6969, 36 cells on gorgona8, E123's G2 beside.
+  **E156 done 2026-11-07 03:53 GMT-3: not confirmed** (primary outcome − MCAR +0.007 [−0.021, +0.035], every call no verdict):
+  A1 is at parity with A2 on all six files, MCAR included, so E155's MCAR deficit, the split's premise, is absent on
+  these tables. The H2 sentence keeps E155's inconclusive primaries; no ADR. T52 done.
 - **T53 · ReMasker as an external deep baseline** (the user's "Vamos fazer o 1 e 3", 2026-11-06; BACKLOG I3).
   **E157 pre-registered 2026-11-06** ([imputation-protocol/55](tickets/imputation-protocol/55-remasker.md)): written in
   `src/training/remasker.py`, E48's design on 9 numerical confirmation variants, 27 pairs on gorgona8.

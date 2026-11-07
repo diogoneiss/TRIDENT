@@ -4178,8 +4178,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E156 · Does A1 close on A2 where the gap depends on the outcome? MIMIC-IV complete tables, known mechanisms (pre-registered 2026-11-06)
 
-- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("Vamos fazer o 1 e 3 até amanhã a tarde"). T52.
-  Confirms on new tables the split E155's secondary found in its own data.
+- **Status:** done 2026-11-07 03:53 GMT-3, **not confirmed** (every call no verdict). Pre-registered 2026-11-06 on the user's go
+  ("Vamos fazer o 1 e 3 até amanhã a tarde"). T52. Confirms on new tables the split E155's secondary found in its own
+  data.
 - **Hypothesis:** A1 (`[NULL]`) trails A2 (missForest + indicator) under MCAR and closes the gap where missingness
   depends on the outcome, not where it depends on the value (self-masking).
 - **Scenarios:** `mimic-sofa-semi` (10,553 rows, 6 columns) and `mimic-cardio-semi` (10,795 rows, 8 columns), cut
@@ -4192,6 +4193,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   minus probit, predicted gains. Read once with all cells in.
 - **Sources:** [c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md);
   `scripts/experiments/mechanism_split.py`, `run_e156_chain.sh`.
+- **Results:** 36 cells and 90 G2 cells. G2: both outcome files informative (+7.7%, +21.9%), probit and MCAR files
+  not (+0.2% to +0.8%). Primary outcome − MCAR pooled +0.0069 [−0.0212, +0.0350], no verdict (sofa +0.0061, cardio
+  +0.0078). Secondary 1 probit − MCAR +0.0059 [−0.0191, +0.0309], no verdict (probit files are non-informative
+  controls by G2). Secondary 2 outcome − probit +0.0010 [−0.0283, +0.0303], no verdict. A1 − A2 macro-F1 per file
+  +0.0002 / −0.0007 on MCAR, +0.0062 / +0.0070 on outcome, +0.0045 / +0.0067 on probit; log loss lower for A1 on the
+  outcome files (−0.012).
+- **Conclusion:** not confirmed. E155's split does not replicate here because its premise is absent: A1 does not trail
+  A2 under MCAR on these small clinical tables, so there is nothing for the outcome mechanism to close. The H2 sentence
+  keeps only E155's inconclusive primaries; no ADR changes. The corrected interval (about ±0.03) could not resolve
+  effects of 0.007 either way.
 
 ### E157 · ReMasker as an external deep baseline (pre-registered 2026-11-06)
 

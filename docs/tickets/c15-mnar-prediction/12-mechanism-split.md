@@ -101,3 +101,58 @@ absolute log loss, the G2 drops.
 - The two tables share a cohort, so their pooling is not two independent replications.
 - Odds 3 is a strong mechanism; a parity there may be a ceiling (disclosure). One odds level only.
 - The vasopressor rates and GCS are out by the mode rule, so the tables are small (6 and 8 columns).
+
+## Outcome (2026-11-07 03:53 GMT-3): not confirmed; every call is *no verdict*, and A1 does not trail A2 under MCAR on these tables
+
+All 36 cells and 90 G2 cells in (the chain ended 2026-11-07 03:50 GMT-3); read once with
+`mechanism_split.py --read`. The unedited printout:
+
+```text
+## E156 G2 (E123's rule, out of fold, seeds 42/7/13): relative log-loss drop from the indicators
+- mimic-sofa-semi_outcome3p0_s5858_60nan: +0.0774 [+0.0720, +0.0828] -> informative
+- mimic-sofa-semi_probit0p5_s5858_60nan: +0.0038 [+0.0016, +0.0059] -> not informative
+- mimic-sofa-semi_mcar_s5858_60nan: +0.0024 [-0.0001, +0.0048] -> not informative
+- mimic-cardio-semi_outcome3p0_s5858_60nan: +0.2186 [+0.2095, +0.2278] -> informative
+- mimic-cardio-semi_probit0p5_s5858_60nan: +0.0076 [+0.0050, +0.0102] -> not informative
+- mimic-cardio-semi_mcar_s5858_60nan: +0.0051 [+0.0018, +0.0083] -> not informative
+
+## Per file, A1 − A2 (descriptive): macro-F1, absolute test log loss
+- mimic-sofa-semi_outcome3p0_s5858_60nan: F1 +0.0062, LL -0.0119
+- mimic-sofa-semi_probit0p5_s5858_60nan: F1 +0.0045, LL -0.0029
+- mimic-sofa-semi_mcar_s5858_60nan: F1 +0.0002, LL -0.0039
+- mimic-cardio-semi_outcome3p0_s5858_60nan: F1 +0.0070, LL -0.0115
+- mimic-cardio-semi_probit0p5_s5858_60nan: F1 +0.0067, LL -0.0057
+- mimic-cardio-semi_mcar_s5858_60nan: F1 -0.0007, LL +0.0028
+
+## Primary: (A1 − A2) on outcome3p0 minus on its MCAR sibling, macro-F1, NB-corrected 95% over 15 cells; predicted gains
+- mimic-sofa-semi: +0.0061 [-0.0446, +0.0568] (plain [-0.0160, +0.0281]; seeds +0.0027, -0.0148, +0.0303)
+- mimic-cardio-semi: +0.0078 [-0.0237, +0.0392] (plain [-0.0059, +0.0215]; seeds +0.0094, -0.0011, +0.0151)
+- pooled over 2 table(s): +0.0069 [-0.0212, +0.0350] (plain [-0.0053, +0.0191]; seeds +0.0060, -0.0080, +0.0227) -> no verdict
+
+## Secondary 1: the same for probit0p5 minus MCAR; predicted not gains
+- mimic-sofa-semi: +0.0043 [-0.0505, +0.0592] (plain [-0.0195, +0.0282]; seeds +0.0055, -0.0051, +0.0126)
+- mimic-cardio-semi: +0.0074 [-0.0493, +0.0642] (plain [-0.0172, +0.0321]; seeds -0.0053, +0.0157, +0.0119)
+- pooled over 2 table(s): +0.0059 [-0.0191, +0.0309] (plain [-0.0050, +0.0168]; seeds +0.0001, +0.0053, +0.0122) -> no verdict
+
+## Secondary 2: the split, (A1 − A2) on outcome3p0 minus on probit0p5; predicted gains
+- mimic-sofa-semi: +0.0017 [-0.0327, +0.0362] (plain [-0.0133, +0.0167]; seeds -0.0028, -0.0097, +0.0177)
+- mimic-cardio-semi: +0.0003 [-0.0545, +0.0552] (plain [-0.0235, +0.0242]; seeds +0.0146, -0.0169, +0.0033)
+- pooled over 2 table(s): +0.0010 [-0.0283, +0.0303] (plain [-0.0117, +0.0138]; seeds +0.0059, -0.0133, +0.0105) -> no verdict
+```
+
+- **G2:** both outcome files are informative (drops +7.7% and +21.9%), so the primary pools both tables. Both probit
+  files fail it (+0.4% and +0.8%, under the 2% floor) and so do the MCAR files: secondary 1 reads the probit files as
+  non-informative controls, as the rule says.
+- **Primary, outcome − MCAR: no verdict,** +0.0069 [−0.0212, +0.0350] pooled; the prediction *gains* is **not
+  confirmed**. One seed of three is negative on both tables.
+- **Secondary 1, probit − MCAR: no verdict,** +0.0059 [−0.0191, +0.0309]. Predicted not *gains*; consistent, but on
+  controls G2 calls non-informative.
+- **Secondary 2, outcome − probit: no verdict,** +0.0010 [−0.0283, +0.0303]; predicted *gains*, not confirmed.
+- **The premise is missing here (descriptive, decides nothing):** A1 − A2 in macro-F1 is +0.0002 and −0.0007 on the MCAR
+  files, against −0.012 to −0.078 on E155's MCAR siblings. With no MCAR deficit there is no gap for the outcome mechanism
+  to close; A1 sits within +0.007 of A2 on all six files, and its log loss is lower on both outcome files (−0.012).
+- **What it leads to (the rule's third branch):** E155's secondary does not replicate on these tables; the H2 sentence
+  keeps only E155's inconclusive primaries. No ADR changes.
+- **Limits beside the call:** the corrected interval is about ±0.03 wide over 15 cells, three times the hold band, so
+  neither *gains* nor *holds* was reachable at effects of this size; the tables are small (6 and 8 columns) and share a
+  cohort, which may be why A2's missForest fill has no edge to lose.
