@@ -931,6 +931,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   secondary found A1 at parity with A2 on outcome-dependent files and further behind on self-masking ones, in its own
   data. **E156 pre-registered 2026-11-06** ([c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md)):
   MIMIC-IV complete tables with injected mechanisms, seeds 2525/4747/6969, 36 cells on gorgona8, E123's G2 beside.
+- **T53 · ReMasker as an external deep baseline** (the user's "Vamos fazer o 1 e 3", 2026-11-06; BACKLOG I3).
+  **E157 pre-registered 2026-11-06** ([imputation-protocol/55](tickets/imputation-protocol/55-remasker.md)): written in
+  `src/training/remasker.py`, E48's design on 9 numerical confirmation variants, 27 pairs on gorgona8.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

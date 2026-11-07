@@ -4193,3 +4193,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [c15-mnar-prediction/12](tickets/c15-mnar-prediction/12-mechanism-split.md);
   `scripts/experiments/mechanism_split.py`, `run_e156_chain.sh`.
 
+### E157 · ReMasker as an external deep baseline (pre-registered 2026-11-06)
+
+- **Status:** in progress, pre-registered 2026-11-06 on the user's go ("Vamos fazer o 1 e 3 até amanhã a tarde"). T53.
+- **Hypothesis:** none directional; E48's measurement for MaCoDE repeated for ReMasker (Du, Melis and Wang, ICLR 2024),
+  the nearest masked-autoencoder imputer.
+- **Scenarios:** ReMasker at the reference code's settings (600 epochs, batch 64), written in `src/training/remasker.py`
+  (the reference has no licence; departures stated: inductive, gaps never visible, batched fill, own streams). E44's
+  confirmation set at seeds 707/808/909, its numerical variants that fit a night: pendigits 40/60/80nan, vehicle,
+  biodeg, kc2 at 40/80nan; 27 pairs. Letter (about 25 process-hours) and electricity (categorical) out.
+- **Measures and decision rule:** E48's: K − ReMasker per variant (primary), ReMasker − strong tier / bar / tuned bar,
+  K − best of all, fit time; induced `impute_score`, verdict rule, 1% SESOI. Strong-tier proposal if better than its
+  best on at least 3 of 9. Read once with all pairs in, by 14:00 GMT-3 on 2026-11-07, else partial.
+- **Sources:** [imputation-protocol/55](tickets/imputation-protocol/55-remasker.md); `remasker_run.py`,
+  `run_remasker_lanes.py`, `remasker_report.py`.
+
