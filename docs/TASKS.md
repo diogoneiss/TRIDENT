@@ -949,6 +949,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   for the thesis sentence, which was **accepted 2026-11-07 12:00 GMT-3** ("aprovo a formulação"): "TRIDENT supera o ReMasker nas 9 variantes numéricas do conjunto de confirmação, de 40% a 80% de lacunas; o ReMasker supera a faixa forte apenas no pendigits a 40% e 60%". T53 done.
   **E159 pre-registered 2026-11-07 21:43 GMT-3** ([imputation-protocol/57](tickets/imputation-protocol/57-remasker-letter.md)): letter
   40/60/80nan under the paper's rule, medusa1 and gorgona8 (the user's "De acordo, va").
+  **E160 pre-registered 2026-11-07 21:46 GMT-3** ([imputation-protocol/58](tickets/imputation-protocol/58-remasker-off-mcar.md)):
+  ReMasker off MCAR on the MAR and MNAR families' numerical tables, 72 pairs on gorgona8.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

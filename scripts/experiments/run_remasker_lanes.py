@@ -6,7 +6,7 @@
 With no option it is E157's launch. E158 (imputation-protocol/56) passes ``--rule paper``, its own ``--out``, and
 ``--host``, which keeps that machine's share of the pairs (``MEDUSA1``; every arm of a pair on one machine, ADR 0035).
 E159 (imputation-protocol/57) passes ``--variants`` (the letter variants each machine runs, all three seeds) and
-``--gpus 2`` on medusa1, which spreads its lanes over two GPUs.
+``--gpus 2`` on medusa1, which spreads its lanes over two GPUs. E160 (imputation-protocol/58) passes ``--seeds``.
 
 Splits the 27 (variant, seed) pairs into lanes balanced by estimated minutes (the pre-launch smoke), largest first,
 and starts each lane as one detached shell running ``remasker_run.py`` item by item. Progress goes to
@@ -40,12 +40,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--host", choices=("gorgona8", "medusa1"))
     parser.add_argument("--variants", help="comma-separated variants in place of E157's nine, all three seeds")
     parser.add_argument("--gpus", type=int, help="spread the lanes over this many GPUs")
+    parser.add_argument("--seeds", default="707,808,909", help="comma-separated seeds (E160: the families' own)")
     options = parser.parse_args(argv)
     lanes, out = options.lanes, options.out
     if not Path("train.py").exists():
         sys.exit("run from the TRIDENT checkout root")
     variants = options.variants.split(",") if options.variants else CONFIRMATION
-    items = [(v, s, "confirmation") for v in variants for s in (707, 808, 909)]
+    seeds = [int(x) for x in options.seeds.split(",")]
+    items = [(v, s, "confirmation") for v in variants for s in seeds]
     if options.host is not None:
         items = [i for i in items if ((i[0], i[1]) in MEDUSA1) == (options.host == "medusa1")]
     loads = [0.0] * lanes

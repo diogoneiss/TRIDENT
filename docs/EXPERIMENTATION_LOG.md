@@ -4262,3 +4262,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [imputation-protocol/57](tickets/imputation-protocol/57-remasker-letter.md); `run_remasker_lanes.py
   --variants --gpus`, `remasker_report.py --variants --remasker DIR...`.
 
+### E160 · ReMasker off MCAR: the MAR and MNAR families (pre-registered 2026-11-07 21:46 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-07 21:46 GMT-3 on the user's go ("De acordo, va"). T53.
+- **Hypothesis:** does ReMasker (paper rule) gain ground on TRIDENT off MCAR, as its paper's robustness claim would
+  suggest?
+- **Scenarios:** MAR: E64's `{biodeg,kc2,vehicle}_{marf,marfctl}_{20,60}nan` × 404/505/606; MNAR: E45/E46's
+  `{biodeg,kc2,vehicle}_probit_{20,60}nan` and MCAR controls × 42/7/13; 72 pairs on gorgona8.
+- **Measures and decision rule:** per variant H/K − ReMasker, ReMasker − strong/bar; (H − ReMasker) mechanism minus
+  control per table-rate; primary over 12 table-rates, supported if worse on ≥4 and better on ≤1, refuted if worse on
+  ≤1, mixed otherwise. Read once with all pairs in.
+- **Sources:** [imputation-protocol/58](tickets/imputation-protocol/58-remasker-off-mcar.md);
+  `remasker_offmcar_report.py`, `run_remasker_lanes.py --seeds`.
+
