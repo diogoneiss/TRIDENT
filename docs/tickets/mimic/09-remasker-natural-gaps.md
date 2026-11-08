@@ -48,3 +48,45 @@ This ticket was written and committed before the study's first scored cell.
   ReMasker − TabPFN on `rmse_num_z` (E148's offline pass). Fit time.
 - **What it leads to:** a sentence for the user beside E148's. No default, bar or tier change. One seed set, two views
   of one cohort, as E148.
+
+## Outcome (2026-11-08 13:46 GMT-3)
+
+All six pairs were in at 13:41 GMT-3: cardio on medusa1 at 12:05 and SOFA on gorgona8 at 13:41. No lane failed. The
+SHA-256 of medusa1's three CSVs matched after the copy. Every row carries `remask_paper` 1 and `categorical_mode` 1.
+Read once, at 13:43 GMT-3, with the command above. Unedited printout:
+
+```
+## mimic-cardio_natural
+- rmse_num_z: decoder 0.8116, ReMasker 1.6203, TabPFN 0.8520
+- mae_num_z: decoder 0.4513, ReMasker 1.0186, TabPFN 0.4511
+- impute_score: decoder 0.8072, ReMasker 1.5317, TabPFN 0.8459
+  decoder − ReMasker, mae_num_z (n=15): -0.5673 [-0.6450, -0.4896]
+  decoder − ReMasker, impute_score (ReMasker's categorical cells mode-filled) (n=15): -0.7245 [-0.8747, -0.5742]
+  ReMasker − best fixed baseline per fold, rmse_num_z (n=15): +0.8021 [+0.6403, +0.9639]
+  ReMasker − TabPFN, rmse_num_z (n=15): +0.7683 [+0.6066, +0.9300]
+  ReMasker fit 791 s a fold; bar by impute_score 0.8199
+## mimic-sofa_natural
+- rmse_num_z: decoder 0.8855, ReMasker 1.7605, TabPFN 0.8999
+- mae_num_z: decoder 0.4925, ReMasker 1.1353, TabPFN 0.4665
+- impute_score: decoder 0.8848, ReMasker 1.6283, TabPFN 0.8956
+  decoder − ReMasker, mae_num_z (n=15): -0.6427 [-0.7610, -0.5244]
+  decoder − ReMasker, impute_score (ReMasker's categorical cells mode-filled) (n=15): -0.7435 [-0.9466, -0.5404]
+  ReMasker − best fixed baseline per fold, rmse_num_z (n=15): +0.8596 [+0.6296, +1.0896]
+  ReMasker − TabPFN, rmse_num_z (n=15): +0.8606 [+0.6295, +1.0917]
+  ReMasker fit 1944 s a fold; bar by impute_score 0.8984
+
+PRIMARY mimic-cardio_natural, decoder − ReMasker, rmse_num_z (n=15): -0.8088 [-0.9697, -0.6479], Holm p 0.0000 -> better
+PRIMARY mimic-sofa_natural, decoder − ReMasker, rmse_num_z (n=15): -0.8750 [-1.1056, -0.6444], Holm p 0.0000 -> better
+```
+
+- **Primary, by the rule:** the decoder is better than ReMasker on both tables (−0.809 on cardio, −0.875 on SOFA,
+  Holm p < 0.0001).
+- **Arm validity in doubt; no sentence drawn.** The pre-registered descriptive line puts ReMasker +0.80 and +0.86
+  `rmse_num_z` above the best fixed baseline. Mean fill alone scores 1.01–1.04 on cardio and 1.00–1.02 on SOFA on
+  these cells (E148's `raw_fold_metrics.csv`, `impute/masked/baseline/mean_mode/rmse_num_z`, per seed). ReMasker's 1.62
+  and 1.76 are worse than the mean. A baseline worse than the mean says nothing about a competent deep baseline, so this
+  result is not a claim that TRIDENT beats ReMasker on clinical gaps.
+- **What was checked:** all 600 epochs ran (the loop in `src/training/remasker.py` has no early stop). Cardio's
+  791 s a fold on medusa1's 5090s against 49 min in gorgona8's smoke is a speed difference, not a short run.
+- **Next:** a diagnostic off the record (scaling against MIMIC's tails, per-column error against the mean). Any rerun
+  with a changed arm is a new E-id, never a re-read of this one.

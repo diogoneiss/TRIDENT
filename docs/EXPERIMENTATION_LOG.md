@@ -4292,7 +4292,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E161 · ReMasker on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-08 10:50 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-08 10:50 GMT-3 on the user's go ("Execute d e c"). T53.
+- **Status:** done 2026-11-08 13:46 GMT-3, primary better on both tables but the arm is in doubt (pre-registered 2026-11-08 10:50 GMT-3 on the user's go, "Execute d e c"). T53.
 - **Hypothesis:** none directional. E148's comparison gets a deep baseline on gaps a clinician left.
 - **Scenarios:** ReMasker (paper rule) on E148's masked cells, `mimic-{cardio,sofa}_natural` × 42/7/13, 6 pairs.
   ReMasker sees the numerical columns only and mode-fills the categorical ones. Cardio runs on medusa1, SOFA on
@@ -4302,6 +4302,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   caveat), ReMasker − the best fixed baseline and − TabPFN on `rmse_num_z`. Read once with all pairs in.
 - **Sources:** [mimic/09](tickets/mimic/09-remasker-natural-gaps.md); `remasker_run.py` (categorical mode fill),
   `remasker_mimic_report.py`.
+- **Results:** decoder − ReMasker `rmse_num_z` −0.809 [−0.970, −0.648] on cardio and −0.875 [−1.106, −0.644] on SOFA,
+  Holm p < 0.0001, both better. ReMasker scores 1.620 and 1.761, against mean fill's 1.01–1.04 and 1.00–1.02 on the same
+  cells: +0.80 and +0.86 above the best fixed baseline, +0.77 and +0.86 above TabPFN. All 600 epochs ran.
+- **Conclusion:** better by the rule, but ReMasker is worse than the mean on these tables, so the comparison says
+  nothing about a competent deep baseline and no sentence is drawn. A diagnostic follows off the record; a changed arm
+  would be a new E-id.
 
 ### E162 · The deployable hybrid with missForest where TRIDENT trails it (pre-registered 2026-11-08 11:01 GMT-3)
 
