@@ -958,6 +958,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   under MAR on 4/6). A sentence for the user.
   **E161 pre-registered 2026-11-08 10:50 GMT-3** ([mimic/09](tickets/mimic/09-remasker-natural-gaps.md)): ReMasker on E148's MIMIC-IV
   natural-gap cells, numerical columns, cardio on medusa1 and SOFA on gorgona8 (the user's "Execute d e c").
+- **T54 · The deployable hybrid with missForest where TRIDENT trails it** (the user's "Execute d e c", 2026-11-08).
+  **E162 pre-registered 2026-11-08 11:01 GMT-3** ([imputation-protocol/59](tickets/imputation-protocol/59-missforest-hybrid.md)): T39's `table`
+  rule with missForest as the other side on `vehicle_80nan` and `biodeg_80nan`, E89's and E90's cell tables, CPU only.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

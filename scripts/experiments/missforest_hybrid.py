@@ -1,0 +1,148 @@
+"""E162: the deployable hybrid with missForest in TabPFN's place, where TRIDENT trails missForest (T39 rule, ADR 0031).
+
+    uv run --python 3.11 python -B scripts/experiments/missforest_hybrid.py cells <e89|e90> <variant> <seed>
+    uv run --python 3.11 python -B scripts/experiments/missforest_hybrid.py --tally
+
+``cells`` reads E89's (seeds 1212/2323/3434) or E90's (4545/5656/6767) cell tables, which hold H's fills of the test
+split's induced cells and of the hidden observed validation cells. It refits ADR 0016's missForest on each training
+fold, fills the same cells (the validation cells group by group, as TabPFN's were), and asserts that missForest's score
+on the test cells equals the run's own logged missForest score, fold by fold. CPU only; no training, nothing in the
+store. ``--tally`` applies the ``table`` rule (ADR 0031 decision 6's deployable rule) with missForest as the other side
+and prints, per study and variant: H, missForest, the hybrid; hybrid − H and hybrid − missForest (1% SESOI); the
+``column`` rule beside it.
+"""
+
+from __future__ import annotations
+
+import json
+import shutil
+import sys
+import time
+import warnings
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path.cwd()
+if not (ROOT / "train.py").exists():
+    sys.exit(f"run from the TRIDENT checkout root, not {ROOT}")
+sys.path.insert(0, str(ROOT))
+
+from scripts.experiments import blend_weights as weights  # noqa: E402
+from scripts.experiments import deployable_hybrid as e82  # noqa: E402
+from scripts.experiments import hybrid_selection_rules as rules  # noqa: E402
+from scripts.experiments import report_common as common  # noqa: E402
+from scripts.experiments import tabpfn_blend as tb  # noqa: E402
+
+STATE = Path("/scratch2/diogoneiss/trident-2026-11-08-missforest-hybrid")
+VARIANTS = ("vehicle_80nan", "biodeg_80nan")
+STUDIES = {
+    "e89": ("deployable-hybrid-2026-10-27", Path("/scratch2/diogoneiss/trident-2026-10-28-hybrid-selection-rules"), (1212, 2323, 3434)),
+    "e90": ("hybrid-confirmation-2026-10-28", Path("/scratch2/diogoneiss/trident-2026-10-28-hybrid-confirmation"), (4545, 5656, 6767)),
+}
+SESOI = 0.01
+
+
+def _typed_load(path: Path, columns: tuple[str, ...]) -> pd.DataFrame:
+    return e82._typed(pd.read_csv(path, dtype={c: object for c in columns}), columns)
+
+
+def cells(study: str, variant: str, seed: int) -> None:
+    from src.training.data import build_folds, prepare_dataset
+    from src.training.imputation_metrics import NUMERICAL
+    from src.training.missforest import fit_missforest_imputers
+    from src.training.types import DatasetSpec
+
+    warnings.filterwarnings("ignore")
+    started = time.time()
+    experiment, state, _ = STUDIES[study]
+    source, out = state / "cells" / f"{variant}_s{seed}", STATE / "cells" / study / f"{variant}_s{seed}"
+    found = common.parents(experiment)[(variant, seed)]
+    if len(found) != 1:
+        raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
+    logged = np.asarray(common.fold_table(found[0])["impute/induced/baseline/missforest/impute_score"], dtype=float)
+    dataset = prepare_dataset(DatasetSpec.from_name(variant, None))
+    features = dataset.frame.drop(columns=[dataset.label_column])
+    numerical, categorical = list(dataset.numerical_columns), list(dataset.categorical_columns)
+    out.mkdir(parents=True, exist_ok=True)
+    for k, fold in enumerate(build_folds(dataset.frame, dataset.label_column, tb.FOLDS, seed), start=1):
+        train = features.iloc[np.asarray(fold.train_indices)].reset_index(drop=True)
+        validation = features.iloc[np.asarray(fold.validation_indices)].reset_index(drop=True)
+        test = features.iloc[np.asarray(fold.test_indices)].reset_index(drop=True)
+        imputer = fit_missforest_imputers(train, numerical, categorical)[0]
+        naive = json.loads((source / f"naive_fold_{k}.json").read_text())
+
+        def fill(frame: pd.DataFrame, table: pd.DataFrame) -> list[object]:
+            r, c = table["row"].to_numpy(dtype=int), frame.columns.get_indexer(pd.Index(table["column"]))
+            hide = np.zeros(frame.shape, dtype=bool)
+            hide[r, c] = True
+            values = imputer.impute(frame, hide).to_numpy(dtype=object)[r, c]
+            return [float(g) if kind == NUMERICAL else str(g) for g, kind in zip(values, table["kind"])]
+
+        test_cells = _typed_load(source / f"test_fold_{k}.csv", ("actual", "model", "tabpfn")).drop(columns="tabpfn")
+        test_cells["missforest"] = pd.Series(fill(test, test_cells), dtype=object)
+        score = tb._score(test_cells.assign(imputed=test_cells["missforest"]), naive)
+        assert abs(score - logged[k - 1]) < 1e-9, f"{variant} s{seed} fold {k}: missForest {score} is not the run's {logged[k - 1]}"
+        selection = _typed_load(source / f"selection_fold_{k}.csv", ("actual", "model", "tabpfn")).drop(columns="tabpfn")
+        guesses: list[object] = [None] * len(selection)
+        for g in range(e82.GROUPS):
+            part = np.flatnonzero(selection["group"].to_numpy() == g)
+            for i, guess in zip(part, fill(validation, selection.iloc[part])):
+                guesses[i] = guess
+        selection["missforest"] = pd.Series(guesses, dtype=object)
+        test_cells.to_csv(out / f"test_fold_{k}.csv", index=False)
+        selection.to_csv(out / f"selection_fold_{k}.csv", index=False)
+        for name in (f"naive_fold_{k}.json", f"scale_fold_{k}.json"):
+            shutil.copy(source / name, out / name)
+    print(f"DONE {study} {variant} s{seed}: missForest equals the run's on 5 folds, {time.time() - started:.0f} s", flush=True)
+
+
+def _load(study: str, variant: str, seed: int, kind: str, k: int) -> pd.DataFrame:
+    # the rules read the other side as "tabpfn"; here it is missForest
+    frame = _typed_load(STATE / "cells" / study / f"{variant}_s{seed}" / f"{kind}_fold_{k}.csv", ("actual", "model", "missforest"))
+    return frame.rename(columns={"missforest": "tabpfn"})
+
+
+def scores(study: str, variant: str, seed: int) -> dict[str, list[float]]:
+    out: dict[str, list[float]] = {m: [] for m in ("H", "missforest", "table", "column")}
+    directory = STATE / "cells" / study / f"{variant}_s{seed}"
+    for k in range(1, tb.FOLDS + 1):
+        test, selection = _load(study, variant, seed, "test", k), _load(study, variant, seed, "selection", k)
+        naive = json.loads((directory / f"naive_fold_{k}.json").read_text())
+        scales = json.loads((directory / f"scale_fold_{k}.json").read_text())
+        fills = {"H": list(test["model"]), "missforest": list(test["tabpfn"])}
+        fills |= {r: weights.apply(test, rules.rule_weights(r, selection, selection, scales), weights.EQUAL) for r in ("table", "column")}
+        for method, values in fills.items():
+            out[method].append(tb._score(test.assign(imputed=np.array(values, dtype=object)), naive))
+    return out
+
+
+def tally() -> None:
+    for study, (_, _, seeds) in STUDIES.items():
+        missing = [(v, s) for v in VARIANTS for s in seeds if not (STATE / "cells" / study / f"{v}_s{s}" / "selection_fold_5.csv").exists()]
+        if missing:
+            print(f"## {study}: incomplete, {missing}")
+            continue
+        print(f"## {study} (seeds {'/'.join(map(str, seeds))})")
+        for variant in VARIANTS:
+            per = [scores(study, variant, s) for s in seeds]
+            values = {m: [np.asarray(p[m]) for p in per] for m in per[0]}
+            levels = ", ".join(f"{m} {np.concatenate(v).mean():.4f}" for m, v in values.items())
+            parts = []
+            for first, second in (("table", "H"), ("table", "missforest"), ("H", "missforest"), ("column", "H"), ("column", "missforest")):
+                scale = float(np.mean([v.mean() for v in values[second]]))
+                v = common.verdict([a - b for a, b in zip(values[first], values[second])], sesoi=SESOI * scale)
+                parts.append(f"{first} − {second} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}")
+            print(f"- `{variant}`: {levels}\n  - " + "\n  - ".join(parts))
+        print()
+
+
+if __name__ == "__main__":
+    argv = sys.argv[1:]
+    if argv[:1] == ["cells"] and len(argv) == 4:
+        cells(argv[1], argv[2], int(argv[3]))
+    elif argv == ["--tally"]:
+        tally()
+    else:
+        sys.exit(__doc__)

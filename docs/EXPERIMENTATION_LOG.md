@@ -4303,3 +4303,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** [mimic/09](tickets/mimic/09-remasker-natural-gaps.md); `remasker_run.py` (categorical mode fill),
   `remasker_mimic_report.py`.
 
+### E162 · The deployable hybrid with missForest where TRIDENT trails it (pre-registered 2026-11-08 11:01 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-08 11:01 GMT-3 on the user's go ("Execute d e c"). T54.
+- **Hypothesis:** T39's deployable `table` rule, with missForest in TabPFN's place, closes TRIDENT's 80nan gap to
+  missForest on `vehicle_80nan` and `biodeg_80nan`.
+- **Scenarios:** E89's (1212/2323/3434) and E90's (4545/5656/6767) cell tables, missForest refit per training fold
+  (CPU, the run's logged missForest score asserted fold by fold); arms H, missForest, the `table` hybrid.
+- **Measures and decision rule:** fold-pair verdict with 1% SESOI. Primary on E90's seeds: supported if the hybrid is
+  better than H and not worse than missForest on both variants, refuted if better than H on neither, mixed otherwise.
+  E89's seeds beside. Read once with all 12 pairs in.
+- **Sources:** [imputation-protocol/59](tickets/imputation-protocol/59-missforest-hybrid.md); `missforest_hybrid.py`.
+
