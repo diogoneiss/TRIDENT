@@ -4253,7 +4253,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E159 · ReMasker on letter, the paper's rule (pre-registered 2026-11-07 21:43 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-07 21:43 GMT-3 on the user's go ("De acordo, va"). T53.
+- **Status:** done 2026-11-08 02:38 GMT-3 (pre-registered 2026-11-07 21:43 GMT-3 on the user's go, "De acordo, va"). T53.
 - **Hypothesis:** none directional; E158 extended to `letter_{40,60,80}nan`, the numerical confirmation table left out
   for cost.
 - **Scenarios:** ReMasker paper rule × 707/808/909, 9 pairs; medusa1 letter 60/80nan, gorgona8 letter 40nan (ADR 0035).
@@ -4261,10 +4261,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   variants (E158's nine with these). Read once with all pairs in.
 - **Sources:** [imputation-protocol/57](tickets/imputation-protocol/57-remasker-letter.md); `run_remasker_lanes.py
   --variants --gpus`, `remasker_report.py --variants --remasker DIR...`.
+- **Results:** K better than ReMasker on 3/3 letter variants (−0.040, −0.012, −0.054), so on 12/12 numerical variants.
+  ReMasker better than the strong tier's best on letter 40nan (−0.047) and 60nan (−0.072), worse at 80nan (+0.040):
+  4 of 12 overall (pendigits and letter at 40/60nan), the pre-registered threshold. medusa1's CSVs SHA-256 6/6 OK.
+- **Conclusion:** an ADR amending 0021 to admit ReMasker to the strong tier is proposed for the user's decision (not
+  written); against it, every win is on the two large tables at 40–60nan, and a fold costs 58 min on letter_40nan. The
+  accepted sentence's count becomes 12, with letter added beside pendigits; wording the user's.
 
 ### E160 · ReMasker off MCAR: the MAR and MNAR families (pre-registered 2026-11-07 21:46 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-07 21:46 GMT-3 on the user's go ("De acordo, va"). T53.
+- **Status:** done 2026-11-08 02:38 GMT-3 (pre-registered 2026-11-07 21:46 GMT-3 on the user's go, "De acordo, va"). T53.
 - **Hypothesis:** does ReMasker (paper rule) gain ground on TRIDENT off MCAR, as its paper's robustness claim would
   suggest?
 - **Scenarios:** MAR: E64's `{biodeg,kc2,vehicle}_{marf,marfctl}_{20,60}nan` × 404/505/606; MNAR: E45/E46's
@@ -4274,4 +4280,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   ≤1, mixed otherwise. Read once with all pairs in.
 - **Sources:** [imputation-protocol/58](tickets/imputation-protocol/58-remasker-off-mcar.md);
   `remasker_offmcar_report.py`, `run_remasker_lanes.py --seeds`.
+- **Results:** primary refuted: (H − ReMasker), mechanism minus control, worse on 1 of 12 table-rates (biodeg probit
+  60nan, +0.059), better on 5. MAR: TRIDENT's lead grows on 4/6 (−0.07 to −0.22), none worse; MNAR: 4 no difference, 1
+  better, 1 worse. H better than ReMasker on 11/12 mechanism variants (kc2_probit_60nan no difference); ReMasker worse
+  than the strong tier on 10/12.
+- **Conclusion:** ReMasker does not gain ground on TRIDENT off MCAR; a sentence for the user, no default, bar or tier
+  change.
 

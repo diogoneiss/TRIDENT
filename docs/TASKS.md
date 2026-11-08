@@ -951,6 +951,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   40/60/80nan under the paper's rule, medusa1 and gorgona8 (the user's "De acordo, va").
   **E160 pre-registered 2026-11-07 21:46 GMT-3** ([imputation-protocol/58](tickets/imputation-protocol/58-remasker-off-mcar.md)):
   ReMasker off MCAR on the MAR and MNAR families' numerical tables, 72 pairs on gorgona8.
+  **E159 done 2026-11-08 02:38 GMT-3:** K better on 3/3 letter variants (12/12 numerical); ReMasker above the strong tier on letter
+  40/60nan, so 4 of 12 overall, the threshold: an ADR amending 0021 (ReMasker in the strong tier) is the user's call;
+  the accepted sentence's count becomes 12, wording the user's.
+  **E160 done 2026-11-08 02:38 GMT-3:** refuted, ReMasker does not gain ground off MCAR (worse 1 of 12, better 5; the lead grows
+  under MAR on 4/6). A sentence for the user.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
