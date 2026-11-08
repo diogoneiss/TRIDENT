@@ -956,6 +956,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   the accepted sentence's count becomes 12, wording the user's.
   **E160 done 2026-11-08 02:38 GMT-3:** refuted, ReMasker does not gain ground off MCAR (worse 1 of 12, better 5; the lead grows
   under MAR on 4/6). A sentence for the user.
+  **E161 pre-registered 2026-11-08 10:50 GMT-3** ([mimic/09](tickets/mimic/09-remasker-natural-gaps.md)): ReMasker on E148's MIMIC-IV
+  natural-gap cells, numerical columns, cardio on medusa1 and SOFA on gorgona8 (the user's "Execute d e c").
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

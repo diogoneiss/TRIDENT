@@ -14,6 +14,10 @@ Run from the checkout root.
 
 ``REMASKER_REMASK=paper`` in the environment selects the paper's re-mask count (E158); the default is the reference
 code's (E157). Each row records it as ``baseline/remasker/remask_paper`` (1 or 0).
+
+A table with categorical columns (E161's MIMIC tables, read from ``$TRIDENT_DATASETS_ROOT``) is fitted on its
+numerical columns alone, its categorical cells filled with the training mode (``baseline/remasker/categorical_mode``
+1); the comparison that matters there is on the numerical cells.
 """
 
 from __future__ import annotations
@@ -26,7 +30,9 @@ import warnings
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 ROOT = Path.cwd()
 if not (ROOT / "train.py").exists():
@@ -34,7 +40,7 @@ if not (ROOT / "train.py").exists():
 sys.path.insert(0, str(ROOT))
 
 from scripts.backfill_baseline_imputers import FoldScorer, recompute_folds  # noqa: E402
-from src.training.imputation_baselines import score_baselines  # noqa: E402
+from src.training.imputation_baselines import BaselineImputer, MeanModeImputer, score_baselines  # noqa: E402
 from src.training.remasker import fit_remasker_imputers  # noqa: E402
 
 FOLDS = 5
@@ -42,14 +48,38 @@ RATE = 0.2
 REMASK = os.environ.get("REMASKER_REMASK", "reference")
 
 
+class _WithModes:
+    """ReMasker on the numerical columns; a categorical column (the MIMIC tables, E161) gets the training mode,
+    since ReMasker has no categorical path. Without this the hidden categorical cells would keep their true value."""
+
+    name = "remasker"
+
+    def __init__(self, remasker: BaselineImputer, modes: MeanModeImputer, categorical: Sequence[str]) -> None:
+        self._remasker, self._modes, self._categorical = remasker, modes, list(categorical)
+
+    def fit(self, frame: pd.DataFrame) -> None:
+        self._remasker.fit(frame)
+        self._modes.fit(frame)
+
+    def impute(self, frame: pd.DataFrame, hidden: NDArray[np.bool_]) -> pd.DataFrame:
+        out = self._remasker.impute(frame, hidden)
+        out[self._categorical] = self._modes.impute(frame, hidden)[self._categorical]
+        return out
+
+
 def _scorer(train: pd.DataFrame, numerical: Sequence[str], categorical: Sequence[str]) -> FoldScorer:
     started = time.time()
-    imputers = fit_remasker_imputers(train, numerical, categorical, remask=REMASK)
+    imputers = fit_remasker_imputers(train, numerical, (), remask=REMASK)
+    if categorical:
+        modes = MeanModeImputer(numerical, categorical)
+        modes.fit(train)
+        imputers = [_WithModes(imputers[0], modes, categorical)]
     seconds = time.time() - started
 
     def score(test: pd.DataFrame, cells: pd.DataFrame, naive: Mapping[str, float | str]) -> Mapping[str, float]:
         metrics = {key: float(value) for key, value in score_baselines(imputers, test, cells, naive).metrics.items()}
-        return metrics | {"baseline/remasker/fit_seconds": seconds, "baseline/remasker/remask_paper": float(REMASK == "paper")}
+        return metrics | {"baseline/remasker/fit_seconds": seconds, "baseline/remasker/remask_paper": float(REMASK == "paper"),
+                          "baseline/remasker/categorical_mode": float(bool(categorical))}
 
     return score
 

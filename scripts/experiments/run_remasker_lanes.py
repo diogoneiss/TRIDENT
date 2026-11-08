@@ -7,6 +7,7 @@ With no option it is E157's launch. E158 (imputation-protocol/56) passes ``--rul
 ``--host``, which keeps that machine's share of the pairs (``MEDUSA1``; every arm of a pair on one machine, ADR 0035).
 E159 (imputation-protocol/57) passes ``--variants`` (the letter variants each machine runs, all three seeds) and
 ``--gpus 2`` on medusa1, which spreads its lanes over two GPUs. E160 (imputation-protocol/58) passes ``--seeds``.
+E161 (mimic/09) passes the MIMIC variants with ``TRIDENT_DATASETS_ROOT`` set, which the lanes inherit.
 
 Splits the 27 (variant, seed) pairs into lanes balanced by estimated minutes (the pre-launch smoke), largest first,
 and starts each lane as one detached shell running ``remasker_run.py`` item by item. Progress goes to
@@ -16,13 +17,15 @@ and starts each lane as one detached shell running ``remasker_run.py`` item by i
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 OUT = Path("/scratch2/diogoneiss/trident-2026-11-06-remasker")
 # Minutes a seed (five folds) from the pre-launch timing smoke, beside E156 on the same GPU.
-MINUTES = {"pendigits": 90.0, "kc2": 15.0, "vehicle": 12.0, "biodeg": 10.0, "letter": 165.0}
+MINUTES = {"pendigits": 90.0, "kc2": 15.0, "vehicle": 12.0, "biodeg": 10.0, "letter": 165.0,
+           "mimic-cardio": 245.0, "mimic-sofa": 90.0}  # E161: from a 3-epoch timing smoke
 CONFIRMATION = [
     *(f"pendigits_{level}nan" for level in (40, 60, 80)),
     *(f"{t}_{level}nan" for t in ("vehicle", "biodeg", "kc2") for level in (40, 80)),
@@ -58,6 +61,8 @@ def main(argv: list[str]) -> int:
         assigned[k].append(item)
     out.mkdir(parents=True, exist_ok=True)
     env = f"export TZ=America/Sao_Paulo OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 REMASKER_REMASK={options.rule}"
+    if os.environ.get("TRIDENT_DATASETS_ROOT"):  # E161's MIMIC tables; a detached lane does not read ~/.bashrc
+        env += f" TRIDENT_DATASETS_ROOT={os.environ['TRIDENT_DATASETS_ROOT']}"
     for k, group in enumerate(assigned, start=1):
         group.sort(key=lambda i: (i[2] != "confirmation", -MINUTES[i[0].split("_")[0]]))
         steps = [

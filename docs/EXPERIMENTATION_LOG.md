@@ -4280,10 +4280,26 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   ≤1, mixed otherwise. Read once with all pairs in.
 - **Sources:** [imputation-protocol/58](tickets/imputation-protocol/58-remasker-off-mcar.md);
   `remasker_offmcar_report.py`, `run_remasker_lanes.py --seeds`.
+- **Amendment 2026-11-08 10:50 GMT-3:** the pre-launch fold check compared mean/mode's `impute_score`, which is 1 by
+  construction, so it proved nothing. Redone on `rmse_num_z` and `mae_num_z` for the same five variants, it holds
+  (max |diff| 4e-16): the rebuilt folds are the runs' own.
 - **Results:** primary refuted: (H − ReMasker), mechanism minus control, worse on 1 of 12 table-rates (biodeg probit
   60nan, +0.059), better on 5. MAR: TRIDENT's lead grows on 4/6 (−0.07 to −0.22), none worse; MNAR: 4 no difference, 1
   better, 1 worse. H better than ReMasker on 11/12 mechanism variants (kc2_probit_60nan no difference); ReMasker worse
   than the strong tier on 10/12.
 - **Conclusion:** ReMasker does not gain ground on TRIDENT off MCAR; a sentence for the user, no default, bar or tier
   change.
+
+### E161 · ReMasker on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-08 10:50 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-08 10:50 GMT-3 on the user's go ("Execute d e c"). T53.
+- **Hypothesis:** none directional. E148's comparison gets a deep baseline on gaps a clinician left.
+- **Scenarios:** ReMasker (paper rule) on E148's masked cells, `mimic-{cardio,sofa}_natural` × 42/7/13, 6 pairs.
+  ReMasker sees the numerical columns only and mode-fills the categorical ones. Cardio runs on medusa1, SOFA on
+  gorgona8 (ADR 0035).
+- **Measures and decision rule:** per table, decoder − ReMasker `rmse_num_z`, 15 fold pairs, t interval, Holm over two
+  tables. Better or worse at adjusted p < 0.05 by sign. Descriptive: `mae_num_z`, `impute_score` (with the mode
+  caveat), ReMasker − the best fixed baseline and − TabPFN on `rmse_num_z`. Read once with all pairs in.
+- **Sources:** [mimic/09](tickets/mimic/09-remasker-natural-gaps.md); `remasker_run.py` (categorical mode fill),
+  `remasker_mimic_report.py`.
 

@@ -124,3 +124,10 @@ All 72 pairs finished without a failure (MAR 36, MNAR 36; last at 02:07 GMT-3 on
 
 Primary, (H − ReMasker) mechanism minus control over 12 table-rates: worse 1, better 5 -> refuted
 ```
+
+## Amendment (2026-11-08 10:50 GMT-3)
+
+The disclosure's fold check compared mean/mode's `impute_score`, which is 1 by construction, so it proved nothing.
+Redone on `rmse_num_z` and `mae_num_z` for the same five variants, it holds: max |diff| 4e-16 (biodeg_marf_60nan
+s404, kc2_marfctl_20nan s505, vehicle_probit_60nan s42, biodeg_probit_20nan s7, kc2_60nan s13). The rebuilt folds are
+the runs' own, and the Outcome stands.
