@@ -4305,7 +4305,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E162 · The deployable hybrid with missForest where TRIDENT trails it (pre-registered 2026-11-08 11:01 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-08 11:01 GMT-3 on the user's go ("Execute d e c"). T54.
+- **Status:** done 2026-11-08 11:46 GMT-3, supported (pre-registered 2026-11-08 11:01 GMT-3 on the user's go, "Execute d e c"). T54.
 - **Hypothesis:** T39's deployable `table` rule, with missForest in TabPFN's place, closes TRIDENT's 80nan gap to
   missForest on `vehicle_80nan` and `biodeg_80nan`.
 - **Scenarios:** E89's (1212/2323/3434) and E90's (4545/5656/6767) cell tables, missForest refit per training fold
@@ -4313,5 +4313,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** fold-pair verdict with 1% SESOI. Primary on E90's seeds: supported if the hybrid is
   better than H and not worse than missForest on both variants, refuted if better than H on neither, mixed otherwise.
   E89's seeds beside. Read once with all 12 pairs in.
+- **Results:** missForest's refit equals the run's score on all 60 folds. E90's seeds: `table` hybrid − H −0.064
+  (vehicle) and −0.072 (biodeg), hybrid − missForest −0.021 and −0.012, all better; H − missForest +0.044 and +0.060.
+  E89's seeds agree on every call. The `column` rule trails `table` on every reading.
+- **Conclusion:** supported: the deployable rule with missForest as the other side turns TRIDENT's 80nan loss on these
+  two tables into a lead over missForest. Extending ADR 0031 decision 6 is the user's call. A deployable version still
+  needs a rule that picks the other side without the complete table; this study did not test one.
 - **Sources:** [imputation-protocol/59](tickets/imputation-protocol/59-missforest-hybrid.md); `missforest_hybrid.py`.
 
