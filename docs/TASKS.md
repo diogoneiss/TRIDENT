@@ -960,6 +960,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   natural-gap cells, numerical columns, cardio on medusa1 and SOFA on gorgona8 (the user's "Execute d e c").
   **E161 done 2026-11-08 13:46 GMT-3:** primary better on both tables (−0.81, −0.88), but ReMasker scores worse than mean
   fill (1.62/1.76 against about 1.0), so the arm is in doubt and no sentence is drawn; diagnostic next.
+  **Diagnostic 2026-11-08:** the error sits in the edge-piled columns (vasopressors, GCS, troponin, lactate); thesis sentence
+  accepted 20:24 GMT-3 ([mimic/09](tickets/mimic/09-remasker-natural-gaps.md)).
 - **T54 · The deployable hybrid with missForest where TRIDENT trails it** (the user's "Execute d e c", 2026-11-08).
   **E162 pre-registered 2026-11-08 11:01 GMT-3** ([imputation-protocol/59](tickets/imputation-protocol/59-missforest-hybrid.md)): T39's `table`
   rule with missForest as the other side on `vehicle_80nan` and `biodeg_80nan`, E89's and E90's cell tables, CPU only.

@@ -4308,6 +4308,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** better by the rule, but ReMasker is worse than the mean on these tables, so the comparison says
   nothing about a competent deep baseline and no sentence is drawn. A diagnostic follows off the record; a changed arm
   would be a new E-id.
+- **Diagnostic and sentence (2026-11-08 20:24 GMT-3):** a fold-1 diagnostic per column, explanatory, put ReMasker's
+  error in the columns whose values pile at an end of the min-max scale: vasopressor doses, `gcs_min`, troponin and
+  lactate, 1.3–4.3 against the mean's ~1. On correlated columns it scores 0.39–0.71 against the mean's ~1. The error
+  is not over-fitting. Thesis sentence accepted: "Nas tabelas da MIMIC-IV, o ReMasker como publicado fica abaixo até
+  do preenchimento pela média; o erro se concentra nas colunas cujos valores se acumulam no limite da escala, como as
+  doses de vasopressor." biodeg and kc2 have such columns too; E157–E160 stand as read.
 
 ### E162 · The deployable hybrid with missForest where TRIDENT trails it (pre-registered 2026-11-08 11:01 GMT-3)
 
