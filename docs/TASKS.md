@@ -947,6 +947,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E158 done 2026-11-07 11:42 GMT-3:** K better than ReMasker on 9/9; strong-tier rule 2/9 (pendigits 40/60nan), external deep
   baseline only, no ADR; the paper's rule ends the 80nan collapse (paper − reference −0.52 to −1.07). T53 done but
   for the thesis sentence, which was **accepted 2026-11-07 12:00 GMT-3** ("aprovo a formulação"): "TRIDENT supera o ReMasker nas 9 variantes numéricas do conjunto de confirmação, de 40% a 80% de lacunas; o ReMasker supera a faixa forte apenas no pendigits a 40% e 60%". T53 done.
+  **E159 pre-registered 2026-11-07 21:43 GMT-3** ([imputation-protocol/57](tickets/imputation-protocol/57-remasker-letter.md)): letter
+  40/60/80nan under the paper's rule, medusa1 and gorgona8 (the user's "De acordo, va").
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

@@ -47,12 +47,16 @@ REMASKER = "impute/induced/baseline/remasker/impute_score"
 Cells = list[tuple[common.Run, pd.DataFrame]]
 
 
-def _with_remasker(cells: Cells | None, directory: Path, paper: bool, name: str = "remasker") -> Cells | None:
+def _with_remasker(cells: Cells | None, directory: Path | list[Path], paper: bool, name: str = "remasker") -> Cells | None:
     if cells is None:
         return None
+    directories = directory if isinstance(directory, list) else [directory]
     out = []
     for run, frame in cells:
-        path = directory / f"{run.variant}_s{run.seed}.csv"
+        found = [d / f"{run.variant}_s{run.seed}.csv" for d in directories if (d / f"{run.variant}_s{run.seed}.csv").exists()]
+        if len(found) > 1:
+            raise SystemExit(f"{run.variant} s{run.seed} is in more than one directory: {found}")
+        path = found[0] if found else directories[0] / f"{run.variant}_s{run.seed}.csv"
         if not path.exists():
             return None
         extra = pd.read_csv(path).sort_values("fold").reset_index(drop=True)
@@ -118,13 +122,16 @@ SCOPE = [v for v in confirmation.VARIANTS if v.split("_")[0] in ("pendigits", "v
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--remasker", type=Path, default=DEFAULT_REMASKER)
+    parser.add_argument("--remasker", type=Path, nargs="+", default=[DEFAULT_REMASKER])
+    parser.add_argument("--variants", help="comma-separated variants in place of E157's nine (E159: letter)")
+    parser.add_argument("--study", help="the heading's study label")
     parser.add_argument("--paper", action="store_true", help="the CSVs carry the paper's re-mask rule (E158)")
     parser.add_argument("--against", type=Path, help="E157's CSVs, merged as remasker_reference")
     options = parser.parse_args()
-    found = [(v, _with_remasker(confirmation.cells(v), options.remasker, options.paper)) for v in SCOPE]
-    study = "E158, the paper's re-mask rule" if options.paper else "E157"
-    report(f"Confirmation set (E44), seeds 707/808/909, {study}, 9 variants", found)
+    scope = options.variants.split(",") if options.variants else SCOPE
+    found = [(v, _with_remasker(confirmation.cells(v), list(options.remasker), options.paper)) for v in scope]
+    study = options.study or ("E158, the paper's re-mask rule" if options.paper else "E157")
+    report(f"Confirmation set (E44), seeds 707/808/909, {study}, {len(scope)} variants", found)
     if options.against is not None:
         # Descriptive, after the read and apart from it, so the best of all above never holds E157's arm.
         print("## ReMasker, the paper's rule − the reference code's (E158 − E157), descriptive")
@@ -140,12 +147,12 @@ def main() -> int:
         print(f"  - {common.tally(side)}")
         print()
     calls = [contrast(c, "remasker", "strong").call for _, c in found if c is not None]
-    if len(calls) == len(SCOPE):
-        better = calls.count("better")
+    if len(calls) == len(scope):
+        better, third = calls.count("better"), -(-len(scope) // 3)
         print(f"Decision input: ReMasker better than the strong tier's best on {better} of {len(calls)} variants "
-              f"({'at least 3, the third E48 asked for: propose it for the strong tier' if better >= 3 else 'fewer than 3: an external deep baseline only'}).")
+              f"({f'at least {third}, the third E48 asked for: propose it for the strong tier' if better >= third else f'fewer than {third}: an external deep baseline only'}).")
     else:
-        print(f"incomplete: {len(calls)} of {len(SCOPE)} variants have all three seeds")
+        print(f"incomplete: {len(calls)} of {len(scope)} variants have all three seeds")
     return 0
 
 

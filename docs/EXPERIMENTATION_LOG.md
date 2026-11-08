@@ -4251,3 +4251,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   ReMasker on every variant under both rules. E158 is the thesis's ReMasker comparison. The thesis sentence was accepted
   2026-11-07 12:00 GMT-3 ("aprovo a formulação"); it is in ticket 56.
 
+### E159 · ReMasker on letter, the paper's rule (pre-registered 2026-11-07 21:43 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-07 21:43 GMT-3 on the user's go ("De acordo, va"). T53.
+- **Hypothesis:** none directional; E158 extended to `letter_{40,60,80}nan`, the numerical confirmation table left out
+  for cost.
+- **Scenarios:** ReMasker paper rule × 707/808/909, 9 pairs; medusa1 letter 60/80nan, gorgona8 letter 40nan (ADR 0035).
+- **Measures and decision rule:** E158's; strong-tier proposal if better than its best on at least 4 of the 12 numerical
+  variants (E158's nine with these). Read once with all pairs in.
+- **Sources:** [imputation-protocol/57](tickets/imputation-protocol/57-remasker-letter.md); `run_remasker_lanes.py
+  --variants --gpus`, `remasker_report.py --variants --remasker DIR...`.
+
