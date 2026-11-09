@@ -2,7 +2,7 @@
 variant with T39's cell tables (imputation-protocol/60 and /61).
 
     uv run --python 3.11 python -B scripts/experiments/missforest_generality.py cells <study> <variant> <seed>
-    python3 scripts/experiments/missforest_generality.py --lanes <n>
+    uv run --python 3.11 python -B scripts/experiments/missforest_generality.py --lanes <n>
     uv run --python 3.11 python -B scripts/experiments/missforest_generality.py --tally <e164|e165>
 
 ``cells`` adds missForest's fills (refit per training fold, asserted equal to the run's logged missForest score fold by
