@@ -4350,3 +4350,33 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Everything else is descriptive. Read once with all 18 in.
 - **Sources:** [mimic/10](tickets/mimic/10-hybrid-transplant.md); `mimic_hybrid.py`, `missforest_hybrid.py`.
 
+### E164 · The missForest-side hybrid on every variant with T39's cell tables (pre-registered 2026-11-08 21:14 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-08 21:14 GMT-3 on the user's go ("faça 1 2 e 3"). T54.
+- **Hypothesis:** E162's missForest-side `table` hybrid does no harm where no one chose the variant.
+- **Scenarios:** E90/E91/E93/E95's 38 variants × 4545/5656/6767, 114 pairs. missForest is refit per training fold on
+  medusa1 (CPU) and asserted equal to the runs' logged score. The user's literal scope, 80nan where H trails
+  missForest, held only E162's two variants; this is the extension, disclosed.
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI.
+  - supported if worse than H on none and worse than missForest on at most 2;
+  - refuted if worse than H on 2 or more, or worse than missForest on 5 or more;
+  - mixed otherwise.
+
+  Secondary: better than H, overall and on the 7 variants where H trails missForest.
+- **Sources:** [imputation-protocol/60](tickets/imputation-protocol/60-missforest-hybrid-generality.md); `missforest_generality.py`.
+
+### E165 · A deployable rule that picks the hybrid's other side (pre-registered 2026-11-08 21:14 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-08 21:14 GMT-3 on the user's go ("faça 1 2 e 3"). T54.
+- **Hypothesis:** picking TabPFN or missForest per fold by the validation cells beats ADR 0031 decision 6's TabPFN-side
+  hybrid on some variants and costs nothing elsewhere.
+- **Scenarios:** E164's 114 pairs. Per fold, the side whose `table` hybrid scores lower on fold k's validation cells,
+  with a tie going to TabPFN. The side is picked on the same cells as the weights, which is stated.
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI.
+  - supported if worse than H on none, worse than `table_tabpfn` on at most 1, and better on at least 2;
+  - refuted if worse than `table_tabpfn` on 3 or more, or better on none;
+  - mixed otherwise.
+
+  Read after E164.
+- **Sources:** [imputation-protocol/61](tickets/imputation-protocol/61-hybrid-side-pick.md); `missforest_generality.py`.
+
