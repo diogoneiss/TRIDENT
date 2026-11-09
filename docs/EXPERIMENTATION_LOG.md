@@ -4432,4 +4432,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Scenarios:** development reading on E164/E165's 38 variants (descriptive); primary on E167's 12 fresh variants.
 - **Measures and decision rule:** E165's rule applied to `crossfit`; secondary `crossfit` − `pick`. Fold-pair verdict,
   1% SESOI.
+- **Development reading (2026-11-09 01:02 GMT-3, descriptive):** on the 38 variants the cross-fit pick is worse than H on 1
+  (`spambase_probit_60nan`), better than `table_tabpfn` on 6 and worse on none; E165's two kc2 losses are gone. `crossfit` −
+  `pick` has no call anywhere.
 - **Sources:** [imputation-protocol/63](tickets/imputation-protocol/63-crossfit-side-pick.md); `missforest_hybrid.both_sides`.
