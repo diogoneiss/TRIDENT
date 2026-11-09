@@ -43,7 +43,7 @@ rules.STATE = STATE
 
 
 def todo(which: int, queues: int) -> None:
-    if socket.gethostname() != "medusa1":
+    if socket.gethostname() != "medusa":  # medusa1's hostname
         sys.exit("E163 runs on medusa1")
     for k, (variant, seed) in enumerate((v, s) for s in SEEDS for v in VARIANTS):
         if k % queues == which - 1 and not (STATE / "selection" / f"{variant}_s{seed}" / "selection_fold_5.csv").exists():
