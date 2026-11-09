@@ -4400,7 +4400,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E166 · E163 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("A: E163 em sementes novas"). T55.
+- **Status:** done 2026-11-09 19:35 GMT-3, supported; pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("A: E163 em sementes novas"). T55.
 - **Hypothesis:** E163's result (the TabPFN-side `table` hybrid better than H on the SOFA `tmatch`, never worse than H or
   TabPFN on the two `tmatch` variants) replicates on seeds 4545/5656/6767.
 - **Scenarios:** E163's six MIMIC-IV transplant variants × 4545/5656/6767, 18 runs of H on medusa1, tag
@@ -4409,6 +4409,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `tmatch` variants). Read once with all 18 in.
 - **Amendment (2026-11-09 12:00 GMT-3), stalled, nothing read:** all 54 runs trained by 04:07 GMT-3. During the offline pass TabPFN ran out of GPU memory on the spambase pairs at 04:21 GMT-3. Another user's job held 26.4 GB of each card, and TabPFN keeps one model per column. At about 04:48 GMT-3 medusa1's GPU 0 failed ("Unknown Error"), and CUDA has been unusable on both cards since. After that TabPFN fell back to the CPU: `kc2_marf_60nan` s7, `kc2_probit_60nan` s42/s13 and E166's nine cardio cells were computed there, and `electricity_20nan` s7 is uncertain. The pass refused the SOFA tables (over 1000 rows). Pairs without cells: E167's letter_20nan s7/s13 and all six spambase pairs; E166's nine SOFA cells. Recomputing on a GPU, and where, is the user's call.
 - **Amendment (2026-11-09 12:23 GMT-3), the offline pass moves to gorgona8 (the user's decision, "rode o tabpfn na gorgona8 mesmo"):** H's runs stay medusa1's. Their selection files and ledgers were copied to the same paths on gorgona8, and the store copy there holds all 54 parents. The TabPFN and missForest refits are redone on gorgona8's GPU and CPU for all 54 pairs, not only the missing ones, so that every pair's other side comes from one machine and one device. The H-ledger and missForest asserts still apply. This departs from ADR 0035, which wants every arm of a pair on one machine: H is from medusa1 and TabPFN from gorgona8, the same split in every pair. medusa1's partial cells are kept under `medusa1-partial/`. Comparing their TabPFN fills with gorgona8's is a device check only, not a read.
+- **Results (read once 2026-11-09 19:35 GMT-3, on gorgona8 at c211f20):** on the SOFA `tmatch` the TabPFN-side hybrid is
+  better than H (−0.0114 [−0.0178, −0.0049]) and has no call against TabPFN (+0.0061); on the cardio `tmatch` no call
+  against H (−0.0022) and better than TabPFN (−0.0561). Better than H on 5 of 6 variants, worse than TabPFN on
+  `mimic-sofa-donor_trand_20nan` only (+0.0149, outside the primary). The missForest side is better than H on 3 of 6.
+  Descriptive: the cross-fit pick is worse than `table_tabpfn` on the SOFA `tmatch` (+0.0054 [+0.0007, +0.0102]).
+- **Conclusion:** supported, E163 replicates: on the SOFA `tmatch` the hybrid closes H's gap to TabPFN and is not
+  worse than either. Extending ADR 0031 decision 6 to clinical tables is the user's call. The cross-fit pick's loss to
+  the TabPFN-side hybrid on the SOFA `tmatch` is a point against adopting it on clinical tables without E169.
 - **Sources:** [mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md); `mimic_hybrid.py --study e166`.
 
 ### E167 · E164 and E165 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)

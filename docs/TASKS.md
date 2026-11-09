@@ -992,6 +992,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   adds nothing. ADR 0031 extension to clinical tables and the sentence are the user's call.
   **E166 pre-registered 2026-11-09 00:57 GMT-3** ([mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md)): E163 on seeds
   4545/5656/6767, medusa1 overnight.
+  **E166 done 2026-11-09 19:35 GMT-3, supported** (offline cells on gorgona8): the TabPFN-side hybrid is better than H on
+  the SOFA `tmatch` again (−0.011), no call on the cardio `tmatch`, never worse than TabPFN on either. Extending ADR 0031
+  to clinical tables is the user's call.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
