@@ -4397,3 +4397,39 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** mixed. Picking the side helps where missForest is the better side and costs on two small tables. No
   ADR change; a cross-fit pick is the user's call.
 - **Sources:** [imputation-protocol/61](tickets/imputation-protocol/61-hybrid-side-pick.md); `missforest_generality.py`.
+
+### E166 · E163 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("A: E163 em sementes novas"). T55.
+- **Hypothesis:** E163's result (the TabPFN-side `table` hybrid better than H on the SOFA `tmatch`, never worse than H or
+  TabPFN on the two `tmatch` variants) replicates on seeds 4545/5656/6767.
+- **Scenarios:** E163's six MIMIC-IV transplant variants × 4545/5656/6767, 18 runs of H on medusa1, tag
+  `mimic-hybrid-seeds-2026-11-09`, after E167's runs in the same four queues.
+- **Measures and decision rule:** E163's, unchanged (fold-pair verdict, 1% SESOI; supported / refuted / mixed on the two
+  `tmatch` variants). Read once with all 18 in.
+- **Sources:** [mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md); `mimic_hybrid.py --study e166`.
+
+### E167 · E164 and E165 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("B: E164/E165 confirmatório"). T54.
+- **Hypothesis:** on the 12 variants that decided E164 and E165, the missForest-side hybrid does no harm and the side pick
+  beats the TabPFN-side hybrid on some at no cost, on seeds 42/7/13.
+- **Scenarios:** 12 variants (E164's 7 where H trails missForest, E165's 3 losses and 2 other wins) × 42/7/13, 36 runs of
+  H on medusa1, tag `hybrid-fresh-seeds-2026-11-09`; TabPFN and missForest refit offline per fold.
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI.
+  - `table_missforest`: supported if worse than H on none and worse than missForest on at most 1; refuted if worse than
+    H on 2+ or worse than missForest on 3+; mixed otherwise.
+  - pick: E165's rule unchanged.
+
+  Read once with all 36 in.
+- **Sources:** [imputation-protocol/62](tickets/imputation-protocol/62-hybrid-fresh-seeds.md); `hybrid_fresh_seeds.py`.
+
+### E168 · A cross-fit side pick (pre-registered 2026-11-09 00:57 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("C: escolha cross-fit"). T54.
+- **Hypothesis:** choosing TabPFN or missForest by each side's held-out-group score on the validation cells, rather than
+  on the cells that chose its weights, removes E165's losses to H and keeps its gains.
+- **Scenarios:** development reading on E164/E165's 38 variants (descriptive); primary on E167's 12 fresh variants.
+- **Measures and decision rule:** E165's rule applied to `crossfit`; secondary `crossfit` − `pick`. Fold-pair verdict,
+  1% SESOI.
+- **Sources:** [imputation-protocol/63](tickets/imputation-protocol/63-crossfit-side-pick.md); `missforest_hybrid.both_sides`.

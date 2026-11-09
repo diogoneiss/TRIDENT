@@ -975,12 +975,17 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E164 and E165 done 2026-11-08 22:05 GMT-3, both mixed:** the missForest-side hybrid is worse than H on 1 of 38 (kc2_marf_60nan),
   better on 23 and on all 7 where H trails missForest, never worse than missForest. The pick beats the accepted TabPFN-side
   hybrid on 6 and loses on 1, but is worse than H on 2. ADR 0031 extension and a cross-fit pick are the user's call.
+  **E167 and E168 pre-registered 2026-11-09 00:57 GMT-3** ([62](tickets/imputation-protocol/62-hybrid-fresh-seeds.md),
+  [63](tickets/imputation-protocol/63-crossfit-side-pick.md)): E164/E165 on fresh seeds 42/7/13 on the 12 variants that decided
+  them, and a cross-fit side pick. medusa1 overnight.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
   **E163 done 2026-11-09 00:09 GMT-3, supported:** on the SOFA `tmatch` the TabPFN-side hybrid is better than H (−0.015) and not
   worse than TabPFN; better than H on 5 of 6 variants, equivalent on the cardio `tmatch`. The missForest side gains less; the pick
   adds nothing. ADR 0031 extension to clinical tables and the sentence are the user's call.
+  **E166 pre-registered 2026-11-09 00:57 GMT-3** ([mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md)): E163 on seeds
+  4545/5656/6767, medusa1 overnight.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

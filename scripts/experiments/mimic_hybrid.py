@@ -1,9 +1,10 @@
 """E163: T39's deployable hybrid on E149's MIMIC-IV transplant variants, TabPFN or missForest as the other side (mimic/10).
+E166 (mimic/11) is the same study on seeds 4545/5656/6767: put ``--study e166`` before any command (default ``e163``).
 
-    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py train H <variant> <seed>
-    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py --todo <queue> <queues>
-    uv run --python 3.11 --extra tabpfn python -B scripts/experiments/mimic_hybrid.py cells <variant> <seed>
-    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py --tally
+    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] train H <variant> <seed>
+    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] --todo <queue> <queues>
+    uv run --python 3.11 --extra tabpfn python -B scripts/experiments/mimic_hybrid.py [--study e166] cells <variant> <seed>
+    uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] --tally
 
 ``train`` is ``deployable_hybrid.train`` (H, with the hidden observed validation cells read in place) under this
 study's tag and state. ``cells`` is ``hybrid_selection_rules.cells`` (TabPFN refit, H's ledger asserted equal to the
@@ -37,9 +38,18 @@ STATE = Path("/scratch/diogoneiss/trident-2026-11-08-mimic-hybrid")
 SEEDS = (42, 7, 13)
 VARIANTS = tuple(f"mimic-{t}-donor_{v}_20nan" for t in ("cardio", "sofa") for v in ("tmatch", "trand", "mcar"))
 PRIMARY = tuple(v for v in VARIANTS if "_tmatch_" in v)
+STUDIES = {"e163": (EXPERIMENT, STATE, SEEDS),
+           "e166": ("mimic-hybrid-seeds-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-hybrid-seeds"), (4545, 5656, 6767))}
 
-e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
-rules.STATE = STATE
+
+def use(study: str) -> None:
+    global EXPERIMENT, STATE, SEEDS
+    EXPERIMENT, STATE, SEEDS = STUDIES[study]
+    e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
+    rules.STATE = STATE
+
+
+use("e163")
 
 
 def todo(which: int, queues: int) -> None:
@@ -61,7 +71,7 @@ def tally() -> None:
     if missing:
         print(f"incomplete: {missing}")
         return
-    pairs = mh.PAIRS + (("pick", "H"), ("pick", "table_tabpfn"), ("pick", "table_missforest"))
+    pairs = mh.PAIRS + (("pick", "H"), ("pick", "table_tabpfn"), ("pick", "table_missforest"), ("crossfit", "H"), ("crossfit", "table_tabpfn"))
     calls: dict[str, dict[str, str]] = {}
     for variant in VARIANTS:
         per = [mh.both_sides(STATE / "cells-mf" / f"{variant}_s{s}") for s in SEEDS]
@@ -73,7 +83,8 @@ def tally() -> None:
             v = common.verdict([a - b for a, b in zip(values[first], values[second])], sesoi=mh.SESOI * scale)
             print(f"  - {first} − {second} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}")
             calls.setdefault(variant, {})[f"{first}-{second}"] = v.call
-        print(f"  - the pick took missForest on {int(np.concatenate(values['picked_missforest']).sum())} of 15 folds")
+        print(f"  - the pick took missForest on {int(np.concatenate(values['picked_missforest']).sum())} of 15 folds, the cross-fit pick on "
+              f"{int(np.concatenate(values['crossfit_missforest']).sum())}")
     over = [v for v in PRIMARY if calls[v]["table_tabpfn-H"] == "better"]
     under = [v for v in PRIMARY if calls[v]["table_tabpfn-H"] == "worse"]
     behind = [v for v in PRIMARY if calls[v]["table_tabpfn-tabpfn"] == "worse"]
@@ -85,6 +96,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in STUDIES:
+        use(argv[1])
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] == "H":
         e82.train(argv[2], int(argv[3]), False)
     elif argv[:1] == ["--todo"] and len(argv) == 3:

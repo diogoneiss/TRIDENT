@@ -3,14 +3,15 @@ variant with T39's cell tables (imputation-protocol/60 and /61).
 
     uv run --python 3.11 python -B scripts/experiments/missforest_generality.py cells <study> <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/missforest_generality.py --lanes <n>
-    uv run --python 3.11 python -B scripts/experiments/missforest_generality.py --tally <e164|e165>
+    uv run --python 3.11 python -B scripts/experiments/missforest_generality.py --tally <e164|e165|e168>
 
 ``cells`` adds missForest's fills (refit per training fold, asserted equal to the run's logged missForest score fold by
 fold) beside H's and TabPFN's in E90's, E91's, E93's and E95's cell tables (seeds 4545/5656/6767). E90/E91/E93's tables
 are verified copies from gorgona8 under ``SOURCE``; E95's are medusa1's own. Everything runs on medusa1, CPU only,
 nothing in the store. ``--lanes`` starts detached lanes over the missing pairs, largest tables first; progress goes to
 ``STATE/progress.log``. ``--tally e164`` reads `table_missforest` against H and missForest; ``--tally e165`` reads the
-pick (missforest_hybrid.both_sides) against H and each fixed side. Run from the checkout root.
+pick (missforest_hybrid.both_sides) against H and each fixed side; ``--tally e168`` the cross-fit pick (imputation-protocol/63),
+on these development tables, against H, `table_tabpfn` and the pick. Run from the checkout root.
 """
 
 from __future__ import annotations
@@ -88,8 +89,9 @@ def tally(which: str) -> None:
     if missing:
         print(f"incomplete: {len(missing)} of {len(_pairs())} pairs")
         return
-    pairs = ((("table_missforest", "H"), ("table_missforest", "missforest")) if which == "e164"
-             else (("pick", "H"), ("pick", "table_tabpfn"), ("pick", "table_missforest")))
+    pairs = {"e164": (("table_missforest", "H"), ("table_missforest", "missforest")),
+             "e165": (("pick", "H"), ("pick", "table_tabpfn"), ("pick", "table_missforest")),
+             "e168": (("crossfit", "H"), ("crossfit", "table_tabpfn"), ("crossfit", "pick"))}[which]
     calls: dict[str, dict[str, str]] = {}
     shares: list[float] = []
     for study, (_, _, variants) in STUDIES.items():
@@ -103,10 +105,11 @@ def tally(which: str) -> None:
                 v = common.verdict([a - b for a, b in zip(values[first], values[second])], sesoi=mh.SESOI * scale)
                 calls.setdefault(variant, {})[f"{first}-{second}"] = v.call
                 parts.append(f"{first} − {second} {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}] {v.call}")
-            share = float(np.concatenate(values["picked_missforest"]).mean())
+            share = float(np.concatenate(values["crossfit_missforest" if which == "e168" else "picked_missforest"]).mean())
             shares.append(share)
-            levels = ", ".join(f"{m} {np.concatenate(values[m]).mean():.4f}" for m in ("H", "tabpfn", "missforest", "table_tabpfn", "table_missforest", "pick"))
-            print(f"- `{variant}`{' (trails)' if variant in TRAILS else ''}: {levels}; pick took missForest on {share:.0%} of folds\n  - "
+            levels = ", ".join(f"{m} {np.concatenate(values[m]).mean():.4f}" for m in ("H", "tabpfn", "missforest", "table_tabpfn", "table_missforest", "pick")
+                           + (("crossfit",) if which == "e168" else ()))
+            print(f"- `{variant}`{' (trails)' if variant in TRAILS else ''}: {levels}; {'cross-fit ' if which == 'e168' else ''}pick took missForest on {share:.0%} of folds\n  - "
                   + "\n  - ".join(parts))
     n = len(calls)
 
@@ -122,14 +125,19 @@ def tally(which: str) -> None:
         print(f"SECONDARY better than H on {len(count('table_missforest-H', 'better'))} of {n}; on the {len(TRAILS)} where H trails "
               f"missForest: better than H on {count('table_missforest-H', 'better', TRAILS) or 'none'}")
     else:
-        under = count("pick-H", "worse")
-        over, behind = count("pick-table_tabpfn", "better"), count("pick-table_tabpfn", "worse")
+        rule = "crossfit" if which == "e168" else "pick"
+        under = count(f"{rule}-H", "worse")
+        over, behind = count(f"{rule}-table_tabpfn", "better"), count(f"{rule}-table_tabpfn", "worse")
         reading = ("supported" if not under and len(behind) <= 1 and len(over) >= 2
                    else "refuted" if len(behind) >= 3 or not over else "mixed")
-        print(f"PRIMARY pick on {n} variants: worse than H on {under or 'none'}; against `table_tabpfn` better on {over or 'none'}, "
-              f"worse on {behind or 'none'} -> {reading}")
-        print(f"SECONDARY against `table_missforest`: better on {len(count('pick-table_missforest', 'better'))}, worse on "
-              f"{count('pick-table_missforest', 'worse') or 'none'}; the pick took missForest on {np.mean(shares):.0%} of folds overall")
+        print(f"{'DEVELOPMENT' if which == 'e168' else 'PRIMARY'} {rule} on {n} variants: worse than H on {under or 'none'}; against "
+              f"`table_tabpfn` better on {over or 'none'}, worse on {behind or 'none'} -> {reading}")
+        if which == "e168":
+            print(f"`crossfit` − `pick`: better on {count('crossfit-pick', 'better') or 'none'}, worse on {count('crossfit-pick', 'worse') or 'none'}; "
+                  f"the cross-fit pick took missForest on {np.mean(shares):.0%} of folds overall")
+        else:
+            print(f"SECONDARY against `table_missforest`: better on {len(count('pick-table_missforest', 'better'))}, worse on "
+                  f"{count('pick-table_missforest', 'worse') or 'none'}; the pick took missForest on {np.mean(shares):.0%} of folds overall")
     print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
 
 
@@ -139,7 +147,7 @@ if __name__ == "__main__":
         cells(argv[1], argv[2], int(argv[3]))
     elif argv[:1] == ["--lanes"] and len(argv) == 2:
         lanes(int(argv[1]))
-    elif argv[:1] == ["--tally"] and len(argv) == 2 and argv[1] in ("e164", "e165"):
+    elif argv[:1] == ["--tally"] and len(argv) == 2 and argv[1] in ("e164", "e165", "e168"):
         tally(argv[1])
     else:
         sys.exit(__doc__)

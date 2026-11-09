@@ -136,9 +136,22 @@ def _side(frame: pd.DataFrame, other: str) -> pd.DataFrame:
     return frame.drop(columns=[c for c in ("tabpfn", "missforest") if c != other]).rename(columns={other: "tabpfn"})
 
 
+def _crossfit(chosen: pd.DataFrame, scales: dict[str, float], naive: dict[str, float | str]) -> float:
+    """E168: the side's `table` hybrid on fold k's validation cells, each group filled by weights chosen on the other four."""
+    fills: list[object] = [None] * len(chosen)
+    groups = chosen["group"].to_numpy()
+    for g in range(e82.GROUPS):
+        rest, part = chosen[groups != g], np.flatnonzero(groups == g)
+        for i, value in zip(part, weights.apply(chosen.iloc[part], rules.rule_weights("table", rest, rest, scales), weights.EQUAL)):
+            fills[i] = value
+    return tb._score(chosen.assign(imputed=np.array(fills, dtype=object)), naive)
+
+
 def both_sides(directory: Path) -> dict[str, list[float]]:
-    """Per fold, on the test cells: H, TabPFN, missForest, each side's `table` hybrid and the pick."""
-    out: dict[str, list[float]] = {m: [] for m in ("H", "tabpfn", "missforest", "table_tabpfn", "table_missforest", "pick", "picked_missforest")}
+    """Per fold, on the test cells: H, TabPFN, missForest, each side's `table` hybrid, the pick and the cross-fit pick (E168:
+    the side whose held-out-group score is lower; the test fills are that side's `table` hybrid, as the pick's)."""
+    out: dict[str, list[float]] = {m: [] for m in ("H", "tabpfn", "missforest", "table_tabpfn", "table_missforest", "pick", "picked_missforest",
+                                                   "crossfit", "crossfit_missforest")}
     for k in range(1, tb.FOLDS + 1):
         test = _typed_load(directory / f"test_fold_{k}.csv", ("actual", "model", "tabpfn", "missforest"))
         selection = _typed_load(directory / f"selection_fold_{k}.csv", ("actual", "model", "tabpfn", "missforest"))
@@ -146,16 +159,20 @@ def both_sides(directory: Path) -> dict[str, list[float]]:
         scales = json.loads((directory / f"scale_fold_{k}.json").read_text())
         fills = {"H": list(test["model"]), "tabpfn": list(test["tabpfn"]), "missforest": list(test["missforest"])}
         validation: dict[str, float] = {}
+        held_out: dict[str, float] = {}
         for other in ("tabpfn", "missforest"):
             chosen = _side(selection, other)
             w = rules.rule_weights("table", chosen, chosen, scales)
             fills[f"table_{other}"] = weights.apply(_side(test, other), w, weights.EQUAL)
             validation[other] = tb._score(chosen.assign(imputed=np.array(weights.apply(chosen, w, weights.EQUAL), dtype=object)), naive)
+            held_out[other] = _crossfit(chosen, scales, naive)
         side = "missforest" if validation["missforest"] < validation["tabpfn"] else "tabpfn"
-        fills["pick"] = fills[f"table_{side}"]
+        crossfit = "missforest" if held_out["missforest"] < held_out["tabpfn"] else "tabpfn"
+        fills["pick"], fills["crossfit"] = fills[f"table_{side}"], fills[f"table_{crossfit}"]
         for method, values in fills.items():
             out[method].append(tb._score(test.assign(imputed=np.array(values, dtype=object)), naive))
         out["picked_missforest"].append(float(side == "missforest"))
+        out["crossfit_missforest"].append(float(crossfit == "missforest"))
     return out
 
 
