@@ -4407,6 +4407,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `mimic-hybrid-seeds-2026-11-09`, after E167's runs in the same four queues.
 - **Measures and decision rule:** E163's, unchanged (fold-pair verdict, 1% SESOI; supported / refuted / mixed on the two
   `tmatch` variants). Read once with all 18 in.
+- **Amendment (2026-11-09 12:00 GMT-3), stalled, nothing read:** all 54 runs trained by 04:07 GMT-3. During the offline pass TabPFN ran out of GPU memory on the spambase pairs at 04:21 GMT-3. Another user's job held 26.4 GB of each card, and TabPFN keeps one model per column. At about 04:48 GMT-3 medusa1's GPU 0 failed ("Unknown Error"), and CUDA has been unusable on both cards since. After that TabPFN fell back to the CPU: `kc2_marf_60nan` s7, `kc2_probit_60nan` s42/s13 and E166's nine cardio cells were computed there, and `electricity_20nan` s7 is uncertain. The pass refused the SOFA tables (over 1000 rows). Pairs without cells: E167's letter_20nan s7/s13 and all six spambase pairs; E166's nine SOFA cells. Recomputing on a GPU, and where, is the user's call.
 - **Sources:** [mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md); `mimic_hybrid.py --study e166`.
 
 ### E167 · E164 and E165 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
@@ -4422,6 +4423,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - pick: E165's rule unchanged.
 
   Read once with all 36 in.
+- **Amendment (2026-11-09 12:00 GMT-3), stalled, nothing read:** all 54 runs trained by 04:07 GMT-3. During the offline pass TabPFN ran out of GPU memory on the spambase pairs at 04:21 GMT-3. Another user's job held 26.4 GB of each card, and TabPFN keeps one model per column. At about 04:48 GMT-3 medusa1's GPU 0 failed ("Unknown Error"), and CUDA has been unusable on both cards since. After that TabPFN fell back to the CPU: `kc2_marf_60nan` s7, `kc2_probit_60nan` s42/s13 and E166's nine cardio cells were computed there, and `electricity_20nan` s7 is uncertain. The pass refused the SOFA tables (over 1000 rows). Pairs without cells: E167's letter_20nan s7/s13 and all six spambase pairs; E166's nine SOFA cells. Recomputing on a GPU, and where, is the user's call.
 - **Sources:** [imputation-protocol/62](tickets/imputation-protocol/62-hybrid-fresh-seeds.md); `hybrid_fresh_seeds.py`.
 
 ### E168 · A cross-fit side pick (pre-registered 2026-11-09 00:57 GMT-3)

@@ -40,3 +40,7 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
 - **Read** once with all 36 in: `uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py --tally` on
   medusa1; the same printout carries E168's primary.
 - **What it leads to:** the user's calls on extending ADR 0031 decision 6 to missForest and on a side-picking rule.
+
+## Amendment
+
+- **Amendment (2026-11-09 12:00 GMT-3), stalled, nothing read:** all 54 runs trained by 04:07 GMT-3. During the offline pass TabPFN ran out of GPU memory on the spambase pairs at 04:21 GMT-3. Another user's job held 26.4 GB of each card, and TabPFN keeps one model per column. At about 04:48 GMT-3 medusa1's GPU 0 failed ("Unknown Error"), and CUDA has been unusable on both cards since. After that TabPFN fell back to the CPU: `kc2_marf_60nan` s7, `kc2_probit_60nan` s42/s13 and E166's nine cardio cells were computed there, and `electricity_20nan` s7 is uncertain. The pass refused the SOFA tables (over 1000 rows). Pairs without cells: E167's letter_20nan s7/s13 and all six spambase pairs; E166's nine SOFA cells. Recomputing on a GPU, and where, is the user's call.
