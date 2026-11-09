@@ -49,7 +49,10 @@ REST = ("electricity_40nan", "electricity_80nan", "kr-vs-kp_40nan", "kr-vs-kp_60
         "vehicle_40nan", "biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "biodeg_marf_60nan", "vehicle_marf_60nan",
         "spambase_marf_60nan", "credit-g_marf_60nan", "pendigits_20nan", "kr-vs-kp_20nan", "biodeg_20nan", "credit-g_20nan",
         "vehicle_20nan", "kc2_20nan")
-STUDIES = {"e167": (EXPERIMENT, STATE, VARIANTS),
+# E170 (imputation-protocol/65): E93's off-MCAR variants among REST (2 self-masking MNAR, 4 MAR), named before E169's read
+OFF_MCAR = ("biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "biodeg_marf_60nan", "vehicle_marf_60nan",
+            "spambase_marf_60nan", "credit-g_marf_60nan")
+STUDIES = {"e167":(EXPERIMENT, STATE, VARIANTS),
            "e169": ("hybrid-crossfit-generality-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-generality"), REST)}
 STUDY = "e167"
 
@@ -117,6 +120,12 @@ def tally() -> None:
               f"worse on {count('crossfit-pick', 'worse') or 'none'}")
         print(f"E169 SECONDARY `table_missforest`: worse than H on {count('table_missforest-H', 'worse') or 'none'}, worse than missForest "
               f"on {count('table_missforest-missforest', 'worse') or 'none'}")
+        under = count("crossfit-H", "worse", OFF_MCAR)
+        reading = "supported" if not under else "refuted" if len(under) >= 2 else "mixed"
+        print(f"E170 PRIMARY `crossfit` on E93's {len(OFF_MCAR)} off-MCAR variants here: worse than H on {under or 'none'} -> {reading}")
+        print(f"E170 SECONDARY on them: `crossfit` better than H on {count('crossfit-H', 'better', OFF_MCAR) or 'none'}; `table_tabpfn` "
+              f"worse than H on {count('table_tabpfn-H', 'worse', OFF_MCAR) or 'none'}; `crossfit` worse than `table_tabpfn` on "
+              f"{count('crossfit-table_tabpfn', 'worse', OFF_MCAR) or 'none'}")
         print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
         return
     under, behind = count("table_missforest-H", "worse"), count("table_missforest-missforest", "worse")

@@ -984,6 +984,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   `table_tabpfn` on 7, worse on none.
   **E169 pre-registered 2026-11-09 19:17 GMT-3** ([64](tickets/imputation-protocol/64-crossfit-generality.md)): the cross-fit pick on
   the other 26 of the 38 variants, seeds 42/7/13, 78 runs plus offline cells, all on medusa1.
+  **E170 pre-registered 2026-11-09 19:59 GMT-3** ([65](tickets/imputation-protocol/65-crossfit-off-mcar.md)): in E169's printout, the
+  cross-fit pick against H on E93's six off-MCAR variants among them; no new run.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.

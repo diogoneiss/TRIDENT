@@ -4476,3 +4476,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (disclosed in the ticket). Secondary: gains over `table_tabpfn`, `crossfit` − `pick`, `table_missforest` against H and
   missForest. Read once with all 78 in.
 - **Sources:** [imputation-protocol/64](tickets/imputation-protocol/64-crossfit-generality.md); `hybrid_fresh_seeds.py --study e169`.
+
+### E170 · Does the cross-fit pick remove the hybrid's weakness off MCAR? (pre-registered 2026-11-09 19:59 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-09 19:59 GMT-3 on the user's go ("Leitura sem GPU"), before E169's read. T54.
+- **Hypothesis:** off MCAR, where the accepted TabPFN-side hybrid lost to H (E93, E167 on `spambase_probit_60nan`), the
+  cross-fit pick is never worse than H.
+- **Scenarios:** E93's off-MCAR variants among E169's 26 (`biodeg_probit1p0/2p0_60nan`, the marf variants of biodeg,
+  vehicle, spambase and credit-g), seeds 42/7/13, E169's cells; no new run.
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI. Supported if `crossfit` is worse than H on none of 6,
+  refuted if on 2+, mixed if on 1. Secondary: gains over H, `table_tabpfn` against H, `crossfit` against `table_tabpfn`.
+  Read once in E169's printout.
+- **Sources:** [imputation-protocol/65](tickets/imputation-protocol/65-crossfit-off-mcar.md); `hybrid_fresh_seeds.py --study e169 --tally`.
