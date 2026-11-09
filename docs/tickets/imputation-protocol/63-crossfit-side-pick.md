@@ -196,3 +196,33 @@ DEVELOPMENT crossfit on 38 variants: worse than H on ['spambase_probit_60nan']; 
 - `crossfit` − `pick` has no call on any variant: the difference is small, and it takes missForest more often (42% of
   folds against 33%).
 - Descriptive only: the primary is E167's fresh-seed reading, which this changes in no way.
+
+## Primary reading (read once 2026-11-09 19:01 GMT-3: supported; written 2026-11-09 19:20 GMT-3)
+
+Read in E167's printout ([62](62-hybrid-fresh-seeds.md), Outcome, where the whole printout is). The cross-fit pick is
+worse than H on none of the 12 fresh variants, better than the accepted TabPFN-side hybrid on 7 and worse on none. The
+in-sample pick's loss to H on `spambase_probit_60nan` (+0.0066) is gone: the cross-fit pick reads equivalent there
+(+0.0018) and better than `table_tabpfn` (−0.0064). `crossfit` − `pick`: no better or worse call on any variant.
+Whether a side-picking rule goes into ADR 0031 is the user's call; E169 checks it on the other 26 variants first.
+
+The deciding lines, unedited:
+
+```
+- `spambase_probit_60nan`: H 0.9575, tabpfn 0.9953, missforest 0.9616, table_tabpfn 0.9657, table_missforest 0.9524, pick 0.9641, picked_missforest 0.2000, crossfit 0.9593, crossfit_missforest 0.5333
+  - table_missforest − H -0.0051 [-0.0061, -0.0041] better
+  - table_missforest − missforest -0.0093 [-0.0120, -0.0066] better
+  - table_tabpfn − H +0.0082 [+0.0050, +0.0114] worse
+  - table_tabpfn − tabpfn -0.0296 [-0.0333, -0.0260] better
+  - pick − H +0.0066 [+0.0022, +0.0110] worse
+  - pick − table_tabpfn -0.0016 [-0.0035, +0.0003] equivalent
+  - pick − table_missforest +0.0118 [+0.0072, +0.0163] worse
+  - crossfit − H +0.0018 [-0.0033, +0.0069] equivalent
+  - crossfit − table_tabpfn -0.0064 [-0.0105, -0.0024] better
+  - crossfit − pick -0.0048 [-0.0090, -0.0006] equivalent
+E167 PRIMARY `table_missforest` on 12: worse than H on none, worse than missForest on none -> supported
+E167 SECONDARY better than H on 10 of 12; on the 7 trails: ['biodeg_80nan', 'vehicle_80nan', 'credit-g_40nan', 'biodeg_probit0p25_60nan', 'biodeg_probit_60nan', 'vehicle_probit_60nan', 'electricity_20nan']
+E167 PICK `pick`: worse than H on ['spambase_probit_60nan']; against `table_tabpfn` better on ['biodeg_probit0p25_60nan', 'biodeg_probit_60nan', 'vehicle_probit_60nan', 'electricity_20nan', 'letter_20nan', 'spambase_20nan'], worse on none -> mixed
+E168 PRIMARY `crossfit`: worse than H on none; against `table_tabpfn` better on ['biodeg_probit0p25_60nan', 'biodeg_probit_60nan', 'vehicle_probit_60nan', 'electricity_20nan', 'spambase_probit_60nan', 'letter_20nan', 'spambase_20nan'], worse on none -> supported
+E168 SECONDARY `crossfit` − `pick`: better on none, worse on none
+(fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
+```

@@ -4413,7 +4413,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E167 · E164 and E165 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("B: E164/E165 confirmatório"). T54.
+- **Status:** done 2026-11-09 19:01 GMT-3, supported (the pick mixed); pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("B: E164/E165 confirmatório"). T54.
 - **Hypothesis:** on the 12 variants that decided E164 and E165, the missForest-side hybrid does no harm and the side pick
   beats the TabPFN-side hybrid on some at no cost, on seeds 42/7/13.
 - **Scenarios:** 12 variants (E164's 7 where H trails missForest, E165's 3 losses and 2 other wins) × 42/7/13, 36 runs of
@@ -4426,11 +4426,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Read once with all 36 in.
 - **Amendment (2026-11-09 12:00 GMT-3), stalled, nothing read:** all 54 runs trained by 04:07 GMT-3. During the offline pass TabPFN ran out of GPU memory on the spambase pairs at 04:21 GMT-3. Another user's job held 26.4 GB of each card, and TabPFN keeps one model per column. At about 04:48 GMT-3 medusa1's GPU 0 failed ("Unknown Error"), and CUDA has been unusable on both cards since. After that TabPFN fell back to the CPU: `kc2_marf_60nan` s7, `kc2_probit_60nan` s42/s13 and E166's nine cardio cells were computed there, and `electricity_20nan` s7 is uncertain. The pass refused the SOFA tables (over 1000 rows). Pairs without cells: E167's letter_20nan s7/s13 and all six spambase pairs; E166's nine SOFA cells. Recomputing on a GPU, and where, is the user's call.
 - **Amendment (2026-11-09 12:23 GMT-3), the offline pass moves to gorgona8 (the user's decision, "rode o tabpfn na gorgona8 mesmo"):** H's runs stay medusa1's. Their selection files and ledgers were copied to the same paths on gorgona8, and the store copy there holds all 54 parents. The TabPFN and missForest refits are redone on gorgona8's GPU and CPU for all 54 pairs, not only the missing ones, so that every pair's other side comes from one machine and one device. The H-ledger and missForest asserts still apply. This departs from ADR 0035, which wants every arm of a pair on one machine: H is from medusa1 and TabPFN from gorgona8, the same split in every pair. medusa1's partial cells are kept under `medusa1-partial/`. Comparing their TabPFN fills with gorgona8's is a device check only, not a read.
+- **Results (read once 2026-11-09 19:01 GMT-3, on gorgona8 at 14fa1e0):** `table_missforest` is worse than H on none of 12
+  and worse than missForest on none; better than H on 10, all 7 TRAILS among them, and better than missForest on 9. The
+  in-sample pick is worse than H on `spambase_probit_60nan` (+0.0066 [+0.0022, +0.0110]); against `table_tabpfn` better
+  on 6, worse on none.
+- **Conclusion:** supported: the missForest-side hybrid does no harm on fresh seeds and helps where H trails missForest.
+  The in-sample pick is mixed, its spambase_probit loss replicates. Extending ADR 0031 decision 6 to missForest is the
+  user's call.
 - **Sources:** [imputation-protocol/62](tickets/imputation-protocol/62-hybrid-fresh-seeds.md); `hybrid_fresh_seeds.py`.
 
 ### E168 · A cross-fit side pick (pre-registered 2026-11-09 00:57 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("C: escolha cross-fit"). T54.
+- **Status:** done 2026-11-09 19:01 GMT-3, supported; pre-registered 2026-11-09 00:57 GMT-3 on the user's go ("C: escolha cross-fit"). T54.
 - **Hypothesis:** choosing TabPFN or missForest by each side's held-out-group score on the validation cells, rather than
   on the cells that chose its weights, removes E165's losses to H and keeps its gains.
 - **Scenarios:** development reading on E164/E165's 38 variants (descriptive); primary on E167's 12 fresh variants.
@@ -4439,6 +4446,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Development reading (2026-11-09 01:02 GMT-3, descriptive):** on the 38 variants the cross-fit pick is worse than H on 1
   (`spambase_probit_60nan`), better than `table_tabpfn` on 6 and worse on none; E165's two kc2 losses are gone. `crossfit` −
   `pick` has no call anywhere.
+- **Results (read once 2026-11-09 19:01 GMT-3, in E167's printout):** on the 12 fresh variants the cross-fit pick is
+  worse than H on none (`spambase_probit_60nan` equivalent, +0.0018), better than `table_tabpfn` on 7 and worse on none.
+  `crossfit` − `pick` has no better or worse call. It took missForest on 54% of folds, the pick on 47%.
+- **Conclusion:** supported: the cross-fit pick removes the in-sample pick's loss to H and keeps its gains over the
+  accepted hybrid. E169 tests it on the other 26 variants before it goes to the user as an ADR 0031 amendment.
 - **Sources:** [imputation-protocol/63](tickets/imputation-protocol/63-crossfit-side-pick.md); `missforest_hybrid.both_sides`.
 
 ### E169 · The cross-fit side pick on the other 26 variants (pre-registered 2026-11-09 19:17 GMT-3)

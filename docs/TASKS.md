@@ -978,6 +978,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E167 and E168 pre-registered 2026-11-09 00:57 GMT-3** ([62](tickets/imputation-protocol/62-hybrid-fresh-seeds.md),
   [63](tickets/imputation-protocol/63-crossfit-side-pick.md)): E164/E165 on fresh seeds 42/7/13 on the 12 variants that decided
   them, and a cross-fit side pick. medusa1 overnight.
+  **E167 and E168 done 2026-11-09 19:01 GMT-3** (offline cells on gorgona8 after medusa1's GPU failure): E167 supported,
+  the missForest-side hybrid never worse than H or missForest on 12, better than H on 10; its in-sample pick mixed (worse
+  than H on spambase_probit_60nan again). E168 supported: the cross-fit pick never worse than H, better than
+  `table_tabpfn` on 7, worse on none.
   **E169 pre-registered 2026-11-09 19:17 GMT-3** ([64](tickets/imputation-protocol/64-crossfit-generality.md)): the cross-fit pick on
   the other 26 of the 38 variants, seeds 42/7/13, 78 runs plus offline cells, all on medusa1.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
