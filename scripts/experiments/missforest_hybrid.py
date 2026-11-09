@@ -48,7 +48,8 @@ def _typed_load(path: Path, columns: tuple[str, ...]) -> pd.DataFrame:
     return e82._typed(pd.read_csv(path, dtype={c: object for c in columns}), columns)
 
 
-def cells(study: str, variant: str, seed: int) -> None:
+def add_missforest(experiment: str, source_root: Path, out_root: Path, variant: str, seed: int, keep_tabpfn: bool = True) -> None:
+    """missForest's fills beside the cell table's own (E162; E163–E165 keep TabPFN's column too)."""
     from src.training.data import build_folds, prepare_dataset
     from src.training.imputation_metrics import NUMERICAL
     from src.training.missforest import fit_missforest_imputers
@@ -56,8 +57,7 @@ def cells(study: str, variant: str, seed: int) -> None:
 
     warnings.filterwarnings("ignore")
     started = time.time()
-    experiment, state, _ = STUDIES[study]
-    source, out = state / "cells" / f"{variant}_s{seed}", STATE / "cells" / study / f"{variant}_s{seed}"
+    source, out = source_root / f"{variant}_s{seed}", out_root / f"{variant}_s{seed}"
     found = common.parents(experiment)[(variant, seed)]
     if len(found) != 1:
         raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
@@ -80,11 +80,15 @@ def cells(study: str, variant: str, seed: int) -> None:
             values = imputer.impute(frame, hide).to_numpy(dtype=object)[r, c]
             return [float(g) if kind == NUMERICAL else str(g) for g, kind in zip(values, table["kind"])]
 
-        test_cells = _typed_load(source / f"test_fold_{k}.csv", ("actual", "model", "tabpfn")).drop(columns="tabpfn")
+        test_cells = _typed_load(source / f"test_fold_{k}.csv", ("actual", "model", "tabpfn"))
+        if not keep_tabpfn:
+            test_cells = test_cells.drop(columns="tabpfn")
         test_cells["missforest"] = pd.Series(fill(test, test_cells), dtype=object)
         score = tb._score(test_cells.assign(imputed=test_cells["missforest"]), naive)
         assert abs(score - logged[k - 1]) < 1e-9, f"{variant} s{seed} fold {k}: missForest {score} is not the run's {logged[k - 1]}"
-        selection = _typed_load(source / f"selection_fold_{k}.csv", ("actual", "model", "tabpfn")).drop(columns="tabpfn")
+        selection = _typed_load(source / f"selection_fold_{k}.csv", ("actual", "model", "tabpfn"))
+        if not keep_tabpfn:
+            selection = selection.drop(columns="tabpfn")
         guesses: list[object] = [None] * len(selection)
         for g in range(e82.GROUPS):
             part = np.flatnonzero(selection["group"].to_numpy() == g)
@@ -95,7 +99,12 @@ def cells(study: str, variant: str, seed: int) -> None:
         selection.to_csv(out / f"selection_fold_{k}.csv", index=False)
         for name in (f"naive_fold_{k}.json", f"scale_fold_{k}.json"):
             shutil.copy(source / name, out / name)
-    print(f"DONE {study} {variant} s{seed}: missForest equals the run's on 5 folds, {time.time() - started:.0f} s", flush=True)
+    print(f"DONE {variant} s{seed}: missForest equals the run's on 5 folds, {time.time() - started:.0f} s", flush=True)
+
+
+def cells(study: str, variant: str, seed: int) -> None:
+    experiment, state, _ = STUDIES[study]
+    add_missforest(experiment, state / "cells", STATE / "cells" / study, variant, seed, keep_tabpfn=False)
 
 
 def _load(study: str, variant: str, seed: int, kind: str, k: int) -> pd.DataFrame:
@@ -115,6 +124,38 @@ def scores(study: str, variant: str, seed: int) -> dict[str, list[float]]:
         fills |= {r: weights.apply(test, rules.rule_weights(r, selection, selection, scales), weights.EQUAL) for r in ("table", "column")}
         for method, values in fills.items():
             out[method].append(tb._score(test.assign(imputed=np.array(values, dtype=object)), naive))
+    return out
+
+
+# E163–E165: both sides in one cell table; the pick rule chooses, per fold, the side whose `table` hybrid scores lower
+# on fold k's validation cells (the same cells that choose its weights; a tie keeps TabPFN, ADR 0031 decision 6's side).
+PAIRS = (("table_missforest", "H"), ("table_missforest", "missforest"), ("table_tabpfn", "H"), ("table_tabpfn", "tabpfn"))
+
+
+def _side(frame: pd.DataFrame, other: str) -> pd.DataFrame:
+    return frame.drop(columns=[c for c in ("tabpfn", "missforest") if c != other]).rename(columns={other: "tabpfn"})
+
+
+def both_sides(directory: Path) -> dict[str, list[float]]:
+    """Per fold, on the test cells: H, TabPFN, missForest, each side's `table` hybrid and the pick."""
+    out: dict[str, list[float]] = {m: [] for m in ("H", "tabpfn", "missforest", "table_tabpfn", "table_missforest", "pick", "picked_missforest")}
+    for k in range(1, tb.FOLDS + 1):
+        test = _typed_load(directory / f"test_fold_{k}.csv", ("actual", "model", "tabpfn", "missforest"))
+        selection = _typed_load(directory / f"selection_fold_{k}.csv", ("actual", "model", "tabpfn", "missforest"))
+        naive = json.loads((directory / f"naive_fold_{k}.json").read_text())
+        scales = json.loads((directory / f"scale_fold_{k}.json").read_text())
+        fills = {"H": list(test["model"]), "tabpfn": list(test["tabpfn"]), "missforest": list(test["missforest"])}
+        validation: dict[str, float] = {}
+        for other in ("tabpfn", "missforest"):
+            chosen = _side(selection, other)
+            w = rules.rule_weights("table", chosen, chosen, scales)
+            fills[f"table_{other}"] = weights.apply(_side(test, other), w, weights.EQUAL)
+            validation[other] = tb._score(chosen.assign(imputed=np.array(weights.apply(chosen, w, weights.EQUAL), dtype=object)), naive)
+        side = "missforest" if validation["missforest"] < validation["tabpfn"] else "tabpfn"
+        fills["pick"] = fills[f"table_{side}"]
+        for method, values in fills.items():
+            out[method].append(tb._score(test.assign(imputed=np.array(values, dtype=object)), naive))
+        out["picked_missforest"].append(float(side == "missforest"))
     return out
 
 

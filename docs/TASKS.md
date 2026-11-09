@@ -968,6 +968,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E162 done 2026-11-08 11:46 GMT-3, supported:** the hybrid is better than H and than missForest on both variants and both seed sets
   (E90's: −0.064/−0.072 against H, −0.021/−0.012 against missForest). Extending ADR 0031 decision 6 is the user's call;
   open: a rule choosing TabPFN or missForest as the other side without the complete table.
+- **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
+  **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
+  TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

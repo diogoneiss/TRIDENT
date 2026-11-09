@@ -4333,3 +4333,20 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   needs a rule that picks the other side without the complete table; this study did not test one.
 - **Sources:** [imputation-protocol/59](tickets/imputation-protocol/59-missforest-hybrid.md); `missforest_hybrid.py`.
 
+### E163 · The deployable hybrid on the MIMIC-IV transplant variants (pre-registered 2026-11-08 21:08 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-08 21:08 GMT-3 on the user's go ("faça 1 2 e 3"). T55.
+- **Hypothesis:** ADR 0031 decision 6's `table` hybrid, with TabPFN as the other side, closes H's gap to TabPFN on
+  E149's SOFA `tmatch` variant and does no harm on the cardio one.
+- **Scenarios:** H (deployable readout) on E149's six transplant variants × 42/7/13, 18 runs on medusa1, tag
+  `mimic-hybrid-2026-11-08`. TabPFN and missForest are refit offline per training fold. Methods: H, TabPFN,
+  missForest, `table_tabpfn`, `table_missforest`, and `pick` (the hybrid that scores lower on the validation
+  cells).
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI. On the two `tmatch` variants:
+  - supported if better than H on at least one, worse than H on neither, and worse than TabPFN on neither;
+  - refuted if better than H on neither, or worse than H on either;
+  - mixed otherwise.
+
+  Everything else is descriptive. Read once with all 18 in.
+- **Sources:** [mimic/10](tickets/mimic/10-hybrid-transplant.md); `mimic_hybrid.py`, `missforest_hybrid.py`.
+
