@@ -972,6 +972,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   [61](tickets/imputation-protocol/61-hybrid-side-pick.md)): the missForest-side hybrid on E90/E91/E93/E95's 38 variants (the
   literal "80nan where TRIDENT trails missForest" held only E162's two), and a rule picking TabPFN or missForest per fold
   from the validation cells. CPU on medusa1.
+  **E164 and E165 done 2026-11-08 22:05 GMT-3, both mixed:** the missForest-side hybrid is worse than H on 1 of 38 (kc2_marf_60nan),
+  better on 23 and on all 7 where H trails missForest, never worse than missForest. The pick beats the accepted TabPFN-side
+  hybrid on 6 and loses on 1, but is worse than H on 2. ADR 0031 extension and a cross-fit pick are the user's call.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.

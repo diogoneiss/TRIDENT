@@ -4352,7 +4352,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E164 · The missForest-side hybrid on every variant with T39's cell tables (pre-registered 2026-11-08 21:14 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-08 21:14 GMT-3 on the user's go ("faça 1 2 e 3"). T54.
+- **Status:** done 2026-11-08 22:05 GMT-3, mixed (pre-registered 2026-11-08 21:14 GMT-3 on the user's go, "faça 1 2 e 3"). T54.
 - **Hypothesis:** E162's missForest-side `table` hybrid does no harm where no one chose the variant.
 - **Scenarios:** E90/E91/E93/E95's 38 variants × 4545/5656/6767, 114 pairs. missForest is refit per training fold on
   medusa1 (CPU) and asserted equal to the runs' logged score. The user's literal scope, 80nan where H trails
@@ -4363,11 +4363,15 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - mixed otherwise.
 
   Secondary: better than H, overall and on the 7 variants where H trails missForest.
+- **Results:** `table_missforest` is worse than H on one of 38, `kc2_marf_60nan` (+0.0213 [+0.0017, +0.0409]), and
+  worse than missForest on none. It is better than H on 23 of 38 and on all 7 where H trails missForest (−0.013 to
+  −0.072). The missForest assert held on all 570 folds.
+- **Conclusion:** mixed, one loss short of supported. Extending ADR 0031 decision 6 to missForest is the user's call.
 - **Sources:** [imputation-protocol/60](tickets/imputation-protocol/60-missforest-hybrid-generality.md); `missforest_generality.py`.
 
 ### E165 · A deployable rule that picks the hybrid's other side (pre-registered 2026-11-08 21:14 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-08 21:14 GMT-3 on the user's go ("faça 1 2 e 3"). T54.
+- **Status:** done 2026-11-08 22:05 GMT-3, mixed (pre-registered 2026-11-08 21:14 GMT-3 on the user's go, "faça 1 2 e 3"). T54.
 - **Hypothesis:** picking TabPFN or missForest per fold by the validation cells beats ADR 0031 decision 6's TabPFN-side
   hybrid on some variants and costs nothing elsewhere.
 - **Scenarios:** E164's 114 pairs. Per fold, the side whose `table` hybrid scores lower on fold k's validation cells,
@@ -4378,5 +4382,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - mixed otherwise.
 
   Read after E164.
+- **Results:** the pick is worse than H on 2 (`spambase_probit_60nan` +0.0062, `kc2_marf_60nan` +0.0182). Against
+  `table_tabpfn` it is better on 6 (the biodeg/vehicle probit variants, electricity, letter and spambase at 20nan) and
+  worse on 1 (`kc2_probit_60nan` +0.0047). Against `table_missforest` it is better on 13 and worse on 4. It took
+  missForest on 33% of folds.
+- **Conclusion:** mixed. Picking the side helps where missForest is the better side and costs on two small tables. No
+  ADR change; a cross-fit pick is the user's call.
 - **Sources:** [imputation-protocol/61](tickets/imputation-protocol/61-hybrid-side-pick.md); `missforest_generality.py`.
-
