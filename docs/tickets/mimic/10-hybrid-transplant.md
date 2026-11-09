@@ -58,3 +58,84 @@ This ticket was written and committed before the study's first cell.
   user's call.
 - **Threats, as E149:** the donors are sicker than the cohort, and a transplant carries where the gaps fall, not
   why. `tmatch` is at most missing at random given the matching columns. One seed set.
+
+## Outcome (read once 2026-11-09 00:09 GMT-3): supported
+
+All 18 runs trained on medusa1 from 21:09 to 21:44 GMT-3; the offline pass finished 22:09 GMT-3 with no failure, and
+both asserts (H's ledger, missForest's logged score) held on every fold. Read on medusa1 at commit 2601430. The
+printout, unedited:
+
+```
+- `mimic-cardio-donor_tmatch_20nan` (primary): H 0.8566, tabpfn 0.9206, missforest 0.8964, table_tabpfn 0.8532, table_missforest 0.8529, pick 0.8534, picked_missforest 0.2000
+  - table_missforest − H -0.0037 [-0.0077, +0.0004] equivalent
+  - table_missforest − missforest -0.0435 [-0.0526, -0.0343] better
+  - table_tabpfn − H -0.0034 [-0.0081, +0.0012] equivalent
+  - table_tabpfn − tabpfn -0.0674 [-0.0769, -0.0580] better
+  - pick − H -0.0033 [-0.0079, +0.0014] equivalent
+  - pick − table_tabpfn +0.0002 [-0.0013, +0.0016] equivalent
+  - pick − table_missforest +0.0004 [-0.0070, +0.0078] equivalent
+  - the pick took missForest on 3 of 15 folds
+- `mimic-cardio-donor_trand_20nan`: H 0.8624, tabpfn 0.8999, missforest 0.9089, table_tabpfn 0.8468, table_missforest 0.8561, pick 0.8516, picked_missforest 0.2667
+  - table_missforest − H -0.0062 [-0.0115, -0.0010] better
+  - table_missforest − missforest -0.0527 [-0.0620, -0.0434] better
+  - table_tabpfn − H -0.0156 [-0.0211, -0.0101] better
+  - table_tabpfn − tabpfn -0.0532 [-0.0652, -0.0412] better
+  - pick − H -0.0108 [-0.0170, -0.0046] better
+  - pick − table_tabpfn +0.0048 [-0.0006, +0.0102] none
+  - pick − table_missforest -0.0046 [-0.0091, +0.0000] none
+  - the pick took missForest on 4 of 15 folds
+- `mimic-cardio-donor_mcar_20nan`: H 0.8003, tabpfn 0.7731, missforest 0.8004, table_tabpfn 0.7750, table_missforest 0.7844, pick 0.7740, picked_missforest 0.2667
+  - table_missforest − H -0.0159 [-0.0236, -0.0081] better
+  - table_missforest − missforest -0.0160 [-0.0232, -0.0087] better
+  - table_tabpfn − H -0.0253 [-0.0354, -0.0153] better
+  - table_tabpfn − tabpfn +0.0019 [-0.0048, +0.0085] none
+  - pick − H -0.0263 [-0.0358, -0.0168] better
+  - pick − table_tabpfn -0.0009 [-0.0027, +0.0008] equivalent
+  - pick − table_missforest -0.0104 [-0.0159, -0.0049] better
+  - the pick took missForest on 4 of 15 folds
+- `mimic-sofa-donor_tmatch_20nan` (primary): H 0.9156, tabpfn 0.8951, missforest 0.9822, table_tabpfn 0.9005, table_missforest 0.9179, pick 0.9075, picked_missforest 0.4000
+  - table_missforest − H +0.0023 [-0.0048, +0.0094] none
+  - table_missforest − missforest -0.0643 [-0.0766, -0.0520] better
+  - table_tabpfn − H -0.0151 [-0.0212, -0.0090] better
+  - table_tabpfn − tabpfn +0.0054 [-0.0010, +0.0118] none
+  - pick − H -0.0080 [-0.0168, +0.0007] none
+  - pick − table_tabpfn +0.0071 [+0.0009, +0.0132] worse
+  - pick − table_missforest -0.0104 [-0.0205, -0.0003] better
+  - the pick took missForest on 6 of 15 folds
+- `mimic-sofa-donor_trand_20nan`: H 0.9315, tabpfn 0.9001, missforest 0.9711, table_tabpfn 0.9113, table_missforest 0.9294, pick 0.9146, picked_missforest 0.2000
+  - table_missforest − H -0.0020 [-0.0040, -0.0000] better
+  - table_missforest − missforest -0.0417 [-0.0547, -0.0286] better
+  - table_tabpfn − H -0.0202 [-0.0338, -0.0065] better
+  - table_tabpfn − tabpfn +0.0111 [+0.0057, +0.0166] worse
+  - pick − H -0.0169 [-0.0309, -0.0029] better
+  - pick − table_tabpfn +0.0033 [-0.0008, +0.0073] equivalent
+  - pick − table_missforest -0.0149 [-0.0288, -0.0010] better
+  - the pick took missForest on 3 of 15 folds
+- `mimic-sofa-donor_mcar_20nan`: H 0.9264, tabpfn 0.8925, missforest 0.9151, table_tabpfn 0.9025, table_missforest 0.9140, pick 0.9046, picked_missforest 0.2667
+  - table_missforest − H -0.0123 [-0.0187, -0.0059] better
+  - table_missforest − missforest -0.0011 [-0.0114, +0.0092] none
+  - table_tabpfn − H -0.0239 [-0.0337, -0.0141] better
+  - table_tabpfn − tabpfn +0.0100 [-0.0018, +0.0219] none
+  - pick − H -0.0218 [-0.0322, -0.0114] better
+  - pick − table_tabpfn +0.0021 [-0.0004, +0.0045] equivalent
+  - pick − table_missforest -0.0095 [-0.0147, -0.0042] better
+  - the pick took missForest on 4 of 15 folds
+
+PRIMARY `table` (TabPFN side) on mimic-cardio-donor_tmatch_20nan, mimic-sofa-donor_tmatch_20nan: better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported
+(fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
+```
+
+- **Primary, supported:** on the SOFA `tmatch` variant, where H trails TabPFN (0.9156 against 0.8951), the accepted
+  rule's hybrid is better than H (−0.0151 [−0.0212, −0.0090]) and not worse than TabPFN (+0.0054 [−0.0010, +0.0118],
+  no call). On the cardio `tmatch` it is equivalent to H (−0.0034) and far better than TabPFN (−0.0674).
+- **Descriptive:**
+  - `table_tabpfn` is better than H on the other four variants too, by 0.016 to 0.025. On `mimic-sofa-donor_trand_20nan`
+    it is worse than TabPFN (+0.0111 [+0.0057, +0.0166]), outside the primary.
+  - `table_missforest` is never worse than H or missForest; it is better than H on 4 of 6, but by less than
+    `table_tabpfn` on every variant except the cardio `tmatch`, where both tie H.
+  - `pick` is never worse than H, and equivalent to `table_tabpfn` or without a call on five; on the SOFA `tmatch`
+    it is worse than `table_tabpfn` (+0.0071 [+0.0009, +0.0132]). It took missForest on 3 to 6 of 15 folds. On these
+    tables the pick adds nothing over the TabPFN side.
+- **What it leads to:** a sentence for the user beside E149's, and whether ADR 0031 decision 6 extends to clinical tables
+  is the user's call. Threats as stated: sicker donors, one seed set, `tmatch` at most missing at random given the
+  matching columns.

@@ -4335,7 +4335,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E163 · The deployable hybrid on the MIMIC-IV transplant variants (pre-registered 2026-11-08 21:08 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-08 21:08 GMT-3 on the user's go ("faça 1 2 e 3"). T55.
+- **Status:** done 2026-11-09 00:09 GMT-3, supported (pre-registered 2026-11-08 21:08 GMT-3 on the user's go, "faça 1 2 e 3"). T55.
 - **Hypothesis:** ADR 0031 decision 6's `table` hybrid, with TabPFN as the other side, closes H's gap to TabPFN on
   E149's SOFA `tmatch` variant and does no harm on the cardio one.
 - **Scenarios:** H (deployable readout) on E149's six transplant variants × 42/7/13, 18 runs on medusa1, tag
@@ -4348,6 +4348,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   - mixed otherwise.
 
   Everything else is descriptive. Read once with all 18 in.
+- **Results:** on the SOFA `tmatch`, where H trails TabPFN (0.9156 against 0.8951), `table_tabpfn` is better than H
+  (−0.0151 [−0.0212, −0.0090]) and not worse than TabPFN (+0.0054 [−0.0010, +0.0118]). On the cardio `tmatch` it is
+  equivalent to H (−0.0034) and better than TabPFN (−0.0674). It is better than H on the other four variants too, and
+  worse than TabPFN on `mimic-sofa-donor_trand_20nan` (+0.0111). `table_missforest` is never worse than H or
+  missForest, but gains less. `pick` is never worse than H and adds nothing over `table_tabpfn` (worse on the SOFA
+  `tmatch`, +0.0071).
+- **Conclusion:** supported. The accepted rule's hybrid carries to the clinical transplant variants. Extending ADR 0031
+  decision 6 to clinical tables and the thesis sentence are the user's call.
 - **Sources:** [mimic/10](tickets/mimic/10-hybrid-transplant.md); `mimic_hybrid.py`, `missforest_hybrid.py`.
 
 ### E164 · The missForest-side hybrid on every variant with T39's cell tables (pre-registered 2026-11-08 21:14 GMT-3)
