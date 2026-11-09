@@ -139,3 +139,8 @@ PRIMARY `table` (TabPFN side) on mimic-cardio-donor_tmatch_20nan, mimic-sofa-don
 - **What it leads to:** a sentence for the user beside E149's, and whether ADR 0031 decision 6 extends to clinical tables
   is the user's call. Threats as stated: sicker donors, one seed set, `tmatch` at most missing at random given the
   matching columns.
+
+## Decision
+
+- **2026-11-09 19:51 GMT-3:** ADR 0031 decision 6's scope extended to the MIMIC-IV transplant variants with E163 and E166, on
+  the user's decision ("vamos no 2b e 3").

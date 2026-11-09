@@ -121,3 +121,8 @@ The printout, unedited:
 PRIMARY `table` (TabPFN side) on mimic-cardio-donor_tmatch_20nan, mimic-sofa-donor_tmatch_20nan: better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported
 (fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
 ```
+
+## Decision
+
+- **2026-11-09 19:51 GMT-3:** ADR 0031 decision 6's scope extended to the MIMIC-IV transplant variants with E163 and E166, on
+  the user's decision ("vamos no 2b e 3").

@@ -5,7 +5,9 @@
   decisão"). Amended 2026-10-28, 23:10 GMT-3 with E89's evidence, on the user's request ("sim"); no
   decision changes. **Decision 6 (a deployable form) proposed 2026-10-29, 10:27 GMT-3**, on the user's
   request ("sim, proponha"), from E90 and E91, and **accepted 2026-10-29, 10:42 GMT-3** ("aprovo"). **Decision 6's scope extended to 20nan
-  2026-10-31 09:57 GMT-3 with E95**, on the user's decision ("apoio fazer o 3.2 e 3.1, nessa ordem", 2026-10-31). The user asked for it to be
+  2026-10-31 09:57 GMT-3 with E95**, on the user's decision ("apoio fazer o 3.2 e 3.1, nessa ordem", 2026-10-31).
+  **Decision 6's scope extended to the MIMIC-IV transplant variants 2026-11-09 19:51 GMT-3 with E163 and E166**, on the user's
+  decision ("vamos no 2b e 3", 2026-11-09). The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -105,8 +107,9 @@
    - **The headlines do not change:** H stays the deployable headline (ADR 0024) and KC the
      benchmark default (ADR 0027).
    - **Scope:** MCAR, the 17 variants above and the nine tables at 20nan (below), H as the model
-     side. MAR and MNAR are untested here; E93 found the hybrid mixed off MCAR, so the scope stays
-     MCAR.
+     side; and, since 2026-11-09, the MIMIC-IV transplant variants (below). Synthetic MAR and MNAR
+     stay outside: E93 found the hybrid mixed there (worse than H on spambase_probit_60nan, again in
+     E167).
    - **At 20nan (amended 2026-10-31, from E95,
      [imputation-protocol/36](../tickets/imputation-protocol/36-hybrid-20nan.md), supported):** the
      nine tables × seeds 4545/5656/6767, E91's rule.
@@ -115,6 +118,20 @@
        biodeg, credit-g); no verdict against either on kr-vs-kp, vehicle and kc2;
      - a little worse than the equal blend on letter (+0.002) and pendigits (+0.010), as at 40nan
        where one weight per table is coarse. A report states it.
+   - **On clinical tables with real missingness patterns (amended 2026-11-09 19:51 GMT-3, from E163 and E166,
+     [mimic/10](../tickets/mimic/10-hybrid-transplant.md), [mimic/11](../tickets/mimic/11-hybrid-transplant-seeds.md),
+     both supported):** E149's six MIMIC-IV transplant variants at 20nan (cardio and SOFA tables; `tmatch` and
+     `trand` carry real missingness patterns transplanted from donor rows, `mcar` is the MCAR control), seeds 42/7/13
+     (E163) and 4545/5656/6767 (E166), E91's rule, H as the model side. This is decision 6's first scope outside MCAR,
+     and it covers only these transplanted patterns: E93's synthetic MNAR and MAR still stay outside.
+     - never worse than H on any of the six, on either seed set; better than H on 5 of 6 on each;
+     - on the SOFA `tmatch`, where H trails TabPFN, better than H (−0.0151 in E163, −0.0114 in E166) and no verdict
+       against TabPFN (+0.0054, +0.0061);
+     - on the cardio `tmatch`, no verdict or equivalent against H (−0.0034, −0.0022) and better than TabPFN (−0.0674,
+       −0.0561).
+     - **It must state:** it is worse than TabPFN on `mimic-sofa-donor_trand_20nan` on both seed sets (+0.0111,
+       +0.0149), where TabPFN alone is the better output. E166's TabPFN and missForest refits ran on gorgona8 and its H on
+       medusa1, the same split in every pair (an ADR 0035 departure, E166's amendment); E163 ran wholly on medusa1.
 
 ## Considered options
 

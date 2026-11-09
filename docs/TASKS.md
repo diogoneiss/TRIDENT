@@ -994,7 +994,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   4545/5656/6767, medusa1 overnight.
   **E166 done 2026-11-09 19:35 GMT-3, supported** (offline cells on gorgona8): the TabPFN-side hybrid is better than H on
   the SOFA `tmatch` again (−0.011), no call on the cardio `tmatch`, never worse than TabPFN on either. Extending ADR 0031
-  to clinical tables is the user's call.
+  to clinical tables is the user's call. **Decided 2026-11-09 19:51 GMT-3:** ADR 0031 decision 6 extended to the MIMIC-IV
+  transplant variants ("vamos no 2b e 3").
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

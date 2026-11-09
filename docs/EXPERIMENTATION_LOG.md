@@ -4356,6 +4356,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `tmatch`, +0.0071).
 - **Conclusion:** supported. The accepted rule's hybrid carries to the clinical transplant variants. Extending ADR 0031
   decision 6 to clinical tables and the thesis sentence are the user's call.
+- **Decision (2026-11-09 19:51 GMT-3):** ADR 0031 decision 6's scope extended to the MIMIC-IV transplant variants with E163 and E166, on the user's decision ("vamos no 2b e 3").
 - **Sources:** [mimic/10](tickets/mimic/10-hybrid-transplant.md); `mimic_hybrid.py`, `missforest_hybrid.py`.
 
 ### E164 · The missForest-side hybrid on every variant with T39's cell tables (pre-registered 2026-11-08 21:14 GMT-3)
@@ -4417,6 +4418,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** supported, E163 replicates: on the SOFA `tmatch` the hybrid closes H's gap to TabPFN and is not
   worse than either. Extending ADR 0031 decision 6 to clinical tables is the user's call. The cross-fit pick's loss to
   the TabPFN-side hybrid on the SOFA `tmatch` is a point against adopting it on clinical tables without E169.
+- **Decision (2026-11-09 19:51 GMT-3):** ADR 0031 decision 6's scope extended to the MIMIC-IV transplant variants with E163 and E166, on the user's decision ("vamos no 2b e 3").
 - **Sources:** [mimic/11](tickets/mimic/11-hybrid-transplant-seeds.md); `mimic_hybrid.py --study e166`.
 
 ### E167 · E164 and E165 on fresh seeds (pre-registered 2026-11-09 00:57 GMT-3)
