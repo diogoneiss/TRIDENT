@@ -4440,3 +4440,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (`spambase_probit_60nan`), better than `table_tabpfn` on 6 and worse on none; E165's two kc2 losses are gone. `crossfit` −
   `pick` has no call anywhere.
 - **Sources:** [imputation-protocol/63](tickets/imputation-protocol/63-crossfit-side-pick.md); `missforest_hybrid.both_sides`.
+
+### E169 · The cross-fit side pick on the other 26 variants (pre-registered 2026-11-09 19:17 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-09 19:17 GMT-3 on the user's go ("E169 generalidade"). T54.
+- **Hypothesis:** E168's cross-fit pick does no harm outside the 12 variants that motivated it: never worse than H, and
+  not worse than the accepted TabPFN-side hybrid (`table_tabpfn`, ADR 0031 decision 6) on more than one.
+- **Scenarios:** the other 26 of E164's 38 variants × 42/7/13, 78 runs of H on medusa1, tag
+  `hybrid-crossfit-generality-2026-11-09`; TabPFN and missForest refit offline per fold on medusa1 (ADR 0035).
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI. Supported if worse than H on none and worse than
+  `table_tabpfn` on at most 1; refuted if worse than H on 2+ or worse than `table_tabpfn` on 3+; mixed otherwise. The
+  "better on 2+" clause of E168 is dropped because the development printout shows a gain on only one of these 26
+  (disclosed in the ticket). Secondary: gains over `table_tabpfn`, `crossfit` − `pick`, `table_missforest` against H and
+  missForest. Read once with all 78 in.
+- **Sources:** [imputation-protocol/64](tickets/imputation-protocol/64-crossfit-generality.md); `hybrid_fresh_seeds.py --study e169`.

@@ -1,5 +1,6 @@
 """E167 and E168: E164's missForest-side hybrid, E165's side pick and E168's cross-fit pick on fresh seeds 42/7/13, on the
-12 variants E164 and E165 named (imputation-protocol/62 and /63).
+12 variants E164 and E165 named (imputation-protocol/62 and /63). E169 (imputation-protocol/64) is E168's cross-fit
+pick on the other 26 of E164's 38 variants, same seeds: put ``--study e169`` before any command (default ``e167``).
 
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py --todo <queue> <queues>
@@ -41,13 +42,30 @@ TRAILS = ("biodeg_80nan", "vehicle_80nan", "credit-g_40nan", "biodeg_probit0p25_
           "vehicle_probit_60nan", "electricity_20nan")
 LOSSES = ("spambase_probit_60nan", "kc2_marf_60nan", "kc2_probit_60nan")
 WINS = ("letter_20nan", "spambase_20nan")
-VARIANTS = TRAILS + LOSSES + WINS
+VARIANTS: tuple[str, ...] = TRAILS + LOSSES + WINS
+# E169 (imputation-protocol/64): the other 26 of E164's 38 variants, same seeds, same cells
+REST = ("electricity_40nan", "electricity_80nan", "kr-vs-kp_40nan", "kr-vs-kp_60nan", "kr-vs-kp_80nan", "credit-g_60nan",
+        "credit-g_80nan", "biodeg_40nan", "kc2_40nan", "kc2_80nan", "pendigits_40nan", "pendigits_60nan", "pendigits_80nan",
+        "vehicle_40nan", "biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "biodeg_marf_60nan", "vehicle_marf_60nan",
+        "spambase_marf_60nan", "credit-g_marf_60nan", "pendigits_20nan", "kr-vs-kp_20nan", "biodeg_20nan", "credit-g_20nan",
+        "vehicle_20nan", "kc2_20nan")
+STUDIES = {"e167": (EXPERIMENT, STATE, VARIANTS),
+           "e169": ("hybrid-crossfit-generality-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-generality"), REST)}
+STUDY = "e167"
 
 # letter_20nan trains under ADR 0036's P600 since 2026-10-31: 118 minutes on its latest run, not E82's 61
 MINUTES = {**confirmation.MINUTES, "letter": 118}
 
-e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
-rules.STATE = STATE
+
+def use(study: str) -> None:
+    global STUDY, EXPERIMENT, STATE, VARIANTS
+    STUDY = study
+    EXPERIMENT, STATE, VARIANTS = STUDIES[study]
+    e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
+    rules.STATE = STATE
+
+
+use("e167")
 
 
 def todo(which: int, queues: int) -> None:
@@ -90,6 +108,17 @@ def tally() -> None:
         return [v for v in scope if calls[v][key] == call]
 
     n = len(VARIANTS)
+    if STUDY == "e169":
+        under, behind = count("crossfit-H", "worse"), count("crossfit-table_tabpfn", "worse")
+        reading = "supported" if not under and len(behind) <= 1 else "refuted" if len(under) >= 2 or len(behind) >= 3 else "mixed"
+        print(f"\nE169 PRIMARY `crossfit` on {n}: worse than H on {under or 'none'}, worse than `table_tabpfn` on {behind or 'none'} -> {reading}")
+        print(f"E169 SECONDARY `crossfit` better than `table_tabpfn` on {count('crossfit-table_tabpfn', 'better') or 'none'}; better than H "
+              f"on {len(count('crossfit-H', 'better'))} of {n}; `crossfit` − `pick` better on {count('crossfit-pick', 'better') or 'none'}, "
+              f"worse on {count('crossfit-pick', 'worse') or 'none'}")
+        print(f"E169 SECONDARY `table_missforest`: worse than H on {count('table_missforest-H', 'worse') or 'none'}, worse than missForest "
+              f"on {count('table_missforest-missforest', 'worse') or 'none'}")
+        print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
+        return
     under, behind = count("table_missforest-H", "worse"), count("table_missforest-missforest", "worse")
     reading = "supported" if not under and len(behind) <= 1 else "refuted" if len(under) >= 2 or len(behind) >= 3 else "mixed"
     print(f"\nE167 PRIMARY `table_missforest` on {n}: worse than H on {under or 'none'}, worse than missForest on {behind or 'none'} -> {reading}")
@@ -107,6 +136,9 @@ def tally() -> None:
 
 if __name__ == "__main__":
     argv = sys.argv[1:]
+    if argv[:1] == ["--study"] and len(argv) >= 2 and argv[1] in STUDIES:
+        use(argv[1])
+        argv = argv[2:]
     if argv[:1] == ["train"] and len(argv) == 4 and argv[1] == "H":
         e82.train(argv[2], int(argv[3]), False)
     elif argv[:1] == ["--todo"] and len(argv) == 3:
