@@ -1,6 +1,8 @@
 """E167 and E168: E164's missForest-side hybrid, E165's side pick and E168's cross-fit pick on fresh seeds 42/7/13, on the
 12 variants E164 and E165 named (imputation-protocol/62 and /63). E169 (imputation-protocol/64) is E168's cross-fit
-pick on the other 26 of E164's 38 variants, same seeds: put ``--study e169`` before any command (default ``e167``).
+pick on the other 26 of E164's 38 variants, same seeds; E172 (imputation-protocol/66) the cross-fit pick on E93's 12
+off-MCAR variants, seeds 101/202/303, wholly on gorgona8. Put ``--study e169`` or ``--study e172`` before any command
+(default ``e167``).
 
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py --todo <queue> <queues>
@@ -52,8 +54,15 @@ REST = ("electricity_40nan", "electricity_80nan", "kr-vs-kp_40nan", "kr-vs-kp_60
 # E170 (imputation-protocol/65): E93's off-MCAR variants among REST (2 self-masking MNAR, 4 MAR), named before E169's read
 OFF_MCAR = ("biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "biodeg_marf_60nan", "vehicle_marf_60nan",
             "spambase_marf_60nan", "credit-g_marf_60nan")
-STUDIES = {"e167":(EXPERIMENT, STATE, VARIANTS),
-           "e169": ("hybrid-crossfit-generality-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-generality"), REST)}
+# E172 (imputation-protocol/66): E93's 12 off-MCAR variants (7 self-masking MNAR, 5 MAR), wholly on gorgona8
+E93 = ("biodeg_probit0p25_60nan", "biodeg_probit_60nan", "biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "vehicle_probit_60nan",
+       "kc2_probit_60nan", "spambase_probit_60nan", "biodeg_marf_60nan", "kc2_marf_60nan", "vehicle_marf_60nan", "spambase_marf_60nan",
+       "credit-g_marf_60nan")
+# study: (experiment, state, variants, seeds, host); medusa1's hostname is "medusa"
+STUDIES: dict[str, tuple[str, Path, tuple[str, ...], tuple[int, int, int], str]] = {
+    "e167": (EXPERIMENT, STATE, VARIANTS, SEEDS, "medusa"),
+    "e169": ("hybrid-crossfit-generality-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-generality"), REST, SEEDS, "medusa"),
+    "e172": ("hybrid-crossfit-offmcar-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-offmcar"), E93, (101, 202, 303), "gorgona8")}
 STUDY = "e167"
 
 # letter_20nan trains under ADR 0036's P600 since 2026-10-31: 118 minutes on its latest run, not E82's 61
@@ -61,9 +70,9 @@ MINUTES = {**confirmation.MINUTES, "letter": 118}
 
 
 def use(study: str) -> None:
-    global STUDY, EXPERIMENT, STATE, VARIANTS
+    global STUDY, EXPERIMENT, STATE, VARIANTS, SEEDS
     STUDY = study
-    EXPERIMENT, STATE, VARIANTS = STUDIES[study]
+    EXPERIMENT, STATE, VARIANTS, SEEDS, _ = STUDIES[study]
     e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
     rules.STATE = STATE
 
@@ -72,8 +81,8 @@ use("e167")
 
 
 def todo(which: int, queues: int) -> None:
-    if socket.gethostname() != "medusa":  # medusa1's hostname
-        sys.exit("E167 runs on medusa1")
+    if socket.gethostname() != STUDIES[STUDY][4]:
+        sys.exit(f"{STUDY} runs on {STUDIES[STUDY][4]}")
     loads = [0.0] * queues
     for cost, variant, seed in sorted(((MINUTES[v.split("_")[0]], v, s) for v in VARIANTS for s in SEEDS),
                                       key=lambda w: (-w[0], w[1], w[2])):
@@ -111,6 +120,15 @@ def tally() -> None:
         return [v for v in scope if calls[v][key] == call]
 
     n = len(VARIANTS)
+    if STUDY == "e172":
+        under = count("crossfit-H", "worse")
+        reading = "supported" if not under else "refuted" if len(under) >= 2 else "mixed"
+        print(f"\nE172 PRIMARY `crossfit` on E93's {n} off-MCAR variants: worse than H on {under or 'none'} -> {reading}")
+        print(f"E172 SECONDARY `crossfit` better than H on {count('crossfit-H', 'better') or 'none'}; `table_tabpfn` worse than H on "
+              f"{count('table_tabpfn-H', 'worse') or 'none'}; `crossfit` worse than `table_tabpfn` on {count('crossfit-table_tabpfn', 'worse') or 'none'}, "
+              f"better on {count('crossfit-table_tabpfn', 'better') or 'none'}")
+        print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
+        return
     if STUDY == "e169":
         under, behind = count("crossfit-H", "worse"), count("crossfit-table_tabpfn", "worse")
         reading = "supported" if not under and len(behind) <= 1 else "refuted" if len(under) >= 2 or len(behind) >= 3 else "mixed"

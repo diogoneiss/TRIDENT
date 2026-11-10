@@ -986,6 +986,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   the other 26 of the 38 variants, seeds 42/7/13, 78 runs plus offline cells, all on medusa1.
   **E170 pre-registered 2026-11-09 19:59 GMT-3** ([65](tickets/imputation-protocol/65-crossfit-off-mcar.md)): in E169's printout, the
   cross-fit pick against H on E93's six off-MCAR variants among them; no new run.
+  **E172 pre-registered 2026-11-09 21:18 GMT-3** ([66](tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md)): the cross-fit
+  pick on E93's 12 off-MCAR variants, seeds 101/202/303, 36 runs plus cells, all on gorgona8 after E171.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
@@ -998,6 +1000,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   the SOFA `tmatch` again (−0.011), no call on the cardio `tmatch`, never worse than TabPFN on either. Extending ADR 0031
   to clinical tables is the user's call. **Decided 2026-11-09 19:51 GMT-3:** ADR 0031 decision 6 extended to the MIMIC-IV
   transplant variants ("vamos no 2b e 3").
+  **E171 pre-registered 2026-11-09 21:18 GMT-3** ([mimic/12](tickets/mimic/12-hybrid-crossfit-seeds.md)): the cross-fit pick on the
+  six MIMIC variants, seeds 101/202/303, 18 runs plus cells, all on gorgona8.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

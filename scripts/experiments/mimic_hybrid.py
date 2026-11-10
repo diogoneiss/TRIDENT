@@ -1,5 +1,6 @@
 """E163: T39's deployable hybrid on E149's MIMIC-IV transplant variants, TabPFN or missForest as the other side (mimic/10).
-E166 (mimic/11) is the same study on seeds 4545/5656/6767: put ``--study e166`` before any command (default ``e163``).
+E166 (mimic/11) is the same study on seeds 4545/5656/6767, and E171 (mimic/12) the cross-fit pick on seeds 101/202/303,
+wholly on gorgona8: put ``--study e166`` or ``--study e171`` before any command (default ``e163``).
 
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] --todo <queue> <queues>
@@ -39,11 +40,15 @@ SEEDS = (42, 7, 13)
 VARIANTS = tuple(f"mimic-{t}-donor_{v}_20nan" for t in ("cardio", "sofa") for v in ("tmatch", "trand", "mcar"))
 PRIMARY = tuple(v for v in VARIANTS if "_tmatch_" in v)
 STUDIES = {"e163": (EXPERIMENT, STATE, SEEDS),
-           "e166": ("mimic-hybrid-seeds-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-hybrid-seeds"), (4545, 5656, 6767))}
+           "e166": ("mimic-hybrid-seeds-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-hybrid-seeds"), (4545, 5656, 6767)),
+           "e171": ("mimic-hybrid-crossfit-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-crossfit"), (101, 202, 303))}
+HOSTS = {"e163": "medusa", "e166": "medusa", "e171": "gorgona8"}  # the machine each study runs on whole (ADR 0035)
+STUDY = "e163"
 
 
 def use(study: str) -> None:
-    global EXPERIMENT, STATE, SEEDS
+    global STUDY, EXPERIMENT, STATE, SEEDS
+    STUDY = study
     EXPERIMENT, STATE, SEEDS = STUDIES[study]
     e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
     rules.STATE = STATE
@@ -53,8 +58,8 @@ use("e163")
 
 
 def todo(which: int, queues: int) -> None:
-    if socket.gethostname() != "medusa":  # medusa1's hostname
-        sys.exit("E163 runs on medusa1")
+    if socket.gethostname() != HOSTS[STUDY]:  # medusa1's hostname is "medusa"
+        sys.exit(f"{STUDY} runs on {HOSTS[STUDY]}")
     for k, (variant, seed) in enumerate((v, s) for s in SEEDS for v in VARIANTS):
         if k % queues == which - 1 and not (STATE / "selection" / f"{variant}_s{seed}" / "selection_fold_5.csv").exists():
             print("H", variant, seed)
@@ -89,8 +94,16 @@ def tally() -> None:
     under = [v for v in PRIMARY if calls[v]["table_tabpfn-H"] == "worse"]
     behind = [v for v in PRIMARY if calls[v]["table_tabpfn-tabpfn"] == "worse"]
     reading = ("refuted" if not over or under else "supported" if not behind else "mixed")
-    print(f"\nPRIMARY `table` (TabPFN side) on {', '.join(PRIMARY)}: better than H on {over or 'none'}, worse than H on "
+    print(f"\n{'E163 rule (descriptive in E171)' if STUDY == 'e171' else 'PRIMARY'} `table` (TabPFN side) on {', '.join(PRIMARY)}: better than H on {over or 'none'}, worse than H on "
           f"{under or 'none'}, worse than TabPFN on {behind or 'none'} -> {reading}")
+    if STUDY == "e171":
+        under = [v for v in PRIMARY if calls[v]["crossfit-H"] == "worse"]
+        behind = [v for v in PRIMARY if calls[v]["crossfit-table_tabpfn"] == "worse"]
+        reading = "refuted" if under or len(behind) == len(PRIMARY) else "supported" if not behind else "mixed"
+        print(f"E171 PRIMARY `crossfit` on {', '.join(PRIMARY)}: worse than H on {under or 'none'}, worse than `table_tabpfn` on "
+              f"{behind or 'none'} -> {reading}")
+        print(f"E171 SECONDARY on all six: `crossfit` worse than H on {[v for v in VARIANTS if calls[v]['crossfit-H'] == 'worse'] or 'none'}, "
+              f"worse than `table_tabpfn` on {[v for v in VARIANTS if calls[v]['crossfit-table_tabpfn'] == 'worse'] or 'none'}")
     print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
 
 
