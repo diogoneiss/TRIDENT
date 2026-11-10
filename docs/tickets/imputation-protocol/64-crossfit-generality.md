@@ -46,3 +46,13 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
   on medusa1.
 - **What it leads to:** with E168, whether the cross-fit pick goes to the user as an ADR 0031 amendment for all 38
   variants.
+
+## Amendment
+
+- **Amendment (2026-11-09 22:44 GMT-3), stalled, nothing read:** all 78 runs of H trained on medusa1 by 22:28 GMT-3
+  with no FAILED line. The offline pass had finished 4 pairs (`electricity_40nan` s7/s42, `electricity_80nan` s13/s42, the
+  last at 22:38:44) when medusa1's GPU 0 failed again ("Unknown Error", the first failed cell at 22:40:07). As at 04:48 the
+  same day, CUDA has since been unusable on both cards: a restart on GPU 1 alone failed at CUDA init, and TabPFN fell back
+  to the CPU and refused tables over 1000 rows. Every partial output is kept: the first attempt in `cells.gpu0/` and
+  `cells-mf.gpu0/`, the GPU 1 attempt's logs as `logs/gpu1_cells_*`. No cell was scored. Where the offline pass is redone
+  is the user's call; E170 (65) waits on it.

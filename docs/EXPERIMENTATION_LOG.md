@@ -4476,6 +4476,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (disclosed in the ticket). Secondary: gains over `table_tabpfn`, `crossfit` − `pick`, `table_missforest` against H and
   missForest. Read once with all 78 in.
 - **Sources:** [imputation-protocol/64](tickets/imputation-protocol/64-crossfit-generality.md); `hybrid_fresh_seeds.py --study e169`.
+- **Amendment (2026-11-09 22:44 GMT-3), stalled:** all 78 runs of H done on medusa1; its GPU 0 failed again at ~22:40
+  during the offline pass (4 pairs done), and CUDA is unusable on both cards. Nothing read; where to redo the pass is the
+  user's call. Details in the ticket.
 
 ### E170 · Does the cross-fit pick remove the hybrid's weakness off MCAR? (pre-registered 2026-11-09 19:59 GMT-3)
 
