@@ -988,6 +988,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   cross-fit pick against H on E93's six off-MCAR variants among them; no new run.
   **E172 pre-registered 2026-11-09 21:18 GMT-3** ([66](tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md)): the cross-fit
   pick on E93's 12 off-MCAR variants, seeds 101/202/303, 36 runs plus cells, all on gorgona8 after E171.
+  **E169 stalled 2026-11-09 22:40 GMT-3** (medusa1's GPU 0 failed again; all 78 runs of H in): offline pass moved to
+  gorgona8 after E171/E172 on the user's call, started 2026-11-10 04:00 GMT-3.
+  **E172 done 2026-11-10 04:01 GMT-3, mixed:** the cross-fit pick is worse than H on `biodeg_probit2p0_60nan` only (+0.0066),
+  where both hybrid sides lose to H; it removes the accepted hybrid's spambase_probit loss (third seed set) and is never
+  worse than `table_tabpfn`. MCAR-only scope stays.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
@@ -1002,6 +1007,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   transplant variants ("vamos no 2b e 3").
   **E171 pre-registered 2026-11-09 21:18 GMT-3** ([mimic/12](tickets/mimic/12-hybrid-crossfit-seeds.md)): the cross-fit pick on the
   six MIMIC variants, seeds 101/202/303, 18 runs plus cells, all on gorgona8.
+  **E171 done 2026-11-10 04:00 GMT-3, mixed:** the cross-fit pick is never worse than H but worse than `table_tabpfn` on the
+  SOFA `tmatch` (+0.0091), E166's loss again; `table_tabpfn` supported on a third seed set. The cross-fit pick stays off
+  clinical tables unless the user decides otherwise.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

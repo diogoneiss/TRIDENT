@@ -4497,7 +4497,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E171 · The cross-fit side pick on the MIMIC-IV transplant variants (pre-registered 2026-11-09 21:18 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 21:18 GMT-3 on the user's go ("Os dois em sequência"). T55.
+- **Status:** done 2026-11-10 04:00 GMT-3, mixed; pre-registered 2026-11-09 21:18 GMT-3 on the user's go ("Os dois em
+  sequência"). T55.
 - **Hypothesis:** on the MIMIC `tmatch` variants the cross-fit pick is not worse than H or than the accepted TabPFN-side
   hybrid; E166's descriptive loss to `table_tabpfn` on the SOFA `tmatch` (+0.0054) does not replicate.
 - **Scenarios:** E149's six MIMIC-IV transplant variants × 101/202/303, 18 runs of H, tag
@@ -4506,10 +4507,18 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   than H on neither and worse than `table_tabpfn` on neither; refuted if worse than H on either or worse than
   `table_tabpfn` on both; mixed otherwise. Read once with all 18 in.
 - **Sources:** [mimic/12](tickets/mimic/12-hybrid-crossfit-seeds.md); `mimic_hybrid.py --study e171`.
+- **Results (read once 2026-11-10 04:00 GMT-3, on gorgona8 at cfc6470):** `crossfit` is worse than H on neither `tmatch`
+  (cardio −0.0055, SOFA −0.0088, no call). It is worse than `table_tabpfn` on the SOFA `tmatch` (+0.0091
+  [+0.0013, +0.0169]) and equivalent on the cardio `tmatch`. On all six: worse than H on none, worse than `table_tabpfn`
+  on the SOFA `tmatch` and `trand` (+0.0103). E163's rule on `table_tabpfn`, descriptive: supported a third time.
+- **Conclusion:** mixed: E166's loss to the accepted hybrid on the SOFA `tmatch` replicates. The cross-fit pick does no
+  harm against H on clinical tables but is worse than the hybrid ADR 0031 already accepts there; an amendment for it
+  should not cover clinical tables (the user's call).
 
 ### E172 · The cross-fit side pick on E93's off-MCAR variants, fresh seeds (pre-registered 2026-11-09 21:18 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 21:18 GMT-3 on the user's go ("Os dois em sequência"). T54.
+- **Status:** done 2026-11-10 04:01 GMT-3, mixed; pre-registered 2026-11-09 21:18 GMT-3 on the user's go ("Os dois em
+  sequência"). T54.
 - **Hypothesis:** on E93's 12 self-masking MNAR and MAR variants, where the accepted hybrid lost to H on
   `spambase_probit_60nan` twice, the cross-fit pick is never worse than H.
 - **Scenarios:** 12 variants × 101/202/303, 36 runs of H, tag `hybrid-crossfit-offmcar-2026-11-09`; TabPFN and
@@ -4518,3 +4527,11 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   refuted if on 2+, mixed if on 1. Secondary: gains over H, `table_tabpfn` against H, `crossfit` against
   `table_tabpfn`. Read once with all 36 in.
 - **Sources:** [imputation-protocol/66](tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md); `hybrid_fresh_seeds.py --study e172`.
+- **Results (read once 2026-11-10 04:01 GMT-3, on gorgona8 at cfc6470):** `crossfit` is worse than H on one of 12,
+  `biodeg_probit2p0_60nan` (+0.0066 [+0.0043, +0.0090]), where it took missForest on no fold and where both hybrid
+  sides lose to H. Better than H on 7. `table_tabpfn` is worse than H on 2 (`biodeg_probit2p0_60nan`,
+  `spambase_probit_60nan` +0.0067); `crossfit` is equivalent to H on spambase_probit, never worse than `table_tabpfn`,
+  better on 4.
+- **Conclusion:** mixed: the cross-fit pick removes E93's spambase_probit loss on a third seed set but not the loss
+  both sides share under the steepest self-masking. The MCAR-only scope stays; moving it is the user's call after
+  E169/E170.
