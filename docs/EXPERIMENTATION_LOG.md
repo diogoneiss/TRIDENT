@@ -4550,3 +4550,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Conclusion:** mixed: the cross-fit pick removes E93's spambase_probit loss on a third seed set but not the loss
   both sides share under the steepest self-masking. The MCAR-only scope stays; moving it is the user's call after
   E169/E170.
+
+### E174 · ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants (pre-registered 2026-11-10 16:40 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-10 16:40 GMT-3 on the user's go ("Os dois em sequência", with E173). T54.
+- **Hypothesis:** the deployable TabPFN-side hybrid (`table_tabpfn`) holds at the thesis table's seeds 101/202/303 on
+  the 26 MCAR variants of E164's 38: never worse than H, worse than TabPFN on at most one.
+- **Scenarios:** 26 variants × 101/202/303, 78 runs of H, tag `hybrid-thesis-seeds-2026-11-10`; TabPFN and missForest
+  refit offline; all on gorgona8 (ADR 0035).
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI. Supported if `table_tabpfn` is worse than H on none and
+  worse than TabPFN on at most 1; refuted if worse than H on 2+ or worse than TabPFN on 3+; mixed otherwise. Secondary:
+  gains over H and TabPFN, `table_missforest` against H, `crossfit` against `table_tabpfn`. Read once with all 78 in.
+  Disclosed: on 42/7/13 it is worse than either on none of the 26.
+- **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
+

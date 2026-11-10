@@ -1,8 +1,9 @@
 """E167 and E168: E164's missForest-side hybrid, E165's side pick and E168's cross-fit pick on fresh seeds 42/7/13, on the
 12 variants E164 and E165 named (imputation-protocol/62 and /63). E169 (imputation-protocol/64) is E168's cross-fit
 pick on the other 26 of E164's 38 variants, same seeds; E172 (imputation-protocol/66) the cross-fit pick on E93's 12
-off-MCAR variants, seeds 101/202/303, wholly on gorgona8. Put ``--study e169`` or ``--study e172`` before any command
-(default ``e167``).
+off-MCAR variants, seeds 101/202/303, wholly on gorgona8; E174 (imputation-protocol/67) ADR 0031 decision 6's hybrid on
+the 26 MCAR variants of the 38 at the thesis seeds 101/202/303, wholly on gorgona8. Put ``--study e169``, ``--study e172``
+or ``--study e174`` before any command (default ``e167``).
 
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py --todo <queue> <queues>
@@ -58,11 +59,14 @@ OFF_MCAR = ("biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "biodeg_marf_60n
 E93 = ("biodeg_probit0p25_60nan", "biodeg_probit_60nan", "biodeg_probit1p0_60nan", "biodeg_probit2p0_60nan", "vehicle_probit_60nan",
        "kc2_probit_60nan", "spambase_probit_60nan", "biodeg_marf_60nan", "kc2_marf_60nan", "vehicle_marf_60nan", "spambase_marf_60nan",
        "credit-g_marf_60nan")
+# E174 (imputation-protocol/67): the 26 MCAR variants of the 38 (E93's 12 left out), at the thesis table's seeds
+MCAR = tuple(v for v in VARIANTS + REST if v not in E93)
 # study: (experiment, state, variants, seeds, host); medusa1's hostname is "medusa"
 STUDIES: dict[str, tuple[str, Path, tuple[str, ...], tuple[int, int, int], str]] = {
     "e167": (EXPERIMENT, STATE, VARIANTS, SEEDS, "medusa"),
     "e169": ("hybrid-crossfit-generality-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-generality"), REST, SEEDS, "medusa"),
-    "e172": ("hybrid-crossfit-offmcar-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-offmcar"), E93, (101, 202, 303), "gorgona8")}
+    "e172": ("hybrid-crossfit-offmcar-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-hybrid-crossfit-offmcar"), E93, (101, 202, 303), "gorgona8"),
+    "e174": ("hybrid-thesis-seeds-2026-11-10", Path("/scratch/diogoneiss/trident-2026-11-10-hybrid-thesis-seeds"), MCAR, (101, 202, 303), "gorgona8")}
 STUDY = "e167"
 
 # letter_20nan trains under ADR 0036's P600 since 2026-10-31: 118 minutes on its latest run, not E82's 61
@@ -120,6 +124,16 @@ def tally() -> None:
         return [v for v in scope if calls[v][key] == call]
 
     n = len(VARIANTS)
+    if STUDY == "e174":
+        under, behind = count("table_tabpfn-H", "worse"), count("table_tabpfn-tabpfn", "worse")
+        reading = "supported" if not under and len(behind) <= 1 else "refuted" if len(under) >= 2 or len(behind) >= 3 else "mixed"
+        print(f"\nE174 PRIMARY `table_tabpfn` on the {n} MCAR variants: worse than H on {under or 'none'}, worse than TabPFN on "
+              f"{behind or 'none'} -> {reading}")
+        print(f"E174 SECONDARY `table_tabpfn` better than H on {len(count('table_tabpfn-H', 'better'))} of {n}, better than TabPFN on "
+              f"{len(count('table_tabpfn-tabpfn', 'better'))} of {n}; `table_missforest` worse than H on {count('table_missforest-H', 'worse') or 'none'}; "
+              f"`crossfit` worse than `table_tabpfn` on {count('crossfit-table_tabpfn', 'worse') or 'none'}")
+        print(f"({common.RULE}; SESOI {mh.SESOI:.0%} of the opponent's mean)")
+        return
     if STUDY == "e172":
         under = count("crossfit-H", "worse")
         reading = "supported" if not under else "refuted" if len(under) >= 2 else "mixed"
