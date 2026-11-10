@@ -1016,6 +1016,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E171 done 2026-11-10 04:00 GMT-3, mixed:** the cross-fit pick is never worse than H but worse than `table_tabpfn` on the
   SOFA `tmatch` (+0.0091), E166's loss again; `table_tabpfn` supported on a third seed set. The cross-fit pick stays off
   clinical tables unless the user decides otherwise.
+  **E173 pre-registered 2026-11-10 16:45 GMT-3** ([mimic/13](tickets/mimic/13-hybrid-natural-gaps.md)): decision 6's hybrid on
+  E148's two tables with natural gaps (masked population), seed sets 101/202/303 and 4545/5656/6767, 12 runs, on gorgona8 after E174.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

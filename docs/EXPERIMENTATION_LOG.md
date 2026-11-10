@@ -4564,3 +4564,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   Disclosed: on 42/7/13 it is worse than either on none of the 26.
 - **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
 
+### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)
+
+- **Status:** in progress, pre-registered 2026-11-10 16:45 GMT-3 on the user's go ("Os dois em sequência", after E174). T55.
+- **Hypothesis:** on E148's two tables with natural gaps, the deployable TabPFN-side hybrid (`table_tabpfn`) is better
+  than H on at least one, worse than H on neither and worse than TabPFN on neither, on each of two seed sets.
+- **Scenarios:** `mimic-cardio_natural`, `mimic-sofa_natural` × 101/202/303 (`--study e173`) and × 4545/5656/6767
+  (`--study e173b`), 12 runs of H, scored on the masked population (the tables have no induced cells); TabPFN and
+  missForest refit offline; all on gorgona8 after E174's queues. The helpers gained a `population` argument (default
+  `induced`, E171's printout unchanged; the masked path reproduces E148's logged scores).
+- **Measures and decision rule:** fold-pair verdict, 1% SESOI. Per seed set E163's rule (refuted if better than H on
+  neither or worse on either; supported if otherwise worse than TabPFN on neither; mixed otherwise). Supported if both
+  sets read supported, refuted if either reads refuted, mixed otherwise. Read once with all 12 in.
+- **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
+

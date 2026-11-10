@@ -48,8 +48,10 @@ def _typed_load(path: Path, columns: tuple[str, ...]) -> pd.DataFrame:
     return e82._typed(pd.read_csv(path, dtype={c: object for c in columns}), columns)
 
 
-def add_missforest(experiment: str, source_root: Path, out_root: Path, variant: str, seed: int, keep_tabpfn: bool = True) -> None:
-    """missForest's fills beside the cell table's own (E162; E163–E165 keep TabPFN's column too)."""
+def add_missforest(experiment: str, source_root: Path, out_root: Path, variant: str, seed: int, keep_tabpfn: bool = True,
+                   population: str = "induced") -> None:
+    """missForest's fills beside the cell table's own (E162; E163–E165 keep TabPFN's column too); ``population`` as
+    ``hybrid_selection_rules.cells``."""
     from src.training.data import build_folds, prepare_dataset
     from src.training.imputation_metrics import NUMERICAL
     from src.training.missforest import fit_missforest_imputers
@@ -61,7 +63,7 @@ def add_missforest(experiment: str, source_root: Path, out_root: Path, variant: 
     found = common.parents(experiment)[(variant, seed)]
     if len(found) != 1:
         raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
-    logged = np.asarray(common.fold_table(found[0])["impute/induced/baseline/missforest/impute_score"], dtype=float)
+    logged = np.asarray(common.fold_table(found[0])[f"impute/{population}/baseline/missforest/impute_score"], dtype=float)
     dataset = prepare_dataset(DatasetSpec.from_name(variant, None))
     features = dataset.frame.drop(columns=[dataset.label_column])
     numerical, categorical = list(dataset.numerical_columns), list(dataset.categorical_columns)

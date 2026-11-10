@@ -1,6 +1,8 @@
 """E163: T39's deployable hybrid on E149's MIMIC-IV transplant variants, TabPFN or missForest as the other side (mimic/10).
 E166 (mimic/11) is the same study on seeds 4545/5656/6767, and E171 (mimic/12) the cross-fit pick on seeds 101/202/303,
-wholly on gorgona8: put ``--study e166`` or ``--study e171`` before any command (default ``e163``).
+wholly on gorgona8. E173 (mimic/13) is decision 6's hybrid on E148's two tables with natural gaps, scored on the
+masked population (hidden observed cells; they have no induced ones), on two seed sets, ``e173`` (101/202/303) and
+``e173b`` (4545/5656/6767), wholly on gorgona8. Put ``--study <id>`` before any command (default ``e163``).
 
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] --todo <queue> <queues>
@@ -39,17 +41,25 @@ STATE = Path("/scratch/diogoneiss/trident-2026-11-08-mimic-hybrid")
 SEEDS = (42, 7, 13)
 VARIANTS = tuple(f"mimic-{t}-donor_{v}_20nan" for t in ("cardio", "sofa") for v in ("tmatch", "trand", "mcar"))
 PRIMARY = tuple(v for v in VARIANTS if "_tmatch_" in v)
+TRANSPLANT = VARIANTS
+NATURAL = ("mimic-cardio_natural", "mimic-sofa_natural")  # E173: E148's tables, both primary
+POPULATION = "induced"
 STUDIES = {"e163": (EXPERIMENT, STATE, SEEDS),
            "e166": ("mimic-hybrid-seeds-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-hybrid-seeds"), (4545, 5656, 6767)),
-           "e171": ("mimic-hybrid-crossfit-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-crossfit"), (101, 202, 303))}
-HOSTS = {"e163": "medusa", "e166": "medusa", "e171": "gorgona8"}  # the machine each study runs on whole (ADR 0035)
+           "e171": ("mimic-hybrid-crossfit-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-crossfit"), (101, 202, 303)),
+           "e173": ("mimic-hybrid-natural-2026-11-10", Path("/scratch/diogoneiss/trident-2026-11-10-mimic-natural"), (101, 202, 303)),
+           "e173b": ("mimic-hybrid-natural-b-2026-11-10", Path("/scratch/diogoneiss/trident-2026-11-10-mimic-natural-b"), (4545, 5656, 6767))}
+HOSTS = {"e163": "medusa", "e166": "medusa", "e171": "gorgona8", "e173": "gorgona8", "e173b": "gorgona8"}  # the machine each study runs on whole (ADR 0035)
 STUDY = "e163"
 
 
 def use(study: str) -> None:
-    global STUDY, EXPERIMENT, STATE, SEEDS
+    global STUDY, EXPERIMENT, STATE, SEEDS, VARIANTS, PRIMARY, POPULATION
     STUDY = study
     EXPERIMENT, STATE, SEEDS = STUDIES[study]
+    natural = study.startswith("e173")
+    VARIANTS, POPULATION = (NATURAL, "masked") if natural else (TRANSPLANT, "induced")
+    PRIMARY = VARIANTS if natural else tuple(v for v in VARIANTS if "_tmatch_" in v)
     e82.EXPERIMENT, e82.STATE, e82.SEEDS, e82.VARIANTS = EXPERIMENT, STATE, SEEDS, VARIANTS
     rules.STATE = STATE
 
@@ -66,8 +76,8 @@ def todo(which: int, queues: int) -> None:
 
 
 def cells(variant: str, seed: int) -> None:
-    rules.cells(variant, seed)
-    mh.add_missforest(EXPERIMENT, STATE / "cells", STATE / "cells-mf", variant, seed)
+    rules.cells(variant, seed, POPULATION)
+    mh.add_missforest(EXPERIMENT, STATE / "cells", STATE / "cells-mf", variant, seed, population=POPULATION)
 
 
 def tally() -> None:
@@ -94,8 +104,15 @@ def tally() -> None:
     under = [v for v in PRIMARY if calls[v]["table_tabpfn-H"] == "worse"]
     behind = [v for v in PRIMARY if calls[v]["table_tabpfn-tabpfn"] == "worse"]
     reading = ("refuted" if not over or under else "supported" if not behind else "mixed")
-    print(f"\n{'E163 rule (descriptive in E171)' if STUDY == 'e171' else 'PRIMARY'} `table` (TabPFN side) on {', '.join(PRIMARY)}: better than H on {over or 'none'}, worse than H on "
+    label = {"e171": "E163 rule (descriptive in E171)", "e173": "E173 PRIMARY, seed set 101/202/303:",
+             "e173b": "E173 PRIMARY, seed set 4545/5656/6767:"}.get(STUDY, "PRIMARY")
+    print(f"\n{label} `table` (TabPFN side) on {', '.join(PRIMARY)}: better than H on {over or 'none'}, worse than H on "
           f"{under or 'none'}, worse than TabPFN on {behind or 'none'} -> {reading}")
+    if STUDY.startswith("e173"):
+        print(f"E173 SECONDARY: `table_tabpfn` better than TabPFN on {[v for v in VARIANTS if calls[v]['table_tabpfn-tabpfn'] == 'better'] or 'none'}; "
+              f"`table_missforest` worse than H on {[v for v in VARIANTS if calls[v]['table_missforest-H'] == 'worse'] or 'none'}; "
+              f"`crossfit` worse than `table_tabpfn` on {[v for v in VARIANTS if calls[v]['crossfit-table_tabpfn'] == 'worse'] or 'none'}")
+        print("E173 reads supported if both seed sets read supported, refuted if either reads refuted, mixed otherwise")
     if STUDY == "e171":
         under = [v for v in PRIMARY if calls[v]["crossfit-H"] == "worse"]
         behind = [v for v in PRIMARY if calls[v]["crossfit-table_tabpfn"] == "worse"]

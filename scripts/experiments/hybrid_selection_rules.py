@@ -45,8 +45,9 @@ RULES = ("column", "table", "shrunk", "pooled")
 SESOI = 0.01
 
 
-def cells(variant: str, seed: int) -> None:
-    """E82's blend, keeping the cells: ``test_fold_<k>.csv`` and ``selection_fold_<k>.csv``."""
+def cells(variant: str, seed: int, population: str = "induced") -> None:
+    """E82's blend, keeping the cells: ``test_fold_<k>.csv`` and ``selection_fold_<k>.csv``. ``population`` is the scored
+    one: ``masked`` on tables with natural gaps, which have no induced cells (E173)."""
     from src.training.data import build_folds, prepare_dataset
     from src.training.imputation_metrics import NUMERICAL, mean_mode_baselines
     from src.training.tabpfn_baseline import fit_tabpfn_imputers
@@ -58,7 +59,7 @@ def cells(variant: str, seed: int) -> None:
     found = common.parents(e82.EXPERIMENT)[(variant, seed)]
     if len(found) != 1:
         raise RuntimeError(f"{variant} s{seed}: {len(found)} runs")
-    logged = common.model(common.fold_table(found[0]), found[0], "H")
+    logged = common.model(common.fold_table(found[0]), found[0], "H", population)
     dataset = prepare_dataset(DatasetSpec.from_name(variant, None))
     features = dataset.frame.drop(columns=[dataset.label_column])
     numerical, categorical = list(dataset.numerical_columns), list(dataset.categorical_columns)
@@ -68,7 +69,7 @@ def cells(variant: str, seed: int) -> None:
         validation = features.iloc[np.asarray(fold.validation_indices)].reset_index(drop=True)
         test = features.iloc[np.asarray(fold.test_indices)].reset_index(drop=True)
         naive = dict(mean_mode_baselines(train, numerical, categorical))
-        ledger = e82._typed(tb._ledger(variant, seed, ordinal, e82.STATE), ("actual", "imputed"))
+        ledger = e82._typed(tb._ledger(variant, seed, ordinal, e82.STATE, population), ("actual", "imputed"))
         assert abs(tb._score(ledger, naive) - float(logged[ordinal - 1])) < 1e-9, f"{variant} s{seed} fold {ordinal}: ledger is not the run's H"
         imputer = fit_tabpfn_imputers(train, numerical, categorical)[0]
         positions, columns = ledger["row"].to_numpy(dtype=int), test.columns.get_indexer(pd.Index(ledger["column"]))

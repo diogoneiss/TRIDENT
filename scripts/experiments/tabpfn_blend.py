@@ -60,12 +60,12 @@ SETS: dict[str, tuple[Path, str, tuple[int, ...], tuple[str, ...], int, int]] = 
 }
 
 
-def _ledger(variant: str, seed: int, fold: int, state: Path = STATE) -> pd.DataFrame:
+def _ledger(variant: str, seed: int, fold: int, state: Path = STATE, population: str = "induced") -> pd.DataFrame:
     found = sorted((state / "results" / f"{variant}_s{seed}" / variant).glob(f"*/imputation/imputation_fold_{fold}_cells.csv"))
     if len(found) != 1:
         raise FileNotFoundError(f"{variant} s{seed} fold {fold}: {len(found)} ledgers")
     frame = pd.read_csv(found[0], dtype={"actual": object, "imputed": object})
-    return frame[frame["population"] == "induced"].reset_index(drop=True)
+    return frame[frame["population"] == population].reset_index(drop=True)
 
 
 def _score(cells: pd.DataFrame, naive: dict[str, float | str]) -> float:

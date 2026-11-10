@@ -1,0 +1,46 @@
+# ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (E173, T55; pre-registered 2026-11-10 16:45 GMT-3)
+
+This ticket was written and committed before the study's first cell.
+
+- **Why:** ADR 0031 decision 6 (the deployable TabPFN-side hybrid, `table_tabpfn`) was extended on 2026-11-09 to the
+  MIMIC-IV transplant variants (E163, E166), where real gap patterns are copied onto complete rows. The two tables whose
+  gaps are natural (E148, [03](03-masked-cells-natural-gaps.md)) have never had a hybrid run. This study asks whether
+  decision 6 also holds there, where TRIDENT already leads TabPFN on both tables.
+- **The user's go:** "Os dois em sequência" (2026-11-10, about 16:30 GMT-3), with E174
+  ([imputation-protocol/67](../imputation-protocol/67-hybrid-thesis-seeds.md)), which runs first.
+- **Disclosure:** E148 (seeds 42/7/13, masked checkpoint, not H) read the decoder better than TabPFN on both tables
+  (cardio −0.0387, SOFA −0.0108); no hybrid was computed. E171's printout (read) has `table_tabpfn` worse than TabPFN on
+  the SOFA `trand` and `mcar` transplant variants. Seeds 101/202/303 and 4545/5656/6767 have no run on these tables.
+
+## Design
+
+- **Variants:** `mimic-cardio_natural` and `mimic-sofa_natural` (11,082 rows each), both primary.
+- **Population:** these tables have no induced cells; every score, H's ledger assert and missForest's logged-score
+  assert read the masked population (observed cells hidden from the test rows, E148's primary). The hybrid's validation
+  cells are hidden observed cells as everywhere else. The helpers gained a `population` argument defaulting to
+  `induced`; E171's printout is unchanged by it, and the masked path reproduces E148's logged scores exactly
+  (`mimic-sofa_natural` s42 folds 1–2).
+- **Cells:** 2 tables × two seed sets, pre-registered together: `--study e173` (101/202/303, tag
+  `mimic-hybrid-natural-2026-11-10`, state `/scratch/diogoneiss/trident-2026-11-10-mimic-natural`) and `--study e173b`
+  (4545/5656/6767, tag `mimic-hybrid-natural-b-2026-11-10`, state `…-mimic-natural-b`); 12 runs of H, runner
+  `scripts/experiments/mimic_hybrid.py`. Offline per pair: TabPFN refit (H's ledger asserted), then missForest refit
+  (logged score asserted), into `cells-mf`.
+- **Machine (ADR 0035):** everything on gorgona8, its trainings logging to medusa1's store through the tunnel. Three GPU
+  queues start once E174's three are complete; two offline lanes once E174's are, a pair 15 minutes after its run.
+- **Cost:** H took 33–36 minutes a run in E148; with E174's offline pass beside it about 4–6 h of training, the offline
+  pass about 3–5 h more; ending on 2026-11-11.
+
+## Measures and rule (fixed now)
+
+Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the opponent's mean.
+- **Per seed set, E163's rule on `table_tabpfn` over the two tables:** refuted if better than H on neither or worse than
+  H on either; supported if, otherwise, worse than TabPFN on neither; mixed otherwise.
+- **E173 primary:** **supported** if both seed sets read supported; **refuted** if either reads refuted; **mixed**
+  otherwise.
+- **Secondary:** `table_tabpfn` better than TabPFN on which; `table_missforest` worse than H on which; `crossfit` worse
+  than `table_tabpfn` on which.
+- Three seeds per set, fixed; no extension.
+- **Read** once with all 12 in, on gorgona8, both commands in one sitting:
+  `TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py --study e173 --tally`,
+  then the same with `--study e173b`.
+- **What it leads to:** whether decision 6's scope may cover MIMIC-IV tables with natural gaps; the user's call.
