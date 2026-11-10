@@ -4479,6 +4479,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment (2026-11-09 22:44 GMT-3), stalled:** all 78 runs of H done on medusa1; its GPU 0 failed again at ~22:40
   during the offline pass (4 pairs done), and CUDA is unusable on both cards. Nothing read; where to redo the pass is the
   user's call. Details in the ticket.
+- **Amendment (2026-11-09 23:20 GMT-3), offline pass to gorgona8 (the user's decision):** all 78 pairs' TabPFN and
+  missForest refits redone on gorgona8 after E171/E172, H's selections and ledgers copied from medusa1; read on gorgona8.
+  Departs from ADR 0035 (H on medusa1, the other side on gorgona8, in every pair).
 
 ### E170 · Does the cross-fit pick remove the hybrid's weakness off MCAR? (pre-registered 2026-11-09 19:59 GMT-3)
 

@@ -56,3 +56,11 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
   to the CPU and refused tables over 1000 rows. Every partial output is kept: the first attempt in `cells.gpu0/` and
   `cells-mf.gpu0/`, the GPU 1 attempt's logs as `logs/gpu1_cells_*`. No cell was scored. Where the offline pass is redone
   is the user's call; E170 (65) waits on it.
+- **Amendment (2026-11-09 23:20 GMT-3), the offline pass moves to gorgona8 (the user's decision, "gorgona8 após
+  E171/E172"), as E167's did:** H's runs stay medusa1's. Their selection files and ledgers (78 and 390) were copied to the
+  same paths on gorgona8, whose store copy holds all 78 parents. The TabPFN and missForest refits are redone on gorgona8's
+  GPU and CPU for all 78 pairs, the 4 done on medusa1 among them, so every pair's other side comes from one machine and one
+  device. Two lanes (`cells.sh` in the state dir on gorgona8) start once E171/E172's offline lanes are complete, about
+  06:00–09:00 GMT-3 on 2026-11-10. The H-ledger and missForest asserts still apply. This departs from ADR 0035, which wants
+  every arm of a pair on one machine: H is from medusa1 and TabPFN from gorgona8, the same split in every pair. The read
+  moves to gorgona8 with the same command.

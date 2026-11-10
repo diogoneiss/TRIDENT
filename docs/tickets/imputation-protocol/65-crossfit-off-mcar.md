@@ -31,3 +31,8 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
   on medusa1 (the E170 lines).
 - **What it leads to:** with E169, whether an ADR 0031 amendment for the cross-fit pick can drop the MCAR-only scope for
   synthetic MAR and MNAR. The user's call.
+
+## Amendment
+
+- **Amendment (2026-11-09 23:20 GMT-3):** E169's offline pass moved to gorgona8 after medusa1's GPU 0 failed (see
+  [64](64-crossfit-generality.md)), so this read runs there too, same command, with E169's. Nothing else changes.
