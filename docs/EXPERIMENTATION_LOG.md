@@ -4465,7 +4465,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E169 · The cross-fit side pick on the other 26 variants (pre-registered 2026-11-09 19:17 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 19:17 GMT-3 on the user's go ("E169 generalidade"). T54.
+- **Status:** done 2026-11-10 12:41 GMT-3, mixed; pre-registered 2026-11-09 19:17 GMT-3 on the user's go ("E169
+  generalidade"). T54.
 - **Hypothesis:** E168's cross-fit pick does no harm outside the 12 variants that motivated it: never worse than H, and
   not worse than the accepted TabPFN-side hybrid (`table_tabpfn`, ADR 0031 decision 6) on more than one.
 - **Scenarios:** the other 26 of E164's 38 variants × 42/7/13, 78 runs of H on medusa1, tag
@@ -4483,9 +4484,17 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   missForest refits redone on gorgona8 after E171/E172, H's selections and ledgers copied from medusa1; read on gorgona8.
   Departs from ADR 0035 (H on medusa1, the other side on gorgona8, in every pair).
 
+- **Results (read once 2026-11-10 12:41 GMT-3, on gorgona8 at c11458c):** `crossfit` is worse than H on 1 of 26
+  (`biodeg_probit2p0_60nan`, +0.0095, where `table_tabpfn` also loses, +0.0106) and worse than `table_tabpfn` on 2
+  (`credit-g_marf_60nan` +0.0115, `biodeg_20nan` +0.0062); better than `table_tabpfn` on none, better than H on 19.
+  `table_missforest` worse than H on `credit-g_80nan` (+0.0121), never worse than missForest.
+- **Conclusion:** mixed: outside the 12 variants that motivated it the cross-fit pick gains nothing over the accepted
+  hybrid and loses to it on 2. With E171/E172, no case for it replacing `table_tabpfn`; the user's call.
+
 ### E170 · Does the cross-fit pick remove the hybrid's weakness off MCAR? (pre-registered 2026-11-09 19:59 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-09 19:59 GMT-3 on the user's go ("Leitura sem GPU"), before E169's read. T54.
+- **Status:** done 2026-11-10 12:41 GMT-3, mixed; pre-registered 2026-11-09 19:59 GMT-3 on the user's go ("Leitura sem
+  GPU"), before E169's read. T54.
 - **Hypothesis:** off MCAR, where the accepted TabPFN-side hybrid lost to H (E93, E167 on `spambase_probit_60nan`), the
   cross-fit pick is never worse than H.
 - **Scenarios:** E93's off-MCAR variants among E169's 26 (`biodeg_probit1p0/2p0_60nan`, the marf variants of biodeg,
@@ -4494,6 +4503,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   refuted if on 2+, mixed if on 1. Secondary: gains over H, `table_tabpfn` against H, `crossfit` against `table_tabpfn`.
   Read once in E169's printout.
 - **Sources:** [imputation-protocol/65](tickets/imputation-protocol/65-crossfit-off-mcar.md); `hybrid_fresh_seeds.py --study e169 --tally`.
+- **Amendment (2026-11-09 23:20 GMT-3):** read on gorgona8 with E169, whose offline pass moved there.
+- **Results (read once 2026-11-10 12:41 GMT-3, in E169's printout):** `crossfit` worse than H on
+  `biodeg_probit2p0_60nan` (+0.0095), where `table_tabpfn` also loses (+0.0106); better than H on the four marf
+  variants; worse than `table_tabpfn` on `credit-g_marf_60nan`.
+- **Conclusion:** mixed: with E172 (+0.0066 there, both sides losing), every hybrid loses to H under the steepest
+  self-masking on two seed sets. The MCAR-only scope stands.
 
 ### E171 · The cross-fit side pick on the MIMIC-IV transplant variants (pre-registered 2026-11-09 21:18 GMT-3)
 

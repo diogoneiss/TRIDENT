@@ -993,6 +993,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E172 done 2026-11-10 04:01 GMT-3, mixed:** the cross-fit pick is worse than H on `biodeg_probit2p0_60nan` only (+0.0066),
   where both hybrid sides lose to H; it removes the accepted hybrid's spambase_probit loss (third seed set) and is never
   worse than `table_tabpfn`. MCAR-only scope stays.
+  **E169 and E170 done 2026-11-10 12:41 GMT-3, both mixed:** on the other 26 variants the cross-fit pick is worse than H on
+  `biodeg_probit2p0_60nan` only (where `table_tabpfn` loses too), worse than `table_tabpfn` on 2, better on none. With
+  E171/E172: no case for the cross-fit pick replacing `table_tabpfn`; ADR 0031's scope unchanged. Decisions open: the
+  missForest side (E167) and any narrower cross-fit use, the user's.
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
