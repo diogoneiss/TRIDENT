@@ -42,3 +42,19 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
 - **Read** once with all 78 in, on gorgona8: `uv run --python 3.11 python -B scripts/experiments/hybrid_fresh_seeds.py --study e174 --tally`.
 - **What it leads to:** the hybrid column of the thesis table on its primary seeds. No ADR change is proposed by this
   study; a refutation would go to the user as a question on decision 6.
+
+## Amendment, 2026-11-11 02:11 GMT-3: paused while the leader is down (nothing read)
+
+- medusa1, which holds the store, stopped answering at about 00:42 GMT-3 (`ssh: No route to host`; gorgona8's
+  `leadership.py tick` logged `peer_unreachable` at 01:12). The three `pendigits_20nan` runs (started 00:38) failed at
+  02:04 on `set_terminated` ("Connection refused" on port 47731), the three `pendigits_40nan` runs at 02:10. Only
+  `FINISHED` runs are ever read, so their orphans on the leader cannot enter a cell.
+- The agent stopped the queues with `$S/STOP` at 02:07. Done: 12 of 78 runs and their 12 offline pairs
+  (`letter_20nan`, `electricity_20nan`, `electricity_40nan`, `electricity_80nan`).
+- `$S/resume.sh` (detached) polls the tunnel's `/health` every five minutes; after two answers in a row it removes STOP
+  and relaunches `queue.sh 1–3` (cells with a selection file are skipped, so the six failed ones rerun) and two lanes of
+  `$S/cells_resume.sh`, which is `cells.sh` reading only the training lines after the relaunch marker, so the old FAILED
+  lines do not skip their reruns.
+- Nothing else changes: machine, variants, seeds, rule and the single read. E173's queues still wait for E174's three
+  "queue complete" lines, which the relaunched queues write. Its two offline lanes were released at 02:09 by the stopped
+  lanes' "complete" lines; they only poll until E173's own runs exist, then may overlap E174's tail on the GPU.

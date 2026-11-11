@@ -4562,6 +4562,12 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   worse than TabPFN on at most 1; refuted if worse than H on 2+ or worse than TabPFN on 3+; mixed otherwise. Secondary:
   gains over H and TabPFN, `table_missforest` against H, `crossfit` against `table_tabpfn`. Read once with all 78 in.
   Disclosed: on 42/7/13 it is worse than either on none of the 26.
+- **Amendment, 2026-11-11 02:11 GMT-3 (paused, nothing read):** medusa1, the store's leader, went silent at about
+  00:42 GMT-3 (no route to host). The three `pendigits_20nan` runs failed at 02:04 on their last MLflow call, the three
+  `pendigits_40nan` runs at 02:10; the queues were stopped with the STOP file. 12 of 78 runs and their pairs are done
+  (`letter_20nan`, `electricity_20/40/80nan`). A waiter relaunches the same queues once the leader answers twice, five
+  minutes apart; finished cells are skipped, the failed ones rerun, and new offline lanes (`cells_resume.sh`) read only
+  the training lines after the relaunch. Same machine, seeds, variants and rule; E173 still follows.
 - **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
 
 ### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)

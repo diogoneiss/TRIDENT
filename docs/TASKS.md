@@ -999,6 +999,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   missForest side (E167) and any narrower cross-fit use, the user's.
   **E174 pre-registered 2026-11-10 16:40 GMT-3** ([67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md)): decision 6's hybrid
   on the 26 MCAR variants at the thesis seeds 101/202/303, 78 runs plus cells, all on gorgona8; E173 (MIMIC natural gaps) follows.
+  **E174 paused 2026-11-11 02:11 GMT-3:** medusa1 (the store's leader) unreachable since about 00:42; 12 of 78 done, six
+  `pendigits` runs failed on MLflow; a waiter relaunches the queues when the leader answers (ticket amendment).
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.
