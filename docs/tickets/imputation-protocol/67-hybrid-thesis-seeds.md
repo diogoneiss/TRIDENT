@@ -58,3 +58,15 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
 - Nothing else changes: machine, variants, seeds, rule and the single read. E173's queues still wait for E174's three
   "queue complete" lines, which the relaunched queues write. Its two offline lanes were released at 02:09 by the stopped
   lanes' "complete" lines; they only poll until E173's own runs exist, then may overlap E174's tail on the GPU.
+
+## Amendment, 2026-11-11 23:25 GMT-3: relaunched at 14:06, leader down again (nothing read)
+
+- The leader answered again at 13:57 GMT-3 and `resume.sh` relaunched at 14:06. By 22:23 the queues were complete with
+  no failure; the store copy of 22:58 holds every run they finished.
+- Correction to the amendment above: only the three `pendigits_40nan` runs reran. The three `pendigits_20nan` runs had
+  written all five selection files before failing (the leader went silent during their folds and only their closing
+  MLflow call raised), so the queues skipped them; their runs never reached `FINISHED` and cannot be read. Their
+  selections were moved to `$S/selection.leader-down-2026-11-11/` at 23:25 so the queues rerun them.
+- medusa1 went silent again at about 23:00. `$S/resume2.sh` (detached) waits for two answers five minutes apart, then
+  relaunches `queue.sh 1–3` (only `pendigits_20nan` × 3 left) and E173's runners. The `cells_resume.sh` lanes keep
+  running meanwhile on the store copy and take the reruns. 75 of 78 runs are done; nothing else changes.

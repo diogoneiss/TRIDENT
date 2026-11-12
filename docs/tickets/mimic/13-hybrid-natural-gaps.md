@@ -44,3 +44,15 @@ Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the o
   `TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py --study e173 --tally`,
   then the same with `--study e173b`.
 - **What it leads to:** whether decision 6's scope may cover MIMIC-IV tables with natural gaps; the user's call.
+
+## Amendment, 2026-11-11 23:25 GMT-3: first runs lost to the leader's outage (nothing read)
+
+- E174 ([67](../imputation-protocol/67-hybrid-thesis-seeds.md)) was paused by medusa1's first outage (about 00:42 to
+  13:57 GMT-3) and its queues completed at 22:23; E173's queues started at 22:26 with `mimic-cardio_natural` s101/s202
+  and `mimic-sofa_natural` s101.
+- medusa1 went silent again at about 23:00. `mimic-sofa_natural` s101 failed at 23:19 on its closing MLflow call; the
+  agent set STOP in both states and stopped the other three trainers at 23:24, since none could finish on the leader.
+  The three selections written by those runs were moved to `selection.leader-down-2026-11-11/`, so every E173 run reruns.
+- E174's `resume2.sh` relaunches E173 once the leader answers twice: `queue_resume.sh 1–3` (same runner and cells, start
+  after E174's three relaunched queues complete) and two lanes of `cells_resume.sh` (`cells.sh` reading only the lines
+  after the relaunch marker, starting once E174's lanes are complete). Seeds, tables, rule and the single read unchanged.

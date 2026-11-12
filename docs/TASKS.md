@@ -1001,6 +1001,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   on the 26 MCAR variants at the thesis seeds 101/202/303, 78 runs plus cells, all on gorgona8; E173 (MIMIC natural gaps) follows.
   **E174 paused 2026-11-11 02:11 GMT-3:** medusa1 (the store's leader) unreachable since about 00:42; 12 of 78 done, six
   `pendigits` runs failed on MLflow; a waiter relaunches the queues when the leader answers (ticket amendment).
+  **Relaunched 14:06; medusa1 down again about 23:00 GMT-3:** 75 of 78 runs done; `pendigits_20nan` × 3 and all of E173
+  rerun when it answers (`resume2.sh`, amendments in 67 and mimic/13).
 - **T55 · The deployable hybrid on clinical tables** (the user's "faça 1 2 e 3", 2026-11-08).
   **E163 pre-registered 2026-11-08 21:08 GMT-3** ([mimic/10](tickets/mimic/10-hybrid-transplant.md)): ADR 0031 decision 6's `table` hybrid,
   TabPFN or missForest as the other side, on E149's six MIMIC-IV transplant variants, H on 42/7/13, 18 runs on medusa1.

@@ -4568,6 +4568,9 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   (`letter_20nan`, `electricity_20/40/80nan`). A waiter relaunches the same queues once the leader answers twice, five
   minutes apart; finished cells are skipped, the failed ones rerun, and new offline lanes (`cells_resume.sh`) read only
   the training lines after the relaunch. Same machine, seeds, variants and rule; E173 still follows.
+- **Amendment, 2026-11-11 23:25 GMT-3 (nothing read):** relaunched at 14:06; queues complete at 22:23 without failure.
+  The three `pendigits_20nan` runs had not rerun (their selections were written before the outage's failure), so these
+  were moved aside; medusa1 went silent again at about 23:00, and `resume2.sh` reruns them when it answers. 75 of 78 done.
 - **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
 
 ### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)
@@ -4582,5 +4585,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Measures and decision rule:** fold-pair verdict, 1% SESOI. Per seed set E163's rule (refuted if better than H on
   neither or worse on either; supported if otherwise worse than TabPFN on neither; mixed otherwise). Supported if both
   sets read supported, refuted if either reads refuted, mixed otherwise. Read once with all 12 in.
+- **Amendment, 2026-11-11 23:25 GMT-3 (nothing read):** the first four runs, started 22:26, were lost to medusa1's
+  second outage (about 23:00); STOP set, trainers stopped, their selections moved aside. Every run reruns once the
+  leader answers (E174's `resume2.sh`); design and rule unchanged.
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
