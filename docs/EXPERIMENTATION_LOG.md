@@ -4553,7 +4553,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E174 · ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants (pre-registered 2026-11-10 16:40 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-10 16:40 GMT-3 on the user's go ("Os dois em sequência", with E173). T54.
+- **Status:** done, supported (read once 2026-11-12 18:05 GMT-3); pre-registered 2026-11-10 16:40 GMT-3 on the user's go ("Os dois em sequência", with E173). T54.
 - **Hypothesis:** the deployable TabPFN-side hybrid (`table_tabpfn`) holds at the thesis table's seeds 101/202/303 on
   the 26 MCAR variants of E164's 38: never worse than H, worse than TabPFN on at most one.
 - **Scenarios:** 26 variants × 101/202/303, 78 runs of H, tag `hybrid-thesis-seeds-2026-11-10`; TabPFN and missForest
@@ -4575,6 +4575,14 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   `pendigits_20nan` runs finished at 16:26 (78 of 78). Their offline cells failed at 16:41 on "2 ledgers" (the lost
   runs' result directories beside the reruns'); those directories were moved aside and the three cells taken again
   from 16:43, same command and asserts.
+- **Results (read once 2026-11-12 18:05 GMT-3, on gorgona8 at 5a09a53, all 78 pairs in):** `table_tabpfn` is worse than
+  H on none of the 26 and worse than TabPFN on one, `credit-g_80nan` (+0.0068 [+0.0016, +0.0119]). Better than H on 19
+  (no call on 6, equivalent on `spambase_20nan`), better than TabPFN on 16 (equivalent on 6, no call on 3).
+  `table_missforest` worse than H on none; `crossfit` and `pick` worse than `table_tabpfn` on `pendigits_20nan` only
+  (+0.0006).
+- **Conclusion:** supported: decision 6's hybrid holds at the thesis seeds on the 26 MCAR variants, a third seed set
+  after 4545/5656/6767 and 42/7/13 (there better than H on 23, worse than TabPFN on none). The thesis table has its
+  hybrid column on its primary seeds; no ADR change proposed.
 - **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
 
 ### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)
