@@ -4571,6 +4571,10 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment, 2026-11-11 23:25 GMT-3 (nothing read):** relaunched at 14:06; queues complete at 22:23 without failure.
   The three `pendigits_20nan` runs had not rerun (their selections were written before the outage's failure), so these
   were moved aside; medusa1 went silent again at about 23:00, and `resume2.sh` reruns them when it answers. 75 of 78 done.
+- **Amendment, 2026-11-12 16:46 GMT-3 (nothing read):** medusa1 back about 15:10 on 2026-11-12, relaunched 15:20; the three
+  `pendigits_20nan` runs finished at 16:26 (78 of 78). Their offline cells failed at 16:41 on "2 ledgers" (the lost
+  runs' result directories beside the reruns'); those directories were moved aside and the three cells taken again
+  from 16:43, same command and asserts.
 - **Sources:** [imputation-protocol/67](tickets/imputation-protocol/67-hybrid-thesis-seeds.md); `hybrid_fresh_seeds.py --study e174`.
 
 ### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)
@@ -4591,5 +4595,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment, 2026-11-12 16:03 GMT-3 (nothing read, no run exists yet):** medusa1 is back and the user allowed queues
   on it. Split by seed set (ADR 0035): 101/202/303 wholly on gorgona8, 4545/5656/6767 wholly on medusa1 (GPU 1 only);
   each set's tally is read on its machine, both in one sitting. Rule unchanged.
+- **Amendment, 2026-11-12 16:46 GMT-3 (nothing read):** the four result directories of the lost runs were moved aside on
+  gorgona8 before any `e173` cell ran, so its cells find one ledger per fold (E174's cells had failed on two).
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 

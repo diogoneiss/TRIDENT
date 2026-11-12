@@ -70,3 +70,14 @@ Fold-pair verdict on 15 (seed, fold) differences, 1% SESOI of the opponent's mea
 - medusa1 went silent again at about 23:00. `$S/resume2.sh` (detached) waits for two answers five minutes apart, then
   relaunches `queue.sh 1–3` (only `pendigits_20nan` × 3 left) and E173's runners. The `cells_resume.sh` lanes keep
   running meanwhile on the store copy and take the reruns. 75 of 78 runs are done; nothing else changes.
+
+## Amendment, 2026-11-12 16:46 GMT-3: `pendigits_20nan` rerun, its offline cells taken twice (nothing read)
+
+- medusa1 answered again at about 15:10 GMT-3 on 2026-11-12 and `resume2.sh` relaunched at 15:20. The three
+  `pendigits_20nan` runs trained from 15:21 to 16:26 and are `FINISHED` on the leader: 78 of 78.
+- Their offline cells failed at 16:41–16:42 before computing anything (`FileNotFoundError: pendigits_20nan s101 fold 1:
+  2 ledgers`): the lost runs of 2026-11-11 had left their result directories (`20261111_003846`) beside the reruns', and
+  the ledger reader wants exactly one. Those directories were moved to `$S/results.leader-down-2026-11-11/`; the reruns'
+  ledgers are untouched. `$S/cells_pendigits20.sh` took the three cells again from 16:43, same command and asserts
+  (H's ledger against the `FINISHED` run, missForest's logged score).
+- Variants, seeds, rule and the single read unchanged.

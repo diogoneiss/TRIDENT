@@ -69,3 +69,10 @@ Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the o
   drop that seed set and its queues end on the host check ("queue read FAILED", expected).
 - **Read:** `--study e173 --tally` on gorgona8 and `--study e173b --tally` on medusa1, in one sitting once all 12 are in.
   Tables, seeds and rule unchanged.
+
+## Amendment, 2026-11-12 16:46 GMT-3: the lost runs' result directories moved aside on gorgona8 (nothing read)
+
+- E174's `pendigits_20nan` cells failed on "2 ledgers" because a lost run's result directory sat beside its rerun's
+  (see [67](../imputation-protocol/67-hybrid-thesis-seeds.md)). The same would have hit `e173`'s cells, so the four
+  directories written on 2026-11-11 (cardio s101/s202/s303, SOFA s101) were moved to
+  `results.leader-down-2026-11-11/` in the state before any `e173` cell ran. `e173`'s trainings started at 16:32.
