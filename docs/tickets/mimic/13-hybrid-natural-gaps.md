@@ -56,3 +56,16 @@ Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the o
 - E174's `resume2.sh` relaunches E173 once the leader answers twice: `queue_resume.sh 1–3` (same runner and cells, start
   after E174's three relaunched queues complete) and two lanes of `cells_resume.sh` (`cells.sh` reading only the lines
   after the relaunch marker, starting once E174's lanes are complete). Seeds, tables, rule and the single read unchanged.
+
+## Amendment, 2026-11-12 16:03 GMT-3: seed set 4545/5656/6767 moves to medusa1 (nothing read, no E173 run exists)
+
+- medusa1 answered again at about 15:10 GMT-3 on 2026-11-12 (rebooted; both GPUs pass a CUDA check) and `resume2.sh`
+  relaunched at 15:20. The user: "a medusa voltou, continue. voce pode disparar filas dentro dela".
+- **Split by seed set (ADR 0035):** `e173` (101/202/303) stays wholly on gorgona8, after E174's three `pendigits_20nan`
+  reruns; `e173b` (4545/5656/6767) runs wholly on medusa1, training and offline cells, from now. Every comparison of the
+  rule is inside one seed set, so every pair stays on one machine. `mimic_hybrid.HOSTS["e173b"]` is now `medusa`.
+- medusa1: state `/scratch/diogoneiss/trident-2026-11-10-mimic-natural-b` there, three queues and two offline lanes on
+  GPU 1 only (GPU 0 fell off the bus twice on 2026-11-09). On gorgona8 the `-b` state holds a STOP file, so its lanes
+  drop that seed set and its queues end on the host check ("queue read FAILED", expected).
+- **Read:** `--study e173 --tally` on gorgona8 and `--study e173b --tally` on medusa1, in one sitting once all 12 are in.
+  Tables, seeds and rule unchanged.

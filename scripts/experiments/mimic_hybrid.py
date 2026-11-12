@@ -2,7 +2,8 @@
 E166 (mimic/11) is the same study on seeds 4545/5656/6767, and E171 (mimic/12) the cross-fit pick on seeds 101/202/303,
 wholly on gorgona8. E173 (mimic/13) is decision 6's hybrid on E148's two tables with natural gaps, scored on the
 masked population (hidden observed cells; they have no induced ones), on two seed sets, ``e173`` (101/202/303) and
-``e173b`` (4545/5656/6767), wholly on gorgona8. Put ``--study <id>`` before any command (default ``e163``).
+``e173b`` (4545/5656/6767), ``e173`` on gorgona8 and ``e173b`` on medusa1 (split by seed set, ADR 0035). Put
+``--study <id>`` before any command (default ``e163``).
 
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] train H <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] --todo <queue> <queues>
@@ -49,7 +50,7 @@ STUDIES = {"e163": (EXPERIMENT, STATE, SEEDS),
            "e171": ("mimic-hybrid-crossfit-2026-11-09", Path("/scratch/diogoneiss/trident-2026-11-09-mimic-crossfit"), (101, 202, 303)),
            "e173": ("mimic-hybrid-natural-2026-11-10", Path("/scratch/diogoneiss/trident-2026-11-10-mimic-natural"), (101, 202, 303)),
            "e173b": ("mimic-hybrid-natural-b-2026-11-10", Path("/scratch/diogoneiss/trident-2026-11-10-mimic-natural-b"), (4545, 5656, 6767))}
-HOSTS = {"e163": "medusa", "e166": "medusa", "e171": "gorgona8", "e173": "gorgona8", "e173b": "gorgona8"}  # the machine each study runs on whole (ADR 0035)
+HOSTS = {"e163": "medusa", "e166": "medusa", "e171": "gorgona8", "e173": "gorgona8", "e173b": "medusa"}  # the machine each study runs on whole (ADR 0035)
 STUDY = "e163"
 
 

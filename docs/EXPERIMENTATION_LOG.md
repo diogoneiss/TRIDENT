@@ -4588,5 +4588,8 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Amendment, 2026-11-11 23:25 GMT-3 (nothing read):** the first four runs, started 22:26, were lost to medusa1's
   second outage (about 23:00); STOP set, trainers stopped, their selections moved aside. Every run reruns once the
   leader answers (E174's `resume2.sh`); design and rule unchanged.
+- **Amendment, 2026-11-12 16:03 GMT-3 (nothing read, no run exists yet):** medusa1 is back and the user allowed queues
+  on it. Split by seed set (ADR 0035): 101/202/303 wholly on gorgona8, 4545/5656/6767 wholly on medusa1 (GPU 1 only);
+  each set's tally is read on its machine, both in one sitting. Rule unchanged.
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
