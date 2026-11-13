@@ -1026,6 +1026,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   clinical tables unless the user decides otherwise.
   **E173 pre-registered 2026-11-10 16:45 GMT-3** ([mimic/13](tickets/mimic/13-hybrid-natural-gaps.md)): decision 6's hybrid on
   E148's two tables with natural gaps (masked population), seed sets 101/202/303 and 4545/5656/6767, 12 runs, on gorgona8 after E174.
+  **E173 done 2026-11-12 21:22 GMT-3, supported on both seed sets** (101/202/303 on gorgona8, 4545/5656/6767 on medusa1):
+  `table_tabpfn` better than H on the cardio table (−0.0025, −0.0043), equivalent on SOFA, better than TabPFN on both.
+  Open, the user's: whether ADR 0031 decision 6's scope covers the natural-gap tables.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

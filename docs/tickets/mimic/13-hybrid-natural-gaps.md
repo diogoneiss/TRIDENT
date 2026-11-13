@@ -87,3 +87,83 @@ Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the o
   cell runs in the rest of GPU 1.
 - `e173` on gorgona8 was not interrupted: its six runs finished by 19:29 (the leader's MLflow server was back before any
   of them closed), five of six cells done, the last running. Read and rule unchanged.
+
+## Outcome (read once 2026-11-12 21:22 GMT-3: supported; written 2026-11-12 21:23 GMT-3)
+
+Both tallies read in one sitting, after all 12 pairs' cells were in: `--study e173 --tally` on gorgona8 at commit
+8c8bc81, then `--study e173b --tally` on medusa1 at 27ed35e (the same code; only documents changed between them). No
+FAILED line in either state after the relaunch; the H-ledger and missForest asserts held on every pair.
+
+- **Primary, supported.** On each seed set `table_tabpfn` (ADR 0031 decision 6's deployable hybrid, TabPFN side) is
+  better than H on `mimic-cardio_natural` (−0.0025 [−0.0049, −0.0000] on 101/202/303; −0.0043 [−0.0069, −0.0017] on
+  4545/5656/6767), equivalent to H on `mimic-sofa_natural` (−0.0017, −0.0007), and worse than TabPFN on neither.
+- **Size:** the gain over H is 0.3% to 0.5% of H's score on the cardio table and none on SOFA. The hybrid is better than
+  TabPFN on both tables in both sets (−0.0462 and −0.0183; −0.0432 and −0.0215), a lead H already had (E148).
+- **Secondary.** `table_missforest` is worse than H on none (better on cardio, equivalent on SOFA, both sets).
+  `crossfit` is worse than `table_tabpfn` on none (equivalent on both tables, both sets).
+- **What it leads to:** whether ADR 0031 decision 6's scope covers the MIMIC-IV tables with natural gaps is the user's
+  call. The evidence: never worse than either side on two tables and two seed sets, with a small gain over H on one.
+
+Printout of `--study e173 --tally` (gorgona8), unedited:
+
+```
+- `mimic-cardio_natural` (primary): H 0.7957, tabpfn 0.8394, missforest 0.8221, table_tabpfn 0.7932, table_missforest 0.7932, pick 0.7927, picked_missforest 0.5333, crossfit 0.7929, crossfit_missforest 0.4667
+  - table_missforest − H -0.0025 [-0.0041, -0.0009] better
+  - table_missforest − missforest -0.0290 [-0.0324, -0.0256] better
+  - table_tabpfn − H -0.0025 [-0.0049, -0.0000] better
+  - table_tabpfn − tabpfn -0.0462 [-0.0528, -0.0397] better
+  - pick − H -0.0029 [-0.0046, -0.0012] better
+  - pick − table_tabpfn -0.0005 [-0.0014, +0.0005] equivalent
+  - pick − table_missforest -0.0004 [-0.0011, +0.0002] equivalent
+  - crossfit − H -0.0028 [-0.0046, -0.0011] better
+  - crossfit − table_tabpfn -0.0004 [-0.0013, +0.0006] equivalent
+  - the pick took missForest on 8 of 15 folds, the cross-fit pick on 7
+- `mimic-sofa_natural` (primary): H 0.8735, tabpfn 0.8902, missforest 0.9346, table_tabpfn 0.8718, table_missforest 0.8739, pick 0.8718, picked_missforest 0.0000, crossfit 0.8724, crossfit_missforest 0.1333
+  - table_missforest − H +0.0004 [-0.0002, +0.0010] equivalent
+  - table_missforest − missforest -0.0607 [-0.0674, -0.0540] better
+  - table_tabpfn − H -0.0017 [-0.0039, +0.0005] equivalent
+  - table_tabpfn − tabpfn -0.0183 [-0.0217, -0.0150] better
+  - pick − H -0.0017 [-0.0039, +0.0005] equivalent
+  - pick − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - pick − table_missforest -0.0021 [-0.0043, +0.0001] equivalent
+  - crossfit − H -0.0012 [-0.0031, +0.0008] equivalent
+  - crossfit − table_tabpfn +0.0005 [-0.0006, +0.0017] equivalent
+  - the pick took missForest on 0 of 15 folds, the cross-fit pick on 2
+
+E173 PRIMARY, seed set 101/202/303: `table` (TabPFN side) on mimic-cardio_natural, mimic-sofa_natural: better than H on ['mimic-cardio_natural'], worse than H on none, worse than TabPFN on none -> supported
+E173 SECONDARY: `table_tabpfn` better than TabPFN on ['mimic-cardio_natural', 'mimic-sofa_natural']; `table_missforest` worse than H on none; `crossfit` worse than `table_tabpfn` on none
+E173 reads supported if both seed sets read supported, refuted if either reads refuted, mixed otherwise
+(fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
+```
+
+Printout of `--study e173b --tally` (medusa1), unedited:
+
+```
+- `mimic-cardio_natural` (primary): H 0.7935, tabpfn 0.8324, missforest 0.8206, table_tabpfn 0.7892, table_missforest 0.7906, pick 0.7898, picked_missforest 0.4667, crossfit 0.7894, crossfit_missforest 0.4000
+  - table_missforest − H -0.0029 [-0.0049, -0.0010] better
+  - table_missforest − missforest -0.0301 [-0.0344, -0.0257] better
+  - table_tabpfn − H -0.0043 [-0.0069, -0.0017] better
+  - table_tabpfn − tabpfn -0.0432 [-0.0493, -0.0371] better
+  - pick − H -0.0037 [-0.0063, -0.0012] better
+  - pick − table_tabpfn +0.0005 [-0.0013, +0.0024] equivalent
+  - pick − table_missforest -0.0008 [-0.0020, +0.0004] equivalent
+  - crossfit − H -0.0041 [-0.0067, -0.0016] better
+  - crossfit − table_tabpfn +0.0002 [-0.0006, +0.0010] equivalent
+  - the pick took missForest on 7 of 15 folds, the cross-fit pick on 6
+- `mimic-sofa_natural` (primary): H 0.8779, tabpfn 0.8988, missforest 0.9344, table_tabpfn 0.8772, table_missforest 0.8787, pick 0.8772, picked_missforest 0.0000, crossfit 0.8776, crossfit_missforest 0.2667
+  - table_missforest − H +0.0008 [-0.0005, +0.0020] equivalent
+  - table_missforest − missforest -0.0558 [-0.0615, -0.0501] better
+  - table_tabpfn − H -0.0007 [-0.0026, +0.0012] equivalent
+  - table_tabpfn − tabpfn -0.0215 [-0.0270, -0.0161] better
+  - pick − H -0.0007 [-0.0026, +0.0012] equivalent
+  - pick − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - pick − table_missforest -0.0014 [-0.0040, +0.0011] equivalent
+  - crossfit − H -0.0003 [-0.0018, +0.0011] equivalent
+  - crossfit − table_tabpfn +0.0004 [-0.0009, +0.0016] equivalent
+  - the pick took missForest on 0 of 15 folds, the cross-fit pick on 4
+
+E173 PRIMARY, seed set 4545/5656/6767: `table` (TabPFN side) on mimic-cardio_natural, mimic-sofa_natural: better than H on ['mimic-cardio_natural'], worse than H on none, worse than TabPFN on none -> supported
+E173 SECONDARY: `table_tabpfn` better than TabPFN on ['mimic-cardio_natural', 'mimic-sofa_natural']; `table_missforest` worse than H on none; `crossfit` worse than `table_tabpfn` on none
+E173 reads supported if both seed sets read supported, refuted if either reads refuted, mixed otherwise
+(fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
+```

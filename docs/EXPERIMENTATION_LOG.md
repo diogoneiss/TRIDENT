@@ -4587,7 +4587,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 
 ### E173 · ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps (pre-registered 2026-11-10 16:45 GMT-3)
 
-- **Status:** in progress, pre-registered 2026-11-10 16:45 GMT-3 on the user's go ("Os dois em sequência", after E174). T55.
+- **Status:** done, supported (read once 2026-11-12 21:22 GMT-3); pre-registered 2026-11-10 16:45 GMT-3 on the user's go ("Os dois em sequência", after E174). T55.
 - **Hypothesis:** on E148's two tables with natural gaps, the deployable TabPFN-side hybrid (`table_tabpfn`) is better
   than H on at least one, worse than H on neither and worse than TabPFN on neither, on each of two seed sets.
 - **Scenarios:** `mimic-cardio_natural`, `mimic-sofa_natural` × 101/202/303 (`--study e173`) and × 4545/5656/6767
@@ -4607,5 +4607,13 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   gorgona8 before any `e173` cell ran, so its cells find one ledger per fold (E174's cells had failed on two).
 - **Amendment, 2026-11-12 21:08 GMT-3 (nothing read):** medusa1 rebooted at 17:38 with all six `e173b` runs finished and five
   of six cells done; the cell it killed (`mimic-sofa_natural` s5656) was taken again from 21:06 with the same lane script.
+- **Results (read once 2026-11-12 21:22 GMT-3; `e173` on gorgona8 at 8c8bc81, `e173b` on medusa1 at 27ed35e, all 12
+  pairs in):** on each seed set `table_tabpfn` is better than H on `mimic-cardio_natural` (−0.0025 [−0.0049, −0.0000];
+  −0.0043 [−0.0069, −0.0017]), equivalent to H on `mimic-sofa_natural` (−0.0017; −0.0007) and better than TabPFN on
+  both (cardio −0.0462 / −0.0432, SOFA −0.0183 / −0.0215). `table_missforest` worse than H on none; `crossfit` worse than
+  `table_tabpfn` on none.
+- **Conclusion:** supported on both seed sets: the hybrid is never worse than either side on the natural-gap tables.
+  Its gain over H is small (0.3% to 0.5% of H's score on cardio, none on SOFA); the lead over TabPFN is H's own (E148).
+  Whether decision 6's scope covers these tables is the user's call.
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
