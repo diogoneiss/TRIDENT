@@ -1,7 +1,7 @@
 """T50's scored studies, read from their state directories (docs/tickets/mimic/03, 04 and 14).
 
     QUEUE_STATE=<state directory> TRIDENT_DATASETS_ROOT=<root> \\
-        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149|e176>
+        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149|e176|e177>
 
 - ``e148``: per natural table, the masked population's ``impute_score`` minus the bar's best baseline on the same
   cells, every scored imputer's mean, the decoder against TabPFN where ``<state>/tabpfn`` holds the offline pass
@@ -13,6 +13,8 @@
 - ``e176``: on ``mimic-wide``, the decoder minus TabPFN v2 per variant (``<state>/tabpfn`` is required), by the
   project's rule with an equivalence margin of 1% of TabPFN's mean score, and the decoder minus the bar beside it.
   The primaries are the natural table and ``tmatch``.
+- ``e177``: the same reading for the decoder trained on 10,000 rows of each fold (arms ``M10k`` and ``D10k``, in
+  E176's state directory), against E176's TabPFN files, with the capped decoder minus E176's decoder beside it.
 
 Each contrast of ``e148`` and ``e149`` is paired per (seed, fold), 15 replicates, with a plain 95% t interval. A primary is better (or worse)
 when its two-sided p, adjusted by Holm over the two tables, is under 0.05 and its mean below (or above) 0. Refuses to
@@ -82,29 +84,38 @@ def by_row_gaps(variant: str, runs: list[Path]) -> pd.DataFrame:
     return out.rename(index={4: "4+"})
 
 
-def wide() -> None:
+def wide(capped: bool = False) -> None:
+    """E176, or with ``capped`` E177: the arms trained on 10,000 rows, and E176's decoder as a third opponent."""
     from scripts.experiments import mimic_run as run
     from scripts.experiments import mimic_wide_run
+
+    def folds(arm: str, variant: str, seed: int) -> pd.DataFrame:
+        runs = run.finished(arm, variant, seed)
+        if len(runs) != 1:
+            sys.exit(f"{arm} {variant} seed {seed}: {len(runs)} finished runs; the ticket reads only a complete study")
+        frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
+        assert len(frame) == 5
+        return frame
 
     calls = {}
     for arm, variant in mimic_wide_run.CELLS:
         population, readout = ("masked", "M") if arm == "M" else ("induced", "K")
-        own, bar, theirs, seconds = [], [], [], []
+        own, bar, theirs, seconds, full = [], [], [], [], []
         for seed in run.SEEDS:
-            runs = run.finished(arm, variant, seed)
-            if len(runs) != 1:
-                sys.exit(f"{variant} seed {seed}: {len(runs)} finished runs; the ticket reads only a complete study")
-            frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
+            source = report_common.Run(variant, seed, "", population)
+            frame = folds(arm + "10k" if capped else arm, variant, seed)
             other = pd.read_csv(run.STATE / "tabpfn" / f"{variant}_s{seed}.csv").sort_values("fold")
-            assert len(frame) == 5 and len(other) == 5
-            own.append(report_common.model(frame, report_common.Run(variant, seed, "", population), readout, population))
+            assert len(other) == 5
+            own.append(report_common.model(frame, source, readout, population))
+            if capped:
+                full.append(report_common.model(folds(arm, variant, seed), source, readout, population))
             bar.append(report_common.opponent(frame, "bar", population)[1])
             theirs.append(other[f"impute/{population}/baseline/tabpfn/impute_score"].to_numpy(float))
             seconds.append(other[f"impute/{population}/baseline/tabpfn/fit_seconds"].to_numpy(float))
         tabpfn = float(np.concatenate(theirs).mean())
         print(f"{variant} ({population} cells): decoder {np.concatenate(own).mean():.4f}, TabPFN {tabpfn:.4f} "
               f"(fit {np.concatenate(seconds).mean():.0f} s a fold), bar {np.concatenate(bar).mean():.4f}")
-        for name, others in (("TabPFN", theirs), ("bar", bar)):
+        for name, others in (("TabPFN", theirs), ("bar", bar), *([("E176's decoder", full)] if capped else [])):
             v = report_common.verdict([a - b for a, b in zip(own, others)], 0.01 * tabpfn)
             print(f"  decoder - {name}: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}], by seed "
                   + ", ".join(f"{s:+.4f}" for s in v.seeds) + f" -> {v.call}")
@@ -188,8 +199,8 @@ def main(study: str) -> None:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["e176"]:
-        wide()
+    if sys.argv[1:] in (["e176"], ["e177"]):
+        wide(capped=sys.argv[1] == "e177")
     elif sys.argv[1:] in (["e148"], ["e149"]):
         main(sys.argv[1])
     else:

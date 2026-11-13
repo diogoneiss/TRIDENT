@@ -213,6 +213,8 @@ fails when an entry has no row or a row no entry.
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
 | E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
 | E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
+| E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | in progress | |
+| E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 | in progress | |
 
 ## Entries
 
@@ -4740,3 +4742,45 @@ fails when an entry has no row or a row no entry.
   the two are level, and TabPFN falls below the bar only on the real patterns. No arm separates size from pattern. No ADR.
 - **Sources:** [mimic/14](tickets/mimic/14-wide-table.md); `datasets/build_mimic.py --wide`, `mimic_wide_run.py`,
   `mimic_report.py e176`.
+
+### E177 · TRIDENT on 10,000 rows of `mimic-wide`: does the lead over TabPFN v2 need the other rows? (pre-registered 2026-11-13 08:28 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13, which also authorised
+  the `--train_rows` flag, 9e780d3). T57.
+- **Hypothesis:** trained on a fixed sample of 10,000 of each fold's training rows, the decoder is still not worse
+  than TabPFN v2 on `mimic-wide`'s natural gaps and transplanted patterns, and better on at least one: E176's lead
+  does not need the rows past TabPFN's context.
+- **Scenarios:** E176's three cells with `--train_rows 10000`: `mimic-wide_natural` under `M10k` (masked checkpoint,
+  masked population), `mimic-wide-donor_tmatch_20nan` and `mimic-wide-donor_mcar_20nan` under `D10k` (defaults,
+  readout K, induced cells); seeds 42, 7, 13; 9 runs on medusa1, one queue on GPU 0. Opponents already there: E176's
+  nine TabPFN files (not refit) and its nine full-table runs. The naive fills, the baselines and every scored row
+  keep the whole fold, so the scores are in E176's units. Disclosed: E176's scores were read; the cap leans against
+  TRIDENT (10,000 rows with their gaps against TabPFN's 10,000 observed rows a column); the epochs are the
+  full-table ones, so a capped run takes 3.3 to 4.6 times fewer optimizer steps and no matched-steps arm is run.
+- **Measures and decision rule:** `impute_score`, capped decoder − TabPFN on 15 (seed, fold) pairs a variant,
+  fold-pair rule with seed agreement, equivalence margin 1% of TabPFN's mean (E176's rule). Primaries: the natural
+  table and `tmatch`. Supported if worse on neither and better on at least one; refuted if worse on either; no
+  verdict otherwise. Secondary: capped decoder − E176's decoder, `mcar`, the bar. Read once with the 9 runs in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [mimic/15](tickets/mimic/15-wide-table-capped-rows.md); `mimic_wide_run.py`, `mimic_report.py e177`.
+
+### E178 · The deployable hybrid on `mimic-wide`: safe and still a gain where TabPFN alone is weak? (pre-registered 2026-11-13 08:28 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13). T57.
+- **Hypothesis:** on `mimic-wide`, ADR 0031 decision 6's hybrid (`table_tabpfn`: H's fills and TabPFN's blended with
+  one numerical weight and one categorical pick per table, chosen on the fold's hidden validation cells) is better
+  than H on at least one primary, worse than H on neither, and worse than TabPFN on neither.
+- **Scenarios:** H (`--decode_checkpoint loss --decode_calibration none`) on `mimic-wide_natural` (masked
+  population), `mimic-wide-donor_tmatch_20nan` and `mimic-wide-donor_mcar_20nan` (induced cells); seeds 42, 7, 13;
+  9 runs, then the offline pass a run (TabPFN v2 and missForest refit on the fold). All on medusa1, two queues, one
+  a GPU. Disclosed: E176's scores on these variants and seeds were read; with TabPFN that far behind the hybrid may
+  choose H nearly everywhere, which E163's rule reads as refuted (harmless and unneeded, scope not extended).
+- **Measures and decision rule:** `impute_score` per fold, fold-pair rule with seed agreement, margin 1% of the
+  opponent's mean; E163's rule on the primaries (the natural table and `tmatch`): refuted if `table_tabpfn` is
+  better than H on neither or worse than H on either; supported if, otherwise, worse than TabPFN on neither; mixed
+  otherwise. Secondary: `mcar`, the missForest side, the pick and the cross-fit pick. Read once with the 9 runs and
+  their cells in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [mimic/16](tickets/mimic/16-wide-table-hybrid.md); `mimic_hybrid.py --study e178`.

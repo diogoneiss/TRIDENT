@@ -1,6 +1,8 @@
 """E176's cells: the MIMIC-IV table past TabPFN's context, natural gaps and transplanted patterns
 (docs/tickets/mimic/14-wide-table.md). ``mimic_run.py`` with ``mimic-wide``'s variants: the natural table under
 E148's arm (``M``, the masked checkpoint), the donor table's two variants under E149's (``D``, the defaults).
+E177 (mimic/15) is the same cells with the models trained on 10,000 rows of each fold (``--train_rows``), arms
+``M10k`` and ``D10k``, in the same state directory; ``--todo`` deals those, E176's being finished.
 
     uv run --python 3.11 python -B scripts/experiments/mimic_wide_run.py train <arm> <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/mimic_wide_run.py --todo <queue> <queues>
@@ -21,17 +23,20 @@ sys.path.insert(0, str(ROOT))
 from scripts.experiments import mimic_run as run  # noqa: E402
 
 run.EXPERIMENT = "mimic-wide-2026-11-12"
-run.ARMS = {"M": {"decode_checkpoint": "masked"}, "D": {}}
+ROWS = 10_000  # TabPFN v2's context (``tabpfn_baseline.CONTEXT_ROWS``), as the cap on TRIDENT's training rows
+run.ARMS = {"M": {"decode_checkpoint": "masked"}, "D": {},
+            "M10k": {"decode_checkpoint": "masked", "train_rows": ROWS}, "D10k": {"train_rows": ROWS}}
 CELLS = (
     ("M", "mimic-wide_natural"),
     ("D", "mimic-wide-donor_tmatch_20nan"),
     ("D", "mimic-wide-donor_mcar_20nan"),
 )
+CAPPED = tuple((f"{arm}10k", variant) for arm, variant in CELLS)
 run.VARIANTS = tuple(variant for _, variant in CELLS)
 
 
 def todo(which: int, queues: int) -> None:
-    cells = [(arm, variant, seed) for seed in run.SEEDS for arm, variant in CELLS]
+    cells = [(arm, variant, seed) for seed in run.SEEDS for arm, variant in CAPPED]
     for k, cell in enumerate(cells):
         if k % queues == which - 1 and not run.done(*cell):
             print(*cell)

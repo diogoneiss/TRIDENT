@@ -1045,6 +1045,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E176 done 2026-11-13 07:23 GMT-3, supported:** the decoder is better than TabPFN v2 on the natural table (−0.0991) and on `tmatch`
   (−0.0577); under MCAR the two are level (−0.0044, under the 1% margin), so the lead tracks the real gap patterns and is
   not shown to come from the row cap. Next, the user's call: the hybrid here, or a 10,000-row TRIDENT arm (needs a `src/` flag).
+  **E177 and E178 pre-registered 2026-11-13 08:28 GMT-3** on the user's "2 e 1, vá": E177 ([mimic/15](tickets/mimic/15-wide-table-capped-rows.md)),
+  TRIDENT trained on 10,000 rows a fold (`--train_rows`, 9e780d3) against E176's TabPFN files, one queue; E178
+  ([mimic/16](tickets/mimic/16-wide-table-hybrid.md)), ADR 0031 decision 6's hybrid on the same three variants, two queues. Both on medusa1.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
