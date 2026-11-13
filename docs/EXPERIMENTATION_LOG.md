@@ -212,7 +212,7 @@ fails when an entry has no row or a row no entry.
 | E173 | ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps | 2026-11-10 – 2026-11-12 | supported | on the natural-gap MIMIC-IV tables the hybrid is better than H on cardio, equivalent on SOFA, better than TabPFN on both seed sets |
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
 | E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
-| E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 | in progress | |
+| E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
 
 ## Entries
 
@@ -4716,7 +4716,7 @@ fails when an entry has no row or a row no entry.
 
 ### E176 · A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? (pre-registered 2026-11-12 23:49 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-12 23:49 GMT-3 on the user's go ("gosto muito da ideia do 2, faça-o primeiro"; "a
+- **Status:** done, supported (read once 2026-11-13 07:22 GMT-3); pre-registered 2026-11-12 23:49 GMT-3 on the user's go ("gosto muito da ideia do 2, faça-o primeiro"; "a
   medusa1 esta com gpu livre, creio que voce pode jogar algumas filas lá"). T57.
 - **Hypothesis:** on a clinical table several times TabPFN v2's 10,000-row context, where TRIDENT trains on every row
   and TabPFN on a subsample, the decoder is not worse than TabPFN v2 and is better on at least one of the natural
@@ -4730,7 +4730,13 @@ fails when an entry has no row or a row no entry.
   with seed agreement, equivalence margin 1% of TabPFN's mean. Primaries: the natural table and `tmatch`. Supported
   if worse on neither and better on at least one; refuted if worse on either; no verdict otherwise. Secondary: `mcar`,
   the decoder against the bar, TabPFN's fit seconds. Read once with all 9 runs and 9 TabPFN files in.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (read once 2026-11-13 07:22 GMT-3, on medusa1 at 5340d08, 9 runs and 9 TabPFN files in):** decoder − TabPFN
+  −0.0991 [−0.1001, −0.0982] on `mimic-wide_natural` (0.6652 against 0.7644) and −0.0577 [−0.0592, −0.0562] on
+  `tmatch` (0.9086 against 0.9662), better on both with every seed agreeing; −0.0044 [−0.0056, −0.0032] on `mcar`,
+  called better but under the 1% margin. Better than the bar on all three (−0.0234, −0.0266, −0.0132). TabPFN is
+  worse than the bar on the natural table and on `tmatch`.
+- **Conclusion:** supported: on a clinical table past TabPFN v2's context the decoder is better than it under natural
+  gaps and transplanted real patterns. The lead is not shown to come from the row cap: under MCAR, with the same cap,
+  the two are level, and TabPFN falls below the bar only on the real patterns. No arm separates size from pattern. No ADR.
 - **Sources:** [mimic/14](tickets/mimic/14-wide-table.md); `datasets/build_mimic.py --wide`, `mimic_wide_run.py`,
   `mimic_report.py e176`.

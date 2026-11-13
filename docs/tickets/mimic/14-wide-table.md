@@ -79,3 +79,40 @@ project's fold-pair rule (95% t interval, every seed agreeing), equivalence marg
   `QUEUE_STATE=/scratch/diogoneiss/trident-2026-11-12-mimic-wide TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_report.py e176`
 - **What it leads to:** a thesis sentence on the decoder against TabPFN v2 on a clinical table past its context, and
   whether the hybrid is worth running there; both the user's call.
+
+## Outcome (2026-11-13 07:23 GMT-3): supported
+
+The 9 runs finished between 01:34 and 07:19 GMT-3 on 2026-11-13, none failed, and the 9 TabPFN files were in by then.
+A first read at 07:22 GMT-3 (f8586bd) stopped on a missing column name (TabPFN's fit seconds are keyed under the
+population) before printing any score; the key was fixed (5340d08) and the study read once, on medusa1. The printout,
+unedited (its first two lines are the commit and the clock):
+
+```
+5340d08 
+read 2026-11-13 07:22 GMT-3
+mimic-wide_natural (masked cells): decoder 0.6652, TabPFN 0.7644 (fit 19 s a fold), bar 0.6887
+  decoder - TabPFN: -0.0991 [-0.1001, -0.0982], by seed -0.0994, -0.0981, -0.0999 -> better
+  decoder - bar: -0.0234 [-0.0242, -0.0226], by seed -0.0234, -0.0230, -0.0238 -> better
+mimic-wide-donor_tmatch_20nan (induced cells): decoder 0.9086, TabPFN 0.9662 (fit 25 s a fold), bar 0.9352
+  decoder - TabPFN: -0.0577 [-0.0592, -0.0562], by seed -0.0582, -0.0576, -0.0572 -> better
+  decoder - bar: -0.0266 [-0.0281, -0.0252], by seed -0.0272, -0.0254, -0.0273 -> better
+mimic-wide-donor_mcar_20nan (induced cells): decoder 0.7171, TabPFN 0.7216 (fit 26 s a fold), bar 0.7303
+  decoder - TabPFN: -0.0044 [-0.0056, -0.0032], by seed -0.0046, -0.0046, -0.0041 -> better
+  decoder - bar: -0.0132 [-0.0137, -0.0127], by seed -0.0133, -0.0130, -0.0133 -> better
+PRIMARIES (natural, tmatch) against TabPFN: ['better', 'better'] -> supported (fold-pair t, seed agreement, margin 1% of TabPFN's mean)
+```
+
+- **Primaries:** the decoder is better than TabPFN v2 on both, by −0.0991 on the natural table (13% of TabPFN's
+  score) and −0.0577 under the transplanted patterns (6%), every seed agreeing. Supported.
+- **Secondary:** under MCAR at the same gap counts the decoder is also called better, by −0.0044, which is under the
+  1% margin (0.0072): a difference too small to matter by the ticket's own measure. The decoder is better than the bar
+  on all three variants.
+- **What this does not show:** that the lead comes from the row cap. TabPFN v2 scores worse than the bar's best
+  baseline on the natural table (0.7644 against 0.6887) and on `tmatch` (0.9662 against 0.9352), and is level with the
+  decoder under MCAR, where it has the same 10,000-row context. So the lead tracks the real gap patterns, not the
+  table's size; the study has no arm that separates the two (the 10,000-row TRIDENT arm was left out). Why TabPFN
+  falls below the bar on real patterns was not examined.
+- **Scope:** TabPFN v2 as ADR 0028 pins it; one table, seeds 42/7/13.
+- **What it leads to:** the thesis sentence and whether to run the hybrid or the 10,000-row arm here are the user's
+  call. No ADR changes.
+

@@ -1042,6 +1042,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   variables; donor table of 46,501 complete rows with transplant variants.
   **E176 pre-registered 2026-11-12 23:49 GMT-3** ([mimic/14](tickets/mimic/14-wide-table.md)): the decoder against TabPFN v2 (10,000-row
   context) on the natural table and on `tmatch`/`mcar`, seeds 42/7/13, medusa1's two GPUs, about 8 h.
+  **E176 done 2026-11-13 07:23 GMT-3, supported:** the decoder is better than TabPFN v2 on the natural table (−0.0991) and on `tmatch`
+  (−0.0577); under MCAR the two are level (−0.0044, under the 1% margin), so the lead tracks the real gap patterns and is
+  not shown to come from the row cap. Next, the user's call: the hybrid here, or a 10,000-row TRIDENT arm (needs a `src/` flag).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
