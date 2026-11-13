@@ -84,3 +84,33 @@ Written before any reading; no score of this study has been read.
 - **To finish:** medusa1 needs a reboot for CUDA to come back; then the two H runs and the nine cells, by the
   ticket's design. Moving them to gorgona8 would split a study across machines by other than seed (ADR 0035) and is
   the user's call.
+
+## Amendment (2026-11-13 20:17 GMT-3): the rest runs on gorgona8, on the user's call; a departure from ADR 0035
+
+Written before any reading and before any cell on gorgona8; no score of this study has been read.
+
+- **The user's go:** asked "Posso soltar a 1 no gorgona8?" (option 1: finish E178 there, said to leave ADR 0035, the
+  rule that keeps a study on one machine or splits it by seed), the user answered "sim" (2026-11-13). medusa1 was
+  not rebooted (boot time still 2026-11-12 17:38) and no new process there can start CUDA.
+- **What moves:** the two missing H runs (`mimic-wide_natural` and `mimic-wide-donor_mcar_20nan` at seed 13) and all
+  nine offline cells run on gorgona8 (RTX 3090 Ti), state at the same path there. The seven finished runs'
+  `results/` and `selection/` are copied from medusa1 with rsync, leaving out `selection/mimic-wide_natural_s13` (the
+  CPU run's files) and the two unfinished runs' `results/`; their MLflow artifacts were already on gorgona8 (the
+  leadership copy). The new runs log to the leader's store through the tunnel and carry `host = gorgona8`.
+- **The departure:** H is trained on medusa1 for seven (variant, seed) cells and on gorgona8 for two, a split that is
+  not by seed (at seed 13 `tmatch` is medusa1's, the other two gorgona8's).
+  - Every line of the rule is a fold pair inside one cell: `table_tabpfn`, H and TabPFN are scored on the same
+    folds' cells, with H's fills from one run. No pair has one arm trained on each machine.
+  - TabPFN and missForest are refit on gorgona8 for all nine cells, so in seven cells H is medusa1's and the other
+    side gorgona8's, as in E169's offline pass (moved the same way on 2026-11-09). missForest's refit is asserted
+    equal to the run's logged score; TabPFN's refit has no such check.
+  - On `mimic-wide_natural` and `mcar` the seed-agreement line sets seeds 42 and 7 from medusa1 beside seed 13 from
+    gorgona8, and levels across seeds mix the two machines (E86: they differ per fold).
+- **Unchanged:** seeds, cells, measures, rule, three seeds with no extension. The single read is the same command,
+  run on gorgona8, where the cell tables are.
+- **Guards:** `torch.cuda.is_available()` was True in a new process on gorgona8 before the launch, and each run
+  checks it again before it starts; the waiter fires on a FAILED line in `progress.log`.
+- **The store:** the FAILED run and the two RUNNING orphans of 11:30 to 11:58 stay as they are. With the reruns
+  FINISHED, each (variant, seed) has exactly one FINISHED run, which `cells` requires.
+- **Code:** the new runs carry this amendment's commit; it differs from the seven runs' 1085c6e in documents and in
+  `mimic_hybrid.py`'s docstring only.

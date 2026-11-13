@@ -5,7 +5,8 @@ masked population (hidden observed cells; they have no induced ones), on two see
 ``e173b`` (4545/5656/6767), ``e173`` on gorgona8 and ``e173b`` on medusa1 (split by seed set, ADR 0035). E178
 (mimic/16) is the hybrid on E176's ``mimic-wide`` variants, the natural table on its masked population and the donor
 table's ``tmatch`` and ``mcar`` on their induced cells, seeds 42/7/13, on medusa1; its primaries are the natural table
-and ``tmatch``. Put
+and ``tmatch``. After medusa1's GPU failed, its last two H runs and its offline cells ran on gorgona8, started by hand
+(the ticket's third amendment), so ``--todo`` still names medusa1. Put
 ``--study <id>`` before any command (default ``e163``).
 
     uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py [--study e166] train H <variant> <seed>

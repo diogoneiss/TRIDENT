@@ -1050,7 +1050,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   ([mimic/16](tickets/mimic/16-wide-table-hybrid.md)), ADR 0031 decision 6's hybrid on the same three variants, two queues. Both on medusa1.
   **E177 done 2026-11-13 11:29 GMT-3, supported:** on 10,000 rows a fold the decoder is still better than TabPFN v2 on the natural table
   (−0.0833) and on `tmatch` (−0.0474), 84% and 82% of E176's lead; under MCAR it falls behind (+0.0087) and is level with the bar.
-  The thesis sentence's wording is the user's call. E178 still running.
+  The thesis sentence's wording is the user's call. E178 paused at 7 of 9 H runs when medusa1's GPU 0 fell (11:31 GMT-3, no CUDA
+  in new processes since); from 2026-11-13 20:17 GMT-3 its two missing H runs and nine offline cells run on gorgona8 on the user's "sim"
+  (third amendment, a departure from ADR 0035).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

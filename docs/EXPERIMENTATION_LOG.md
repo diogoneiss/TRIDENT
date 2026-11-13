@@ -4788,6 +4788,11 @@ fails when an entry has no row or a row no entry.
   better than H on neither or worse than H on either; supported if, otherwise, worse than TabPFN on neither; mixed
   otherwise. Secondary: `mcar`, the missForest side, the pick and the cross-fit pick. Read once with the 9 runs and
   their cells in.
+- **Amendments:** 2026-11-13 11:33 GMT-3, medusa1's GPU 0 fell off the bus at 11:31; the rest was sent to GPU 1.
+  2026-11-13 19:09 GMT-3, GPU 1 could not start CUDA in new processes either: every offline cell failed and a rerun
+  trained on the CPU for seven hours before it was killed; paused at 7 of 9 H runs, nothing read. 2026-11-13 20:17 GMT-3, on
+  the user's "sim" the two missing H runs (`mimic-wide_natural` and `mcar` at seed 13) and all nine offline cells
+  run on gorgona8, a departure from ADR 0035 (the split is not by seed); every pair of the rule stays inside one cell.
 - **Results:** pending.
 - **Conclusion:** pending.
 - **Sources:** [mimic/16](tickets/mimic/16-wide-table-hybrid.md); `mimic_hybrid.py --study e178`.
