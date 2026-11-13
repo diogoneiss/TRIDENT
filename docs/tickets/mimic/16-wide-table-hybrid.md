@@ -47,3 +47,24 @@ primaries `mimic-wide_natural` and `mimic-wide-donor_tmatch_20nan`:
 - **Read** once with the 9 runs and their cells in, on medusa1:
   `TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_hybrid.py --study e178 --tally`
 - **What it leads to:** whether ADR 0031 decision 6's scope reaches a clinical table of this size, the user's call.
+
+## Amendment (2026-11-13 11:33 GMT-3): medusa1's GPU 0 fell off the bus, the rest runs on GPU 1
+
+Written before any reading; no score of this study has been read.
+
+- **What happened:** at 11:31:38 GMT-3 on 2026-11-13 medusa1's GPU 0 stopped answering (`nvidia-smi`: "Unable to
+  determine the device handle for GPU0: 0000:41:00.0: Unknown Error"), its third failure since 2026-11-09. It had
+  carried E177's queue and this study's queue 1 for three hours; the failure came two minutes after the first offline
+  cell (TabPFN on `mimic-wide_natural` seed 42) started beside a training on it. Whether that load caused it is not known.
+  GPU 1 kept working.
+- **What it took down:** the H run of `mimic-wide_natural` seed 13, one minute in (FAILED in the store); the offline
+  cells of `mimic-wide_natural` seed 42 and `mimic-wide-donor_mcar_20nan` seed 42 (no TabPFN fit finished). Queue 1
+  then started H on `mimic-wide-donor_mcar_20nan` seed 13 with no CUDA device, on the CPU; it was killed after one
+  minute, at 11:32:38, and its run stays RUNNING in the store, unfinished. The readers take FINISHED runs only, so
+  neither run is read.
+- **Seven H runs were finished or running on GPU 1 and stand:** six FINISHED before the failure, three of them on GPU 0
+  (`mimic-wide_natural` 42, `mcar` 42, `tmatch` 7), and `tmatch` seed 13 on GPU 1.
+- **Change:** the two lost H runs are rerun whole on GPU 1 after queue 2 ends, and every offline cell runs on GPU 1,
+  one at a time (`finish_gpu1.sh` in the state directory, written before it ran). The design said one queue a GPU;
+  both cards are RTX 5090s on the same machine, and H and the hybrid it is compared with come from the same run, so
+  no contrast crosses cards. Seeds, cells, measures and rule unchanged. The wall clock grows by about two hours.
