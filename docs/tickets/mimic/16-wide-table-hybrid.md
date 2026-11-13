@@ -68,3 +68,19 @@ Written before any reading; no score of this study has been read.
   one at a time (`finish_gpu1.sh` in the state directory, written before it ran). The design said one queue a GPU;
   both cards are RTX 5090s on the same machine, and H and the hybrid it is compared with come from the same run, so
   no contrast crosses cards. Seeds, cells, measures and rule unchanged. The wall clock grows by about two hours.
+
+## Amendment (2026-11-13 19:09 GMT-3): GPU 1 was not usable either; the study is paused, nothing read
+
+- **The first amendment was wrong about GPU 1.** Processes already on it kept running, but since GPU 0 fell no new
+  process on medusa1 can start CUDA (`torch.cuda.is_available()` is False with `CUDA_VISIBLE_DEVICES=1`), as after
+  the failure of 2026-11-09. This was not checked before `finish_gpu1.sh` was started.
+- **What that did:** every offline cell failed in three seconds (TabPFN refuses more than 1,000 rows on the CPU), so
+  no cell table exists. The rerun of H on `mimic-wide_natural` seed 13 started at 11:58 GMT-3 with no device and
+  trained on the CPU for seven hours, until it was noticed and killed at 19:08 GMT-3 on 2026-11-13. Its run stays
+  RUNNING in the store, as does the one-minute `mcar` seed 13 run of 11:31; neither is FINISHED, so neither is read.
+  Its `selection/mimic-wide_natural_s13` files are from the CPU and must be deleted before that run is redone.
+- **State:** 7 of 9 H runs FINISHED on a GPU (all but `mimic-wide_natural` and `mcar` at seed 13); 0 of 9 offline
+  cells; `STOP` is in the state directory and nothing of this study is running. No score has been read.
+- **To finish:** medusa1 needs a reboot for CUDA to come back; then the two H runs and the nine cells, by the
+  ticket's design. Moving them to gorgona8 would split a study across machines by other than seed (ADR 0035) and is
+  the user's call.
