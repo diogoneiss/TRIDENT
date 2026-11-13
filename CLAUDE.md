@@ -29,9 +29,9 @@ On gorgona8, `mlflow.db` in the checkout is a link to `/var/tmp/diogoneiss/TRIDE
 ## Experimentation log
 
 [docs/EXPERIMENTATION_LOG.md](docs/EXPERIMENTATION_LOG.md) holds one entry per hypothesis-driven experiment (Optuna study, ablation, sweep, cross-machine check), oldest first, in the template at its top. Keep it current as part of the experiment itself:
-- **Pre-registering:** append the entry with the same commit as the ticket: hypothesis, scenarios (arms, variants, seeds, budgets), measures and decision rule, status `in progress`.
+- **Pre-registering:** append the entry with the same commit as the ticket: hypothesis, scenarios (arms, variants, seeds, budgets), measures and decision rule, status `in progress`. In that commit also add its row to the log's `## Index` table, `| Enn | question | dates | in progress | |`: the thesis wiki finds experiments by parsing only those rows (it missed E118–E174 when they had none), and `tests/unit/test_experimentation_log_index.py` fails on an entry without a row.
 - **Amending mid-run:** add the dated amendment to the entry.
-- **Finishing or stopping:** fill in Results and Conclusion in that entry, in the same commit as the ticket's Outcome.
+- **Finishing or stopping:** fill in Results and Conclusion in that entry, and set its Index row's status (`done` or the verdict) and headline, in the same commit as the ticket's Outcome.
 
 The ticket stays the contract; the entry summarises it, copies its numbers, and links to it.
 

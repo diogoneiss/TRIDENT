@@ -23,6 +23,16 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 - **Sources:** repo paths with sections, commits, MLflow tags or run names
 ```
 
+Every entry also has one row in the Index below, in id order, written in the same commit as the entry:
+
+```
+| Enn | <short title> | <start date>[ – <end date>] | in progress | |
+```
+
+When the experiment ends, the row's status becomes `done` or the verdict and its last cell the headline.
+Tools read new and finished experiments from these rows alone; `tests/unit/test_experimentation_log_index.py`
+fails when an entry has no row or a row no entry.
+
 ## Index
 
 | ID | experiment | dates | status | headline |
@@ -144,6 +154,63 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
 | E115 | TRIDENT against MLP and SAINT under MAR and MNAR at 60nan (descriptive) | 2026-11-03 | done (descriptive) | SAINT +0.045/+0.043 (MNAR/MAR); MLP +0.011 under MAR, no verdict under MNAR (+0.006) |
 | E116 | Does the bigger encoder's gain on pendigits and letter at 40–60nan replicate on fresh seeds? | 2026-11-03 | replicated | better on 4 of 4 at E113's sizes (−6.3%, −3.1%, −5.5%, −1.2%); ADR 0037 proposed |
 | E117 | Does the bigger encoder help pendigits and letter at 80nan? | 2026-11-03 | mixed | pendigits −0.39% better, letter +0.37% worse, both under the SESOI; ADR 0037 stops at 60nan |
+| E118 | Does pre-training help classification under the upstream code's defaults? | 2026-11-03 | refuted | B − A equivalent at every level (−0.0009 to +0.0023): no pre-training gain under the upstream defaults either, as in E87 |
+| E119 | Does ADR 0037's bigger encoder help pendigits and letter under MAR and MNAR? | 2026-11-03 | holds (MAR and MNAR) | BIG − M better on 4 of 4 MAR (−3.6% to −5.9%) and 4 of 4 MNAR (−1.8% to −6.9%), worse on none; ADR 0037 extended (decision 3) |
+| E120 | Does TRIDENT lead MLP under MNAR on fresh seeds? | 2026-11-03 | no verdict | TRIDENT − MLP under MNAR +0.0025 [−0.0090, +0.0141]; with E115, no lead over MLP can be claimed under MNAR |
+| E121 | Does ADR 0018's bigger encoder help pendigits and letter at 20nan under MAR and MNAR? | 2026-11-03 | holds (MAR and MNAR) | BIG − M better on 2 of 2 MAR (−4.6%, −5.8%) and 2 of 2 MNAR (−5.0%, −6.5%), worse on none; ADR 0018 extended (decision 4) |
+| E122 | C15 Stage 0: which MNAR variants carry informative missingness (gate G2)? | 2026-11-03 | invalid | G2's positive controls fail on 2 of 3 (biodeg, kc2); by the rule C15 stops at Stage 0 |
+| E123 | C15's gate G2 again, read out of fold over every training and validation row | 2026-11-03 | valid | G2 holds, P = 5 variants; the outcome-dependent family carries a lot of signal (+0.76 to +0.85 at odds 3), five of seven self-masking variants too little |
+| E124 | C15 Stage 1: gate G1 on the positive controls, and A1 against A2 on the development set | 2026-11-04 | G1 failed | G1 passes on 1 of 3, so C15 stops before Stage 2; on development `[NULL]` trails missForest + indicator in the same encoder, MCAR included |
+| E125 | C15 Stage 2: A4 (MICE, no indicator), the complete and MAR tables; H2-c2, H2.2 and H2b on development | 2026-11-04 | withdrawn unrun | not run: G1 failed (E124, E128) |
+| E126 | C15 Stage 3: H2's confirmation, A1 against A2 on fresh draws of P | 2026-11-04 | withdrawn unrun | not run: G1 failed (E124, E128) |
+| E127 | C15 Stage 4 (optional): A4 on the dial, the sign arm, A3 and the null model A5 | 2026-11-04 | withdrawn unrun | not run: G1 failed (E124, E128) |
+| E128 | C15's gate G1 again: A2 against A3 in decision mode | 2026-11-04 | G1 failed again | 1 of 3; C15 stopped for good, T45 closed, H2 undecided; `[NULL]` reads an informative gap on every control |
+| E129 | C1 cut 1: gate G1, the indicators-only probe on the primary MNAR files and their MCAR siblings | 2026-11-04 | G1 passes | 4 of 4: the primary MNAR files' gap patterns carry outcome information their MCAR siblings' do not |
+| E130 | C1 cut 2: the integrity smoke, S, T, B and BT on biodeg_probit_60nan, deterministic | 2026-11-04 | passes | integrity check 1 holds; cut 3 starts |
+| E131 | C1 cut 3: S against T on the four MNAR 60nan files and their MCAR siblings; G2; the anchor | 2026-11-04 | inconclusive | no pre-training channel: S ≈ B, and S and T tie within about ±0.01 on every file; G2 fails |
+| E132 | C1's channel probe: a frozen pre-trained encoder against a frozen random one, head only | 2026-11-04 | done (washout) | a frozen pre-trained encoder is worth about one macro-F1 point to a frozen head; full fine-tuning adds ten times that from either start |
+| E133 | C1's fine-tuning fix: encoder at a tenth of the rate, or frozen for 50 epochs, against S; the probe with a converging head | 2026-11-04 | no verdict | neither a tenth of the rate nor a 50-epoch freeze keeps anything of pre-training; fine-tuning's side of C1 closed |
+| E134 | The fine-tuning budget: 30 and 50 epochs against 150 under cosine_legacy | 2026-11-04 | no verdict | S30 −0.0081, S50 −0.0009 against 150 epochs; S50 a cost argument only (the user's call), no ADR change |
+| E135 | Fine-tuning's schedule: cosine, warmup_cosine, plateau and constant against cosine_legacy | 2026-11-04 | no verdict | no schedule beats `cosine_legacy` (every arm Holm p ≥ 0.85); it stays fine-tuning's default |
+| E136 | Label-scarce fine-tuning: does pre-training open a channel at a tenth or a quarter of the labels? | 2026-11-04 | gate open at 25%; split inconclusive | S − B +0.016 at a quarter of the labels, the first positive pre-training channel under full fine-tuning; S − T inconclusive under MNAR, T ahead under MCAR |
+| E137 | TabPFN v2 under informative missingness: native and explicit-mask arms beside A1 | 2026-11-04 | done | TabPFN's lead is robust to value-dependent MNAR and the explicit mask adds nothing; it disappears only under outcome-dependent MNAR (A1 ahead on kc2); ADR 0032 unchanged |
+| E138 | The quarter-label pre-training channel on fresh seeds, validation scarce too | 2026-11-04 – 2026-11-05 | holds | the quarter-label channel on fresh seeds, validation scarce: S25V − B25V +0.022 [+0.009, +0.035], better on 3, worse on none |
+| E139 | H2 under outcome-dependent MNAR: F3 against same-seed MCAR siblings, TabPFN beside A1 | 2026-11-04 – 2026-11-05 | shrinks | the first positive H2 reading: TabPFN's lead shrinks under outcome-dependent MNAR (native −0.045, mask −0.036; 12 of 12 files) |
+| E140 | The label-fraction curve under a scarce validation split: a tenth and a half | 2026-11-05 | done (descriptive) | monotone: pre-training is worth more the scarcer the labels (+0.03 at a tenth, +0.004 with every label) |
+| E141 | Stage 2: the quarter-label channel on the 21 confirmatory variants, five seeds | 2026-11-05 | holds | +0.010 [+0.005, +0.016] over the 21 confirmatory variants, 8 better, none worse; smaller than on the 60nan tables |
+| E142 | H2's fresh-draw confirmation (conditional on E139 reading "shrinks") | 2026-11-05 | confirmed | E139 replicates on a fresh draw and fresh seeds: `[NULL]` gains 0.03–0.05 macro-F1 on TabPFN under outcome-dependent MNAR; ADR 0032 unchanged |
+| E143 | The quarter-label channel at 20, 40 and 80% missingness | 2026-11-05 | done (descriptive) | the channel is flat at +0.023 to +0.026 from 20 to 60nan and closes at 80nan |
+| E144 | The selector × seeds squares at a tenth and a quarter of the labels | 2026-11-05 | not supported | selector effect −0.006 at a tenth and at a quarter; the E136 / E140 difference at a tenth is the seeds |
+| E145 | Choosing the decode checkpoint by a distributional score | 2026-11-05 | done (trade-off) | `dist_score` −0.19 (better on 12 of 12) at a cost in `impute_score` +0.040 (worse on 7); at 80nan the `impute_score` checkpoint is near the mean/mode fill; flag stays off |
+| E146 | Which fills serve a downstream classifier: the checkpoint by `impute_score` or by `dist_score`? | pilot, 2026-11-05 | done (pilot) | a classifier fitted on complete rows reads the `dist_score` checkpoint's fills better: +0.014 [+0.011, +0.018], 5 better, none worse; no difference under impute-then-learn |
+| E147 | Which score orders imputers as a classifier does, across TRIDENT, the strong baselines and three mechanisms? | pilot, 2026-11-05 – 2026-11-06 | mixed (pilot) | run as E149 on a local branch and renumbered; `dist_score` orders imputers like the classifier better only at MCAR 80nan; no case to replace `impute_score` |
+| E148 | Observed cells hidden on MIMIC-IV tables with natural gaps | 2026-11-05 – 2026-11-06 | supported | on both MIMIC-IV natural-gap tables the decoder beats the bar's best baseline by about 1.5% of its score |
+| E149 | Real gap patterns transplanted onto complete rows | 2026-11-05 – 2026-11-06 | supported | under transplanted real gap patterns the decoder beats the bar on both donor tables (−0.046 cardio, −0.027 SOFA); against TabPFN it leads on cardio, trails on SOFA |
+| E150 | Fills and gap patterns judged by a mortality classifier | 2026-11-05 – 2026-11-06 | not supported; pattern holds on SOFA only | the decoder's fills do not help a mortality classifier over the mean/mode fill; the gap pattern helps on SOFA only (+0.009 macro-F1) |
+| E151 | Intervals calibrated per bin of a row's gaps | 2026-11-06 | Q1 supported, Q2 refuted | an interval binned by the row's gaps restores coverage; the spread still does not adapt a width; ADR 0030 amended (decision 8) |
+| E152 | C15's positive-control gate on the SOFA table's natural gaps | 2026-11-06 | G1 failed | on the SOFA table's natural gaps the indicator arm is not shown to beat the plain fill on log loss; RQ2 stops at the gate there too |
+| E153 | ADR 0030's binned interval under real gap patterns | 2026-11-06 | refuted | under real gap patterns one width per column already covers every tertile of the row's gaps |
+| E154 | ADR 0030's binned interval on the natural gaps' rows | 2026-11-06 | refuted | on the natural gaps' rows one width per column already covers; with E153, the binning adds nothing on MIMIC-IV |
+| E155 | H2 behind an external gate: A1 against A2 on fresh seeds | 2026-11-06 | inconclusive | both primaries inconclusive (primary 1 leans against A1); secondary gains: A1 reaches parity with A2 only on the outcome-dependent files |
+| E156 | Does A1 close on A2 where the gap depends on the outcome? MIMIC-IV complete tables, known mechanisms | 2026-11-06 – 2026-11-07 | not confirmed | every call no verdict: A1 does not trail A2 under MCAR on the MIMIC-IV tables, so there is nothing for the outcome mechanism to close |
+| E157 | ReMasker as an external deep baseline | 2026-11-06 – 2026-11-07 | done (external baseline only) | K better than ReMasker on 9 of 9; above the strong tier on 1 of 9; the 60–80nan arm barely trained (keep-count defect) |
+| E158 | ReMasker with the paper's re-mask count | 2026-11-07 | done (external baseline only) | with the paper's re-mask rule K beats ReMasker on 9 of 9; above the strong tier on 2 (pendigits 40/60nan); the thesis sentence was accepted |
+| E159 | ReMasker on letter, the paper's rule | 2026-11-07 – 2026-11-08 | done | K better than ReMasker on letter 3 of 3 (12 of 12 numerical); ReMasker above the strong tier on 4 of 12; an ADR 0021 amendment is the user's call |
+| E160 | ReMasker off MCAR: the MAR and MNAR families | 2026-11-07 – 2026-11-08 | refuted | ReMasker does not gain ground off MCAR: worse on 1 of 12 table-rates; H better than ReMasker on 11 of 12 mechanism variants |
+| E161 | ReMasker on the MIMIC-IV tables with natural gaps | 2026-11-08 | better by the rule, arm in doubt | the decoder beats ReMasker on both tables, but ReMasker is worse than the mean fill there (edge-piled columns); no sentence drawn |
+| E162 | The deployable hybrid with missForest where TRIDENT trails it | 2026-11-08 | supported | the deployable rule with missForest as the other side turns TRIDENT's 80nan loss on vehicle and biodeg into a lead over missForest |
+| E163 | The deployable hybrid on the MIMIC-IV transplant variants | 2026-11-08 – 2026-11-09 | supported | on MIMIC-IV transplant variants the `table_tabpfn` hybrid closes H's gap to TabPFN on the SOFA `tmatch` and is equivalent to H on cardio |
+| E164 | The missForest-side hybrid on every variant with T39's cell tables | 2026-11-08 | mixed | `table_missforest` worse than H on 1 of 38 (kc2_marf_60nan), worse than missForest on none, better than H on all 7 where H trails missForest |
+| E165 | A deployable rule that picks the hybrid's other side | 2026-11-08 | mixed | the in-sample side pick is worse than H on 2 small tables; helps where missForest is the better side; took missForest on 33% of folds |
+| E166 | E163 on fresh seeds | 2026-11-09 | supported | E163 replicates on fresh seeds: on the SOFA `tmatch` the hybrid closes H's gap to TabPFN and is worse than neither |
+| E167 | E164 and E165 on fresh seeds | 2026-11-09 | supported (the pick mixed) | `table_missforest` worse than H or missForest on none of 12, better than H on 10; the in-sample pick's spambase_probit loss replicates |
+| E168 | A cross-fit side pick | 2026-11-09 | supported | the cross-fit side pick is worse than H on none of 12 and better than `table_tabpfn` on 7 |
+| E169 | The cross-fit side pick on the other 26 variants | 2026-11-09 – 2026-11-10 | mixed | on the other 26 variants the cross-fit pick gains nothing over `table_tabpfn` and loses to it on 2 |
+| E170 | Does the cross-fit pick remove the hybrid's weakness off MCAR? | 2026-11-09 – 2026-11-10 | mixed | every hybrid loses to H under the steepest self-masking (biodeg_probit2p0_60nan); decision 6's MCAR-only scope stands |
+| E171 | The cross-fit side pick on the MIMIC-IV transplant variants | 2026-11-09 – 2026-11-10 | mixed | the cross-fit pick is worse than H on none of the MIMIC-IV transplant variants but worse than `table_tabpfn` on the SOFA `tmatch` |
+| E172 | The cross-fit side pick on E93's off-MCAR variants, fresh seeds | 2026-11-09 – 2026-11-10 | mixed | the cross-fit pick removes E93's spambase_probit loss, not the loss both sides share under the steepest self-masking |
+| E173 | ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps | 2026-11-10 – 2026-11-12 | supported | on the natural-gap MIMIC-IV tables the hybrid is better than H on cardio, equivalent on SOFA, better than TabPFN on both seed sets |
+| E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
 
 ## Entries
 
