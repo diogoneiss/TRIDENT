@@ -130,3 +130,23 @@ def test_plateau_keeps_the_rate_while_validation_improves() -> None:
 )
 def test_batches_per_epoch_rounds_up(rows: int, batch: int, expected: int) -> None:
     assert batches_per_epoch(rows, batch) == expected
+
+
+def test_the_training_row_cap_keeps_a_fixed_sample_in_table_order_and_is_off_at_zero() -> None:
+    """mimic/15: ``TRAIN_ROWS`` 0, or a fold no larger than the cap, hands back the fold's own
+    rows; a cap below it keeps that many of them, the same ones every time, in table order,
+    without drawing from the run's own random stream."""
+    import numpy as np
+
+    from src.training.schedulers import training_rows
+
+    fold = [40, 3, 17, 8, 25, 31, 12, 5]
+    assert training_rows(fold, 0) is fold
+    assert training_rows(fold, len(fold)) is fold
+    np.random.seed(0)
+    before = np.random.get_state()[1].copy()
+    kept = training_rows(fold, 3)
+    assert (np.random.get_state()[1] == before).all()
+    assert len(kept) == 3 and set(kept) < set(fold)
+    assert [fold.index(row) for row in kept] == sorted(fold.index(row) for row in kept)
+    assert training_rows(fold, 3) == kept

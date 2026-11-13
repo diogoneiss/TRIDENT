@@ -100,6 +100,9 @@ DECODE_MASK_WEIGHTING_BACKFILLED_TAG = "decode_mask_weighting_backfilled"
 EMBEDDING_LOOKUP_TAG = "embedding_lookup"
 EMBEDDING_LOOKUP_BACKFILLED_TAG = "embedding_lookup_backfilled"
 MIN_STEPS_PER_EPOCH_TAG = "min_steps_per_epoch"
+# The cap on the rows an imputation run's models trained on (``--train_rows``, mimic/15); "0" is
+# every row, and so is a run recorded before the tag.
+TRAIN_ROWS_TAG = "train_rows"
 # How an imputation run's decoder applied its heads, "batched" (the default since ADR 0012) or
 # "per_column". On every
 # imputation parent and trial; runs recorded before it are stamped "per_column" by

@@ -1028,3 +1028,28 @@ def test_a_run_that_ranks_by_the_distributional_score_keeps_the_epoch_it_names(c
     assert not any("dist_score" in key or "wd_num_z" in key or "tv_cat" in key for key in plain.result.metrics)
     plain_series = {event.step: event.value for event in plain_tracker.metric_events if event.key == series_key}
     assert plain_series != series
+
+
+def test_a_training_row_cap_shrinks_what_the_model_trains_on_and_not_what_the_bar_is_fit_on(monkeypatch) -> None:
+    """mimic/15. Under ``TRAIN_ROWS`` the decode stage's masker gets the capped rows, while the
+    baseline imputers still get the fold's whole training split, so the scores keep their units."""
+    from src.training import decoding
+
+    masked: list[int] = []
+    fitted: list[int] = []
+    real_masker, real_scorer = decoding.EpochMasker, decoding.BaselineScorer
+
+    def masker(embedder, frame, device, weights=None):
+        masked.append(len(frame))
+        return real_masker(embedder, frame, device, weights=weights)
+
+    def scorer(frame, *rest):
+        fitted.append(len(frame))
+        return real_scorer(frame, *rest)
+
+    monkeypatch.setattr(decoding, "EpochMasker", masker)
+    monkeypatch.setattr(decoding, "BaselineScorer", scorer)
+    _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=1, TRAIN_ROWS=10))
+    _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=1))
+    assert masked == [10, 18]
+    assert fitted == [18, 18]

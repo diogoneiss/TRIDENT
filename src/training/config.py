@@ -39,7 +39,7 @@ CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
     "decode_gap_token", "decode_checkpoint", "decode_metric", "pretrain_gap_token", "encoder_final_norm",
     "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting",
-    "embedding_lookup", "min_steps_per_epoch",
+    "embedding_lookup", "min_steps_per_epoch", "train_rows",
 )
 
 
@@ -97,7 +97,7 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
         hyperparameters = dataclasses.replace(hyperparameters, decode_calibration=decode_calibration)
     # ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` win the same way (E50), and so
     # does ``--decode_mask_weighting`` (E65).
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch"):
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows"):
         value = getattr(args, flag, None)
         if value is not None:
             hyperparameters = dataclasses.replace(hyperparameters, **{flag: value})
@@ -188,6 +188,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODE_MASK_WEIGHTING": values.decode_mask_weighting,
             "EMBEDDING_LOOKUP": values.embedding_lookup,
             "MIN_STEPS_PER_EPOCH": values.min_steps_per_epoch,
+            "TRAIN_ROWS": values.train_rows,
             "DECODER_HEADS": values.decoder_heads,
             "DECODE_GAP_TOKEN": values.decode_gap_token,
             "DECODE_CHECKPOINT": values.decode_checkpoint,
@@ -297,7 +298,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch"):
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows"):
         if getattr(args, flag, None) is not None and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -436,6 +437,18 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: the embedder's and transformer's learning rate in the decode stage "
             "as a fraction of the heads' (E50). Overrides DECODE_ENCODER_LR_SCALE. Default: 1.0, "
             "one learning rate for every parameter."
+        ),
+    )
+    parser.add_argument(
+        "--train_rows",
+        type=int,
+        default=None,
+        help=(
+            "Imputation only: the most training rows the pre-training and decode models see, a "
+            "fixed-seed sample of each fold's training split (mimic/15). The baseline imputers, the "
+            "naive fills and every validation and test row keep the whole fold, so the scores stay "
+            "in an uncapped run's units. Overrides TRAIN_ROWS. Default: 0, every row, every run "
+            "before it."
         ),
     )
     parser.add_argument(

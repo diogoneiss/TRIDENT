@@ -282,6 +282,10 @@ class Hyperparameters:
     # T14: the fewest optimizer steps a training epoch may take; the batch shrinks to fit.
     # 0, every run before it, keeps ``batch_size`` on every table.
     min_steps_per_epoch: int = 0
+    # mimic/15: the most training rows the pre-training and decode models see, a fixed-seed
+    # sample of the fold's training split; the baseline imputers and the naive fills keep the
+    # whole split, and no scored row moves. 0, every run before it, trains on every row.
+    train_rows: int = 0
     # C15 (docs/plans/2026-11-03-c15-mnar-prediction.md): which arm shows the gaps, and the readouts
     # it writes; ``off``, every run before it, changes nothing (``src/training/c15_inputs.py``).
     c15_arm: str = "off"
@@ -383,6 +387,8 @@ class Hyperparameters:
             raise ValueError("PRETRAIN_HOLE_TOKEN null ties holes to the gaps' [NULL], so PRETRAIN_GAP_TOKEN must stay null")
         if self.min_steps_per_epoch < 0:
             raise ValueError(f"The minimum steps an epoch counts steps, so it cannot be {self.min_steps_per_epoch}")
+        if self.train_rows < 0:
+            raise ValueError(f"The training-row cap counts rows, so it cannot be {self.train_rows}")
         if self.decode_freeze_epochs < 0:
             raise ValueError(f"The decode freeze counts epochs, so it cannot be {self.decode_freeze_epochs}")
         if not self.decode_encoder_lr_scale > 0:
@@ -444,6 +450,7 @@ class Hyperparameters:
             ),
             embedding_lookup=str(values.get("EMBEDDING_LOOKUP", values.get("embedding_lookup", DEFAULT_EMBEDDING_LOOKUP))),
             min_steps_per_epoch=int(values.get("MIN_STEPS_PER_EPOCH", values.get("min_steps_per_epoch", 0))),
+            train_rows=int(values.get("TRAIN_ROWS", values.get("train_rows", 0))),
             c15_arm=str(values.get("C15_ARM", values.get("c15_arm", "off"))),
             pretrain_hole_token=str(values.get("PRETRAIN_HOLE_TOKEN", values.get("pretrain_hole_token", "mask"))),
             finetune_freeze_encoder=str(values.get("FINETUNE_FREEZE_ENCODER", values.get("finetune_freeze_encoder", "off"))),

@@ -10,7 +10,7 @@ from src.embedder import EncodedTable, EpochMasker, TabularEmbedder
 from src.models import EmaTargetPretrainer, NormalizedEmbeddingPretrainer, TridentDecoder, TridentPretrainer
 from src.transformer import TabularTransformerEncoder
 
-from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
+from .schedulers import StageScheduler, batches_per_epoch, training_batch_size, training_rows
 from .c15_inputs import blocked_position, has_indicator
 from .types import FoldSplit, Hyperparameters, PreparedDataset, PretrainingOutcome, TrainingTracker
 
@@ -52,7 +52,7 @@ def train_pretrainer(
 ) -> PretrainingOutcome:
     """Train the masked reconstruction model using the legacy optimization loop."""
     feature_frame = dataset.frame.drop(columns=[dataset.label_column]).copy()
-    train_frame = feature_frame.iloc[fold.train_indices].reset_index(drop=True)
+    train_frame = feature_frame.iloc[training_rows(fold.train_indices, hyperparameters.train_rows)].reset_index(drop=True)
     validation_frame = feature_frame.iloc[fold.validation_indices].reset_index(drop=True)
 
     embedder = TabularEmbedder(

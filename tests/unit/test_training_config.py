@@ -288,7 +288,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "EPOCHS_DECODE", "LR_DECODE", "WEIGHT_DECAY_DECODE", "LAMBDA_NUM", "EVAL_MASK_RATE",
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_METRIC", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
-        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH",
+        "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH", "TRAIN_ROWS",
     }
 
 
@@ -735,6 +735,20 @@ def test_min_steps_per_epoch_is_an_imputation_flag_off_by_default() -> None:
         validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--min_steps_per_epoch", "8"]))
     with pytest.raises(ValueError, match="minimum steps"):
         Hyperparameters.from_mapping({"MIN_STEPS_PER_EPOCH": -1})
+
+
+def test_train_rows_is_an_imputation_flag_off_by_default() -> None:
+    """mimic/15: ``--train_rows`` defaults to every run before it (0, every row), applies to
+    imputation only, and refuses a negative count."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.train_rows == 0
+    asked = resolve_training_request(parser.parse_args([*imputation, "--train_rows", "10000"]))
+    assert asked.hyperparameters.train_rows == 10000
+    with pytest.raises(SystemExit, match="train_rows"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--train_rows", "10000"]))
+    with pytest.raises(ValueError, match="training-row cap"):
+        Hyperparameters.from_mapping({"TRAIN_ROWS": -1})
 
 
 def test_the_training_batch_shrinks_only_to_reach_the_minimum_steps() -> None:

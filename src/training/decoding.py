@@ -24,7 +24,7 @@ from .baseline_cache import BaselineScorer
 from .calibration import Calibration, apply_calibration, fit_calibration
 from .distribution_metrics import distribution_scores, naive_distances
 from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
-from .schedulers import StageScheduler, batches_per_epoch, training_batch_size
+from .schedulers import StageScheduler, batches_per_epoch, training_batch_size, training_rows
 from .types import (
     DEFAULT_DECODE_METRIC,
     DecodingOutcome,
@@ -64,7 +64,11 @@ def train_and_evaluate_decoder(
     hyper-parameter search that must never rank trials on the test split (ADR 0005).
     """
     features = dataset.frame.drop(columns=[dataset.label_column])
-    train_frame = features.iloc[fold.train_indices].reset_index(drop=True)
+    # ``fold_frame`` is the fold's whole training split, what the naive fills and the baseline
+    # imputers are fit on; ``train_frame`` is what the model trains on, the same rows unless
+    # ``TRAIN_ROWS`` caps them (mimic/15), so a capped run is scored in an uncapped run's units.
+    fold_frame = features.iloc[fold.train_indices].reset_index(drop=True)
+    train_frame = features.iloc[training_rows(fold.train_indices, hyperparameters.train_rows)].reset_index(drop=True)
     validation_frame = features.iloc[fold.validation_indices].reset_index(drop=True)
 
     model = TridentDecoder(
@@ -130,7 +134,7 @@ def train_and_evaluate_decoder(
         model.eval()
         gap_score = _ValidationGapScore(
             model, dataset, validation_frame, complete_sibling, fold.validation_indices,
-            mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
+            mean_mode_baselines(fold_frame, dataset.numerical_columns, dataset.categorical_columns),
             device, hyperparameters.decode_metric,
         )
     best_gap_score = float("inf")
@@ -141,7 +145,7 @@ def train_and_evaluate_decoder(
         model.eval()
         mask_score = _ValidationMaskScore(
             model, hidden_validation, clean_validation,
-            mean_mode_baselines(train_frame, dataset.numerical_columns, dataset.categorical_columns),
+            mean_mode_baselines(fold_frame, dataset.numerical_columns, dataset.categorical_columns),
             hyperparameters.decode_metric,
         )
     best_mask_score = float("inf")
@@ -222,7 +226,7 @@ def train_and_evaluate_decoder(
 
     test_frame = features.iloc[fold.test_indices].reset_index(drop=True)
     baselines = mean_mode_baselines(
-        train_frame, dataset.numerical_columns, dataset.categorical_columns
+        fold_frame, dataset.numerical_columns, dataset.categorical_columns
     )
     # The baseline imputers, fit on this same training split, scored later on exactly
     # the cells the model is scored on (ADR 0007). Their numbers say whether the bar the
@@ -230,7 +234,7 @@ def train_and_evaluate_decoder(
     # never depend on the model, so a run that shares this fold reuses them from the cache,
     # and the imputers are fit only if some population is not there.
     baseline_scorer = BaselineScorer(
-        train_frame, dataset.numerical_columns, dataset.categorical_columns, baseline_cache_dir
+        fold_frame, dataset.numerical_columns, dataset.categorical_columns, baseline_cache_dir
     )
     hidden_test = shown(
         embedder.encode(

@@ -13,7 +13,9 @@ behind each option and for why ``cosine_legacy`` remains the default.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 
+import numpy as np
 import torch
 from torch.optim.lr_scheduler import CosineAnnealingLR, LambdaLR, ReduceLROnPlateau
 
@@ -114,6 +116,16 @@ def training_batch_size(row_count: int, batch_size: int, min_steps_per_epoch: in
     if min_steps_per_epoch <= 0:
         return batch_size
     return max(1, min(batch_size, row_count // min_steps_per_epoch))
+
+
+def training_rows(train_indices: Sequence[int], train_rows: int) -> Sequence[int]:
+    """The rows a stage's model trains on: the fold's training rows, or a fixed-seed sample of
+    ``train_rows`` of them in table order (mimic/15; 0, or a fold no larger, keeps every row).
+    Its own generator, so the run's random streams do not move."""
+    if train_rows <= 0 or train_rows >= len(train_indices):
+        return train_indices
+    kept = np.sort(np.random.default_rng(0).choice(len(train_indices), size=train_rows, replace=False))
+    return [int(train_indices[int(position)]) for position in kept]
 
 
 def batches_per_epoch(row_count: int, batch_size: int) -> int:
