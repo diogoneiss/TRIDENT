@@ -211,6 +211,7 @@ fails when an entry has no row or a row no entry.
 | E172 | The cross-fit side pick on E93's off-MCAR variants, fresh seeds | 2026-11-09 – 2026-11-10 | mixed | the cross-fit pick removes E93's spambase_probit loss, not the loss both sides share under the steepest self-masking |
 | E173 | ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps | 2026-11-10 – 2026-11-12 | supported | on the natural-gap MIMIC-IV tables the hybrid is better than H on cardio, equivalent on SOFA, better than TabPFN on both seed sets |
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
+| E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 – | in progress | |
 
 ## Entries
 
@@ -4684,3 +4685,21 @@ fails when an entry has no row or a row no entry.
   The user extended decision 6's scope to these two tables on 2026-11-12 22:24 GMT-3 ("sim, extenda!"; ADR 0031).
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
+### E175 · Multiple imputation from H's fills: do Rubin's intervals cover? (pre-registered 2026-11-12 23:13 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-12 23:13 GMT-3 on the user's go ("gostei do 4 também"; design "de acordo com suas recomendações"). T56.
+- **Hypothesis:** M = 20 draws built around H's point fill from the residuals of the fold's hidden observed
+  validation cells give Rubin intervals that cover whole-table estimands better than the single fill does, and
+  nearly at the nominal 0.95.
+- **Scenarios:** offline on E174's cells, no training of TRIDENT: `biodeg`, `kc2`, `vehicle`, `credit-g`, `pendigits` at
+  20/40/80% MCAR × 101/202/303 (45 cells, 5 folds each). Arms on the same test rows: `CD` (truth, control), `SI`
+  (H once), `MI-D` (deployable residual draws), `MI-O` (oracle pool, binned by the row's gap count), `MICE` (ICE with
+  fills drawn from each conditional). Estimands: numerical means, categorical shares, slopes between neighbouring
+  numerical columns, against the complete table's value. All on medusa1's CPUs.
+- **Measures and decision rule:** coverage per fold and its shortfall u = max(0, 0.95 − coverage); fold-pair verdict,
+  SESOI 0.01. Primary 1, u(MI-D) − u(SI): supported if better on at least 10 of 15 variants and worse on at most 1,
+  refuted if better on 5 or fewer or worse on 4 or more, mixed otherwise. Primary 2: MI-D's mean coverage at least
+  0.90 on at least 10 of 15. Secondary: u(MI-D) − u(MICE); width, shift and λ against `CD`. Read once with all 45 in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [imputation-protocol/68](tickets/imputation-protocol/68-multiple-imputation.md); `multiple_imputation.py`.

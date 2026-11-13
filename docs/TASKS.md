@@ -1029,6 +1029,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E173 done 2026-11-12 21:22 GMT-3, supported on both seed sets** (101/202/303 on gorgona8, 4545/5656/6767 on medusa1):
   `table_tabpfn` better than H on the cardio table (−0.0025, −0.0043), equivalent on SOFA, better than TabPFN on both.
   **ADR 0031 decision 6 extended to the two natural-gap tables 2026-11-12 22:24 GMT-3** on the user's decision ("sim, extenda!").
+- **T56 · Multiple imputation from the decoder's fills** (the user's "gostei do 4 também", 2026-11-12).
+  **E175 pre-registered 2026-11-12 23:13 GMT-3** ([imputation-protocol/68](tickets/imputation-protocol/68-multiple-imputation.md)): offline on
+  E174's cells, 15 MCAR variants × 101/202/303; residual draws around H's fill against the single fill, an oracle pool and a
+  stochastic MICE; Rubin coverage of means, shares and slopes. medusa1's CPUs, no GPU. If the draws improve on the single
+  fill without being proper, the next step is a GPU study with softmax samples and dropout at fill time.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
