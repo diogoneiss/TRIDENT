@@ -7,7 +7,8 @@
   request ("sim, proponha"), from E90 and E91, and **accepted 2026-10-29, 10:42 GMT-3** ("aprovo"). **Decision 6's scope extended to 20nan
   2026-10-31 09:57 GMT-3 with E95**, on the user's decision ("apoio fazer o 3.2 e 3.1, nessa ordem", 2026-10-31).
   **Decision 6's scope extended to the MIMIC-IV transplant variants 2026-11-09 19:51 GMT-3 with E163 and E166**, on the user's
-  decision ("vamos no 2b e 3", 2026-11-09). The user asked for it to be
+  decision ("vamos no 2b e 3", 2026-11-09). **Decision 6's scope extended to the two MIMIC-IV tables with natural gaps
+  2026-11-12 22:24 GMT-3 with E173**, on the user's decision ("sim, extenda!", 2026-11-12). The user asked for it to be
   recorded as T39 ("Gosto da ideia de propor uma ADR", 2026-10-27) and started it ("vamos começar o
   t39", 2026-10-27).
 - **Builds on:**
@@ -107,7 +108,8 @@
    - **The headlines do not change:** H stays the deployable headline (ADR 0024) and KC the
      benchmark default (ADR 0027).
    - **Scope:** MCAR, the 17 variants above and the nine tables at 20nan (below), H as the model
-     side; and, since 2026-11-09, the MIMIC-IV transplant variants (below). Synthetic MAR and MNAR
+     side; since 2026-11-09, the MIMIC-IV transplant variants; and, since 2026-11-12, the two MIMIC-IV
+     tables with natural gaps (both below). Synthetic MAR and MNAR
      stay outside: E93 found the hybrid mixed there (worse than H on spambase_probit_60nan, again in
      E167).
    - **At 20nan (amended 2026-10-31, from E95,
@@ -132,6 +134,19 @@
      - **It must state:** it is worse than TabPFN on `mimic-sofa-donor_trand_20nan` on both seed sets (+0.0111,
        +0.0149), where TabPFN alone is the better output. E166's TabPFN and missForest refits ran on gorgona8 and its H on
        medusa1, the same split in every pair (an ADR 0035 departure, E166's amendment); E163 ran wholly on medusa1.
+   - **On clinical tables with natural gaps (amended 2026-11-12 22:24 GMT-3, from E173,
+     [mimic/13](../tickets/mimic/13-hybrid-natural-gaps.md), supported on both seed sets):** `mimic-cardio_natural` and
+     `mimic-sofa_natural` (E148's tables, 11,082 rows each), seeds 101/202/303 and 4545/5656/6767, E163's rule per seed
+     set, H as the model side. These tables have no induced cells, so every score is on the masked population
+     (observed cells hidden from the test rows); the weights are still chosen on hidden observed validation cells.
+     - never worse than H or TabPFN on either table, on either seed set;
+     - better than H on the cardio table (−0.0025 on 101/202/303, −0.0043 on 4545/5656/6767) and equivalent to H on
+       SOFA (−0.0017, −0.0007);
+     - better than TabPFN on both tables on both sets (cardio −0.0462, −0.0432; SOFA −0.0183, −0.0215).
+     - **It must state:** the gain over H is small (0.3% to 0.5% of H's score on cardio, none on SOFA), and the lead
+       over TabPFN is H's own (E148): here the hybrid is a safe output, not a better one. It is a masked-population
+       reading, not comparable with the induced scores above. Seeds 101/202/303 ran wholly on gorgona8 and
+       4545/5656/6767 wholly on medusa1 (a split by seed set, ADR 0035).
 
 ## Considered options
 

@@ -103,6 +103,9 @@ FAILED line in either state after the relaunch; the H-ledger and missForest asse
   `crossfit` is worse than `table_tabpfn` on none (equivalent on both tables, both sets).
 - **What it leads to:** whether ADR 0031 decision 6's scope covers the MIMIC-IV tables with natural gaps is the user's
   call. The evidence: never worse than either side on two tables and two seed sets, with a small gain over H on one.
+- **The user's decision, 2026-11-12 22:24 GMT-3 ("sim, extenda!"):** decision 6's scope now covers these two tables; recorded in
+  [ADR 0031](../../adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md) (decision 6, "On clinical tables with
+  natural gaps").
 
 Printout of `--study e173 --tally` (gorgona8), unedited:
 

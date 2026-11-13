@@ -4681,6 +4681,6 @@ fails when an entry has no row or a row no entry.
   `table_tabpfn` on none.
 - **Conclusion:** supported on both seed sets: the hybrid is never worse than either side on the natural-gap tables.
   Its gain over H is small (0.3% to 0.5% of H's score on cardio, none on SOFA); the lead over TabPFN is H's own (E148).
-  Whether decision 6's scope covers these tables is the user's call.
+  The user extended decision 6's scope to these two tables on 2026-11-12 22:24 GMT-3 ("sim, extenda!"; ADR 0031).
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
