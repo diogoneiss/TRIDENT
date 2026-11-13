@@ -211,7 +211,7 @@ fails when an entry has no row or a row no entry.
 | E172 | The cross-fit side pick on E93's off-MCAR variants, fresh seeds | 2026-11-09 – 2026-11-10 | mixed | the cross-fit pick removes E93's spambase_probit loss, not the loss both sides share under the steepest self-masking |
 | E173 | ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps | 2026-11-10 – 2026-11-12 | supported | on the natural-gap MIMIC-IV tables the hybrid is better than H on cardio, equivalent on SOFA, better than TabPFN on both seed sets |
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
-| E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 – | in progress | |
+| E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
 
 ## Entries
 
@@ -4687,7 +4687,7 @@ fails when an entry has no row or a row no entry.
 
 ### E175 · Multiple imputation from H's fills: do Rubin's intervals cover? (pre-registered 2026-11-12 23:13 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-12 23:13 GMT-3 on the user's go ("gostei do 4 também"; design "de acordo com suas recomendações"). T56.
+- **Status:** done, primary 1 supported, primary 2 not met (read once 2026-11-12 23:16 GMT-3); pre-registered 2026-11-12 23:13 GMT-3 on the user's go ("gostei do 4 também"; design "de acordo com suas recomendações"). T56.
 - **Hypothesis:** M = 20 draws built around H's point fill from the residuals of the fold's hidden observed
   validation cells give Rubin intervals that cover whole-table estimands better than the single fill does, and
   nearly at the nominal 0.95.
@@ -4700,6 +4700,15 @@ fails when an entry has no row or a row no entry.
   SESOI 0.01. Primary 1, u(MI-D) − u(SI): supported if better on at least 10 of 15 variants and worse on at most 1,
   refuted if better on 5 or fewer or worse on 4 or more, mixed otherwise. Primary 2: MI-D's mean coverage at least
   0.90 on at least 10 of 15. Secondary: u(MI-D) − u(MICE); width, shift and λ against `CD`. Read once with all 45 in.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (read once 2026-11-12 23:16 GMT-3, on medusa1 at 45cc64b, all 45 cells in):** u(MI-D) − u(SI) better on 13 of 15, worse
+  on none (`pendigits_20nan` equivalent, `pendigits_40nan` no call: the single fill already covers 0.97 and 0.95). MI-D's
+  mean coverage is at least 0.90 on 8 of 15, below the 10 required. The truth-filled control `CD` covers only 0.574 on
+  the three `kc2` variants and about 0.88 on the three `biodeg` ones (slopes 0.28 and 0.84). Where it holds (`vehicle`,
+  `credit-g`, `pendigits`), MI-D covers 0.928 to 0.983 at 20 and 40% and 0.771, 0.841, 0.669 at 80%, where means and
+  shares stay covered (0.93 to 0.98) and slopes do not (0.600, 0.544, 0.342). Against MICE, MI-D is better on 8 and
+  worse on none; the oracle pool is better on 4 and worse on 2.
+- **Conclusion:** the residual draws improve on a single fill everywhere it matters but are not proper: at 80% missing
+  per-cell noise does not cover relations between columns. The interval itself fails on `kc2` and `biodeg` with no gap,
+  so those six variants cannot judge properness. Next, by the ticket: a GPU study with draws from the model at fill
+  time, joint across a row's gaps, read with an interval whose control covers; pre-registered on its own. No ADR.
 - **Sources:** [imputation-protocol/68](tickets/imputation-protocol/68-multiple-imputation.md); `multiple_imputation.py`.

@@ -1034,6 +1034,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   E174's cells, 15 MCAR variants × 101/202/303; residual draws around H's fill against the single fill, an oracle pool and a
   stochastic MICE; Rubin coverage of means, shares and slopes. medusa1's CPUs, no GPU. If the draws improve on the single
   fill without being proper, the next step is a GPU study with softmax samples and dropout at fill time.
+  **E175 done 2026-11-12 23:16 GMT-3, primary 1 supported, primary 2 not met:** the draws cover better than the single fill on 13 of 15
+  variants, worse on none; mean coverage at least 0.90 on 8 of 15 (10 required). Not proper at 80% missing (slopes 0.34 to 0.60
+  where the control holds); the truth-filled control itself fails on `kc2` and `biodeg`. Next: the GPU study, pre-registered on its own.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
