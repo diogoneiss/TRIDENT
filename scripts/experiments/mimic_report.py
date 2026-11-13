@@ -100,7 +100,7 @@ def wide() -> None:
             own.append(report_common.model(frame, report_common.Run(variant, seed, "", population), readout, population))
             bar.append(report_common.opponent(frame, "bar", population)[1])
             theirs.append(other[f"impute/{population}/baseline/tabpfn/impute_score"].to_numpy(float))
-            seconds.append(other["baseline/tabpfn/fit_seconds"].to_numpy(float))
+            seconds.append(other[f"impute/{population}/baseline/tabpfn/fit_seconds"].to_numpy(float))
         tabpfn = float(np.concatenate(theirs).mean())
         print(f"{variant} ({population} cells): decoder {np.concatenate(own).mean():.4f}, TabPFN {tabpfn:.4f} "
               f"(fit {np.concatenate(seconds).mean():.0f} s a fold), bar {np.concatenate(bar).mean():.4f}")
