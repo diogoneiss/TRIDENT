@@ -213,7 +213,7 @@ fails when an entry has no row or a row no entry.
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
 | E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
 | E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
-| E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | in progress | |
+| E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 | in progress | |
 
 ## Entries
@@ -4745,7 +4745,7 @@ fails when an entry has no row or a row no entry.
 
 ### E177 · TRIDENT on 10,000 rows of `mimic-wide`: does the lead over TabPFN v2 need the other rows? (pre-registered 2026-11-13 08:28 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13, which also authorised
+- **Status:** done, supported (read once 2026-11-13 11:28 GMT-3); pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13, which also authorised
   the `--train_rows` flag, 9e780d3). T57.
 - **Hypothesis:** trained on a fixed sample of 10,000 of each fold's training rows, the decoder is still not worse
   than TabPFN v2 on `mimic-wide`'s natural gaps and transplanted patterns, and better on at least one: E176's lead
@@ -4761,8 +4761,15 @@ fails when an entry has no row or a row no entry.
   fold-pair rule with seed agreement, equivalence margin 1% of TabPFN's mean (E176's rule). Primaries: the natural
   table and `tmatch`. Supported if worse on neither and better on at least one; refuted if worse on either; no
   verdict otherwise. Secondary: capped decoder − E176's decoder, `mcar`, the bar. Read once with the 9 runs in.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results (read once 2026-11-13 11:28 GMT-3, on medusa1 at 1085c6e, 9 capped runs in, none failed):** capped
+  decoder − TabPFN −0.0833 [−0.0843, −0.0823] on `mimic-wide_natural` (0.6811 against 0.7644) and −0.0474
+  [−0.0486, −0.0462] on `tmatch` (0.9188 against 0.9662), better on both with every seed agreeing; +0.0087
+  [+0.0073, +0.0101] on `mcar`, worse, past the 1% margin. Capped − E176's decoder: +0.0158, +0.0103, +0.0132, worse
+  on all three. Against the bar: better on the natural table (−0.0076) and `tmatch` (−0.0164), equivalent on `mcar`.
+- **Conclusion:** supported: at 10,000 training rows a fold the decoder keeps 84% and 82% of E176's lead over TabPFN
+  v2 on the real gap patterns, so that lead does not need the rows past TabPFN's context. Under MCAR the capped
+  decoder falls behind TabPFN, so E176's parity there needed the whole table (rows or optimizer steps, not
+  separated). No ADR.
 - **Sources:** [mimic/15](tickets/mimic/15-wide-table-capped-rows.md); `mimic_wide_run.py`, `mimic_report.py e177`.
 
 ### E178 · The deployable hybrid on `mimic-wide`: safe and still a gain where TabPFN alone is weak? (pre-registered 2026-11-13 08:28 GMT-3)

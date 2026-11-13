@@ -60,3 +60,43 @@ E176's rule, unchanged.
   `QUEUE_STATE=/scratch/diogoneiss/trident-2026-11-12-mimic-wide TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_report.py e177`
 - **What it leads to:** the wording of E176's thesis sentence (with or without "past TabPFN's context" as the
   reason), the user's call. No ADR.
+
+## Outcome (2026-11-13 11:29 GMT-3): supported
+
+The 9 capped runs finished between 08:48 and 11:27 GMT-3 on 2026-11-13, about 20 minutes each beside E178's queue on
+the same card, none failed. Read once, on medusa1. The printout, unedited below its first two lines (the commit and
+the clock, added here):
+
+```
+1085c6e
+read 2026-11-13 11:28 GMT-3
+mimic-wide_natural (masked cells): decoder 0.6811, TabPFN 0.7644 (fit 19 s a fold), bar 0.6887
+  decoder - TabPFN: -0.0833 [-0.0843, -0.0823], by seed -0.0839, -0.0825, -0.0835 -> better
+  decoder - bar: -0.0076 [-0.0086, -0.0066], by seed -0.0079, -0.0074, -0.0074 -> better
+  decoder - E176's decoder: +0.0158 [+0.0153, +0.0163], by seed +0.0155, +0.0156, +0.0164 -> worse
+mimic-wide-donor_tmatch_20nan (induced cells): decoder 0.9188, TabPFN 0.9662 (fit 25 s a fold), bar 0.9352
+  decoder - TabPFN: -0.0474 [-0.0486, -0.0462], by seed -0.0474, -0.0478, -0.0470 -> better
+  decoder - bar: -0.0164 [-0.0178, -0.0149], by seed -0.0164, -0.0156, -0.0171 -> better
+  decoder - E176's decoder: +0.0103 [+0.0093, +0.0112], by seed +0.0108, +0.0098, +0.0102 -> worse
+mimic-wide-donor_mcar_20nan (induced cells): decoder 0.7303, TabPFN 0.7216 (fit 26 s a fold), bar 0.7303
+  decoder - TabPFN: +0.0087 [+0.0073, +0.0101], by seed +0.0090, +0.0079, +0.0092 -> worse
+  decoder - bar: -0.0000 [-0.0010, +0.0009], by seed +0.0004, -0.0005, +0.0000 -> equivalent
+  decoder - E176's decoder: +0.0132 [+0.0120, +0.0143], by seed +0.0137, +0.0125, +0.0133 -> worse
+PRIMARIES (natural, tmatch) against TabPFN: ['better', 'better'] -> supported (fold-pair t, seed agreement, margin 1% of TabPFN's mean)
+```
+
+- **Primaries:** trained on 10,000 rows a fold, the decoder is still better than TabPFN v2 on both, by −0.0833 on the
+  natural table and −0.0474 under the transplanted patterns, every seed agreeing. Supported: the lead on the real
+  patterns does not need the rows past TabPFN's context. It keeps 84% of E176's lead on the natural table (−0.0991)
+  and 82% on `tmatch` (−0.0577).
+- **What the other rows buy:** the capped decoder is worse than E176's on all three variants, by +0.0158, +0.0103
+  and +0.0132, every seed agreeing. This mixes rows and optimizer steps (3.3 to 4.6 times fewer here); no arm
+  separates them.
+- **Under MCAR:** the capped decoder is worse than TabPFN, by +0.0087, past the 1% margin (0.0072), and level with
+  the bar (0.7303 both). E176's parity there (−0.0044) did come from the extra rows or steps.
+- **The bar:** the capped decoder is still better than the bar on the natural table (−0.0076) and on `tmatch`
+  (−0.0164), with the bar fit on the whole fold.
+- **Scope:** TabPFN v2 as ADR 0028 pins it, its files not refit; one table, seeds 42/7/13; a cap that leans against
+  TRIDENT (rows with their gaps against observed rows a column) and full-table epochs.
+- **What it leads to:** E176's thesis sentence can say the lead holds at equal row counts on real gap patterns and
+  that under MCAR the decoder needs the whole table to stay level; the wording is the user's call. No ADR changes.

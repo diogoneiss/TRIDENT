@@ -1048,6 +1048,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E177 and E178 pre-registered 2026-11-13 08:28 GMT-3** on the user's "2 e 1, vá": E177 ([mimic/15](tickets/mimic/15-wide-table-capped-rows.md)),
   TRIDENT trained on 10,000 rows a fold (`--train_rows`, 9e780d3) against E176's TabPFN files, one queue; E178
   ([mimic/16](tickets/mimic/16-wide-table-hybrid.md)), ADR 0031 decision 6's hybrid on the same three variants, two queues. Both on medusa1.
+  **E177 done 2026-11-13 11:29 GMT-3, supported:** on 10,000 rows a fold the decoder is still better than TabPFN v2 on the natural table
+  (−0.0833) and on `tmatch` (−0.0474), 84% and 82% of E176's lead; under MCAR it falls behind (+0.0087) and is level with the bar.
+  The thesis sentence's wording is the user's call. E178 still running.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
