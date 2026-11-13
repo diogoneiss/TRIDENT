@@ -1,7 +1,7 @@
-"""T50's two scored studies, read from their state directories (docs/tickets/mimic/03 and 04).
+"""T50's scored studies, read from their state directories (docs/tickets/mimic/03, 04 and 14).
 
     QUEUE_STATE=<state directory> TRIDENT_DATASETS_ROOT=<root> \\
-        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149>
+        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149|e176>
 
 - ``e148``: per natural table, the masked population's ``impute_score`` minus the bar's best baseline on the same
   cells, every scored imputer's mean, the decoder against TabPFN where ``<state>/tabpfn`` holds the offline pass
@@ -10,8 +10,11 @@
 - ``e149``: per donor table, the same contrast on ``tmatch``'s induced cells, every scored imputer's mean, the
   decoder against TabPFN on ``tmatch`` where ``<state>/tabpfn`` holds the pass, and ``tmatch − trand`` and
   ``trand − mcar`` for the decoder's score and for its gap to the bar.
+- ``e176``: on ``mimic-wide``, the decoder minus TabPFN v2 per variant (``<state>/tabpfn`` is required), by the
+  project's rule with an equivalence margin of 1% of TabPFN's mean score, and the decoder minus the bar beside it.
+  The primaries are the natural table and ``tmatch``.
 
-Each contrast is paired per (seed, fold), 15 replicates, with a plain 95% t interval. A primary is better (or worse)
+Each contrast of ``e148`` and ``e149`` is paired per (seed, fold), 15 replicates, with a plain 95% t interval. A primary is better (or worse)
 when its two-sided p, adjusted by Holm over the two tables, is under 0.05 and its mean below (or above) 0. Refuses to
 read a study with a cell missing. Run from the checkout root.
 """
@@ -77,6 +80,40 @@ def by_row_gaps(variant: str, runs: list[Path]) -> pd.DataFrame:
     out.insert(0, "cells", groups.size())
     out["ratio"] = out["rmse_z"] / out["mean_fill_rmse_z"]
     return out.rename(index={4: "4+"})
+
+
+def wide() -> None:
+    from scripts.experiments import mimic_run as run
+    from scripts.experiments import mimic_wide_run
+
+    calls = {}
+    for arm, variant in mimic_wide_run.CELLS:
+        population, readout = ("masked", "M") if arm == "M" else ("induced", "K")
+        own, bar, theirs, seconds = [], [], [], []
+        for seed in run.SEEDS:
+            runs = run.finished(arm, variant, seed)
+            if len(runs) != 1:
+                sys.exit(f"{variant} seed {seed}: {len(runs)} finished runs; the ticket reads only a complete study")
+            frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
+            other = pd.read_csv(run.STATE / "tabpfn" / f"{variant}_s{seed}.csv").sort_values("fold")
+            assert len(frame) == 5 and len(other) == 5
+            own.append(report_common.model(frame, report_common.Run(variant, seed, "", population), readout, population))
+            bar.append(report_common.opponent(frame, "bar", population)[1])
+            theirs.append(other[f"impute/{population}/baseline/tabpfn/impute_score"].to_numpy(float))
+            seconds.append(other["baseline/tabpfn/fit_seconds"].to_numpy(float))
+        tabpfn = float(np.concatenate(theirs).mean())
+        print(f"{variant} ({population} cells): decoder {np.concatenate(own).mean():.4f}, TabPFN {tabpfn:.4f} "
+              f"(fit {np.concatenate(seconds).mean():.0f} s a fold), bar {np.concatenate(bar).mean():.4f}")
+        for name, others in (("TabPFN", theirs), ("bar", bar)):
+            v = report_common.verdict([a - b for a, b in zip(own, others)], 0.01 * tabpfn)
+            print(f"  decoder - {name}: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}], by seed "
+                  + ", ".join(f"{s:+.4f}" for s in v.seeds) + f" -> {v.call}")
+            if name == "TabPFN":
+                calls[variant] = v.call
+    primaries = [calls[variant] for _, variant in mimic_wide_run.CELLS[:2]]
+    print(f"PRIMARIES (natural, tmatch) against TabPFN: {primaries} -> "
+          + ("refuted" if "worse" in primaries else "supported" if "better" in primaries else "no verdict")
+          + f" ({report_common.RULE}, margin 1% of TabPFN's mean)")
 
 
 def main(study: str) -> None:
@@ -151,6 +188,9 @@ def main(study: str) -> None:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] not in (["e148"], ["e149"]):
+    if sys.argv[1:] == ["e176"]:
+        wide()
+    elif sys.argv[1:] in (["e148"], ["e149"]):
+        main(sys.argv[1])
+    else:
         sys.exit(__doc__)
-    main(sys.argv[1])

@@ -1037,6 +1037,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E175 done 2026-11-12 23:16 GMT-3, primary 1 supported, primary 2 not met:** the draws cover better than the single fill on 13 of 15
   variants, worse on none; mean coverage at least 0.90 on 8 of 15 (10 required). Not proper at 80% missing (slopes 0.34 to 0.60
   where the control holds); the truth-filled control itself fails on `kc2` and `biodeg`. Next: the GPU study, pre-registered on its own.
+- **T57 · A MIMIC-IV table past TabPFN's context** (the user's "gosto muito da ideia do 2, faça-o primeiro", 2026-11-12).
+  `mimic-wide` built 2026-11-12 (8566da7): every patient's first ICU stay from the raw events, 65,366 rows, 23 measured
+  variables; donor table of 46,501 complete rows with transplant variants.
+  **E176 pre-registered 2026-11-12 23:49 GMT-3** ([mimic/14](tickets/mimic/14-wide-table.md)): the decoder against TabPFN v2 (10,000-row
+  context) on the natural table and on `tmatch`/`mcar`, seeds 42/7/13, medusa1's two GPUs, about 8 h.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

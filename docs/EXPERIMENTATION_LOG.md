@@ -212,6 +212,7 @@ fails when an entry has no row or a row no entry.
 | E173 | ADR 0031 decision 6's hybrid on the MIMIC-IV tables with natural gaps | 2026-11-10 – 2026-11-12 | supported | on the natural-gap MIMIC-IV tables the hybrid is better than H on cardio, equivalent on SOFA, better than TabPFN on both seed sets |
 | E174 | ADR 0031 decision 6's hybrid at the thesis seeds, on the 26 MCAR variants | 2026-11-10 – 2026-11-12 | supported | decision 6's hybrid at the thesis seeds 101/202/303: worse than H on none of 26 and than TabPFN on 1 (credit-g_80nan); better than H on 19 |
 | E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
+| E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 | in progress | |
 
 ## Entries
 
@@ -4712,3 +4713,24 @@ fails when an entry has no row or a row no entry.
   so those six variants cannot judge properness. Next, by the ticket: a GPU study with draws from the model at fill
   time, joint across a row's gaps, read with an interval whose control covers; pre-registered on its own. No ADR.
 - **Sources:** [imputation-protocol/68](tickets/imputation-protocol/68-multiple-imputation.md); `multiple_imputation.py`.
+
+### E176 · A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? (pre-registered 2026-11-12 23:49 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-12 23:49 GMT-3 on the user's go ("gosto muito da ideia do 2, faça-o primeiro"; "a
+  medusa1 esta com gpu livre, creio que voce pode jogar algumas filas lá"). T57.
+- **Hypothesis:** on a clinical table several times TabPFN v2's 10,000-row context, where TRIDENT trains on every row
+  and TabPFN on a subsample, the decoder is not worse than TabPFN v2 and is better on at least one of the natural
+  table and the transplanted real patterns.
+- **Scenarios:** `mimic-wide`, built from the raw MIMIC-IV events: every patient's first ICU stay, 65,366 rows, 23
+  measured variables over the first 30 h plus age, gender and admission type (4.2% of measured cells are gaps);
+  its 46,501 complete rows as a donor table with `tmatch` and `mcar` variants at 12.6% of cells. `mimic-wide_natural`
+  under the masked checkpoint (masked population), the two donor variants under the defaults (readout K, induced
+  cells); seeds 42, 7, 13; 9 runs. TabPFN v2 offline on the same folds. All on medusa1's two GPUs.
+- **Measures and decision rule:** `impute_score`, decoder − TabPFN on 15 (seed, fold) pairs a variant, fold-pair rule
+  with seed agreement, equivalence margin 1% of TabPFN's mean. Primaries: the natural table and `tmatch`. Supported
+  if worse on neither and better on at least one; refuted if worse on either; no verdict otherwise. Secondary: `mcar`,
+  the decoder against the bar, TabPFN's fit seconds. Read once with all 9 runs and 9 TabPFN files in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [mimic/14](tickets/mimic/14-wide-table.md); `datasets/build_mimic.py --wide`, `mimic_wide_run.py`,
+  `mimic_report.py e176`.
