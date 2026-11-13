@@ -20,6 +20,14 @@ The training environment has no h5py, and this needs nothing else of it, so from
 
 Inputs exist on gorgona8 only (the tensors and the SOFA component files); the tables reach
 medusa1 by rsync.
+
+``--wide`` builds a third table instead, from the raw chart and lab events (docs/tickets/mimic/14):
+
+  mimic-wide     every patient's first ICU stay (65k rows, against the cohort's 11k), the measured
+                 variables of ``WIDE`` over the first 30 h, by ``cardio``'s rule
+
+    uv run --no-project --with h5py --with pandas --with polars --with pyarrow \
+        python datasets/build_mimic.py --wide --mimic_root <mimiciv/3.1> --out <root>
 """
 
 import argparse
@@ -37,6 +45,13 @@ IDENTIFIERS = ["stay_id", "subject_id", "hadm_id"]
 LABEL = "class"
 CLIP_PERCENTILES = (0.5, 99.5)
 TOY_ROWS = 1000
+WIDE_HOURS = 30
+# The measured variables of kg-impute's map that under 20% of first stays lack.
+WIDE = (
+    "heart_rate", "spo2", "nibp_systolic", "nibp_diastolic", "nibp_mean", "sodium", "potassium",
+    "chloride", "bicarbonate", "anion_gap", "creatinine", "glucose", "calcium", "magnesium",
+    "hemoglobin", "hematocrit", "platelets", "rbc", "mcv", "mch", "mchc", "inr", "ptt",
+)
 TOY_SEED = 42
 
 
@@ -91,6 +106,85 @@ def cardio(tensors: Path) -> tuple[np.ndarray, pd.DataFrame]:
             total = np.where(observed[:, :, index], values[:, :, index], 0.0).sum(axis=1)
             columns[name] = np.where(hours > 0, total / np.maximum(hours, 1), np.nan)
     return stay_ids, pd.DataFrame(columns)
+
+
+def hourly(mimic: Path, variables: Path, cache: Path) -> pd.DataFrame:
+    """Every mapped variable's mean per hour of every ICU stay's first ``WIDE_HOURS`` hours.
+
+    One pass over the raw chart events (by ``stay_id``) and lab events (by ``hadm_id``, kept where
+    the draw falls in the stay's window), cached: the two files are 60 GB.
+    """
+    if cache.exists():
+        return pd.read_parquet(cache)
+    import polars as pl
+
+    names = pd.read_csv(variables, dtype=str)
+    item = {
+        int(code): row.var_id
+        for row in names.itertuples()
+        for field in (row.itemids_chartevents, row.itemids_labevents)
+        if isinstance(field, str)
+        for code in field.split(",")
+    }
+    icu = pl.scan_csv(mimic / "icu/icu/icustays.csv", infer_schema=False).select(
+        pl.col("stay_id").cast(pl.Int64), pl.col("hadm_id").cast(pl.Int64),
+        pl.col("intime").str.to_datetime("%Y-%m-%d %H:%M:%S"),
+    )
+
+    def events(file: str, key: str) -> "pl.LazyFrame":
+        return (
+            pl.scan_csv(mimic / file, infer_schema=False)
+            .select(
+                pl.col(key).cast(pl.Int64, strict=False), pl.col("itemid").cast(pl.Int64),
+                "charttime", pl.col("valuenum").cast(pl.Float64, strict=False),
+            )
+            .filter(pl.col("itemid").is_in(list(item)) & pl.col("valuenum").is_not_null() & pl.col(key).is_not_null())
+            .join(icu, on=key)
+            .with_columns(
+                hour=(pl.col("charttime").str.to_datetime("%Y-%m-%d %H:%M:%S") - pl.col("intime")).dt.total_minutes() // 60,
+                variable=pl.col("itemid").replace_strict(item, return_dtype=pl.String),
+            )
+            .filter(pl.col("hour").is_between(0, WIDE_HOURS - 1))
+            .select("stay_id", "variable", "hour", "valuenum")
+        )
+
+    table = (
+        pl.concat([events("icu/icu/chartevents.csv", "stay_id"), events("hosp/hosp/labevents.csv", "hadm_id")])
+        .group_by("stay_id", "variable", "hour")
+        .agg(value=pl.col("valuenum").mean())
+        .collect(engine="streaming")
+    )
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    table.write_parquet(cache)
+    return pd.read_parquet(cache)
+
+
+def wide(mimic: Path, events: pd.DataFrame, names: list[str]) -> tuple[np.ndarray, pd.DataFrame]:
+    """Every patient's first ICU stay; each variable's mean over its observed hours, clipped as ``cardio``."""
+    icu = pd.read_csv(mimic / "icu/icustays.csv.gz", usecols=["subject_id", "stay_id", "intime"], parse_dates=["intime"])
+    stay_ids = np.sort(icu.sort_values(["intime", "stay_id"]).drop_duplicates("subject_id")["stay_id"].to_numpy())
+    events = events[events["stay_id"].isin(stay_ids) & events["variable"].isin(names)].copy()
+    assert set(events["variable"]) == set(names), f"no reading of {set(names) - set(events['variable'])}"
+    for _, rows in events.groupby("variable"):
+        low, high = np.percentile(rows["value"], CLIP_PERCENTILES)
+        events.loc[rows.index, "value"] = rows["value"].clip(low, high)
+    means = events.groupby(["stay_id", "variable"])["value"].mean().unstack()
+    return stay_ids, means.reindex(index=stay_ids, columns=names).reset_index(drop=True)
+
+
+def compare_with_cardio(out: Path, events: pd.DataFrame) -> None:
+    """The self-check: on the kg-impute cohort, are the raw events' gaps the tensors' gaps?"""
+    table = pd.read_csv(out / "mimic-cardio/mimic-cardio_natural.csv")
+    table.index = pd.read_csv(out / "mimic-cardio/mimic-cardio_index.csv")["stay_id"]
+    events = events[events["stay_id"].isin(table.index)]
+    means = events.groupby(["stay_id", "variable"])["value"].mean().unstack().reindex(table.index)
+    print("\nagainst mimic-cardio_natural (same stays): share of stays with the same gap, median relative difference")
+    for column in [c for c in table.columns if c in means.columns]:
+        same = (table[column].isna() == means[column].isna()).mean()
+        both = table[column].notna() & means[column].notna()
+        gap = ((means[column] - table[column]).abs() / table[column].abs().clip(lower=1e-9))[both].median()
+        print(f"  {column:<16} {same:6.1%}   {gap:.4f}")
+        assert same > 0.9, f"{column}: the raw events do not reproduce the tensors' gaps"
 
 
 def sofa(directory: Path, stay_ids: np.ndarray) -> pd.DataFrame:
@@ -185,17 +279,32 @@ def main() -> None:
         default=Path("/scratch2/diogoneiss/calculo-sistemas/cardiokg-impute/data/tensors/tensors.h5"),
     )
     parser.add_argument("--sofa_dir", type=Path, default=Path("/scratch/gabriel-alkmim/disf_pred"))
+    parser.add_argument("--wide", action="store_true", help="build mimic-wide only, from the raw events")
+    parser.add_argument("--columns", default=",".join(WIDE), help="mimic-wide's measured variables")
+    parser.add_argument(
+        "--variables", type=Path,
+        default=Path("/scratch2/diogoneiss/calculo-sistemas/cardiokg-impute/data/variables_phys.csv"),
+    )
+    parser.add_argument("--cache", type=Path, default=Path("/scratch/diogoneiss/trident-mimic-cache/hourly_30h.parquet"))
     args = parser.parse_args()
     if args.mimic_root is None or args.out is None:
         parser.error("set MIMIC_ROOT and TRIDENT_DATASETS_ROOT, or pass --mimic_root and --out")
 
-    stay_ids, cardio_features = cardio(args.tensors)
+    if args.wide:
+        events = hourly(args.mimic_root, args.variables, args.cache)
+        compare_with_cardio(args.out, events)
+        stay_ids, wide_features = wide(args.mimic_root, events, args.columns.split(","))
+        tables = {"mimic-wide": wide_features}
+    else:
+        stay_ids, cardio_features = cardio(args.tensors)
+        tables = {}
     index = stays(args.mimic_root, stay_ids)
     assert index["stay_id"].is_unique and len(index) == len(stay_ids)
-    tables = {
-        "mimic-cardio": cardio_features,
-        "mimic-sofa": sofa(args.sofa_dir, stay_ids),
-    }
+    if not args.wide:
+        tables = {
+            "mimic-cardio": cardio_features,
+            "mimic-sofa": sofa(args.sofa_dir, stay_ids),
+        }
     print(f"stays {len(index)}, patients {index['subject_id'].nunique()}")
     print(f"ICU stay under 24 h: {int((index['los'] < 1).sum())}; "
           f"died within 30 h of admission: {int((index['hours_to_death'] <= 30).sum())}")
