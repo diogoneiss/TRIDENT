@@ -76,3 +76,14 @@ Fold-pair verdict on 15 (seed, fold) differences per seed set, 1% SESOI of the o
   (see [67](../imputation-protocol/67-hybrid-thesis-seeds.md)). The same would have hit `e173`'s cells, so the four
   directories written on 2026-11-11 (cardio s101/s202/s303, SOFA s101) were moved to
   `results.leader-down-2026-11-11/` in the state before any `e173` cell ran. `e173`'s trainings started at 16:32.
+
+## Amendment, 2026-11-12 21:08 GMT-3: medusa1 rebooted at 17:38, one `e173b` cell taken again (nothing read)
+
+- `e173b`'s six runs of H finished on medusa1 by 17:11 GMT-3 and are `FINISHED` in the leader's store; five of its six
+  offline cells were done by 17:33. medusa1 rebooted at 17:38 (`who -b`; cause unknown), two minutes into the cell of
+  `mimic-sofa_natural` s5656, which left only fold 1's files in `cells/` and no line in the log.
+- The same `cells.sh 1` was launched again at 21:06; it skips the pairs already in `cells-mf` and recomputes that cell
+  whole (every fold's files are rewritten). Another user's job now holds about 27 GB of each of medusa1's cards; the
+  cell runs in the rest of GPU 1.
+- `e173` on gorgona8 was not interrupted: its six runs finished by 19:29 (the leader's MLflow server was back before any
+  of them closed), five of six cells done, the last running. Read and rule unchanged.

@@ -4605,5 +4605,7 @@ opened when the experiment is pre-registered and closed when it ends (see `CLAUD
   each set's tally is read on its machine, both in one sitting. Rule unchanged.
 - **Amendment, 2026-11-12 16:46 GMT-3 (nothing read):** the four result directories of the lost runs were moved aside on
   gorgona8 before any `e173` cell ran, so its cells find one ledger per fold (E174's cells had failed on two).
+- **Amendment, 2026-11-12 21:08 GMT-3 (nothing read):** medusa1 rebooted at 17:38 with all six `e173b` runs finished and five
+  of six cells done; the cell it killed (`mimic-sofa_natural` s5656) was taken again from 21:06 with the same lane script.
 - **Sources:** [mimic/13](tickets/mimic/13-hybrid-natural-gaps.md); `mimic_hybrid.py --study e173` / `e173b`.
 
