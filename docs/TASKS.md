@@ -1041,6 +1041,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   "ok de acordo": 45 H cells retrained at seeds 4545/5656/6767 on gorgona8, M = 20 draws read from the model at fill time;
   jointly drawn residuals (`MI-R`) and chained model draws under one dropout mask (`MI-J`) against E175's per-cell draws,
   read against the fold's complete-data estimate with the between-draw variance alone.
+  **E179 done 2026-11-14 08:54 GMT-3, `MI-R` refuted, `MI-J` mixed, neither proper enough:** jointly drawn residuals are better than
+  the per-cell draws on none of the five 80% variants and worse on 2; chained model draws are better on 2 and worse on
+  `credit-g_80nan`. Mean coverage at least 0.90 on 2 and 7 of 15 (12 required); at 80% the slopes stay uncovered (0.19 to 0.69).
+  The model's own draws without the chain (`MI-S`) gain as much over E175's draws as the chained ones. No proposal, no ADR.
 - **T57 · A MIMIC-IV table past TabPFN's context** (the user's "gosto muito da ideia do 2, faça-o primeiro", 2026-11-12).
   `mimic-wide` built 2026-11-12 (8566da7): every patient's first ICU stay from the raw events, 65,366 rows, 23 measured
   variables; donor table of 46,501 complete rows with transplant variants.

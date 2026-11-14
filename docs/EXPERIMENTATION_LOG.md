@@ -215,7 +215,7 @@ fails when an entry has no row or a row no entry.
 | E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
 | E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 | in progress | |
-| E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 | in progress | |
+| E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 
 ## Entries
 
@@ -4800,7 +4800,7 @@ fails when an entry has no row or a row no entry.
 
 ### E179 · Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? (pre-registered 2026-11-13 23:23 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-13 23:23 GMT-3 on the user's go ("ok de acordo" to the proposal's four recommendations, 2026-11-13). T56.
+- **Status:** done 2026-11-14 08:54 GMT-3 (`MI-R` refuted, `MI-J` mixed, neither proper enough); pre-registered 2026-11-13 23:23 GMT-3 on the user's go ("ok de acordo" to the proposal's four recommendations, 2026-11-13). T56.
 - **Hypothesis:** draws that tie a row's gaps together, either residuals drawn jointly (`MI-R`) or the model's own
   draws chained through the row under one dropout mask (`MI-J`), cover whole-table estimands better than E175's
   per-cell residual draws (`MI-D`) at 80% missing, and are worse nowhere.
@@ -4817,7 +4817,17 @@ fails when an entry has no row or a row no entry.
   five 80% variants and worse on none of 15; refuted if better on at most 1 of five or worse on at least 3 of 15;
   mixed otherwise. Proper enough: mean coverage at least 0.90 on at least 12 of 15. Secondary: E175's reading (whole
   table, total variance) on `vehicle`, `credit-g`, `pendigits`; the arms against `MICE`. Read once with all 45 in.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** read once 2026-11-14 08:50 GMT-3 with all 45 cells in (trainings 01:09 to 08:47 GMT-3 on gorgona8, no
+  failure). Primary reading, u against `MI-D`: `MI-R` better on 0 of the five 80% variants, worse on `kc2_80nan` and
+  `pendigits_80nan` (the one 80% variant with residual correlations, +0.0559), no difference on the other 13;
+  `MI-J` better on `kc2_80nan` and `vehicle_80nan`, worse on `credit-g_80nan`, over the 15 better on 10 and worse on
+  1. `MI-S` (no chain) against `MI-D`: also better on 10, worse on 1; `MI-J` against `MI-S`: better on 1, worse on 2.
+  Mean coverage at least 0.90: `MI-D` 3, `MI-S` 7, `MI-R` 2, `MI-J` 7, `MICE` 0 of 15; at 80% no arm reaches 0.80 on
+  any table, slopes covered 0.19 to 0.69. Both joint arms better than `MICE` on 15 of 15. Secondary, E175's reading
+  on three tables: `MI-D` better than the single fill on 8 of 9, worse on none.
+- **Conclusion:** `MI-R` refuted, `MI-J` mixed, neither proper enough. Tying a row's gaps together does not make
+  the intervals proper at 80% missing: the copula did not help where its correlation could be measured, and the
+  chain trades covered means and shares for covered slopes. Drawing from the model (dropout mask and softmax
+  samples) is what improves on E175's per-cell residual draws, with or without the chain. No proposal, no ADR.
 - **Sources:** [imputation-protocol/69](tickets/imputation-protocol/69-joint-draws.md); `joint_draws.py`;
   [the proposal](proposals/multiple-imputation-joint-draws.md).
