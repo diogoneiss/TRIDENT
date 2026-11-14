@@ -1061,6 +1061,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   The thesis sentence's wording is the user's call. E178 paused at 7 of 9 H runs when medusa1's GPU 0 fell (11:31 GMT-3, no CUDA
   in new processes since); from 2026-11-13 20:17 GMT-3 its two missing H runs and nine offline cells run on gorgona8 on the user's "sim"
   (third amendment, a departure from ADR 0035).
+  **E178 done 2026-11-14 14:32 GMT-3, refuted (harmless and unneeded):** `table_tabpfn` is equivalent to H on the natural table and on
+  `tmatch` (+0.0000 on both) and better than TabPFN v2 (−0.0990, −0.0575); under MCAR it is better than H by −0.0024. ADR 0031
+  decision 6 is not extended to `mimic-wide`, as the ticket said beforehand for this reading.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

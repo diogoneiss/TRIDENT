@@ -214,7 +214,7 @@ fails when an entry has no row or a row no entry.
 | E175 | Multiple imputation from H's fills: do Rubin's intervals cover? | 2026-11-12 | supported, not proper | residual draws around H's fill cover better than the single fill on 13 of 15 variants, worse on none; not proper at 80% missing (slopes), and the truth-filled control fails on kc2 and biodeg |
 | E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
 | E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
-| E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 | in progress | |
+| E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 – 2026-11-14 | refuted | on mimic-wide the hybrid is equivalent to H on natural gaps and transplanted patterns (+0.0000 on both) and better than TabPFN v2 (−0.099, −0.058): harmless and unneeded, decision 6's scope not extended; under MCAR a small gain over H (−0.0024) |
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 
 ## Entries
@@ -4775,7 +4775,7 @@ fails when an entry has no row or a row no entry.
 
 ### E178 · The deployable hybrid on `mimic-wide`: safe and still a gain where TabPFN alone is weak? (pre-registered 2026-11-13 08:28 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13). T57.
+- **Status:** done 2026-11-14 14:32 GMT-3 (refuted: harmless and unneeded); pre-registered 2026-11-13 08:28 GMT-3 on the user's go ("2 e 1, vá", 2026-11-13). T57.
 - **Hypothesis:** on `mimic-wide`, ADR 0031 decision 6's hybrid (`table_tabpfn`: H's fills and TabPFN's blended with
   one numerical weight and one categorical pick per table, chosen on the fold's hidden validation cells) is better
   than H on at least one primary, worse than H on neither, and worse than TabPFN on neither.
@@ -4794,8 +4794,14 @@ fails when an entry has no row or a row no entry.
   trained on the CPU for seven hours before it was killed; paused at 7 of 9 H runs, nothing read. 2026-11-13 20:17 GMT-3, on
   the user's "sim" the two missing H runs (`mimic-wide_natural` and `mcar` at seed 13) and all nine offline cells
   run on gorgona8, a departure from ADR 0035 (the split is not by seed); every pair of the rule stays inside one cell.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** read once 2026-11-14 14:30 GMT-3 on gorgona8 with the 9 runs and their cells in. `table_tabpfn` − H:
+  +0.0000 equivalent on `mimic-wide_natural` and on `tmatch`; `table_tabpfn` − TabPFN: −0.0990 and −0.0575, better
+  on both. Secondary: under `mcar` better than H (−0.0024) and than TabPFN (−0.0062); `table_missforest` equivalent
+  to H on all three; the pick took missForest on 1 of 45 folds, the cross-fit pick on 6 of 15 `mcar` folds (worse
+  than `table_tabpfn` there, +0.0012).
+- **Conclusion:** refuted by "better than H on neither primary", the reading the ticket disclosed beforehand: on
+  `mimic-wide` the hybrid chooses H's fill on the real gap patterns, so it is harmless and unneeded, and ADR 0031
+  decision 6's scope is not extended to this table. No ADR change.
 - **Sources:** [mimic/16](tickets/mimic/16-wide-table-hybrid.md); `mimic_hybrid.py --study e178`.
 
 ### E179 · Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? (pre-registered 2026-11-13 23:23 GMT-3)

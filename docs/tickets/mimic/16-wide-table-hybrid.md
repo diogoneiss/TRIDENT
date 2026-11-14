@@ -114,3 +114,67 @@ Written before any reading and before any cell on gorgona8; no score of this stu
   FINISHED, each (variant, seed) has exactly one FINISHED run, which `cells` requires.
 - **Code:** the new runs carry this amendment's commit; it differs from the seven runs' 1085c6e in documents and in
   `mimic_hybrid.py`'s docstring only.
+
+## Outcome (2026-11-14 14:32 GMT-3; read once 2026-11-14 14:30 GMT-3, on gorgona8 at 48b6cbe, all 9 runs and their cells in)
+
+Seven H runs trained on medusa1 on 2026-11-13 and two on gorgona8 (20:17 GMT-3 on 2026-11-13 to 01:09 on 2026-11-14);
+the nine offline cells ran on gorgona8 from 20:19 GMT-3 on 2026-11-13 to 14:29 on 2026-11-14, with no FAILED line
+after the move. The leader's store holds one FINISHED parent run for each (variant, seed), seven tagged
+`host = medusa` and two `host = gorgona8`; the FAILED run and the two RUNNING orphans of the second amendment were
+not read. `mimic_hybrid.py` is unchanged between the third amendment's commit and the read's. The printout, unedited:
+
+```
+- `mimic-wide_natural` (primary): H 0.6653, tabpfn 0.7644, missforest 0.6968, table_tabpfn 0.6653, table_missforest 0.6654, pick 0.6654, picked_missforest 0.0667, crossfit 0.6653, crossfit_missforest 0.0000
+  - table_missforest − H +0.0000 [-0.0000, +0.0001] equivalent
+  - table_missforest − missforest -0.0315 [-0.0326, -0.0303] better
+  - table_tabpfn − H +0.0000 [+0.0000, +0.0000] equivalent
+  - table_tabpfn − tabpfn -0.0990 [-0.0999, -0.0981] better
+  - pick − H +0.0000 [-0.0000, +0.0001] equivalent
+  - pick − table_tabpfn +0.0000 [-0.0000, +0.0001] equivalent
+  - pick − table_missforest +0.0000 [+0.0000, +0.0000] equivalent
+  - crossfit − H +0.0000 [+0.0000, +0.0000] equivalent
+  - crossfit − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - the pick took missForest on 1 of 15 folds, the cross-fit pick on 0
+- `mimic-wide-donor_tmatch_20nan` (primary): H 0.9087, tabpfn 0.9662, missforest 1.0177, table_tabpfn 0.9087, table_missforest 0.9087, pick 0.9087, picked_missforest 0.0000, crossfit 0.9087, crossfit_missforest 0.0000
+  - table_missforest − H +0.0000 [+0.0000, +0.0000] equivalent
+  - table_missforest − missforest -0.1089 [-0.1222, -0.0956] better
+  - table_tabpfn − H +0.0000 [+0.0000, +0.0000] equivalent
+  - table_tabpfn − tabpfn -0.0575 [-0.0591, -0.0559] better
+  - pick − H +0.0000 [+0.0000, +0.0000] equivalent
+  - pick − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - pick − table_missforest +0.0000 [+0.0000, +0.0000] equivalent
+  - crossfit − H +0.0000 [+0.0000, +0.0000] equivalent
+  - crossfit − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - the pick took missForest on 0 of 15 folds, the cross-fit pick on 0
+- `mimic-wide-donor_mcar_20nan`: H 0.7178, tabpfn 0.7216, missforest 0.8147, table_tabpfn 0.7154, table_missforest 0.7179, pick 0.7154, picked_missforest 0.0000, crossfit 0.7165, crossfit_missforest 0.4000
+  - table_missforest − H +0.0001 [-0.0001, +0.0004] equivalent
+  - table_missforest − missforest -0.0969 [-0.1017, -0.0921] better
+  - table_tabpfn − H -0.0024 [-0.0034, -0.0014] better
+  - table_tabpfn − tabpfn -0.0062 [-0.0069, -0.0054] better
+  - pick − H -0.0024 [-0.0034, -0.0014] better
+  - pick − table_tabpfn +0.0000 [+0.0000, +0.0000] equivalent
+  - pick − table_missforest -0.0025 [-0.0035, -0.0014] better
+  - crossfit − H -0.0012 [-0.0022, -0.0002] better
+  - crossfit − table_tabpfn +0.0012 [+0.0002, +0.0021] worse
+  - the pick took missForest on 0 of 15 folds, the cross-fit pick on 6
+
+E178 PRIMARY `table` (TabPFN side) on mimic-wide_natural, mimic-wide-donor_tmatch_20nan: better than H on none, worse than H on none, worse than TabPFN on none -> refuted
+(fold-pair t, seed agreement; SESOI 1% of the opponent's mean)
+```
+
+- **Reading, by the ticket's own rule: refuted**, by the clause "better than H on neither primary". On
+  `mimic-wide_natural` and on `mimic-wide-donor_tmatch_20nan` the hybrid `table_tabpfn` is equivalent to H (+0.0000
+  on both) and better than TabPFN (−0.0990, −0.0575): with TabPFN v2 that far behind, the rule chooses H's fill. The
+  disclosure said this beforehand: the hybrid is harmless and unneeded on this table, and decision 6's scope does
+  not extend to it.
+- **Secondary:**
+  - Under MCAR (`mimic-wide-donor_mcar_20nan`), where E176 found the two sides level, `table_tabpfn` is better than
+    H (−0.0024, 0.3% of H's score) and than TabPFN (−0.0062).
+  - The missForest side (`table_missforest`) is equivalent to H on all three variants and better than missForest on
+    all three (−0.0315, −0.1089, −0.0969).
+  - The pick between sides took missForest on 1 of 45 folds. The cross-fit pick took it on 6 of 15 `mcar` folds and
+    is worse than `table_tabpfn` there (+0.0012), still better than H.
+- **Limits:** the departure of the third amendment stands: H is medusa1's in seven cells and gorgona8's in two, and
+  the other side was refit on gorgona8 in all nine. Every line of the rule is a fold pair inside one cell.
+- **What it leads to:** ADR 0031 decision 6 (the opt-in offline hybrid) is not extended to `mimic-wide`; nothing in
+  the ADR changes. On this table the hybrid costs a TabPFN refit a fold and returns H on the real gap patterns.
