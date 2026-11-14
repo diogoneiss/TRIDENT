@@ -1,7 +1,7 @@
 """T50's scored studies, read from their state directories (docs/tickets/mimic/03, 04 and 14).
 
     QUEUE_STATE=<state directory> TRIDENT_DATASETS_ROOT=<root> \\
-        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149|e176|e177>
+        uv run --python 3.11 python -B scripts/experiments/mimic_report.py <e148|e149|e176|e177|e180>
 
 - ``e148``: per natural table, the masked population's ``impute_score`` minus the bar's best baseline on the same
   cells, every scored imputer's mean, the decoder against TabPFN where ``<state>/tabpfn`` holds the offline pass
@@ -15,6 +15,9 @@
   The primaries are the natural table and ``tmatch``.
 - ``e177``: the same reading for the decoder trained on 10,000 rows of each fold (arms ``M10k`` and ``D10k``, in
   E176's state directory), against E176's TabPFN files, with the capped decoder minus E176's decoder beside it.
+- ``e180``: the capped decoder trained for the full table's optimizer steps (``M10kS``, ``D10kS``) against the capped
+  and the full arms retrained beside it (mimic/17), margin 1% of the full arm's mean score, and the reading of
+  which of the two, steps or rows, the capped arm's loss belongs to.
 
 Each contrast of ``e148`` and ``e149`` is paired per (seed, fold), 15 replicates, with a plain 95% t interval. A primary is better (or worse)
 when its two-sided p, adjusted by Holm over the two tables, is under 0.05 and its mean below (or above) 0. Refuses to
@@ -84,18 +87,60 @@ def by_row_gaps(variant: str, runs: list[Path]) -> pd.DataFrame:
     return out.rename(index={4: "4+"})
 
 
+def folds(arm: str, variant: str, seed: int) -> pd.DataFrame:
+    """The fold table of a wide-table cell's one finished run."""
+    from scripts.experiments import mimic_run as run
+
+    runs = run.finished(arm, variant, seed)
+    if len(runs) != 1:
+        sys.exit(f"{arm} {variant} seed {seed}: {len(runs)} finished runs; the ticket reads only a complete study")
+    frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
+    assert len(frame) == 5
+    return frame
+
+
+def loss_belongs_to(capped_full: str, steps_capped: str, steps_full: str) -> str:
+    """E180's reading of one variant from its three calls (mimic/17): the capped arm against the full one, the
+    matched-steps arm against the capped one, and the matched-steps arm against the full one."""
+    if capped_full != "worse":
+        return "no loss to split"
+    if steps_capped == "better":
+        return "both" if steps_full == "worse" else "steps" if steps_full in ("equivalent", "better") else "unclear"
+    return "rows" if steps_capped in ("equivalent", "worse") and steps_full == "worse" else "unclear"
+
+
+def steps() -> None:
+    """E180: the capped arm at the full table's optimizer steps (S), the capped arm (C) and the full arm (F)."""
+    from scripts.experiments import mimic_run as run
+    from scripts.experiments import mimic_wide_run
+
+    readings = {}
+    for arm, variant in mimic_wide_run.CELLS:
+        population, readout = ("masked", "M") if arm == "M" else ("induced", "K")
+        scores = {name: [report_common.model(folds(arm + suffix, variant, seed), report_common.Run(variant, seed, "", population),
+                                             readout, population) for seed in run.SEEDS]
+                  for name, suffix in (("F", ""), ("C", "10k"), ("S", "10kS"))}
+        means = {name: float(np.concatenate(values).mean()) for name, values in scores.items()}
+        print(f"{variant} ({population} cells): full F {means['F']:.4f}, capped C {means['C']:.4f}, "
+              f"capped at the full table's steps S {means['S']:.4f}")
+        calls = {}
+        for a, b, what in (("C", "F", "E177's contrast"), ("S", "C", "steps, rows fixed"), ("S", "F", "rows, steps fixed")):
+            v = report_common.verdict([x - y for x, y in zip(scores[a], scores[b])], 0.01 * means["F"])
+            calls[a + b] = v.call
+            print(f"  {a} - {b} ({what}): {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}], by seed "
+                  + ", ".join(f"{s:+.4f}" for s in v.seeds) + f" -> {v.call}")
+        readings[variant] = loss_belongs_to(calls["CF"], calls["SC"], calls["SF"])
+        print(f"  share of C - F the steps recover: {(means['C'] - means['S']) / (means['C'] - means['F']):.0%}"
+              f" -> the loss belongs to: {readings[variant]}")
+    primaries = [readings[variant] for _, variant in mimic_wide_run.CELLS[:2]]
+    print(f"PRIMARIES (natural, tmatch): {primaries} -> " + (primaries[0] if len(set(primaries)) == 1 else "mixed")
+          + f" ({report_common.RULE}, margin 1% of the full arm's mean)")
+
+
 def wide(capped: bool = False) -> None:
     """E176, or with ``capped`` E177: the arms trained on 10,000 rows, and E176's decoder as a third opponent."""
     from scripts.experiments import mimic_run as run
     from scripts.experiments import mimic_wide_run
-
-    def folds(arm: str, variant: str, seed: int) -> pd.DataFrame:
-        runs = run.finished(arm, variant, seed)
-        if len(runs) != 1:
-            sys.exit(f"{arm} {variant} seed {seed}: {len(runs)} finished runs; the ticket reads only a complete study")
-        frame = pd.read_csv(runs[0] / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
-        assert len(frame) == 5
-        return frame
 
     calls = {}
     for arm, variant in mimic_wide_run.CELLS:
@@ -201,6 +246,8 @@ def main(study: str) -> None:
 if __name__ == "__main__":
     if sys.argv[1:] in (["e176"], ["e177"]):
         wide(capped=sys.argv[1] == "e177")
+    elif sys.argv[1:] == ["e180"]:
+        steps()
     elif sys.argv[1:] in (["e148"], ["e149"]):
         main(sys.argv[1])
     else:

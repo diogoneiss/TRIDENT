@@ -1064,6 +1064,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E178 done 2026-11-14 14:32 GMT-3, refuted (harmless and unneeded):** `table_tabpfn` is equivalent to H on the natural table and on
   `tmatch` (+0.0000 on both) and better than TabPFN v2 (−0.0990, −0.0575); under MCAR it is better than H by −0.0024. ADR 0031
   decision 6 is not extended to `mimic-wide`, as the ticket said beforehand for this reading.
+  **E180 pre-registered 2026-11-14 19:39 GMT-3** ([mimic/17](tickets/mimic/17-wide-table-matched-steps.md)), on the user's "Sim, pré registre e vá":
+  the capped arm at the full table's optimizer steps, to split E177's loss between rows and steps; the capped and the full arms are
+  retrained beside it on gorgona8 (ADR 0035, medusa1 has no CUDA), 27 runs.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

@@ -216,6 +216,7 @@ fails when an entry has no row or a row no entry.
 | E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 – 2026-11-14 | refuted | on mimic-wide the hybrid is equivalent to H on natural gaps and transplanted patterns (+0.0000 on both) and better than TabPFN v2 (−0.099, −0.058): harmless and unneeded, decision 6's scope not extended; under MCAR a small gain over H (−0.0024) |
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
+| E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
 
 ## Entries
 
@@ -4837,3 +4838,26 @@ fails when an entry has no row or a row no entry.
   samples) is what improves on E175's per-cell residual draws, with or without the chain. No proposal, no ADR.
 - **Sources:** [imputation-protocol/69](tickets/imputation-protocol/69-joint-draws.md); `joint_draws.py`;
   [the proposal](proposals/multiple-imputation-joint-draws.md).
+
+### E180 · TRIDENT on 10,000 rows of `mimic-wide` at the full table's optimizer steps: is the capped arm's loss rows or steps? (pre-registered 2026-11-14 19:39 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-14 19:39 GMT-3 on the user's go ("Sim, pré registre e vá", 2026-11-14). T57.
+- **Hypothesis:** part of the loss E177's capped arm showed against the full-table decoder is optimizer steps:
+  trained on 10,000 rows for the full table's steps, the decoder is better than the capped arm on both primaries.
+- **Scenarios:** E176's three variants (`mimic-wide_natural`, `mimic-wide-donor_tmatch_20nan`,
+  `mimic-wide-donor_mcar_20nan`) under three arms: F, the full table (`M`/`D`); C, `--train_rows 10000` at the full
+  table's 300 and 450 epochs (`M10k`/`D10k`); S, `--train_rows 10000` with the epochs scaled to the full arm's
+  steps at batch 256 (`M10kS`/`D10kS`: 960 and 1440 on the donor table, 1343 and 2014 on the natural one). Seeds
+  42, 7, 13; 27 runs, all on gorgona8 in two queues, logging to the leader's store. Disclosed: the go was for the
+  S arm, and retraining C and F beside it is my choice, to keep ADR 0035's pairs on one machine while medusa1 has
+  no CUDA; E176's and E177's scores were read; S chooses its checkpoint among more epochs; one timing cell at seed
+  999, MLflow off, no score read.
+- **Measures and decision rule:** `impute_score`, 15 (seed, fold) pairs a variant, fold-pair rule with seed
+  agreement, margin 1% of F's mean. C − F is the premise, S − C the steps, S − F the rows. A variant reads "steps"
+  (S better than C and not worse than F), "both" (S better than C, worse than F), "rows" (S equivalent to or worse
+  than C, worse than F), "no loss to split" or "unclear". Primaries: the natural table and `tmatch`. Supported if
+  both read "steps" or "both"; refuted if both read "rows"; mixed otherwise. Secondary, no rule: `mcar`, the share
+  of C − F recovered, S's lead over E178's TabPFN means. Read once with the 27 runs in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [mimic/17](tickets/mimic/17-wide-table-matched-steps.md); `mimic_wide_steps_run.py`, `mimic_report.py e180`.
