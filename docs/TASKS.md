@@ -1037,6 +1037,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E175 done 2026-11-12 23:16 GMT-3, primary 1 supported, primary 2 not met:** the draws cover better than the single fill on 13 of 15
   variants, worse on none; mean coverage at least 0.90 on 8 of 15 (10 required). Not proper at 80% missing (slopes 0.34 to 0.60
   where the control holds); the truth-filled control itself fails on `kc2` and `biodeg`. Next: the GPU study, pre-registered on its own.
+  **E179 pre-registered 2026-11-13 23:23 GMT-3** ([imputation-protocol/69](tickets/imputation-protocol/69-joint-draws.md)) on the user's
+  "ok de acordo": 45 H cells retrained at seeds 4545/5656/6767 on gorgona8, M = 20 draws read from the model at fill time;
+  jointly drawn residuals (`MI-R`) and chained model draws under one dropout mask (`MI-J`) against E175's per-cell draws,
+  read against the fold's complete-data estimate with the between-draw variance alone.
 - **T57 · A MIMIC-IV table past TabPFN's context** (the user's "gosto muito da ideia do 2, faça-o primeiro", 2026-11-12).
   `mimic-wide` built 2026-11-12 (8566da7): every patient's first ICU stay from the raw events, 65,366 rows, 23 measured
   variables; donor table of 46,501 complete rows with transplant variants.

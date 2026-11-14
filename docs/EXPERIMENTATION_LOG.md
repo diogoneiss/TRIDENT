@@ -215,6 +215,7 @@ fails when an entry has no row or a row no entry.
 | E176 | A MIMIC-IV table past TabPFN's context: does the decoder hold against TabPFN v2? | 2026-11-12 – 2026-11-13 | supported | on a 65,366-row MIMIC-IV table the decoder is better than TabPFN v2 on natural gaps (−0.099) and transplanted patterns (−0.058); level under MCAR (−0.004), so the lead tracks the real patterns, not the row cap |
 | E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 | in progress | |
+| E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 | in progress | |
 
 ## Entries
 
@@ -4796,3 +4797,27 @@ fails when an entry has no row or a row no entry.
 - **Results:** pending.
 - **Conclusion:** pending.
 - **Sources:** [mimic/16](tickets/mimic/16-wide-table-hybrid.md); `mimic_hybrid.py --study e178`.
+
+### E179 · Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? (pre-registered 2026-11-13 23:23 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-13 23:23 GMT-3 on the user's go ("ok de acordo" to the proposal's four recommendations, 2026-11-13). T56.
+- **Hypothesis:** draws that tie a row's gaps together, either residuals drawn jointly (`MI-R`) or the model's own
+  draws chained through the row under one dropout mask (`MI-J`), cover whole-table estimands better than E175's
+  per-cell residual draws (`MI-D`) at 80% missing, and are worse nowhere.
+- **Scenarios:** H retrained on `biodeg`, `kc2`, `vehicle`, `credit-g`, `pendigits` at 20/40/80% MCAR × fresh seeds
+  4545/5656/6767 (45 cells, 5 folds each), M = 20 draws read from the run's model at fill time, script-side, no
+  `src/` change. Arms on the same test rows: `MI-D`, `MI-S` (softmax samples and dropout-pass fills plus a residual,
+  per cell, descriptive), `MI-R`, `MI-J`, `MICE`; `CD` and `SI` for the secondary reading. Estimands: E175's means,
+  shares and slopes. All on gorgona8 (one machine, ADR 0035), runs logged to the leader through the tunnel.
+  Disclosed: `MI-R`'s correlation pools a row's hidden validation cells over passes (a change from the proposal), and
+  at 80% only `pendigits` has enough rows for one, so `MI-R` cannot read supported; `MI-J` is the arm the rule decides.
+- **Measures and decision rule:** primary reading, the fold's own complete-data estimate as target and the
+  between-draw variance alone, Q̄ ± t(M−1) sqrt((1 + 1/M) B); coverage per fold and u = max(0, 0.95 − coverage);
+  fold-pair verdict, SESOI 0.01. For `MI-R` and `MI-J` each against `MI-D`: supported if better on at least 4 of the
+  five 80% variants and worse on none of 15; refuted if better on at most 1 of five or worse on at least 3 of 15;
+  mixed otherwise. Proper enough: mean coverage at least 0.90 on at least 12 of 15. Secondary: E175's reading (whole
+  table, total variance) on `vehicle`, `credit-g`, `pendigits`; the arms against `MICE`. Read once with all 45 in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [imputation-protocol/69](tickets/imputation-protocol/69-joint-draws.md); `joint_draws.py`;
+  [the proposal](proposals/multiple-imputation-joint-draws.md).
