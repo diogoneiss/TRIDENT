@@ -1,0 +1,1228 @@
+{
+ "key": "incerteza-e-interpretabilidade",
+ "section": "O que mais o decodificador entrega: incerteza por célula e mapa de oclusão",
+ "storyline_pt": "Além de preencher as lacunas, o decodificador do TRIDENT foi testado em duas saídas extras, ambas lidas sem retreinar o modelo: um sinal de incerteza por célula e um mapa de quais colunas cada preenchimento usa. Para a incerteza, a flag `--score_remask` (desligada por padrão) refaz o preenchimento em 20 passagens, cada uma escondendo um novo sorteio das células observadas da linha; o `spread` é o desvio-padrão dessas 20 respostas. Esse spread ordena os erros numéricos: sinal em 12 de 15 variantes (E75), replicado dentro de cada coluna em 14 de 15 até 60% de faltantes (E76) e em 12 de 12 variantes sob MAR e MNAR self-masking a 20, 40 e 60% (E110, E105, E84). Mas é um ranking, não um intervalo: preenchimento ± 1,645 spreads cobre 17–66% em vez de 90%, e mesmo reescalado fica mais largo que uma largura constante por coluna em 15 de 15 variantes (E77, refutado). O intervalo que funciona não usa o spread: um intervalo conformal por coluna e por tercil do número de lacunas da linha (E151) leva a cobertura das linhas mais incompletas de 0,81–0,87 para 0,900–0,905 nas tabelas grandes, com a ressalva de que a calibração é \"oráculo\". Nas tabelas MIMIC-IV esse refinamento não foi necessário: uma largura por coluna já cobre (E153 e E154, refutados). O spread tem um limite conhecido: ele cai quando a linha tem mais lacunas, enquanto o erro sobe (E80, misto). O mapa de oclusão esconde uma coluna-fonte por vez e mede quanto o preenchimento muda; ele é fiel ao modelo em 8, 9 e 7 de 9 tabelas reais a 20, 40 e 60% (E85, E78, E79), recupera os blocos de uma tabela sintética (AUROC 0,994 a 0,914) e deixa de ser fiel a 80% (4 de 9). A 60% sob MNAR e MAR o mapa é fiel em 11 de 12 variantes (E88). Por fim, a imputação múltipla a partir do decodificador melhora sobre um único preenchimento em 13 de 15 variantes (E175), mas não gera intervalos \"próprios\" a 80% de faltantes, nem com sorteios conjuntos na linha (E179); nenhuma decisão foi adotada a partir dela.",
+ "findings": [
+  {
+   "experiments": [
+    "E75",
+    "E76",
+    "E77"
+   ],
+   "question_pt": "A dispersão entre 20 passagens re-mascaradas (`spread`) indica em quais células numéricas o preenchimento erra mais? E ela serve como intervalo de confiança?",
+   "design_pt": "E75: 15 variantes de confirmação (pendigits, letter, electricity, vehicle, biodeg, kc2 a 40/60/80nan), seeds 707/808/909, 45 células; barra pré-registrada: Spearman entre spread e erro absoluto com intervalo de 95% acima de 0 em 12 ou mais de 15, sob K e sob H. E76: replicação pré-registrada da leitura dentro de cada coluna nas 21 variantes de desenvolvimento, seeds 101/202/303. E77: intervalo escalado pelo spread contra largura constante por coluna, ambos calibrados para 90% com cross-fitting.",
+   "result_pt": "O spread ordena os erros: sinal em 12 de 15 variantes sob K e sob H (E75, exatamente a barra), com ρ agregado de 0,65–0,66 em biodeg_40nan e kc2_40nan e 0,14–0,37 em pendigits, letter e electricity a 40–60nan. Dentro de cada coluna, E76 encontrou sinal em 14 de 15 variantes até 60nan (ρ 0,11–0,50), nenhuma contra. Como intervalo ele falha: preenchimento ± 1,645 spreads cobre 0,17–0,66 em vez de 0,90, e o intervalo escalado pelo spread é mais largo que o constante em 15 de 15 variantes (9–144% mais largo a 40nan).",
+   "verdict": "E75: mixed (acurácia do preenchimento médio) com a barra de incerteza atingida; E76: supported; E77: refuted",
+   "key_numbers": [
+    {
+     "label": "E75: variantes com sinal de num_rank, K",
+     "value": "12 of 15",
+     "source": "docs/tickets/imputation-protocol/28-remask-ensemble.md:152"
+    },
+    {
+     "label": "E75: variantes com sinal de num_rank, H",
+     "value": "12 of 15",
+     "source": "docs/tickets/imputation-protocol/28-remask-ensemble.md:154"
+    },
+    {
+     "label": "E75: ρ agregado em biodeg_40nan e kc2_40nan",
+     "value": "0.65–0.66",
+     "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:31"
+    },
+    {
+     "label": "E75: ρ agregado em pendigits, letter, electricity a 40–60nan",
+     "value": "0.14–0.37",
+     "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:31"
+    },
+    {
+     "label": "E75: coverage90 (nominal 0,90)",
+     "value": "0.17–0.66",
+     "source": "docs/tickets/imputation-protocol/28-remask-ensemble.md:174"
+    },
+    {
+     "label": "E76: sinal dentro da coluna até 60nan (K e H)",
+     "value": "14 of 15",
+     "source": "docs/tickets/imputation-protocol/29-remask-development.md:182"
+    },
+    {
+     "label": "E76: ρ dentro das colunas",
+     "value": "0.11–0.50",
+     "source": "docs/tickets/imputation-protocol/29-remask-development.md:189"
+    },
+    {
+     "label": "E76: única variante sem sinal, credit-g_60nan",
+     "value": "+0.005",
+     "source": "docs/tickets/imputation-protocol/29-remask-development.md:188"
+    },
+    {
+     "label": "E77: intervalo pelo spread mais estreito que o constante (K)",
+     "value": "0 of 15 (mais largo em 15)",
+     "source": "docs/tickets/imputation-protocol/30-remask-conformal.md:89"
+    },
+    {
+     "label": "E77: quanto mais largo a 40nan",
+     "value": "9–144%",
+     "source": "docs/tickets/imputation-protocol/30-remask-conformal.md:93"
+    }
+   ],
+   "caveat_pt": "Escopo: até 60% de faltantes; a 80nan não há sinal em pendigits (−0.054), letter (−0.007) e vehicle (−0.021) (ticket 28:171-172). A leitura dentro da coluna em E75 foi post hoc (11 de 15); E76 a replicou pré-registrada. O preenchimento médio das passagens não é uma saída: melhor em 4 e pior em 4 sob K (ticket 28:149). E76 teve uma emenda (máquina caiu durante a execução, quatro células refeitas, nada lido antes). Em E77 os spreads zero foram substituídos por um piso (emenda); as magnitudes a 60 e 80nan medem o piso, e só a leitura a 40nan decide. Para categorias, o sinal adotado é 1 − confiança da passagem única, não a fração de votos (ADR 0030 decisão 4).",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E151"
+   ],
+   "question_pt": "Existe um intervalo de 90% para o preenchimento numérico que mantenha a cobertura também nas linhas com mais lacunas?",
+   "design_pt": "Leitura offline dos ledgers de E75 (15 variantes de confirmação, MCAR). Braço C: uma largura por coluna (conformal split). Braço MC: uma largura por coluna e por tercil do número de lacunas da linha. Braços S e MS: os mesmos escalados pelo spread. Q1 compara a sub-cobertura do pior tercil, u(MC) − u(C); Q2 compara a largura de MS contra MC.",
+   "result_pt": "Com uma largura por coluna a cobertura global fica em 0,90, mas o tercil de linhas mais incompletas cai para 0,81–0,87 em pendigits, letter, electricity e vehicle (electricity_60nan 0,812), contra 0,92–0,94 no tercil inferior. Calibrando por tercil, o tercil superior fica em 0,900–0,905 em todas elas: melhor em 11 de 15, pior em nenhuma, sob K e sob H. O custo em largura é nulo nas tabelas grandes (−0,022 a +0,001) e de 1 a 12% nas pequenas. Dentro do tercil, o intervalo escalado pelo spread continua mais largo em 15 de 15.",
+   "verdict": "Q1 supported, Q2 refuted",
+   "key_numbers": [
+    {
+     "label": "Q1, K: melhor / sem diferença / equivalente / pior",
+     "value": "better 11 / no difference 3 / equivalent 1 / worse 0",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:153"
+    },
+    {
+     "label": "Q1, H",
+     "value": "better 11 / no difference 2 / equivalent 2 / worse 0",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:155"
+    },
+    {
+     "label": "Cobertura do tercil superior com uma largura por coluna (tabelas grandes e vehicle)",
+     "value": "0.81 to 0.87",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:93"
+    },
+    {
+     "label": "Cobertura do tercil inferior com uma largura por coluna",
+     "value": "0.92 to 0.94",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:93"
+    },
+    {
+     "label": "Tercil superior com calibração por tercil",
+     "value": "0.900 to 0.905",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:94"
+    },
+    {
+     "label": "Custo de largura (MC − C)/C nas tabelas grandes",
+     "value": "−0.022 a +0.001",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:101"
+    },
+    {
+     "label": "Custo de largura nas pequenas: vehicle, biodeg_40nan, kc2_40nan",
+     "value": "+0.027, +0.053, +0.116",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:101"
+    },
+    {
+     "label": "Q2, K: intervalo pelo spread dentro do tercil",
+     "value": "better 0 / no difference 0 / worse 15",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:154"
+    },
+    {
+     "label": "MNAR self-masking (descritivo, E84 a 60nan): kc2_probit_60nan, tercil superior C → MC",
+     "value": "0.776 → 0.907 (melhor nas 7 variantes)",
+     "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:98"
+    }
+   ],
+   "caveat_pt": "É uma calibração oráculo: as células de calibração são as lacunas dos outros folds de teste, cuja verdade um modelo implantado não teria; a forma implantável exige novas execuções (ADR 0030:126-128). O intervalo é calculado offline a partir do ledger; nenhum código do pipeline mudou (ADR 0030:129). Não é necessário em biodeg, kc2, spambase e credit-g sob MCAR (uma largura já cobre, 0,88 a 0,91); no conjunto de desenvolvimento Q1 leu mixed (7 de 17 melhores). As leituras sob MNAR e MAR são descritivas, e a de largura é post hoc.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E78",
+    "E79",
+    "E85",
+    "E88"
+   ],
+   "question_pt": "O mapa de oclusão (quanto o preenchimento de uma coluna muda quando se esconde outra) é fiel ao que o modelo realmente usa, e recupera dependências conhecidas?",
+   "design_pt": "Nas lacunas reais do teste, esconde-se uma coluna-fonte por vez e mede-se a mudança média no preenchimento do alvo. Fidelidade (D): as fontes são ordenadas na validação; no teste, compara-se o erro ao esconder as 3 fontes do topo com o erro ao esconder 3 fontes ao acaso (20 sorteios), dividido pelo erro sem esconder. Fiel se o intervalo de 95% de D sobre 15 folds fica acima de 1% e todo seed fica acima de 0. Regra sobre 9 tabelas reais: supported com 7 ou mais fiéis e nenhuma não fiel; refuted com 4 ou menos. Tabela sintética `synthblock` (3.000 linhas, três blocos independentes de quatro colunas com relações não lineares, mais três colunas de ruído): AUROC com que o mapa separa as fontes do mesmo bloco das demais, barra 0,8. E88 repete a 60nan em 12 variantes MNAR self-masking e MAR.",
+   "result_pt": "Sob MCAR o mapa é fiel em 8, 9 e 7 de 9 tabelas reais a 20, 40 e 60nan, e em 4 de 9 a 80nan (só pendigits, letter, electricity e vehicle). Na tabela sintética o AUROC é 0,994, 0,979, 0,914 e 0,853 nas mesmas taxas. A 40nan, D vai de +0,21 a +0,41 em seis tabelas, +0,07 a +0,08 em spambase e credit-g e +0,036 em kc2. A 60nan sob MNAR e MAR, fiel em 11 de 12 variantes (kc2_probit_60nan inconclusivo). A afirmação registrada é: fiel de 20 a 60nan sob MCAR e a 60nan sob MNAR e MAR, lido em K; o limite a 80nan permanece.",
+   "verdict": "E78: supported; E79: supported, at the bar; E85: 20nan supported, 80nan refuted; E88: supported",
+   "key_numbers": [
+    {
+     "label": "Tabelas reais fiéis de 9 a 20, 40, 60, 80nan",
+     "value": "8, 9, 7, 4",
+     "source": "docs/tickets/imputation-interpretability/05-occlusion-map-grid.md:185"
+    },
+    {
+     "label": "AUROC sintético a 20, 40, 60, 80nan",
+     "value": "0.994, 0.979, 0.914, 0.853",
+     "source": "docs/tickets/imputation-interpretability/05-occlusion-map-grid.md:185"
+    },
+    {
+     "label": "E78 primário (40nan)",
+     "value": "faithful on 9 of 9, not faithful on none -> supported",
+     "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:205"
+    },
+    {
+     "label": "E79 primário (60nan)",
+     "value": "faithful on 7 of 9, not faithful on none -> supported",
+     "source": "docs/tickets/imputation-interpretability/02-occlusion-map-60nan.md:121"
+    },
+    {
+     "label": "E88 primário (60nan, MNAR e MAR)",
+     "value": "faithful on 11 of 12, not faithful on none -> supported",
+     "source": "docs/tickets/imputation-interpretability/06-occlusion-map-mechanisms.md:100"
+    },
+    {
+     "label": "synthblock_40nan: AUROC do mapa vs AUROC de |Spearman| (leitura linear)",
+     "value": "0.979 [0.972, 0.987] vs 0.847 [0.831, 0.863]",
+     "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:170"
+    },
+    {
+     "label": "synthblock_80nan: AUROC do mapa vs |Spearman|",
+     "value": "0.853 [0.825, 0.881] vs 0.878 [0.861, 0.895]",
+     "source": "docs/tickets/imputation-interpretability/05-occlusion-map-grid.md:208"
+    },
+    {
+     "label": "D top-3 em vehicle_40nan (maior entre as reais a 40nan)",
+     "value": "+0.410 [+0.379, +0.441]",
+     "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:183"
+    },
+    {
+     "label": "D top-3 em kc2_40nan (menor a 40nan)",
+     "value": "+0.036 [+0.015, +0.058]",
+     "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:189"
+    },
+    {
+     "label": "E88: D menos o gêmeo MCAR em biodeg, inclinações 0.25/0.5/1.0/2.0",
+     "value": "-0.029, -0.054, -0.074, -0.094",
+     "source": "docs/tickets/imputation-interpretability/06-occlusion-map-mechanisms.md:107"
+    }
+   ],
+   "caveat_pt": "Lido apenas em K (os pesos de H não são alcançáveis sem mudar `src/`), e uma coluna por vez: fontes redundantes dividem o efeito (ticket 01:123-129). Fora de MCAR só foi testado a 60nan, com MNAR self-masking (probit) e um único sorteio MAR. kc2 é a tabela mais fraca de 20 a 60nan (inconclusivo a 20 e 60nan); a 60nan credit-g também é inconclusivo, com uma segunda explicação não testada (tabelas pequenas, pouco suporte na validação). A 80nan o mapa não é fiel em biodeg, kc2, spambase e credit-g e não supera a leitura linear na tabela sintética. As taxas usam seeds diferentes para algumas tabelas (por exemplo, vehicle/biodeg/kc2 a 40nan em 707/808/909 e a 60nan em 101/202/303). E85 foi lido em etapas, com três emendas; o veredito final saiu com as 60 células. O self-masking enfraquece D em biodeg; o MAR o fortalece (+0.086 a +0.194 em kc2, biodeg e vehicle).",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E84",
+    "E105",
+    "E110"
+   ],
+   "question_pt": "O ranking do spread sobrevive quando os dados não faltam ao acaso (MAR e MNAR)?",
+   "design_pt": "12 variantes deslocadas a 60nan (E84), 40nan (E105) e 20nan (E110), seeds 101/202/303: MNAR self-masking (probit) em biodeg nas inclinações 0.25/0.5/1/2, vehicle, kc2 e spambase; um sorteio MAR (`marf`) em biodeg, kc2, vehicle, spambase e credit-g. Medida: `num_rank` dentro da coluna, sob K e H, com gêmeos MCAR para comparação.",
+   "result_pt": "Sinal em 12 de 12 variantes sob K e H nas três taxas, nenhuma contra: ρ +0,10 a +0,52 a 60nan, +0,11 a +0,54 (K) a 40nan e +0,14 a +0,55 (K) a 20nan. Em biodeg o ranking enfraquece à medida que a inclinação do MNAR cresce a 60nan (−0,023, −0,049, −0,077, −0,111) e a 40nan (+0,002, +0,001, −0,021, −0,080); a 20nan não enfraquece (+0,002, +0,011, +0,024, −0,004).",
+   "verdict": "E84: supported (no escopo pré-registrado completo); E105: supported; E110: supported",
+   "key_numbers": [
+    {
+     "label": "E84 (60nan): variantes com sinal, K e H",
+     "value": "12 of 12",
+     "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:93"
+    },
+    {
+     "label": "E84: ρ e menor limite inferior",
+     "value": "+0.10 to +0.52; +0.084",
+     "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:93"
+    },
+    {
+     "label": "E84: biodeg, deslocado menos MCAR, inclinações 0.25 a 2.0",
+     "value": "−0.023, −0.049, −0.077, −0.111",
+     "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:95"
+    },
+    {
+     "label": "E105 (40nan): ρ sob K / sob H; menor limite inferior",
+     "value": "+0.11 to +0.54 / +0.10 to +0.53; +0.073",
+     "source": "docs/tickets/imputation-protocol/42-spread-40nan.md:40"
+    },
+    {
+     "label": "E105: biodeg, deslocado menos MCAR",
+     "value": "+0.002, +0.001, −0.021, −0.080",
+     "source": "docs/tickets/imputation-protocol/42-spread-40nan.md:45"
+    },
+    {
+     "label": "E110 (20nan): ρ sob K; menor limite inferior",
+     "value": "+0.14 to +0.55; +0.107",
+     "source": "docs/tickets/imputation-protocol/45-spread-20nan.md:29"
+    },
+    {
+     "label": "E110: biodeg, deslocado menos MCAR",
+     "value": "+0.002, +0.011, +0.024, −0.004",
+     "source": "docs/tickets/imputation-protocol/45-spread-20nan.md:34"
+    }
+   ],
+   "caveat_pt": "E84 foi cortado para 8 variantes no meio do caminho e lido como parcial; o escopo de 12 foi restaurado depois, e a leitura das 8 já tinha sido vista antes da restauração (ticket 32:175). Em E84, 11 células rodaram sob torch 2.11.0 e 40 sob 2.5.1. Não cobre outros sorteios MAR nem mecanismos MNAR além do self-masking; a variação de inclinação só existe em biodeg. O teto de 60% continua valendo. A ADR resume o ρ de E105 como '+0.10 to +0.54'; o ticket separa K e H.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E80"
+   ],
+   "question_pt": "O spread sobe quando as colunas que o mapa de oclusão aponta como mais informativas também estão faltando na linha?",
+   "design_pt": "16 variantes reais a 40 e 60nan, lido em K; compara o efeito sobre o spread de faltarem as 3 fontes do topo com o de faltarem 3 colunas ao acaso, e correlaciona spread e erro com o número de lacunas da linha.",
+   "result_pt": "Não de forma consistente: específico em 7 de 16 variantes, contra em 6. O erro sobe quando as fontes do topo faltam (Spearman +0,016 a +0,186 em todas as 16), mas o spread cai quando a linha tem mais lacunas (−0,04 a −0,47 em todas as 16). Uma célula cujas colunas informativas estão todas ausentes pode ter spread baixo e erro grande.",
+   "verdict": "mixed",
+   "key_numbers": [
+    {
+     "label": "Variantes em que o spread é específico / contra",
+     "value": "7 of 16 / 6",
+     "source": "docs/tickets/imputation-interpretability/03-spread-and-missing-sources.md:62"
+    },
+    {
+     "label": "Spearman do erro com o número de fontes do topo ausentes",
+     "value": "+0.016 to +0.186 (positivo nas 16)",
+     "source": "docs/tickets/imputation-interpretability/03-spread-and-missing-sources.md:68"
+    },
+    {
+     "label": "Spearman do spread com o total de lacunas da linha",
+     "value": "−0.04 to −0.47 (negativo nas 16)",
+     "source": "docs/tickets/imputation-interpretability/03-spread-and-missing-sources.md:70"
+    }
+   ],
+   "caveat_pt": "Registrado como limite na ADR 0030: ler o spread como ranking dentro de uma coluna, entre linhas com quantidade parecida de lacunas, e marcar à parte as linhas cujas fontes principais faltam. A causa provável (com menos células observadas, as passagens têm menos o que esconder) não foi testada (ADR 0030:169-170).",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E153",
+    "E154"
+   ],
+   "question_pt": "O intervalo por tercil também é necessário nas tabelas clínicas MIMIC-IV, com padrões reais de lacunas?",
+   "design_pt": "Leitura offline, sem treino. E153: lacunas transplantadas de internações reais sobre linhas completas (`mimic-cardio-donor`, `mimic-sofa-donor`, variante `tmatch`, perto de 20nan), seeds 42/7/13, 90 ledgers. E154: tabelas com lacunas naturais (`mimic-cardio_natural`, `mimic-sofa_natural`), 30 ledgers; as células avaliadas são valores medidos escondidos para pontuação. Braços C e MC de E151, sem spread (sem Q2).",
+   "result_pt": "Uma largura por coluna já cobre: MC é equivalente a C nas quatro leituras, e a cobertura do tercil superior com C é 0,900 e 0,909 (transplantadas) e 0,898 e 0,905 (naturais). Os tercis custam 1 a 3% de largura sem comprar cobertura.",
+   "verdict": "E153: refuted, one width per column already covers; E154: refuted, one width per column already covers",
+   "key_numbers": [
+    {
+     "label": "E153 mimic-cardio-donor_tmatch_20nan: u(MC) − u(C)",
+     "value": "-0.0016 [-0.0075, +0.0044] equivalent",
+     "source": "docs/tickets/mimic/07-conformal-real-patterns.md:90"
+    },
+    {
+     "label": "E153 mimic-sofa-donor_tmatch_20nan: u(MC) − u(C)",
+     "value": "+0.0009 [-0.0052, +0.0070] equivalent",
+     "source": "docs/tickets/mimic/07-conformal-real-patterns.md:91"
+    },
+    {
+     "label": "E154 mimic-cardio_natural: u(MC) − u(C)",
+     "value": "+0.0006 [-0.0035, +0.0048] equivalent",
+     "source": "docs/tickets/mimic/08-conformal-natural-gaps.md:74"
+    },
+    {
+     "label": "E154 mimic-sofa_natural: u(MC) − u(C)",
+     "value": "-0.0000 [-0.0036, +0.0036] equivalent",
+     "source": "docs/tickets/mimic/08-conformal-natural-gaps.md:75"
+    },
+    {
+     "label": "Custo de largura dos tercis em MIMIC-IV",
+     "value": "1 to 3%",
+     "source": "docs/tickets/mimic/08-conformal-natural-gaps.md:65"
+    }
+   ],
+   "caveat_pt": "A ADR 0030 não foi editada: a proposta de registrar na decisão 8 que em MIMIC-IV uma largura por coluna já cobre aguarda decisão do usuário. Calibração oráculo, como em E151. Em E154 as células escondidas são valores medidos, então a cobertura em uma lacuna natural verdadeira não é lida. Leitura não testada: nessas taxas uma linha tem de uma a cinco lacunas (59% das linhas de SOFA têm uma), então os tercis separam linhas pouco diferentes.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E175"
+   ],
+   "question_pt": "Sorteios em torno do preenchimento do decodificador dão imputação múltipla com intervalos válidos (regras de Rubin) para quantidades da tabela inteira?",
+   "design_pt": "Offline sobre células já treinadas (leitura H): biodeg, kc2, vehicle, credit-g, pendigits a 20, 40 e 80% MCAR × seeds 101/202/303, 45 células, M = 20 sorteios. Braços: CD (verdade em toda lacuna, controle), SI (um único preenchimento), MI-D (preenchimento mais um resíduo sorteado das células de validação, implantável), MICE. Estimandos: média de cada coluna numérica, proporção da categoria mais comum, inclinação entre colunas numéricas vizinhas. u = max(0, 0,95 − cobertura).",
+   "result_pt": "Os sorteios ficam mais perto de 0,95 que o preenchimento único em 13 de 15 variantes e pior em nenhuma; a 80% o preenchimento único cobre 0,22 a 0,51 e os sorteios 0,67 a 0,84. Mas não são 'próprios o bastante': cobertura média de pelo menos 0,90 em 8 de 15, abaixo das 10 exigidas. Onde o controle vale (vehicle, credit-g, pendigits), MI-D cobre 0,928 a 0,983 a 20 e 40% e 0,771, 0,841, 0,669 a 80%, falhando nas inclinações entre colunas (0,600, 0,544, 0,342). Contra MICE: melhor em 8, pior em nenhuma.",
+   "verdict": "primary 1 supported, primary 2 not met",
+   "key_numbers": [
+    {
+     "label": "Primário 1, u(MI-D) − u(SI)",
+     "value": "better on 13 of 15, worse on none -> supported",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:183"
+    },
+    {
+     "label": "Primário 2, cobertura média ≥ 0,90 em ao menos 10 de 15",
+     "value": "8 -> no",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:184"
+    },
+    {
+     "label": "A 80%: cobertura do preenchimento único / dos sorteios",
+     "value": "0.22 to 0.51 / 0.67 to 0.84",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:190"
+    },
+    {
+     "label": "MI-D onde o controle vale: 20 e 40% / 80%",
+     "value": "0.928 to 0.983 / 0.771, 0.841, 0.669",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:199"
+    },
+    {
+     "label": "Inclinações cobertas a 80% (vehicle, credit-g, pendigits)",
+     "value": "0.600, 0.544, 0.342",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:202"
+    },
+    {
+     "label": "Controle CD em kc2 / biodeg",
+     "value": "0.574 / about 0.88",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:194"
+    },
+    {
+     "label": "Secundário, u(MI-D) − u(MICE)",
+     "value": "better on 8, worse on 0",
+     "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:185"
+    }
+   ],
+   "caveat_pt": "O controle com a verdade em toda lacuna falha em kc2 (0,574) e biodeg (cerca de 0,88), então essas seis variantes não permitem dizer se os sorteios são próprios; a causa não foi examinada. Só MCAR; estimandos das variáveis, não de um modelo com o rótulo. Nenhuma ADR proposta.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E179"
+   ],
+   "question_pt": "Sorteios conjuntos entre as lacunas de uma mesma linha tornam os intervalos próprios a 80% de faltantes?",
+   "design_pt": "H retreinado em seeds novas 4545/5656/6767 nas mesmas 15 variantes (45 células), M = 20 sorteios lidos do modelo na hora de preencher. MI-R: resíduos da linha sorteados juntos (cópula gaussiana). MI-J: sorteios do modelo encadeados pela linha sob uma máscara de dropout. MI-S (descritivo): sorteios do modelo sem encadear. Comparação contra MI-D de E175; 'próprio o bastante' = cobertura média ≥ 0,90 em ao menos 12 de 15.",
+   "result_pt": "Não. MI-R é melhor que MI-D em 0 das cinco variantes a 80% e pior em kc2_80nan e pendigits_80nan (refutado). MI-J é melhor em kc2_80nan e vehicle_80nan e pior em credit-g_80nan (misto); nas 15 variantes é melhor em 10 e pior em 1, mas MI-S, sem a cadeia, tem a mesma contagem: o ganho vem de sortear do modelo, não de encadear a linha. Cobertura média ≥ 0,90: MI-D 3, MI-S 7, MI-R 2, MI-J 7 e MICE 0 de 15. A 80% nenhum braço chega a 0,80; as inclinações são cobertas em 0,19 a 0,69.",
+   "verdict": "MI-R refuted, MI-J mixed, neither proper enough",
+   "key_numbers": [
+    {
+     "label": "u(MI-R) − u(MI-D)",
+     "value": "better on 0 of the 5 variants at 80%, worse on ['kc2_80nan', 'pendigits_80nan'] of 15 -> refuted",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:270"
+    },
+    {
+     "label": "u(MI-J) − u(MI-D)",
+     "value": "better on 2 of the 5 variants at 80%, worse on ['credit-g_80nan'] of 15 -> mixed",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:272"
+    },
+    {
+     "label": "Cobertura média ≥ 0,90: MI-D / MI-S / MI-R / MI-J / MICE",
+     "value": "3 / 7 / 2 / 7 / 0 of 15",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:258"
+    },
+    {
+     "label": "MI-J vs MI-D e MI-S vs MI-D nas 15 variantes",
+     "value": "better 10 / no difference 4 / worse 1 (ambos)",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:264"
+    },
+    {
+     "label": "Inclinações cobertas a 80% nos quatro braços",
+     "value": "0.19 to 0.69",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:338"
+    },
+    {
+     "label": "MI-R e MI-J contra MICE",
+     "value": "better 15 / no difference 0 / worse 0 (cada)",
+     "source": "docs/tickets/imputation-protocol/69-joint-draws.md:267"
+    }
+   ],
+   "caveat_pt": "O ticket já previa que MI-R não poderia ler supported (quatro das cinco tabelas sem correlação de resíduos a 80%). MI-S era braço descritivo, então a comparação com ele é contagem secundária, não veredito. Só MCAR. Sem proposta de saída de imputação múltipla e sem mudança de ADR.",
+   "importance": "appendix"
+  }
+ ],
+ "tables": [
+  {
+   "id": "occlusion_D_by_rate",
+   "title_pt": "Mapa de oclusão: estatística D (3 fontes do topo) por tabela e taxa de faltantes, MCAR, leitura K",
+   "columns": [
+    "tabela",
+    "20nan (E85)",
+    "40nan (E78)",
+    "60nan (E79)",
+    "80nan (E85)"
+   ],
+   "rows": [
+    [
+     "synthblock (sintética)",
+     "+0.712 [+0.683, +0.741] fiel",
+     "+0.520 [+0.498, +0.541] fiel",
+     "+0.280 [+0.270, +0.290] fiel",
+     "+0.093 [+0.086, +0.099] fiel"
+    ],
+    [
+     "pendigits",
+     "+0.312 [+0.303, +0.322] fiel",
+     "+0.284 [+0.275, +0.293] fiel",
+     "+0.190 [+0.183, +0.197] fiel",
+     "+0.084 [+0.080, +0.088] fiel"
+    ],
+    [
+     "letter",
+     "+0.231 [+0.225, +0.236] fiel",
+     "+0.222 [+0.217, +0.227] fiel",
+     "+0.157 [+0.154, +0.159] fiel",
+     "+0.068 [+0.066, +0.070] fiel"
+    ],
+    [
+     "electricity",
+     "+0.240 [+0.219, +0.261] fiel",
+     "+0.210 [+0.198, +0.222] fiel",
+     "+0.131 [+0.126, +0.136] fiel",
+     "+0.054 [+0.050, +0.058] fiel"
+    ],
+    [
+     "vehicle",
+     "+0.418 [+0.376, +0.460] fiel",
+     "+0.410 [+0.379, +0.441] fiel",
+     "+0.235 [+0.211, +0.260] fiel",
+     "+0.028 [+0.012, +0.044] fiel"
+    ],
+    [
+     "biodeg",
+     "+0.324 [+0.290, +0.358] fiel",
+     "+0.264 [+0.237, +0.290] fiel",
+     "+0.156 [+0.146, +0.165] fiel",
+     "-0.002 [-0.010, +0.006] não fiel"
+    ],
+    [
+     "kc2",
+     "+0.016 [-0.012, +0.043] inconclusivo",
+     "+0.036 [+0.015, +0.058] fiel",
+     "+0.012 [+0.001, +0.023] inconclusivo",
+     "-0.011 [-0.022, +0.000] não fiel"
+    ],
+    [
+     "kr-vs-kp",
+     "+0.954 [+0.554, +1.354] fiel",
+     "+0.266 [+0.250, +0.282] fiel",
+     "+0.075 [+0.063, +0.088] fiel",
+     "+0.008 [+0.005, +0.012] inconclusivo"
+    ],
+    [
+     "spambase",
+     "+0.101 [+0.088, +0.114] fiel",
+     "+0.083 [+0.074, +0.093] fiel",
+     "+0.041 [+0.031, +0.050] fiel",
+     "-0.021 [-0.025, -0.016] não fiel"
+    ],
+    [
+     "credit-g",
+     "+0.092 [+0.075, +0.108] fiel",
+     "+0.072 [+0.064, +0.081] fiel",
+     "+0.019 [+0.009, +0.029] inconclusivo",
+     "-0.004 [-0.006, -0.002] não fiel"
+    ]
+   ],
+   "source": "docs/tickets/imputation-interpretability/05-occlusion-map-grid.md:202-263 (20nan e 80nan); docs/tickets/imputation-interpretability/01-occlusion-map.md:169-198 (40nan); docs/tickets/imputation-interpretability/02-occlusion-map-60nan.md:85-114 (60nan)",
+   "note_pt": "D = (erro com as 3 fontes do topo escondidas − erro com 3 fontes ao acaso) / erro sem esconder; positivo significa que as fontes apontadas pelo mapa importam mais que fontes ao acaso. Intervalo de 95% sobre 15 folds. Fiel = intervalo acima de 0,01 e todo seed acima de 0. Os seeds diferem entre taxas para algumas tabelas, então as colunas não são pareadas."
+  },
+  {
+   "id": "occlusion_summary_by_rate",
+   "title_pt": "Mapa de oclusão: tabelas reais fiéis e recuperação dos blocos sintéticos, por taxa (MCAR, K)",
+   "columns": [
+    "taxa",
+    "fiéis de 9",
+    "AUROC sintético do mapa",
+    "AUROC de |Spearman| (leitura linear)",
+    "experimento"
+   ],
+   "rows": [
+    [
+     "20nan",
+     "8",
+     "0.994 [0.992, 0.997]",
+     "0.867 [0.850, 0.884]",
+     "E85"
+    ],
+    [
+     "40nan",
+     "9",
+     "0.979 [0.972, 0.987]",
+     "0.847 [0.831, 0.863]",
+     "E78"
+    ],
+    [
+     "60nan",
+     "7",
+     "0.914 [0.901, 0.926]",
+     "0.864",
+     "E79"
+    ],
+    [
+     "80nan",
+     "4",
+     "0.853 [0.825, 0.881]",
+     "0.878 [0.861, 0.895]",
+     "E85"
+    ]
+   ],
+   "source": "docs/tickets/imputation-interpretability/05-occlusion-map-grid.md:185-190, 203-204, 208-209; docs/tickets/imputation-interpretability/01-occlusion-map.md:170-171; docs/tickets/imputation-interpretability/02-occlusion-map-60nan.md:86-87",
+   "note_pt": "AUROC: com que acerto os efeitos do mapa separam as 3 fontes do mesmo bloco das outras 11 colunas, em média sobre as 12 colunas de bloco; barra 0,8. A 80nan o mapa deixa de superar a correlação linear."
+  },
+  {
+   "id": "spread_e75",
+   "title_pt": "E75: o spread ordena os erros (num_rank) mas não cobre como intervalo (coverage90), leitura K, MCAR",
+   "columns": [
+    "variante",
+    "num_rank (Spearman agregado)",
+    "coverage90 (nominal 0,90)"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "+0.373",
+     "+0.631"
+    ],
+    [
+     "pendigits_60nan",
+     "+0.254",
+     "+0.511"
+    ],
+    [
+     "pendigits_80nan",
+     "-0.054",
+     "+0.209"
+    ],
+    [
+     "letter_40nan",
+     "+0.217",
+     "+0.562"
+    ],
+    [
+     "letter_60nan",
+     "+0.139",
+     "+0.429"
+    ],
+    [
+     "letter_80nan",
+     "-0.007",
+     "+0.172"
+    ],
+    [
+     "electricity_40nan",
+     "+0.364",
+     "+0.474"
+    ],
+    [
+     "electricity_60nan",
+     "+0.209",
+     "+0.342"
+    ],
+    [
+     "electricity_80nan",
+     "+0.057",
+     "+0.166"
+    ],
+    [
+     "vehicle_40nan",
+     "+0.339",
+     "+0.534"
+    ],
+    [
+     "vehicle_80nan",
+     "-0.021",
+     "+0.241"
+    ],
+    [
+     "biodeg_40nan",
+     "+0.650",
+     "+0.651"
+    ],
+    [
+     "biodeg_80nan",
+     "+0.475",
+     "+0.285"
+    ],
+    [
+     "kc2_40nan",
+     "+0.660",
+     "+0.526"
+    ],
+    [
+     "kc2_80nan",
+     "+0.426",
+     "+0.311"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/28-remask-ensemble.md:104-146",
+   "note_pt": "num_rank: Spearman entre o spread de uma célula numérica e o seu erro absoluto (maior é melhor). coverage90: fração das células cuja verdade cai dentro de preenchimento ± 1,645 spreads; deveria ser 0,90."
+  },
+  {
+   "id": "conformal_e151",
+   "title_pt": "E151: cobertura do intervalo de 90% por tercil de lacunas da linha, uma largura por coluna (C) contra largura por coluna e tercil (MC), leitura K, MCAR",
+   "columns": [
+    "variante",
+    "C: tercil inferior",
+    "C: tercil superior",
+    "MC: tercil inferior",
+    "MC: tercil superior",
+    "veredito Q1"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "0.925",
+     "0.857",
+     "0.900",
+     "0.901",
+     "better"
+    ],
+    [
+     "pendigits_60nan",
+     "0.937",
+     "0.833",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "pendigits_80nan",
+     "0.930",
+     "0.848",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "letter_40nan",
+     "0.924",
+     "0.855",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "letter_60nan",
+     "0.929",
+     "0.853",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "letter_80nan",
+     "0.919",
+     "0.869",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "electricity_40nan",
+     "0.928",
+     "0.856",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "electricity_60nan",
+     "0.932",
+     "0.812",
+     "0.900",
+     "0.900",
+     "better"
+    ],
+    [
+     "electricity_80nan",
+     "0.927",
+     "0.855",
+     "0.900",
+     "0.899",
+     "better"
+    ],
+    [
+     "vehicle_40nan",
+     "0.927",
+     "0.861",
+     "0.903",
+     "0.905",
+     "better"
+    ],
+    [
+     "vehicle_80nan",
+     "0.927",
+     "0.850",
+     "0.902",
+     "0.902",
+     "better"
+    ],
+    [
+     "biodeg_40nan",
+     "0.905",
+     "0.878",
+     "0.897",
+     "0.901",
+     "none"
+    ],
+    [
+     "biodeg_80nan",
+     "0.893",
+     "0.900",
+     "0.896",
+     "0.894",
+     "equivalent"
+    ],
+    [
+     "kc2_40nan",
+     "0.905",
+     "0.903",
+     "0.907",
+     "0.908",
+     "none"
+    ],
+    [
+     "kc2_80nan",
+     "0.910",
+     "0.888",
+     "0.900",
+     "0.904",
+     "none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/54-conformal-by-row-gaps.md:122-150",
+   "note_pt": "Tercil superior = linhas com mais lacunas. Calibração oráculo (lacunas dos outros folds de teste). O veredito Q1 compara a sub-cobertura do pior tercil entre MC e C."
+  },
+  {
+   "id": "spread_mechanisms",
+   "title_pt": "Spread sob MNAR self-masking e MAR: num_rank dentro da coluna, leitura K, por taxa",
+   "columns": [
+    "variante (tabela_mecanismo)",
+    "20nan (E110)",
+    "40nan (E105)",
+    "60nan (E84)"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p25",
+     "+0.465",
+     "+0.444",
+     "+0.348"
+    ],
+    [
+     "biodeg_probit",
+     "+0.474",
+     "+0.443",
+     "+0.322"
+    ],
+    [
+     "biodeg_probit1p0",
+     "+0.486",
+     "+0.421",
+     "+0.294"
+    ],
+    [
+     "biodeg_probit2p0",
+     "+0.458",
+     "+0.361",
+     "+0.260"
+    ],
+    [
+     "vehicle_probit",
+     "+0.158",
+     "+0.130",
+     "+0.101"
+    ],
+    [
+     "kc2_probit",
+     "+0.504",
+     "+0.536",
+     "+0.518"
+    ],
+    [
+     "spambase_probit",
+     "+0.534",
+     "+0.471",
+     "+0.322"
+    ],
+    [
+     "biodeg_marf",
+     "+0.512",
+     "+0.469",
+     "+0.425"
+    ],
+    [
+     "kc2_marf",
+     "+0.448",
+     "+0.448",
+     "+0.378"
+    ],
+    [
+     "vehicle_marf",
+     "+0.136",
+     "+0.109",
+     "+0.143"
+    ],
+    [
+     "spambase_marf",
+     "+0.550",
+     "+0.521",
+     "+0.446"
+    ],
+    [
+     "credit-g_marf",
+     "+0.275",
+     "+0.267",
+     "+0.180"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/45-spread-20nan.md:41-52; docs/tickets/imputation-protocol/42-spread-40nan.md:53-64; docs/tickets/imputation-protocol/32-spread-mechanisms.md:194-205",
+   "note_pt": "`probit` = MNAR self-masking (a chance de um valor faltar depende do próprio valor), com inclinações 0.25, 0.5 (sem sufixo), 1.0 e 2.0 em biodeg; `marf` = um sorteio MAR. Sinal em 12 de 12 em cada taxa, sob K e H."
+  },
+  {
+   "id": "occlusion_mechanisms_e88",
+   "title_pt": "E88: mapa de oclusão a 60nan sob MNAR self-masking e MAR, leitura K",
+   "columns": [
+    "variante",
+    "D top-3 [IC 95%]",
+    "veredito",
+    "D menos o gêmeo MCAR"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p25_60nan",
+     "+0.127 [+0.117, +0.136]",
+     "fiel",
+     "-0.029"
+    ],
+    [
+     "biodeg_probit_60nan",
+     "+0.102 [+0.095, +0.109]",
+     "fiel",
+     "-0.054"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "+0.081 [+0.071, +0.091]",
+     "fiel",
+     "-0.074"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "+0.062 [+0.053, +0.071]",
+     "fiel",
+     "-0.094"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "+0.283 [+0.255, +0.312]",
+     "fiel",
+     "+0.048"
+    ],
+    [
+     "kc2_probit_60nan",
+     "-0.003 [-0.018, +0.012]",
+     "inconclusivo",
+     "-0.015"
+    ],
+    [
+     "spambase_probit_60nan",
+     "+0.028 [+0.024, +0.033]",
+     "fiel",
+     "-0.012"
+    ],
+    [
+     "biodeg_marf_60nan",
+     "+0.316 [+0.287, +0.345]",
+     "fiel",
+     "+0.160"
+    ],
+    [
+     "kc2_marf_60nan",
+     "+0.098 [+0.059, +0.136]",
+     "fiel",
+     "+0.086"
+    ],
+    [
+     "vehicle_marf_60nan",
+     "+0.430 [+0.396, +0.464]",
+     "fiel",
+     "+0.194"
+    ],
+    [
+     "spambase_marf_60nan",
+     "+0.040 [+0.031, +0.049]",
+     "fiel",
+     "-0.001"
+    ],
+    [
+     "credit-g_marf_60nan",
+     "+0.031 [+0.022, +0.039]",
+     "fiel",
+     "+0.012"
+    ]
+   ],
+   "source": "docs/tickets/imputation-interpretability/06-occlusion-map-mechanisms.md:61-94, 107-118",
+   "note_pt": "A comparação com o gêmeo MCAR (células de E79, mesmos seeds) é descritiva."
+  },
+  {
+   "id": "conformal_mimic",
+   "title_pt": "E153/E154: em MIMIC-IV uma largura por coluna já cobre todos os tercis",
+   "columns": [
+    "variante",
+    "u(MC) − u(C) [IC 95%]",
+    "veredito",
+    "C: tercil inferior / superior",
+    "MC: tercil inferior / superior",
+    "custo de largura (MC − C)/C"
+   ],
+   "rows": [
+    [
+     "mimic-cardio-donor_tmatch_20nan (E153)",
+     "-0.0016 [-0.0075, +0.0044]",
+     "equivalent",
+     "0.894 / 0.900",
+     "0.904 / 0.899",
+     "+0.030"
+    ],
+    [
+     "mimic-sofa-donor_tmatch_20nan (E153)",
+     "+0.0009 [-0.0052, +0.0070]",
+     "equivalent",
+     "0.889 / 0.909",
+     "0.901 / 0.905",
+     "+0.006"
+    ],
+    [
+     "mimic-cardio_natural (E154)",
+     "+0.0006 [-0.0035, +0.0048]",
+     "equivalent",
+     "0.893 / 0.898",
+     "0.900 / 0.900",
+     "+0.012"
+    ],
+    [
+     "mimic-sofa_natural (E154)",
+     "-0.0000 [-0.0036, +0.0036]",
+     "equivalent",
+     "0.894 / 0.905",
+     "0.900 / 0.901",
+     "+0.013"
+    ]
+   ],
+   "source": "docs/tickets/mimic/07-conformal-real-patterns.md:90-91; docs/tickets/mimic/08-conformal-natural-gaps.md:74-75",
+   "note_pt": "`tmatch`: cada linha completa recebe o padrão de lacunas da internação incompleta mais parecida. `natural`: tabela com as lacunas reais; as células avaliadas são valores medidos escondidos. u = sub-cobertura do pior tercil em relação a 0,90."
+  },
+  {
+   "id": "multiple_imputation_e175",
+   "title_pt": "E175: cobertura dos intervalos de 95% (regras de Rubin) por braço, MCAR",
+   "columns": [
+    "variante",
+    "CD (verdade, controle)",
+    "SI (um preenchimento)",
+    "MI-D (sorteios)",
+    "MICE",
+    "u(MI-D) − u(SI)"
+   ],
+   "rows": [
+    [
+     "biodeg_20nan",
+     "0.883",
+     "0.870",
+     "0.906",
+     "0.905",
+     "better"
+    ],
+    [
+     "biodeg_40nan",
+     "0.882",
+     "0.858",
+     "0.936",
+     "0.827",
+     "better"
+    ],
+    [
+     "biodeg_80nan",
+     "0.880",
+     "0.507",
+     "0.810",
+     "0.601",
+     "better"
+    ],
+    [
+     "kc2_20nan",
+     "0.574",
+     "0.538",
+     "0.598",
+     "0.582",
+     "better"
+    ],
+    [
+     "kc2_40nan",
+     "0.574",
+     "0.571",
+     "0.663",
+     "0.650",
+     "better"
+    ],
+    [
+     "kc2_80nan",
+     "0.574",
+     "0.494",
+     "0.701",
+     "0.611",
+     "better"
+    ],
+    [
+     "vehicle_20nan",
+     "0.914",
+     "0.905",
+     "0.928",
+     "0.931",
+     "better"
+    ],
+    [
+     "vehicle_40nan",
+     "0.914",
+     "0.867",
+     "0.937",
+     "0.935",
+     "better"
+    ],
+    [
+     "vehicle_80nan",
+     "0.914",
+     "0.455",
+     "0.771",
+     "0.583",
+     "better"
+    ],
+    [
+     "credit-g_20nan",
+     "0.941",
+     "0.851",
+     "0.982",
+     "0.979",
+     "better"
+    ],
+    [
+     "credit-g_40nan",
+     "0.941",
+     "0.621",
+     "0.967",
+     "0.903",
+     "better"
+    ],
+    [
+     "credit-g_80nan",
+     "0.941",
+     "0.218",
+     "0.841",
+     "0.587",
+     "better"
+    ],
+    [
+     "pendigits_20nan",
+     "0.981",
+     "0.972",
+     "0.983",
+     "0.966",
+     "equivalent"
+    ],
+    [
+     "pendigits_40nan",
+     "0.981",
+     "0.953",
+     "0.981",
+     "0.759",
+     "none"
+    ],
+    [
+     "pendigits_80nan",
+     "0.981",
+     "0.353",
+     "0.669",
+     "0.389",
+     "better"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:82-168",
+   "note_pt": "Cobertura = fração dos estimandos (médias, proporções, inclinações) cujo intervalo contém o valor da tabela completa; alvo 0,95. O controle CD falha em kc2 e biodeg, então essas linhas não dizem se os sorteios são próprios."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "--score_remask",
+   "definition_pt": "Flag de diagnóstico, desligada por padrão, que não muda o treino: preenche cada lacuna em 20 passagens que também escondem um novo sorteio das células observadas da linha, na mesma taxa usada no treino do decodificador, e grava o `spread` de cada célula.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:22-26"
+  },
+  {
+   "term": "spread",
+   "definition_pt": "Dispersão entre as 20 passagens: o desvio-padrão dos valores preenchidos para um número, ou 1 − a fração de votos da categoria vencedora. Lido como ranking (spread maior = erro maior mais provável), nunca como intervalo, erro-padrão ou probabilidade.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:25, 71-73"
+  },
+  {
+   "term": "num_rank",
+   "definition_pt": "Correlação de Spearman entre o spread de uma célula numérica e o seu erro absoluto, agregada ou dentro de cada coluna. Há 'sinal' quando o intervalo de 95% fica acima de 0.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:27-28, 34-38"
+  },
+  {
+   "term": "coverage90",
+   "definition_pt": "Fração das células numéricas cuja verdade cai dentro de preenchimento ± 1,645 spreads; se o spread fosse um desvio-padrão calibrado, seria 0,90.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:42-43"
+  },
+  {
+   "term": "intervalo conformal por coluna (braço C)",
+   "definition_pt": "Intervalo preenchimento ± w, com uma única largura w por coluna, escolhida como o quantil de 90% dos erros absolutos em células de calibração.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:109-114"
+  },
+  {
+   "term": "intervalo por tercil (binned interval, braço MC)",
+   "definition_pt": "O mesmo intervalo, mas com uma largura por coluna e por tercil do número de lacunas da linha: w é o ⌈(n + 1) × 0,9⌉-ésimo menor erro absoluto entre as n células de calibração da mesma coluna e do mesmo tercil. Grupos com menos de 30 células usam a largura da coluna. Não usa o spread.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:106-112"
+  },
+  {
+   "term": "calibração oráculo",
+   "definition_pt": "As células de calibração do intervalo são as lacunas dos outros folds de teste, cuja verdade um modelo implantado não teria. A forma implantável exigiria esconder células observadas de propósito, o que nenhuma execução grava ainda.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:126-128"
+  },
+  {
+   "term": "u (sub-cobertura do pior tercil)",
+   "definition_pt": "Quanto a cobertura do pior tercil fica abaixo de 0,90 (zero se não fica). Menor é melhor; diferença mínima de interesse 0,01.",
+   "source": "docs/tickets/mimic/08-conformal-natural-gaps.md:27-29"
+  },
+  {
+   "term": "mapa de oclusão (occlusion map)",
+   "definition_pt": "Para cada par (coluna-fonte c, coluna-alvo j): nas lacunas reais do teste, esconde-se c (suas células observadas viram `[MASK]`) e mede-se a mudança média no preenchimento de j: diferença absoluta para números, distância de variação total entre os vetores de probabilidade para categorias. Mostra de quais colunas cada preenchimento depende.",
+   "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:31-41"
+  },
+  {
+   "term": "estatística D (fidelidade)",
+   "definition_pt": "As fontes de cada alvo são ordenadas pelo efeito nas lacunas de validação. No teste, D = (erro com as 3 fontes do topo escondidas − erro com 3 fontes ao acaso, média de 20 sorteios) / erro sem esconder, em média sobre os alvos. D positivo significa que as fontes do topo importam mais que fontes ao acaso. Uma variante é 'fiel' se o intervalo de 95% sobre 15 folds fica acima de 1% e todo seed fica acima de 0.",
+   "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:66-85"
+  },
+  {
+   "term": "synthblock e AUROC dos blocos",
+   "definition_pt": "Tabela sintética de 3.000 linhas com três blocos independentes de quatro colunas (relações não lineares, dois pares com Pearson ≈ 0) e três colunas de ruído; as fontes informativas de uma coluna são exatamente as outras três do seu bloco. O AUROC mede se os efeitos do mapa separam essas 3 fontes das outras 11 colunas; 'recupera os blocos' se o intervalo de 95% fica acima de 0,8.",
+   "source": "docs/tickets/imputation-interpretability/01-occlusion-map.md:53-59, 87-94"
+  },
+  {
+   "term": "K, H e KC",
+   "definition_pt": "Leituras do mesmo treino: K é o checkpoint mantido pela execução (o resultado principal); H é o checkpoint escolhido pela loss, exigido pela ADR 0024 para afirmações que precisam se transferir; KC é K com calibração por coluna (ADR 0027).",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:15-16, 69, 74"
+  },
+  {
+   "term": "Nomes de variantes (`_40nan`, `probit`, `marf`)",
+   "definition_pt": "`tabela_40nan` = 40% das células removidas ao acaso (MCAR). `probit` = MNAR self-masking, em que a chance de um valor faltar depende do próprio valor, com inclinações 0.25/0.5/1/2 em biodeg. `marf` = um sorteio MAR, em que a chance de faltar depende de outras colunas observadas.",
+   "source": "docs/adr/0030-an-opt-in-per-cell-uncertainty-signal-from-re-masking.md:90-92"
+  },
+  {
+   "term": "Imputação múltipla, braços CD / SI / MI-D / MICE",
+   "definition_pt": "M = 20 tabelas completadas combinadas pelas regras de Rubin. CD: a verdade em toda lacuna (controle). SI: o preenchimento do decodificador uma vez. MI-D: preenchimento mais um resíduo sorteado das células de validação escondidas (implantável). MICE: equações encadeadas com sorteios da distribuição preditiva.",
+   "source": "docs/tickets/imputation-protocol/68-multiple-imputation.md:33-45"
+  },
+  {
+   "term": "MI-S, MI-R, MI-J",
+   "definition_pt": "Braços de E179. MI-S: uma passagem do modelo por sorteio, com dropout e amostra do softmax. MI-R: resíduos numéricos de uma linha sorteados juntos por uma cópula gaussiana. MI-J: MI-S encadeado, preenchendo as lacunas da linha uma a uma e escrevendo cada sorteio na linha antes da próxima passagem.",
+   "source": "docs/tickets/imputation-protocol/69-joint-draws.md:57-68"
+  }
+ ],
+ "missing": [
+  "Todos os caminhos em `source` são relativos a /scratch2/diogoneiss/TRIDENT.",
+  "Não li docs/reports/2026-10-27-reuniao-orientadora/ (meeting_figures.json, readers/*.txt, page.template.html) para esta seção; os números vêm dos Outcomes dos tickets, da ADR 0030 e do log.",
+  "Não abri os scripts em scripts/experiments/ (occlusion_map.py, conformal_row_gaps.py, remask_ensemble.py, multiple_imputation.py, joint_draws.py) nem src/training/decoding.py; as descrições de método vêm da ADR 0030 e dos tickets.",
+  "As entradas de E105 e E110 em docs/EXPERIMENTATION_LOG.md (L3307, L3400) não foram lidas; usei os tickets 42 e 45.",
+  "Ticket 54, linhas 160-203 (impressão por variante do conjunto de desenvolvimento em E151) não foram lidas; só o resumo do Outcome (7 de 17 melhores).",
+  "E79: o intervalo de 95% do AUROC de |Spearman| a 60nan (0.864) não foi registrado; só o valor central.",
+  "E84: os valores por variante da cobertura conformal sob MAR não foram extraídos; só o resumo (C já cobre, 0.90 a 0.92).",
+  "A ADR 0030, decisão 8, não traz o resultado de MIMIC-IV: E153 e E154 propuseram registrá-lo e a ADR não foi editada.",
+  "Não procurei figuras prontas do spread ou do mapa de oclusão em disco (heatmaps do mapa, por exemplo); nenhuma é citada aqui.",
+  "E80: os valores por variante (ticket 03:91-108) não foram tabulados; só os intervalos resumidos."
+ ],
+ "do_not_claim": [
+  "Não dizer que o spread é um intervalo de confiança, erro-padrão ou probabilidade: coverage90 é 0.17–0.66 contra 0.90 nominal, e a ADR 0030 (decisão 3) proíbe essa leitura.",
+  "Não dizer que o spread dá intervalos melhores ou adaptativos: E77 e o Q2 de E151 foram refutados (mais largo que a largura constante em 15 de 15).",
+  "Não dizer que o sinal de incerteza vale a 80% de faltantes: em E75 não há sinal em pendigits, letter e vehicle a 80nan; o escopo da ADR 0030 é até 60%.",
+  "Não dizer que o spread detecta células cujas colunas informativas estão ausentes: E80 (mixed) mostra que o spread cai quando a linha tem mais lacunas, enquanto o erro sobe.",
+  "Não dizer que o sinal vale sob 'MNAR em geral' ou 'MAR em geral': só MNAR self-masking (probit) e um sorteio MAR foram testados, e o ranking enfraquece com a inclinação a 40 e 60nan.",
+  "Não apresentar o intervalo por tercil como implantável: a calibração é oráculo e o cálculo é offline, sem código no pipeline.",
+  "Não dizer que o intervalo por tercil melhora a cobertura em MIMIC-IV: E153 e E154 leram refuted (uma largura por coluna já cobre); e não dizer que a ADR 0030 registra isso, pois ela não foi editada.",
+  "Não dizer que o mapa de oclusão mostra causalidade ou a estrutura verdadeira dos dados reais: D mede fidelidade ao modelo; a verdade conhecida só existe na tabela sintética.",
+  "Não dizer que o mapa é fiel a 80% de faltantes (4 de 9, refuted) nem que foi validado em H, ou fora de MCAR em outra taxa que não 60nan.",
+  "Não dizer que o mapa é fiel em todas as tabelas de 20 a 60nan: kc2 é inconclusivo a 20 e 60nan e credit-g a 60nan.",
+  "Não dizer que a atenção do modelo explica os preenchimentos: a comparação atenção contra oclusão é descritiva e 'nunca uma afirmação' (ticket 01:106-108).",
+  "Não dizer que o TRIDENT entrega imputação múltipla válida: E175 não atingiu o segundo primário e E179 leu MI-R refuted e MI-J mixed, nenhum próprio o bastante; não há ADR.",
+  "Não dizer que o preenchimento médio das 20 passagens é mais preciso: E75 leu mixed (melhor em 4, pior em 4 sob K) e ele não é uma saída.",
+  "Não apresentar E84 como um estudo sem intercorrências: foi cortado para 8 variantes, lido como parcial e depois restaurado para 12, com duas versões do torch."
+ ],
+ "figure_ideas": [
+  "Linha com duas séries por taxa de faltantes (20, 40, 60, 80nan): número de tabelas reais fiéis de 9 (8, 9, 7, 4) e AUROC sintético (0.994, 0.979, 0.914, 0.853), com a barra de 0,8 e a regra de 7 de 9 marcadas (tabela occlusion_summary_by_rate).",
+  "Pontos com intervalo de D por tabela em quatro painéis (20/40/60/80nan), com a linha de 1% (SESOI), mostrando o efeito encolher com a taxa e cruzar o limite a 80nan (tabela occlusion_D_by_rate).",
+  "Barras pareadas por variante: cobertura do tercil superior com uma largura por coluna (C) contra por tercil (MC), com a linha de 0,90 (tabela conformal_e151).",
+  "Dispersão de num_rank contra coverage90 por variante de E75, mostrando que o spread ordena mas não cobre (tabela spread_e75).",
+  "Esquema em três passos do spread: linha com lacunas, 20 passagens escondendo células observadas diferentes, desvio-padrão das respostas por célula.",
+  "Esquema do mapa de oclusão: esconder uma coluna-fonte, medir a mudança no preenchimento do alvo; ao lado, os três blocos de synthblock como matriz esperada.",
+  "Linhas de num_rank em biodeg por inclinação do MNAR (0.25 a 2.0) a 20, 40 e 60nan, mostrando o enfraquecimento com a inclinação (tabela spread_mechanisms)."
+ ]
+}

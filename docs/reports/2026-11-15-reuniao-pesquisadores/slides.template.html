@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRIDENT: slides</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one reading column with a sticky section index on wide screens; each RQ section opens with
+   its question, then cards (pergunta → hipótese → desenho → resultado → conclusão) with figures
+   drawn from the embedded JSON. Same family as "Resultados da imputação TRIDENT" (2026-10-23). */
+:root {
+  --page: #f4f5f3;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #74726c;
+  --grid: #e4e3dc;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --model: #2a78d6;
+  --model-wash: rgba(42, 120, 214, 0.10);
+  --s2: #eb6834;
+  --s3: #1baf7a;
+  --s4: #eda100;
+  --good: #0ca30c;
+  --good-ink: #006300;
+  --bad: #d03b3b;
+  --bad-ink: #b02a2a;
+  --neutral: #c9c7bf;
+  --neutral-ink: #74726c;
+  --plan: #eda100;
+  --seq-0: #f0efec;
+  --seq-1: #b7d3f6;
+  --seq-2: #6da7ec;
+  --seq-3: #2a78d6;
+  --seq-4: #184f95;
+  --ord-1: #86b6ef;
+  --ord-2: #3987e5;
+  --ord-3: #1c5cab;
+  --ord-4: #0d366b;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+.wrap { max-width: 1140px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; }
+@media (max-width: 920px) { .wrap { grid-template-columns: minmax(0, 1fr); gap: 16px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); } nav.toc { display: none; } }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: 13px; display: grid; gap: 8px; max-height: calc(100vh - 40px); overflow-y: auto; }
+nav.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+nav.toc a { color: var(--ink-2); text-decoration: none; display: block; padding: 3px 8px; border-radius: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { background: var(--surface); color: var(--ink); }
+nav.toc .sub a { padding-left: 18px; font-size: 12.5px; color: var(--muted); }
+main { min-width: 0; }
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 36px; font-weight: 600; letter-spacing: -0.01em; }
+h2 { font-size: 26px; font-weight: 600; }
+h3 { font-size: 18px; font-weight: 600; }
+h4 { font-size: 15px; font-weight: 600; }
+p { margin: 0; max-width: 72ch; }
+code, .mono { font-family: var(--font-data); font-size: 0.86em; }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.lede { color: var(--ink-2); font-size: 16.5px; max-width: 70ch; }
+a { color: var(--model); }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--model); outline-offset: 2px; border-radius: 3px; }
+header.top { display: grid; gap: 12px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+.prov { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--ink-2); }
+.prov b { color: var(--ink); font-weight: 500; }
+section.block { display: grid; gap: 18px; padding-block: 36px; border-bottom: 1px solid var(--border); }
+.rq { font-size: 13px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; padding: 1px 9px 1px 7px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--neutral); }
+.pill.done::before { background: var(--good); } .pill.partial::before { background: var(--plan); } .pill.plan::before { background: var(--axis); }
+.pill.good { color: var(--good-ink); } .pill.good::before { background: var(--good); }
+.pill.bad { color: var(--bad-ink); } .pill.bad::before { background: var(--bad); }
+.pill b { font-family: var(--font-data); font-weight: 500; font-size: 11px; color: var(--muted); }
+ul.points { margin: 0; padding-left: 18px; display: grid; gap: 7px; max-width: 74ch; }
+ul.points ul { margin: 5px 0 0; padding-left: 18px; display: grid; gap: 4px; color: var(--ink-2); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.card > header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; align-items: baseline; }
+.card .tag { font-family: var(--font-data); font-size: 12px; color: var(--muted); }
+dl.steps { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 6px 14px; margin: 0; font-size: 14.5px; }
+dl.steps dt { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; padding-top: 2px; }
+dl.steps dd { margin: 0; color: var(--ink-2); min-width: 0; }
+dl.steps dd b { color: var(--ink); font-weight: 600; }
+@media (max-width: 560px) { dl.steps { grid-template-columns: minmax(0, 1fr); } dl.steps dd { margin-bottom: 6px; } }
+.verdict { font-weight: 600; }
+.verdict.good { color: var(--good-ink); } .verdict.bad { color: var(--bad-ink); } .verdict.mixed { color: var(--ink); }
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figcaption { font-size: 13px; color: var(--ink-2); max-width: 80ch; }
+figcaption b { color: var(--ink); font-weight: 600; }
+.src { font-size: 12px; color: var(--muted); }
+.chart { width: 100%; overflow-x: auto; }
+.chart svg { display: block; max-width: 100%; height: auto; }
+.chart svg text { font-family: var(--font-body); fill: var(--ink-2); font-size: 11px; }
+.chart svg .t-ink { fill: var(--ink); }
+.chart svg .t-muted { fill: var(--muted); }
+.chart svg .t-data { font-family: var(--font-data); font-size: 10.5px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink-2); align-items: center; }
+.legend .k { display: inline-flex; align-items: center; gap: 6px; }
+.sw { display: inline-block; width: 11px; height: 11px; border-radius: 2px; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+caption { caption-side: top; text-align: left; padding: 10px 12px 4px; font-size: 13px; color: var(--ink-2); }
+th, td { padding: 7px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--grid); }
+th { font-weight: 600; color: var(--ink-2); font-size: 12px; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.wide td { min-width: 150px; }
+.wide td:first-child { min-width: 110px; font-weight: 600; color: var(--ink); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.note { border-left: 3px solid var(--plan); padding: 10px 14px; background: var(--surface); border-radius: 0 6px 6px 0; font-size: 14px; color: var(--ink-2); max-width: 80ch; }
+.note b { color: var(--ink); }
+.statement { display: grid; gap: 0; counter-reset: s; margin: 0; padding: 0; list-style: none; }
+.statement li { counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding-block: 10px; border-top: 1px solid var(--grid); }
+.statement li:first-child { border-top: 0; }
+.statement li::before { content: counter(s); font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--model); line-height: 1.2; }
+.statement li p { max-width: 70ch; }
+.timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.timeline li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; padding-block: 8px; }
+.timeline li .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--model); margin-top: 5px; margin-left: 6px; }
+.timeline li.dropped .dot { background: var(--surface); border: 2px solid var(--neutral-ink); }
+.timeline li p { max-width: 70ch; color: var(--ink-2); }
+.timeline li p b { color: var(--ink); }
+details.raw { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+details.raw + details.raw { margin-top: 8px; }
+details.raw summary { cursor: pointer; padding: 10px 14px; font-size: 14px; font-weight: 500; }
+details.raw pre { margin: 0; padding: 12px 14px; border-top: 1px solid var(--grid); overflow-x: auto; font-family: var(--font-data); font-size: 11.5px; line-height: 1.5; color: var(--ink-2); white-space: pre; max-height: 480px; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--surface); font-size: 12px; padding: 6px 9px; border-radius: 5px; max-width: 280px; z-index: 20; line-height: 1.4; }
+.tip[hidden] { display: none !important; }
+footer { padding-top: 24px; font-size: 13px; color: var(--muted); display: grid; gap: 6px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+.note.pending { border-left-color: var(--axis); color: var(--muted); font-style: italic; }
+.note.claim { border-left-color: var(--model); }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.srcline { font-size: 11.5px; color: var(--muted); padding: 4px 12px 10px; font-family: var(--font-data); word-break: break-word; }
+.mk { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; }
+.mk.hollow { background: var(--surface) !important; border: 2px solid var(--neutral-ink); width: 10px; height: 10px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; }
+.kpi .lab { font-size: 12.5px; color: var(--ink-2); }
+.kpi .val { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.15; }
+.kpi .sub { font-size: 12.5px; color: var(--muted); }
+.tip .tv { font-weight: 600; }
+.tip .tl { opacity: 0.8; }
+nav.toc .min { float: right; font-family: var(--font-data); font-size: 11px; color: var(--muted); }
+section.block h3 { margin-top: 6px; }
+.statement li p b { font-weight: 600; }
+.note.claim { font-size: 15.5px; color: var(--ink); }
+/* ---------- slides: one 16:9 slide at a time, sized by container units ---------- */
+html, body { margin: 0; height: 100%; overflow: hidden; }
+body { background: #d9d8d2; font-size: 16px; }
+.deck { position: fixed; inset: 0; display: grid; place-items: center; }
+.slide { display: none; position: relative; width: min(100vw, 177.78vh); height: min(56.25vw, 100vh); background: var(--surface); container-type: size; padding: 6cqh 6cqw 9cqh; flex-direction: column; gap: 2.6cqh; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+.slide.on { display: flex; }
+.slide .eyebrow { font-size: 2.1cqh; }
+.slide h1 { font-size: 7.4cqh; max-width: 26ch; }
+.slide h2 { font-size: 5.8cqh; }
+.slide h3 { font-size: 3.4cqh; color: var(--model); }
+.slide p, .slide li { font-size: 3.05cqh; line-height: 1.42; max-width: none; }
+.slide .lede { font-size: 3.4cqh; max-width: 62ch; }
+.slide code { font-size: 0.88em; }
+.slide ul.points { gap: 1.5cqh; padding-left: 1.3em; max-width: none; }
+.slide ul.points li::marker { color: var(--model); }
+.slide .sm li, .slide .sm p { font-size: 2.65cqh; }
+.slide .statement li { grid-template-columns: 5cqh minmax(0, 1fr); padding-block: 1.8cqh; gap: 1.6cqh; }
+.slide .statement li::before { font-size: 4.4cqh; }
+.slide .statement li p { max-width: none; font-size: 3.3cqh; }
+.slide .note { font-size: 2.8cqh; max-width: none; padding: 1.6cqh 2cqw; }
+.slide .note.claim { font-size: 3.2cqh; }
+.cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4cqw; align-items: start; flex: 1; min-height: 0; }
+.cols.fig-r { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: center; }
+.cols.fig-big { grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr); align-items: center; }
+.col { display: grid; gap: 2cqh; align-content: start; min-width: 0; }
+.slide figure { min-height: 0; gap: 1cqh; }
+.slide figure.grow { flex: 1; align-content: center; }
+.slide .chart { overflow: visible; }
+.slide .chart svg { width: 100%; height: auto; max-height: 46cqh; margin-inline: auto; }
+.slide .panels { grid-template-columns: 1fr 1fr; gap: 2cqw; }
+.slide .src { font-size: 1.9cqh; }
+.ladder { display: grid; gap: 1.3cqh; }
+.lrow { display: grid; grid-template-columns: 34% 1fr 9cqw; align-items: center; gap: 1.2cqw; font-size: 2.6cqh; }
+.lrow .ll { text-align: right; color: var(--ink-2); }
+.lrow .lb { height: 3.4cqh; background: var(--seq-0); border-radius: 3px; position: relative; }
+.lrow .lbar { position: absolute; left: 0; top: 0; bottom: 0; background: var(--neutral-ink); border-radius: 3px; }
+.lrow.pre .lbar { background: var(--model); }
+.lrow .lv { font-family: var(--font-data); font-size: 2.4cqh; color: var(--ink); }
+.slide .formula { font-family: var(--font-data); font-size: 3cqh; background: var(--model-wash); border-left: 3px solid var(--model); padding: 1.6cqh 1.4cqw; border-radius: 0 6px 6px 0; }
+.cols.mech { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: start; }
+.slide .tablewrap.ex caption { display: table-caption; font-size: 2cqh; padding: 1cqh 1cqw 0.6cqh; }
+.slide .tablewrap.ex table { font-size: 2.3cqh; }
+.slide .tablewrap.ex td, .slide .tablewrap.ex th { padding: 0.6cqh 0.8cqw; white-space: nowrap; }
+.slide .tablewrap.ex td.good { color: var(--good-ink); font-weight: 600; }
+.slide .tablewrap.ex td.hl { background: var(--model-wash); color: var(--model); font-weight: 600; }
+.slide .tablewrap.ex tr.pick td { background: var(--model-wash); color: var(--model); font-weight: 600; }
+.slide .tablewrap.ex.narrow { justify-self: start; min-width: 45%; margin-top: 1.4cqh; }
+.slide ol.points { margin: 0; padding-left: 1.3em; display: grid; gap: 1.2cqh; }
+.slide .tablewrap.ex td.gap { background: var(--model-wash); color: var(--model); font-weight: 600; text-align: right; }
+.slide .tall .chart svg { max-height: 60cqh; }
+.cols.tbl { grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr); }
+.cols.tbl .tablewrap table { font-size: 2.2cqh; }
+.cols.tbl .tablewrap td, .cols.tbl .tablewrap th { padding: 0.7cqh 0.8cqw; white-space: nowrap; }
+.slide figcaption { font-size: 2.15cqh; max-width: none; }
+.slide .legend { font-size: 2.2cqh; }
+.slide .tablewrap table { font-size: 2.5cqh; }
+.slide .tablewrap th { font-size: 2.2cqh; }
+.slide .tablewrap td, .slide .tablewrap th { padding: 0.9cqh 1.2cqw; }
+.slide .tablewrap caption, .slide .srcline { display: none; }
+.slide.title { justify-content: center; gap: 3.4cqh; background: linear-gradient(90deg, var(--model) 0 1.1cqw, var(--surface) 1.1cqw); }
+.slide.title .prov { font-size: 2.2cqh; }
+.slide.end { justify-content: center; align-items: start; }
+.foot { position: absolute; left: 6cqw; right: 6cqw; padding-right: 96px; bottom: 3cqh; display: flex; justify-content: space-between; font-size: 1.9cqh; color: var(--muted); border-top: 1px solid var(--grid); padding-top: 1.2cqh; }
+.bar { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--model); transition: width 0.2s; z-index: 5; }
+aside.notes { display: none; }
+.notes-panel { position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow-y: auto; background: var(--ink); color: var(--surface); font-size: 15px; line-height: 1.5; padding: 14px 22px 18px; z-index: 10; }
+.notes-panel[hidden] { display: none; }
+.notes-panel p { max-width: 110ch; margin: 0 0 8px; }
+.notes-panel .hint { color: var(--axis); font-size: 12px; }
+.navbtn { position: fixed; bottom: 10px; z-index: 6; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2); font-size: 16px; cursor: pointer; opacity: 0.55; }
+.navbtn:hover, .navbtn:focus-visible { opacity: 1; }
+#prev { right: 54px; } #next { right: 14px; }
+@media print {
+  @page { size: 338.67mm 190.5mm; margin: 0; }
+  html, body { overflow: visible; height: auto; background: #fff; }
+  .deck { position: static; display: block; }
+  .slide { display: flex !important; width: 338.67mm; height: 190.5mm; box-shadow: none; break-after: page; }
+  .bar, .navbtn, .notes-panel, .tip { display: none !important; }
+}
+</style>
+<div class="deck" id="deck">
+
+<section class="slide title" data-sec="Abertura">
+  <div class="eyebrow">TRIDENT · reunião com pesquisadores</div>
+  <h1>TRIDENT sob dados faltantes: insuficiente para classificar, competitivo para imputar</h1>
+  <p class="lede">O TRIDENT é um Transformer tabular, proposto na UFMG, que representa cada célula faltante por um token aprendido e pré-treina reconstruindo células escondidas. Perguntamos se esse desenho ajuda a classificar e a imputar quando faltam dados.</p>
+  <div class="prov"><span>Gerado em <b>__BUILT__</b></span><span>Código <b class="mono">feat/imputation-task</b></span><span>Experimentos <b>E19–E180</b></span></div>
+  <aside class="notes"><p>Cerca de 30 segundos. O TRIDENT foi proposto por Rigueira et al. (BRACIS 2025), aqui na UFMG; partimos do código publicado e o estendemos. A pergunta é dupla: o token aprendido para a falta e o pré-treino de reconstrução ajudam a classificar? E ajudam a imputar?</p></aside>
+</section>
+
+<section class="slide" data-sec="Resumo">
+  <div class="eyebrow">Resumo</div>
+  <h2>O que encontramos</h2>
+  <ol class="statement">
+    <li><p><b>Na classificação, o TRIDENT é insuficiente.</b> Com todos os rótulos, o pré-treino não move o macro-F1, e o TabPFN v2, sem ajuste de nenhum dos lados, fica à frente em todos os níveis de falta.</p></li>
+    <li><p><b>Na imputação, o quadro se inverte.</b> Com um <i>decode</i> por coluna, o TRIDENT vence a referência simples na maioria das variantes e mantém a posição quando a falta não é aleatória.</p></li>
+    <li><p><b>Combinado com o TabPFN v2</b>, quase nunca perde para nenhum dos dois quando a falta é aleatória.</p></li>
+    <li><p><b>Imputando tabelas de UTI da MIMIC-IV, com padrões reais de falta,</b> o TRIDENT erra menos que a referência simples e, numa tabela maior, também que o TabPFN v2, uma vantagem que acompanha os padrões reais de lacuna.</p></li>
+  </ol>
+  <aside class="notes"><p>Cerca de 1 minuto. Tudo isto volta adiante; aqui, só o necessário para acompanhar. A referência simples é o melhor, em cada execução, entre média/moda, kNN, HGB e LightGBM. O TabPFN v2 é um modelo de fundação pré-treinado em tabelas sintéticas, que lê até 10.000 linhas de treino como contexto e prevê sem ajuste. MCAR é a falta ao acaso; no MAR, a falta depende de outras colunas; no MNAR, do próprio valor que falta.</p><p>Na imputação, os números são diferenças de impute_score entre o TRIDENT e o oponente, e negativo favorece o TRIDENT; na classificação, diferenças de macro-F1. Contra o TabPFN v2, o TRIDENT nunca perde nas tabelas numéricas até 60% de falta e lidera na maioria delas; o TabPFN lidera a 80% e nas duas tabelas mais categóricas.</p></aside>
+</section>
+
+<section class="slide" data-sec="1 · O TRIDENT">
+  <div class="eyebrow">1 · O TRIDENT</div>
+  <h2>A falta como token, não como média</h2>
+  <ul class="points">
+    <li>Cada linha vira uma sequência de tokens, um por coluna, aberta por um token <code>[CLS]</code> que resume a linha.</li>
+    <li>Uma célula faltante vira o token <code>[NULL]</code> da sua coluna, aprendido como qualquer outro. Um paciente sem lactato medido recebe <code>[NULL]</code>, e não a média da coluna.</li>
+    <li><b>Pré-treino:</b> células observadas são escondidas atrás de <code>[MASK]</code>, e o modelo prevê a representação de cada uma.</li>
+    <li><b>Classificação:</b> depois, um classificador é ajustado sobre o <code>[CLS]</code>.</li>
+    <li>O artigo avaliou o modelo em nove tabelas públicas com falta completamente aleatória (MCAR) de 0% a 80%, medindo o macro-F1.</li>
+  </ul>
+  <aside class="notes"><p>Cerca de 1 minuto. Representar a falta por um vetor aprendido permite, em princípio, tratá-la como informação, e não como ruído. [CLS] é um token posto no início de cada linha; a saída dele no encoder resume a linha inteira e alimenta o classificador. O TRIDENT foi proposto para classificar; começamos por aí, e a imputação vem depois.</p></aside>
+</section>
+
+<section class="slide" data-sec="2 · Classificação">
+  <div class="eyebrow">2 · Classificação</div>
+  <h2>O pré-treino não move o macro-F1</h2>
+  <ul class="points sm">
+    <li>O artigo relata que o pré-treino acrescenta cerca de 1,7 ponto de macro-F1 (a média do F1 de cada classe) sob falta.</li>
+    <li>Medimos nas mesmas nove tabelas, com e sem pré-treino lado a lado: dez dobras × cinco sementes × nove tabelas = 450 pares por nível de falta.</li>
+    <li>Na nossa configuração anterior e nos padrões do código original, a diferença ficou dentro de ±0,01, a margem que tratamos como empate, em todos os níveis; a 60%, no máximo 0,7 ponto de ganho (E87).</li>
+  </ul>
+  <figure class="grow">
+    <div class="legend" id="leg-cls-pretrain"></div>
+    <div class="chart" id="fig-cls-pretrain"></div>
+    <figcaption>Sem menos com pré-treino, IC 95% sobre 450 pares; abaixo de zero, o pré-treino ajuda. A faixa é a margem de ±0,01; a linha, o ganho do artigo.</figcaption>
+  </figure>
+  <p class="src">Entre parênteses, o experimento correspondente no nosso registro: (E87) é o experimento 87.</p>
+  <aside class="notes"><p>Cerca de 1,5 minuto. O macro-F1 dá o mesmo peso a todas as classes e por isso penaliza quem acerta só a classe majoritária. Dez dobras e cinco sementes por nível. Os hiperparâmetros ajustados por tabela no artigo não estão no repositório; medimos as duas configurações que o código permite executar: 300 épocas de pré-treino e 150 de ajuste fino na nossa versão anterior (E87), e 40 em cada etapa nos padrões do original (E118).</p></aside>
+</section>
+
+<section class="slide" data-sec="2 · Classificação">
+  <div class="eyebrow">2 · Classificação</div>
+  <h2>Por que o pré-treino não aparece: o ajuste fino o apaga</h2>
+  <p>Congelamos o encoder e treinamos só o classificador por cima, para ver o que o pré-treino deixa; depois liberamos o encoder (E132).</p>
+  <figure>
+    <div class="ladder"><div class="lrow "><span class="ll">encoder aleatório, congelado</span><span class="lb"><span class="lbar" style="width:0.6%"></span></span><span class="lv">0 (base)</span></div><div class="lrow pre"><span class="ll">encoder pré-treinado, congelado</span><span class="lb"><span class="lbar" style="width:8.6%"></span></span><span class="lv">+0,009</span></div><div class="lrow"><span class="ll">aleatório + ajuste fino completo</span><span class="lb"><span class="lbar" style="width:96.3%"></span></span><span class="lv">+0,103</span></div><div class="lrow pre"><span class="ll">pré-treinado + ajuste fino completo</span><span class="lb"><span class="lbar" style="width:100.0%"></span></span><span class="lv">+0,107</span></div></div>
+    <figcaption>Macro-F1 em relação ao encoder aleatório congelado; cinza, encoder aleatório; azul, pré-treinado. Oito arquivos: quatro tabelas a 60% de falta, sob MNAR.</figcaption>
+  </figure>
+  <p class="note claim">O pré-treino deixa algo útil, cerca de um ponto. O ajuste fino aprende dez vezes mais e chega ao mesmo lugar de qualquer início. Taxa menor no encoder, encoder congelado no início, menos épocas e outros agendamentos da taxa não preservaram o pré-treino (E133–E135).</p>
+  <aside class="notes"><p>Cerca de 1 minuto. Os números: FP − FR = +0,0092 [+0,0013; +0,0171]; o ajuste fino acrescenta +0,0979 ao encoder pré-treinado e +0,1031 ao aleatório; a última barra é a soma das duas primeiras diferenças. Nos arquivos MCAR, o pré-treino congelado deixa +0,016. As curvas de perda mostram o ajuste fino com mínimo de validação entre as épocas 13 e 24, igual nos dois inícios. Pergunta natural a seguir: e se houver poucos rótulos para o ajuste fino aprender?</p></aside>
+</section>
+
+<section class="slide" data-sec="2 · Classificação">
+  <div class="eyebrow">2 · Classificação</div>
+  <h2>Com poucos rótulos, o pré-treino volta a contar</h2>
+  <p>Se o ajuste fino apaga o pré-treino porque há rótulos de sobra, tirar rótulos do ajuste fino deveria trazê-lo de volta. O pré-treino continua vendo todas as linhas, sem rótulo.</p>
+  <figure>
+    <div class="ladder"><div class="lrow pre"><span class="ll">10% dos rótulos</span><span class="lb"><span class="lbar" style="width:100.0%"></span></span><span class="lv">+0,029</span></div><div class="lrow pre"><span class="ll">25%</span><span class="lb"><span class="lbar" style="width:75.2%"></span></span><span class="lv">+0,022</span></div><div class="lrow pre"><span class="ll">50%</span><span class="lb"><span class="lbar" style="width:54.1%"></span></span><span class="lv">+0,016</span></div><div class="lrow "><span class="ll">todos os rótulos</span><span class="lb"><span class="lbar" style="width:13.8%"></span></span><span class="lv">+0,004</span></div></div>
+    <figcaption>Com menos sem pré-treino, em macro-F1, por fração de rótulos no ajuste fino; mesmos oito arquivos (E140).</figcaption>
+  </figure>
+  <ul class="points sm">
+    <li>Nas 21 variantes, com um quarto dos rótulos: +0,010, 8 variantes melhores e nenhuma pior; com a correção de Nadeau–Bengio, o intervalo cruza o zero (E141).</li>
+    <li>É um contraste contra o mesmo modelo sem pré-treino; não medimos esse regime contra outros modelos.</li>
+  </ul>
+  <aside class="notes"><p>Cerca de 1 minuto. A curva junta três estudos com sementes diferentes: 10% e 50% do E140, 25% do E138 e o ponto com todos os rótulos do E131; descritivamente, o ganho cresce com a escassez e se fecha a 80% de falta. A correção de Nadeau–Bengio alarga o intervalo para levar em conta que as dobras compartilham dados de treino. Perder rótulos custa caro: com um quarto deles, o próprio TRIDENT pré-treinado perde cerca de 0,094 de macro-F1 (E136).</p></aside>
+</section>
+
+<section class="slide" data-sec="2 · Classificação">
+  <div class="eyebrow">2 · Classificação</div>
+  <h2>Diante de outros modelos, a posição é modesta</h2>
+  <ul class="points">
+    <li><b>TabPFN v2</b>, um modelo de fundação pré-treinado em tabelas sintéticas que prevê sem ajuste; sem ajuste de nenhum dos lados, fica à frente em todos os níveis, de +0,018 a +0,037 de macro-F1 (TabPFN − TRIDENT), com probabilidades balanceadas por classe (E92).</li>
+    <li><b>MLP, SAINT e TabNet</b>, com o mesmo orçamento de ajuste: de 40% a 80%, o TRIDENT lidera os três; sobre o MLP, por cerca de um ponto, e sem diferença a 80% (E99).</li>
+    <li><b>O <code>[NULL]</code>:</b> ficou sem resposta se ele aproveita a falta informativa (quando faltar já diz algo sobre o rótulo) tão bem quanto preencher a célula e acrescentar uma coluna 0/1 que marca a falta; a estimativa pende contra o <code>[NULL]</code> (E155).</li>
+  </ul>
+  <p class="note claim"><b>Para classificar, o TRIDENT é insuficiente:</b> o pré-treino não ajuda com todos os rótulos e o TabPFN v2 fica à frente. A liderança sobre MLP, SAINT e TabNet se sustenta, mas sobre o MLP é de cerca de um ponto.</p>
+  <aside class="notes"><p>Cerca de 1,5 minuto. As vitórias do TRIDENT em credit-g e electricity numa primeira medida vinham da sua perda ponderada por classe, diante de um TabPFN que, em credit-g, previa a classe majoritária; desaparecem com o balanceamento. Na tabela completa, o TRIDENT fica atrás do MLP (E107). Sob falta não aleatória (MNAR) a 60%, não há veredito contra o MLP em dois conjuntos de sementes (E115, E120). SAINT é um Transformer tabular com atenção entre colunas e entre linhas; TabNet, uma rede que escolhe atributos por atenção sequencial.</p><p>Falta informativa é quando faltar já diz algo sobre o rótulo. Antes, o protocolo parou duas vezes numa checagem prévia, fixada no pré-registro, de que o desenho detectava o efeito (E128).</p></aside>
+</section>
+
+<section class="slide" data-sec="3 · Imputação">
+  <div class="eyebrow">3 · Imputação: o que mudamos</div>
+  <h2>Para imputar: um <i>decode</i> por coluna no lugar do classificador</h2>
+  <ul class="points">
+    <li>Uma cabeça por coluna, sobre o mesmo encoder, devolve o valor da célula escondida, e não a sua representação.</li>
+    <li>A classificação continua idêntica por padrão.</li>
+    <li>Buscar hiperparâmetros não levou o modelo à frente da referência simples (E21); a configuração atual saiu de mudanças de método pré-registradas.</li>
+  </ul>
+  <figure class="grow">
+    <div class="chart" id="fig-pipeline"></div>
+    <figcaption>Em azul, o que acrescentamos ao TRIDENT do artigo.</figcaption>
+  </figure>
+  <aside class="notes"><p>Cerca de 1 minuto. Daqui em diante, o mesmo encoder serve à imputação. A busca no perfil completo de hiperparâmetros superou os padrões em pendigits e letter a 20%, mas não venceu a referência simples em nenhuma das sete variantes (E21); a busca reduzida, refeita sobre a configuração atual, não superou os padrões em nenhuma das cinco variantes com arquivo promovido (E39). Pré-registrar, aqui, é fixar a hipótese, os braços, as variantes, as sementes e a regra de decisão numa entrada do nosso registro de experimentos antes da primeira execução. No pré-treino, o alvo passou a ser normalizado; o decode longo tem 450 épocas.</p></aside>
+</section>
+
+<section class="slide" data-sec="4 · Avaliação">
+  <div class="eyebrow">4 · Como avaliamos</div>
+  <h2>Nove tabelas completas, com falta injetada</h2>
+  <div class="cols tbl">
+    <div class="col">
+      <ul class="points sm">
+        <li>De 522 a 45.312 linhas: seis só numéricas, uma só categórica e duas mistas.</li>
+        <li>Apagamos 20, 40, 60 ou 80% das células de cada coluna; como a tabela completa existe, sabemos o valor de cada lacuna.</li>
+        <li>21 variantes de <b>desenvolvimento</b>, para as decisões de desenho; 15 de <b>confirmação</b>, lidas uma única vez.</li>
+        <li>Cada comparação: cinco dobras × três sementes = quinze pares, com TRIDENT e oponente na mesma dobra e semente.</li>
+      </ul>
+    </div>
+    <div class="tablewrap" data-table="datasets_tese"></div>
+  </div>
+  <aside class="notes"><p>Cerca de 1 minuto. São as nove tabelas do OpenML usadas no artigo original. Uma variante é uma tabela numa taxa de falta; nos gráficos, aparecem como "biodeg 20%".</p></aside>
+</section>
+
+<section class="slide" data-sec="4 · Avaliação">
+  <div class="eyebrow">4 · Métrica e veredito</div>
+  <h2>O que conta como vencer</h2>
+  <div class="cols">
+    <div class="col">
+      <h3><code>impute_score</code></h3>
+      <ul class="points">
+        <li>Erro do imputador ÷ erro de preencher com a média (numéricas) ou a moda (categóricas), nas mesmas células.</li>
+        <li>1,0 é empatar com a média, e menor é melhor: 0,60 erra 60% do que erra a média.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Veredito por variante</h3>
+      <ul class="points">
+        <li><b>Melhor ou pior:</b> o intervalo de 95% dos quinze pares exclui o zero, e as três sementes concordam.</li>
+        <li><b>Equivalente:</b> o intervalo cabe em ±1% do oponente.</li>
+        <li><b>Sem diferença:</b> nenhuma das duas coisas.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1 minuto. Um painel secundário, com erro absoluto, viés, razão de dispersão e distância de Wasserstein, mostra se um ganho vem só de encolher os preenchimentos para o centro.</p></aside>
+</section>
+
+<section class="slide" data-sec="4 · Avaliação">
+  <div class="eyebrow">4 · Oponentes</div>
+  <h2>Uma escada de oponentes e duas leituras do TRIDENT</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="points sm">
+        <li><b>Referência simples:</b> o melhor, em cada execução, entre média/moda, kNN, HGB e LightGBM.</li>
+        <li><b>Referência simples ajustada:</b> a mesma, mas cada imputador escolhe, em cada dobra, entre algumas configurações (o <i>k</i> do kNN, de 5 a 50; 12 combinações no HGB e no LightGBM). Testa se a referência perdia só por usar os padrões da biblioteca.</li>
+        <li><b>Clássicos fortes:</b> missForest, <code>condexp</code>, SoftImpute e ICE.</li>
+        <li><b>TabPFN v2:</b> o mesmo modelo de fundação da classificação; aqui prevê cada coluna a partir das demais, com até 10.000 linhas de contexto, sem ajuste.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>De qual época guardamos o modelo?</h3>
+      <ul class="points sm">
+        <li>O <i>decode</i> treina por centenas de épocas, e lemos o TRIDENT em duas delas.</li>
+        <li><b>K, o oráculo:</b> a época que melhor preenche as lacunas da validação, conferidas contra os valores que nós apagamos. Só existe porque temos a tabela completa; mostra o melhor que o modelo alcança.</li>
+        <li><b>H, a implantável:</b> a época de menor perda de validação, sem olhar nenhum valor apagado. É o que teríamos num hospital, onde a tabela completa não existe.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1 minuto. missForest imputa com florestas aleatórias, coluna a coluna, em rodadas; condexp usa a esperança condicional gaussiana dados os observados da linha; SoftImpute completa a matriz supondo posto baixo; ICE são rodadas de regressões encadeadas, no espírito do MICE. HGB é o gradient boosting por histograma do scikit-learn. O conjunto forte, quando aparecer, é a união dos clássicos fortes com o TabPFN v2.</p><p>Por que ajustar a referência: a configuração do TRIDENT foi escolhida nessas variantes, e os imputadores clássicos eram executados com os padrões da biblioteca, de modo que a referência podia ser fraca demais. Demos a ela um orçamento declarado antes de qualquer resultado: kNN com k de 5, 10, 20 ou 50; HGB e LightGBM com 12 combinações de taxa de aprendizado, iterações e profundidade ou folhas; missForest com 4; a partir de 60% de falta, cada configuração também é lida puxada para a média do treino. A escolha é feita em cada dobra, pelas lacunas da validação, o mesmo sinal que K usa, e só a escolhida é avaliada no teste. O ajuste melhora a referência em 17 de 21 variantes, tipicamente 1 a 3%. Uma vitória da tese exige que K vença as duas versões da referência.</p><p>Em cada slide de resultado, digo qual leitura sustenta o número. A distância entre K e H cresce com a falta, sobretudo a 80%.</p></aside>
+</section>
+
+<section class="slide" data-sec="5 · Mecanismos">
+  <div class="eyebrow">5 · MCAR, MAR e MNAR</div>
+  <h2>Mudamos quais células somem, não quantas</h2>
+  <div class="cols fig-r">
+    <div class="col">
+      <ul class="points sm">
+        <li><b>MCAR:</b> toda célula tem a mesma chance de sumir.</li>
+        <li><b>MAR:</b> a chance depende de outras colunas; 30% delas nunca perdem células e decidem quais somem nas outras.</li>
+        <li><b>MNAR:</b> a chance cresce com o próprio valor escondido; a inclinação regula a força (padrão 0,5).</li>
+        <li>Em biodeg a 60%, com a inclinação padrão, as células escondidas ficam 0,358 desvio-padrão acima das observadas, contra 0,008 sob MCAR.</li>
+      </ul>
+    </div>
+    <figure>
+      <div class="chart" id="fig-mech"></div>
+      <figcaption>Chance de uma célula ser sorteada, segundo os geradores.</figcaption>
+    </figure>
+  </div>
+  <aside class="notes"><p>Cerca de 1 minuto. Em dados clínicos, a falta raramente é completamente aleatória: um lactato não é pedido porque o paciente parece estável, e um valor muito alto pode sumir do registro com mais frequência.</p><p>Os dois slides seguintes mostram as fórmulas e um exemplo de cada. Em biodeg a 60%, variamos a inclinação do MNAR de 0,25 a 2,0. Como a média e a moda também ficam enviesadas sob MNAR, nunca comparamos escores entre mecanismos: lemos a diferença para o oponente sob o mecanismo menos a mesma diferença num controle MCAR com as mesmas contagens.</p><p>Limites: MNAR só em tabelas numéricas, nada fora do MCAR a 80% e um único MAR sintético por tabela.</p></aside>
+</section>
+
+<section class="slide" data-sec="5 · Mecanismos">
+  <div class="eyebrow">5 · MNAR: auto-mascaramento</div>
+  <h2>No MNAR, o próprio valor decide quem some</h2>
+  <div class="cols mech">
+    <div class="col">
+      <div class="formula">P(célula <i>i</i> da coluna <i>j</i> some) ∝ Φ(λ · <i>z<sub>ij</sub></i>)</div>
+      <ul class="points sm">
+        <li><i>z<sub>ij</sub></i>: o valor padronizado na própria coluna; Φ: a normal acumulada; λ: a inclinação, 0,5 por padrão.</li>
+        <li>Cada coluna perde o mesmo número de células que perdia sob MCAR; o peso só decide <b>quais</b>, num sorteio sem reposição.</li>
+        <li>É uma inclinação, não uma regra: com λ = 0,5, o paciente 8 tem 22% do peso; com λ = 2,0, teria 32%, e o paciente 1 cairia de 8% para 1%.</li>
+      </ul>
+    </div>
+    <div class="tablewrap ex">
+      <table><caption>Exemplo ilustrativo: creatinina (mg/dL) de oito pacientes, 3 de 8 células escondidas</caption>
+      <thead><tr><th>paciente</th><th>creatinina</th><th><i>z</i></th><th>Φ(0,5 <i>z</i>)</th><th>peso relativo</th><th>após o sorteio</th></tr></thead>
+      <tbody><tr><td>1</td><td class="num">0,7</td><td class="num">−0,89</td><td class="num">0,33</td><td class="num">8%</td><td class="num">0,7</td></tr><tr><td>2</td><td class="num">0,8</td><td class="num">−0,78</td><td class="num">0,35</td><td class="num">9%</td><td class="gap">—</td></tr><tr><td>3</td><td class="num">0,9</td><td class="num">−0,67</td><td class="num">0,37</td><td class="num">9%</td><td class="num">0,9</td></tr><tr><td>4</td><td class="num">1,0</td><td class="num">−0,56</td><td class="num">0,39</td><td class="num">10%</td><td class="num">1,0</td></tr><tr><td>5</td><td class="num">1,2</td><td class="num">−0,34</td><td class="num">0,43</td><td class="num">11%</td><td class="gap">—</td></tr><tr><td>6</td><td class="num">1,6</td><td class="num">+0,10</td><td class="num">0,52</td><td class="num">13%</td><td class="num">1,6</td></tr><tr><td>7</td><td class="num">2,4</td><td class="num">+0,97</td><td class="num">0,69</td><td class="num">17%</td><td class="num">2,4</td></tr><tr><td>8</td><td class="num">3,5</td><td class="num">+2,18</td><td class="num">0,86</td><td class="num">22%</td><td class="gap">—</td></tr></tbody></table>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1,5 minuto. É a creatinina alta que deixa de ser registrada. O sorteio do exemplo é um só, feito com a mesma lógica do gerador (generate_mnar.py): ele escondeu os pacientes 2, 5 e 8, o que mostra que a inclinação padrão é suave; o efeito aparece na média de muitas células. Em biodeg a 60%, com λ = 0,5, as escondidas ficam 0,358 desvio-padrão acima das observadas; com λ = 2,0, 0,788. Como toda coluna se censura a si mesma e nenhuma fica inteira, o mecanismo não é identificável só pelos dados observados, e por isso variamos λ como análise de sensibilidade. MNAR só nas tabelas numéricas.</p></aside>
+</section>
+
+<section class="slide" data-sec="5 · Mecanismos">
+  <div class="eyebrow">5 · MAR: colunas motoras</div>
+  <h2>No MAR, colunas sempre observadas decidem quem some</h2>
+  <div class="cols mech">
+    <div class="col">
+      <div class="formula">P(célula <i>i</i> da coluna <i>j</i> some) ∝ σ(1,5 · <i>s<sub>ij</sub></i>)</div>
+      <ul class="points sm">
+        <li>30% das colunas, sorteadas ao acaso com semente fixa, são <b>motoras</b>: nunca perdem células. Não as escolhemos por correlação nem por sentido clínico.</li>
+        <li><i>s<sub>ij</sub></i>: uma combinação das motoras com pesos aleatórios, sorteados uma vez para cada coluna <i>j</i> e padronizada; σ: a função logística.</li>
+        <li>Mesma contagem do MCAR; cada variante MAR tem um controle com as mesmas motoras e células sorteadas ao acaso.</li>
+      </ul>
+    </div>
+    <div class="tablewrap ex">
+      <table><caption>Exemplo ilustrativo: a pressão sistólica (mmHg), motora, decide o lactato (mmol/L); 3 de 8 escondidos</caption>
+      <thead><tr><th>paciente</th><th>pressão</th><th><i>s</i></th><th>σ(1,5 <i>s</i>)</th><th>peso relativo</th><th>lactato</th><th>após o sorteio</th></tr></thead>
+      <tbody><tr><td>1</td><td class="num">62</td><td class="num">−1,34</td><td class="num">0,12</td><td class="num">3%</td><td class="num">4,1</td><td class="num">4,1</td></tr><tr><td>2</td><td class="num">70</td><td class="num">−0,99</td><td class="num">0,18</td><td class="num">5%</td><td class="num">3,2</td><td class="gap">—</td></tr><tr><td>3</td><td class="num">78</td><td class="num">−0,65</td><td class="num">0,27</td><td class="num">7%</td><td class="num">2,6</td><td class="num">2,6</td></tr><tr><td>4</td><td class="num">85</td><td class="num">−0,35</td><td class="num">0,37</td><td class="num">10%</td><td class="num">1,9</td><td class="num">1,9</td></tr><tr><td>5</td><td class="num">92</td><td class="num">−0,04</td><td class="num">0,48</td><td class="num">12%</td><td class="num">1,5</td><td class="num">1,5</td></tr><tr><td>6</td><td class="num">104</td><td class="num">+0,48</td><td class="num">0,67</td><td class="num">17%</td><td class="num">1,2</td><td class="num">1,2</td></tr><tr><td>7</td><td class="num">118</td><td class="num">+1,08</td><td class="num">0,83</td><td class="num">22%</td><td class="num">1,0</td><td class="gap">—</td></tr><tr><td>8</td><td class="num">135</td><td class="num">+1,81</td><td class="num">0,94</td><td class="num">24%</td><td class="num">0,9</td><td class="gap">—</td></tr></tbody></table>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1,5 minuto. É o lactato que não é pedido quando a pressão, sempre registrada, está normal. Para caber num slide, o exemplo tem uma só motora com peso +1, de modo que s é a pressão padronizada; no gerador (generate_mar_family.py), s combina todas as motoras. O sorteio do exemplo, com a mesma lógica, escondeu os pacientes 2, 7 e 8. As motoras são sorteadas uma vez por tabela e são as mesmas a 20% e a 60%: em biodeg, 12 das 41 colunas; em credit-g, 6 das 20. Uma motora categórica entra como o indicador da sua moda. O sorteio ao acaso evita escolher motoras que favoreçam algum método, mas faz com que algumas colunas dependam de motoras pouco relacionadas a elas. Como a falta depende só de colunas observadas, o MAR fica do lado identificável: um modelo que lê a linha inteira pode, em princípio, corrigir o viés. Lemos o efeito do mecanismo como MAR menos o controle pareado.</p></aside>
+</section>
+
+<section class="slide" data-sec="6 · Imputação sob MCAR">
+  <div class="eyebrow">6 · Imputação sob MCAR</div>
+  <h2>Três mudanças de método baixaram o erro médio</h2>
+  <ul class="points">
+    <li><b>Ponto de partida:</b> o primeiro TRIDENT de imputação só errava menos, em média, que a referência simples de então em 6 das 21 variantes (E19).</li>
+    <li><b>Alvo de pré-treino normalizado e <i>decode</i> longo:</b> melhorou 9 das 21.</li>
+    <li><b>Lacunas reais mostradas como <code>[MASK]</code> no <i>decode</i>:</b> melhorou 11, e 13 em sementes novas.</li>
+    <li><b>Época escolhida pelas lacunas de validação (a leitura K):</b> melhorou 3, todas a 80%, e 6 numa repetição.</li>
+  </ul>
+  <p class="note"><code>impute_score</code> médio nas 21 variantes: de 0,7929 para 0,7542 em H, a leitura implantável, e 0,7416 em K calibrado, de oráculo.</p>
+  <aside class="notes"><p>Cerca de 1 minuto. Cada mudança foi pré-registrada contra a configuração anterior, com a exigência de não piorar nenhuma variante. Alvo normalizado: a representação que o pré-treino prevê passa por uma normalização de camada; decode longo: 450 épocas. A saída padrão é K até 20% e, de 40% em diante, K calibrado, com uma calibração lida nas mesmas lacunas de validação. No E19, a referência simples ainda não tinha o LightGBM, e o estudo usou só a semente 42. As médias são nas sementes 42/7/13; o encoder maior e o lote grande vieram depois.</p></aside>
+</section>
+
+<section class="slide" data-sec="6 · Imputação sob MCAR">
+  <div class="eyebrow">6 · Imputação sob MCAR</div>
+  <h2>Contra os imputadores clássicos, o TRIDENT vence na maioria</h2>
+  <ul class="points sm">
+    <li><b>Referência simples:</b> K vence 16 de 21 e perde 2; na confirmação, H vence 11 de 15 e perde 1.</li>
+    <li><b>Referência simples ajustada:</b> K vence 13 de 21 e perde 3. A regra fixada para a confirmação, lida em K e que exige vencer as duas referências simples, deu resultado misto: 9 vitórias e 3 derrotas em 15 (E44).</li>
+    <li><b>Clássicos fortes:</b> K vence 13 de 21 e perde 1.</li>
+  </ul>
+  <p class="note">Lembrete: <b>K</b> guarda a época que melhor preenche as lacunas da validação, conferidas contra os valores que nós apagamos; é o oráculo, o teto. <b>H</b> guarda a época de menor perda de validação, sem olhar valor apagado; é o que teríamos com dados reais.</p>
+  <figure class="grow">
+    <div class="legend" id="leg-tallies"></div>
+    <div class="chart" id="fig-tallies"></div>
+    <figcaption>Variantes por veredito, sob MCAR. Desenvolvimento: 21 variantes; confirmação: 15, lidas uma vez.</figcaption>
+  </figure>
+  <aside class="notes"><p>Cerca de 1,5 minuto. O ajuste melhora a própria referência em 17 de 21 variantes, mas muda poucos vereditos. Duas das derrotas da confirmação estão em electricity, onde HGB e LightGBM usam a coluna de data, com 933 valores, como uma chave que o TRIDENT, ao lê-la como número, não consegue explorar; quando a data falta na linha, o TRIDENT não é pior que eles (E54). Desenvolvimento: sementes 101/202/303; confirmação: 707/808/909.</p></aside>
+</section>
+
+<section class="slide" data-sec="6 · Imputação sob MCAR">
+  <div class="eyebrow">6 · Imputação sob MCAR</div>
+  <h2>Contra o TabPFN v2, o TRIDENT não perde nas numéricas até 60%; o TabPFN lidera a 80% e nas mais categóricas</h2>
+  <ul class="points sm">
+    <li>O TabPFN v2 é o adversário mais forte: supera o melhor clássico forte em 11 de 15 variantes de confirmação e não perde nenhuma.</li>
+    <li>Na confirmação, H é melhor em 5, sem diferença em 5 e pior em 5; no desenvolvimento, K é melhor em 9 e pior em 6.</li>
+    <li>A divisão é coerente com o <i>prior</i> do TabPFN, aprendido em tabelas sintéticas, que pesa quando a linha quase não tem contexto; o TRIDENT aprende só com a tabela incompleta.</li>
+  </ul>
+  <figure class="grow">
+    <div class="legend" id="leg-tallies-tabpfn"></div>
+    <div class="chart" id="fig-tallies-tabpfn"></div>
+  </figure>
+  <aside class="notes"><p>Cerca de 1,5 minuto. Em detalhe: nas numéricas até 60%, o TRIDENT lidera na maioria das variantes, e vehicle e kc2 a 20% e 40% ficam sem diferença; o TRIDENT lidera em spambase em todas as taxas, em letter e pendigits de 20% a 60%, em biodeg abaixo de 80% e em kc2 a 60% e 80%; o TabPFN lidera a 80% (exceto spambase e kc2) e, a partir de 40%, nas duas tabelas mais categóricas, kr-vs-kp e credit-g. Mesmo onde perde, o TRIDENT preserva melhor a dispersão dos dados, mais perto da verdade em 14 das 15 variantes de confirmação (E56).</p><p>Também comparamos com dois imputadores profundos recentes, sem ajuste, nas configurações dos seus artigos: o MaCoDE, um Transformer mascarado sobre valores discretizados em faixas, perde para o TRIDENT em 20 de 21 variantes de desenvolvimento e 14 de 15 de confirmação (E48); o ReMasker, um autoencoder mascarado, perde nas 12 variantes numéricas da confirmação, na leitura K (E159).</p></aside>
+</section>
+
+<section class="slide" data-sec="7 · MNAR e MAR">
+  <div class="eyebrow">7 · Imputação fora do MCAR</div>
+  <h2>Sob MNAR e MAR, a posição se mantém</h2>
+  <div class="cols">
+    <div class="col">
+      <h3>MNAR</h3>
+      <ul class="points sm">
+        <li>Todo imputador subestima os valores escondidos; o TRIDENT é o que menos desloca o viés em 9 dos 10 arquivos MNAR.</li>
+        <li><b>Contra a referência simples:</b> H vence nos 7 casos com a inclinação padrão; não há diferença na inclinação 1,0, e H perde na 2,0 (E46).</li>
+        <li><b>Contra o TabPFN v2:</b> H é melhor em 6 de 10 e nunca pior, em taxas (20% e 60%) onde já não perdia sob MCAR (E58).</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>MAR</h3>
+      <ul class="points sm">
+        <li><b>Contra os clássicos fortes e o TabPFN v2:</b> o TRIDENT não perde terreno do MCAR para o MAR em seis tabelas; a vantagem encolhe só em biodeg a 60%, um caso em doze (E64).</li>
+        <li><b>Contra a referência simples:</b> a vantagem encolhe a 60% nas três tabelas numéricas pequenas, mas H nunca fica atrás dela.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1,5 minuto. No MNAR, o viés é medido nos preenchimentos de K, entre dez métodos; os 10 arquivos são os sete pares de tabela e taxa e três degraus extras da inclinação em biodeg a 60%; a vantagem sobre a referência simples encolhe em spambase e biodeg a 60%, e a varredura de inclinação é em biodeg. O TabPFN não ganha terreno ao passar do MCAR para o MNAR. Leitura possível: quando um valor alto some, as colunas correlacionadas da mesma linha ainda o denunciam, e um modelo que lê a linha inteira aproveita isso.</p><p>No MAR, um primeiro estudo, em quatro tabelas, sugeria perda de terreno; com seis tabelas a 20% e 60%, sorteio e sementes novos, isso não se sustentou.</p><p>Tentamos fazer o modelo explorar o mecanismo. Sob MAR, máscaras de decode por propensão não melhoraram (E65). Sob MNAR, o [NULL] sozinho nas lacunas do decode foi pior (E67); uma variante do TRIDENT cujo decode distingue a lacuna real da própria máscara lê o padrão de lacunas sob MNAR moderado, a primeira evidência de que o [NULL] carrega essa informação, mas custa acurácia em 11 de 11 variantes (E81).</p></aside>
+</section>
+
+<section class="slide" data-sec="8 · Híbrido">
+  <div class="eyebrow">8 · O híbrido com o TabPFN v2</div>
+  <h2>Por que misturar: os dois erram em lugares diferentes</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="points sm">
+        <li>Dois termômetros com o mesmo erro médio, mas com erros independentes, dão em média uma leitura melhor que qualquer um sozinho: os erros se cancelam em parte.</li>
+        <li><b>Mistura meio a meio</b> dos preenchimentos numéricos do TRIDENT e do TabPFN: melhor que os dois em 10 de 15 variantes (E60), mas só em 3 de 9 nas tabelas e sementes de outro estudo.</li>
+        <li><b>Um peso por coluna</b>, escolhido com a tabela completa: melhor que os dois em 13 de 21. Mas usa os valores apagados, que um modelo em uso não tem.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>A primeira versão implantável falhou</h3>
+      <ul class="points sm">
+        <li>Escolher um peso por coluna nas células observadas da validação deixou o híbrido pior que o TabPFN em 5 de 10 variantes difíceis (E82).</li>
+        <li>Numa leitura feita depois, com os pesos de oráculo, o mesmo híbrido ficava no nível do TabPFN, pior só em 2 das 10: o que falhava era a escolha, não a mistura.</li>
+        <li>Com cerca de 20 células de validação por coluna, escolher entre cinco pesos é, em boa parte, ajustar ruído.</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes"><p>As variantes difíceis são aquelas em que a mistura meio a meio não superava o TabPFN. Pela convexidade do erro quadrático, a mistura nunca fica atrás dos dois ao mesmo tempo nas células numéricas; por isso a evidência de complementaridade é vencer o melhor dos dois. O 3 de 9 é o E66, o mínimo que a sua regra aceitava como complementaridade; a mistura não alcança o TabPFN em credit-g, cuja vantagem está nas células categóricas, que a média não toca. As cerca de 20 células por coluna são de biodeg a 80%: cerca de 860 células observadas de validação por dobra, em 41 colunas (de 13 a 30 por coluna na primeira dobra).</p></aside>
+</section>
+
+<section class="slide" data-sec="8 · Híbrido">
+  <div class="eyebrow">8 · O híbrido com o TabPFN v2</div>
+  <h2>A regra implantável: um peso para a tabela inteira</h2>
+  <div class="cols mech">
+    <div class="col">
+      <div class="formula">preenchimento = <i>w</i> · H + (1 − <i>w</i>) · TabPFN, &nbsp;<i>w</i> ∈ {0; 0,25; 0,5; 0,75; 1}</div>
+      <ol class="points sm">
+        <li>Divide as células <b>observadas</b> da validação em 5 grupos e esconde um grupo por vez, como <code>[MASK]</code>.</li>
+        <li>H e o TabPFN preenchem as células escondidas; o valor verdadeiro é o que estava lá.</li>
+        <li>Escolhe o <i>w</i> de menor erro somando todas as colunas numéricas, cada uma na sua escala.</li>
+        <li>Nas categóricas, uma escolha só: o TabPFN, se acertar mais que H; senão, H.</li>
+      </ol>
+      <p class="note">Uma escolha para a tabela inteira usa todas as células de validação de uma vez (cerca de 860 em biodeg a 80%), em vez de cerca de 20 por coluna. Nada na regra usa a tabela completa.</p>
+    </div>
+    <div class="col">
+      <div class="tablewrap ex">
+        <table><caption>Exemplo ilustrativo: cinco células observadas escondidas da validação</caption>
+        <thead><tr><th>verdade</th><th>H</th><th>TabPFN</th><th>mistura, <i>w</i> = 0,25</th></tr></thead>
+        <tbody><tr><td class="num">2,0</td><td class="num">2,4</td><td class="num">1,8</td><td class="num hl">1,95</td></tr><tr><td class="num">1,5</td><td class="num">1,3</td><td class="num">1,6</td><td class="num hl">1,53</td></tr><tr><td class="num">3,0</td><td class="num">3,5</td><td class="num">2,8</td><td class="num hl">2,98</td></tr><tr><td class="num">1,2</td><td class="num">1,0</td><td class="num">1,4</td><td class="num hl">1,30</td></tr><tr><td class="num">2,4</td><td class="num">2,9</td><td class="num">2,2</td><td class="num hl">2,38</td></tr></tbody></table>
+      </div>
+      <div class="tablewrap ex narrow">
+        <table><caption>Erro quadrático somado, por peso de H</caption>
+        <thead><tr><th><i>w</i></th><th>erro</th></tr></thead>
+        <tbody><tr><td>0 (só TabPFN)</td><td class="num">0,170</td></tr><tr class="pick"><td>0,25</td><td class="num">0,014</td></tr><tr><td>0,5</td><td class="num">0,058</td></tr><tr><td>0,75</td><td class="num">0,299</td></tr><tr><td>1 (só H)</td><td class="num">0,740</td></tr></tbody></table>
+      </div>
+    </div>
+  </div>
+  <aside class="notes"><p>No exemplo, em cada célula H e o TabPFN erram em sentidos opostos, H por mais (0,2 a 0,5) e o TabPFN por menos (0,1 a 0,2); nenhum dos dois sozinho é o melhor, e a regra escolhe 25% de H e 75% de TabPFN. Os valores são inventados; a conta é a mesma do código (table_rule). Em caso de empate, a regra prefere a mistura meio a meio. Cada coluna numérica entra dividida pelo desvio-padrão do treino, para que nenhuma domine a soma. Como foi escrita depois da refutação do E82, a regra foi confirmada em sementes novas (E90, E91).</p></aside>
+</section>
+
+<section class="slide" data-sec="8 · Híbrido">
+  <div class="eyebrow">8 · O híbrido com o TabPFN v2</div>
+  <h2>Sob MCAR, a validação escolhe a mistura</h2>
+  <p>Em 26 variantes MCAR, com as sementes do desenvolvimento, o híbrido nunca é pior que H e é pior que o TabPFN só em credit-g a 80%, por +0,0068 (E174).</p>
+  <figure class="tall grow">
+    <div class="legend" id="leg-hyb"></div>
+    <div class="panels"><div class="chart" id="fig-hyb-h"></div><div class="chart" id="fig-hyb-t"></div></div>
+    <figcaption>Híbrido menos H (esq.) e menos TabPFN v2 (dir.), IC 95% sobre quinze pares; negativo favorece o híbrido.</figcaption>
+  </figure>
+  <aside class="notes"><p>Cerca de 1,5 minuto. Entre as variantes sintéticas, o híbrido vale só sob MCAR. É melhor que H em 19 e que o TabPFN em 16. Em sementes novas, não foi pior que H nem que o TabPFN em nenhuma de 17 variantes e foi melhor que H em 14 (E90, E91). Nas variantes difíceis, aquelas em que a média meio a meio não superava o TabPFN, o híbrido em geral alcança o TabPFN, mas raramente o supera. O híbrido precisa do TabPFN na hora de preencher; sob MAR e MNAR sintéticos a leitura foi mista (E93) e, no MNAR com inclinação 2,0, o híbrido perde para H em dois conjuntos de sementes (E170, E172). Sementes do desenvolvimento: 101/202/303.</p></aside>
+</section>
+
+<section class="slide" data-sec="9 · MIMIC-IV">
+  <div class="eyebrow">9 · MIMIC-IV</div>
+  <h2>Lacunas reais de UTI: a decisão clínica de não medir</h2>
+  <div class="cols">
+    <div class="col">
+      <ul class="points sm">
+        <li>Coorte de 11.082 internações de UTI com suspeita de infecção, em duas tabelas: <b>cardio</b> (sinais vitais, exames e vasopressores; 22 atributos) e os componentes do <b>SOFA</b>, escore de disfunção orgânica (17).</li>
+        <li><b>mimic-wide:</b> outra tabela do mesmo banco, com a primeira internação de UTI de <i>todo</i> paciente, sem o filtro de infecção: 65.366 linhas, 23 sinais vitais e exames das primeiras 30 horas, mais idade, sexo e tipo de admissão. É bem maior que o contexto de 10.000 linhas do TabPFN v2.</li>
+        <li>A falta é informativa: morrem 19,9% dos pacientes com lactato medido e 7,9% dos sem.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Dois desenhos</h3>
+      <ul class="points sm">
+        <li><b>Células medidas escondidas:</b> as lacunas naturais ficam como entrada, e pontuamos células medidas que escondemos.</li>
+        <li><b>Padrões transplantados:</b> o padrão real de lacunas de um paciente é copiado para outro que tinha tudo medido.</li>
+      </ul>
+      <p class="note">Nenhum dos dois pontua uma lacuna verdadeira: um lactato que não foi pedido não é igual a um que foi.</p>
+    </div>
+  </div>
+  <aside class="notes"><p>Cerca de 1,5 minuto. A MIMIC-IV é uma base de prontuários desidentificados de um hospital de Boston, de acesso credenciado pelo PhysioNet. Até aqui, toda falta foi injetada por um mecanismo que nós escrevemos; aqui, não existe valor verdadeiro para a lacuna. O transplante mantém quais exames faltam juntos num paciente real, e conhecemos o valor de cada lacuna; mas os doadores são mais graves que a coorte, com mortalidade de 33,5% e 25,4%, contra 16,5%, e o transplante é, no máximo, MAR. Na mimic-wide, sob MCAR, TRIDENT e TabPFN empatam: o tamanho da tabela sozinho não explica a vantagem.</p></aside>
+</section>
+
+<section class="slide" data-sec="9 · MIMIC-IV">
+  <div class="eyebrow">9 · MIMIC-IV</div>
+  <h2>Com padrões reais, o TRIDENT fica à frente da referência simples e, na mimic-wide, do TabPFN v2</h2>
+  <ul class="points sm">
+    <li><b>Referência simples:</b> melhor por cerca de 1,5% do escore dela nas células medidas escondidas (E148) e por cerca de 5% e 3% com padrões transplantados, na leitura K.</li>
+    <li><b>mimic-wide</b>, a tabela com a primeira internação de todo paciente (65.366 linhas): melhor que o TabPFN v2 por cerca de 13% do escore dele nas células medidas escondidas e 6% com transplante; sob MCAR, a diferença fica abaixo da margem de 1% (E176).</li>
+    <li>Preencher melhor não ajudou a prever óbito: numa regressão logística, só os indicadores de falta ajudaram, na tabela do SOFA (E150).</li>
+  </ul>
+  <figure class="grow">
+    <div class="legend" id="leg-mimic"></div>
+    <div class="chart" id="fig-mimic"></div>
+    <figcaption>TRIDENT menos cada oponente, IC 95%; negativo favorece o TRIDENT. Contra o TabPFN, só a mimic-wide tem teste; na coorte (marcadores vazados), a comparação é descritiva.</figcaption>
+  </figure>
+  <aside class="notes"><p>Cerca de 1,5 minuto. No transplante, as diferenças para a referência simples são −0,0455 no cardio e −0,0272 no SOFA (E149). Contra o TabPFN na coorte, de forma descritiva: com transplante, o TRIDENT fica à frente no cardio e atrás no SOFA; o híbrido vem no próximo slide. Na mimic-wide, as diferenças para o TabPFN v2 são −0,0991 e −0,0577. Sementes 42/7/13.</p><p>Treinado com só 10.000 linhas por dobra, o TRIDENT mantém 84% e 82% da vantagem na mimic-wide, que acompanha os padrões reais de lacuna mais do que o tamanho da tabela (E177); o E180, em andamento, separa o efeito das linhas do efeito dos passos de otimização.</p></aside>
+</section>
+
+<section class="slide" data-sec="9 · MIMIC-IV">
+  <div class="eyebrow">9 · MIMIC-IV</div>
+  <h2>O híbrido na MIMIC-IV: nunca pior que H, e às vezes igual a ele</h2>
+  <div class="tablewrap ex">
+    <table><caption>Híbrido implantável (a regra de um peso por tabela) menos H e menos o TabPFN v2; negativo favorece o híbrido</caption>
+    <thead><tr><th>tabela · desenho</th><th>estudo</th><th>− H</th><th></th><th>− TabPFN v2</th><th></th></tr></thead>
+    <tbody><tr><td>cardio · células medidas</td><td>E173</td><td class="num">−0,0025</td><td class="good">melhor</td><td class="num">−0,0462</td><td class="good">melhor</td></tr><tr><td>SOFA · células medidas</td><td>E173</td><td class="num">−0,0017</td><td class="">equivalente</td><td class="num">−0,0183</td><td class="good">melhor</td></tr><tr><td>cardio · transplante</td><td>E163</td><td class="num">−0,0034</td><td class="">equivalente</td><td class="num">−0,0674</td><td class="good">melhor</td></tr><tr><td>SOFA · transplante</td><td>E163</td><td class="num">−0,0151</td><td class="good">melhor</td><td class="num">+0,0054</td><td class="">sem diferença</td></tr><tr><td>mimic-wide · células medidas</td><td>E178</td><td class="num">+0,0000</td><td class="">equivalente</td><td class="num">−0,0990</td><td class="good">melhor</td></tr><tr><td>mimic-wide · transplante</td><td>E178</td><td class="num">+0,0000</td><td class="">equivalente</td><td class="num">−0,0575</td><td class="good">melhor</td></tr></tbody></table>
+  </div>
+  <ul class="points sm">
+    <li>Nas tabelas da coorte, o híbrido nunca fica pior que H. No SOFA com transplante, onde H fica atrás do TabPFN, ele é melhor que H e não se distingue do TabPFN.</li>
+    <li>Na mimic-wide, o TabPFN fica tão atrás que a regra escolhe o próprio H: o híbrido não estraga nada, mas também não acrescenta.</li>
+  </ul>
+  <aside class="notes"><p>Sementes: E173, 101/202/303 (repetido em 4545/5656/6767 com o mesmo resultado); E163, 42/7/13 (repetido no E166, em 4545/5656/6767); E178, 42/7/13. O ganho sobre H no cardio com células medidas é de 0,3% a 0,5% do escore de H. É preciso dizer uma exceção: com os padrões permutados entre as linhas, no SOFA, o híbrido fica pior que o TabPFN nos dois conjuntos de sementes (+0,0111 e +0,0149). Na mimic-wide, sob MCAR, há um pequeno ganho sobre H (−0,0024) e sobre o TabPFN (−0,0062). Por isso o híbrido foi adotado, no método, para as duas tabelas da coorte, e não para a mimic-wide.</p></aside>
+</section>
+
+<section class="slide" data-sec="10 · Conclusões">
+  <div class="eyebrow">10 · Conclusões</div>
+  <h2>O mesmo encoder, dois vereditos</h2>
+  <ol class="statement">
+    <li><p><b>Classificação:</b> insuficiente. Com todos os rótulos, o pré-treino não muda o macro-F1, e o TabPFN v2, sem ajuste de nenhum dos lados, supera o TRIDENT em todos os níveis; o TRIDENT lidera MLP, SAINT e TabNet de 40% a 80%, mas sobre o MLP só por cerca de um ponto.</p></li>
+    <li><p><b>Imputação:</b> competitivo. Vence a referência simples e os clássicos fortes na maioria das variantes e mantém a posição sob MAR e MNAR; diante do TabPFN v2, não perde nas numéricas até 60% e perde a 80% e nas mais categóricas.</p></li>
+    <li><p><b>Híbrido:</b> com o TabPFN v2, quase nunca perde para nenhum dos dois sob MCAR.</p></li>
+    <li><p><b>Imputação em dados clínicos reais:</b> à frente da referência simples e, com padrões reais numa tabela maior, do TabPFN v2. Preencher melhor, porém, não ajudou a prever óbito.</p></li>
+    <li><p><b>Falta informativa:</b> o <code>[NULL]</code> lê a falta, mas não mostramos que vença a imputação com indicador.</p></li>
+  </ol>
+  <aside class="notes"><p>Cerca de 1 minuto.</p></aside>
+</section>
+
+<section class="slide" data-sec="10 · Limites">
+  <div class="eyebrow">10 · Limites</div>
+  <h2>O que ainda não sabemos</h2>
+  <ul class="points">
+    <li>MNAR só em tabelas numéricas, nada fora do MCAR acima de 60% de falta, e um único MAR sintético.</li>
+    <li>Na MIMIC-IV, nenhum desenho pontua uma lacuna verdadeira, e há uma só coorte, de um hospital.</li>
+  </ul>
+  <aside class="notes"><p>Cerca de 1 minuto. Os intervalos por variante tratam as 15 dobras como independentes e são otimistas: com a correção de Nadeau–Bengio, 3 das 16 vitórias de K sobre a referência simples no desenvolvimento e 1 das 11 na confirmação virariam "sem diferença". As dobras da confirmação voltaram a estudos posteriores depois da leitura única.</p></aside>
+</section>
+
+<section class="slide end" data-sec="Fim">
+  <div class="eyebrow">TRIDENT</div>
+  <h1>Obrigado. Perguntas?</h1>
+  <p class="lede">Os números vêm do nosso registro de experimentos; o identificador entre parênteses, como (E87), remete a cada experimento.</p>
+  <aside class="notes"><p>A classificação e o híbrido são as seções que mais costumam gerar perguntas.</p></aside>
+</section>
+
+</div>
+<div class="bar" id="bar"></div>
+<button class="navbtn" id="prev" aria-label="Slide anterior">‹</button>
+<button class="navbtn" id="next" aria-label="Próximo slide">›</button>
+<div class="notes-panel" id="notes" hidden></div>
+<div class="tip" id="tip" hidden></div>
+<script type="application/json" id="data">__DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const NS = "http://www.w3.org/2000/svg";
+  const T = (id) => { const t = D.tables[id]; if (!t) throw new Error("tabela ausente: " + id); return t; };
+  const col = (t, name) => { const i = t.columns.indexOf(name); if (i < 0) throw new Error(`coluna "${name}" ausente em ${t.id}`); return i; };
+  const rel = (s) => String(s).replace(/\/scratch2\/diogoneiss\/TRIDENT\//g, "");
+  const comma = (x, n) => x.toFixed(n).replace(".", ",");
+  const fmt = (x, n = 4) => (x > 0 ? "+" : x < 0 ? "−" : "") + comma(Math.abs(x), n);
+  function ci(s) {
+    const m = String(s).replace(/−/g, "-").match(/([+-]?\d*\.?\d+)\s*\[\s*([+-]?\d*\.?\d+)\s*,\s*([+-]?\d*\.?\d+)\s*\]\s*(?:->\s*)?(.*)$/);
+    if (!m) throw new Error("intervalo ilegível: " + s);
+    const arrow = m[4].match(/->\s*(.+)$/);
+    return { d: +m[1], lo: +m[2], hi: +m[3], call: (arrow ? arrow[1] : m[4]).trim() };
+  }
+
+  // ---------- tooltip (textContent only: labels are data) ----------
+  const tip = document.getElementById("tip");
+  function tipFill(lines) {
+    tip.replaceChildren();
+    lines.forEach(([cls, txt], i) => { if (i) tip.appendChild(document.createElement("br")); const s = document.createElement("span"); s.className = cls; s.textContent = txt; tip.appendChild(s); });
+    tip.hidden = false;
+  }
+  function tipAt(x, y) { tip.style.left = Math.min(x + 14, window.innerWidth - 300) + "px"; tip.style.top = (y + 14) + "px"; }
+  function hover(node, lines) {
+    node.setAttribute("tabindex", "0");
+    node.addEventListener("mouseenter", (e) => { tipFill(lines); tipAt(e.clientX, e.clientY); });
+    node.addEventListener("mousemove", (e) => tipAt(e.clientX, e.clientY));
+    node.addEventListener("mouseleave", () => { tip.hidden = true; });
+    node.addEventListener("focus", () => { const r = node.getBoundingClientRect(); tipFill(lines); tipAt(r.right, r.top); });
+    node.addEventListener("blur", () => { tip.hidden = true; });
+  }
+  function el(tag, attrs, parent, text) {
+    const n = document.createElementNS(NS, tag);
+    for (const k in attrs) n.setAttribute(k, attrs[k]);
+    if (text != null) n.textContent = text;
+    if (parent) parent.appendChild(n);
+    return n;
+  }
+  function svg(id, w, h, label) {
+    const box = document.getElementById(id);
+    if (!box) return null;
+    const s = el("svg", { viewBox: `0 0 ${w} ${h}`, width: w, role: "img", "aria-label": label });
+    box.appendChild(s);
+    return s;
+  }
+  function legend(id, items) {
+    const box = document.getElementById(id);
+    if (!box) return;
+    items.forEach(([color, text, hollow]) => {
+      const k = document.createElement("span"); k.className = "k";
+      const m = document.createElement("span"); m.className = "mk" + (hollow ? " hollow" : ""); m.style.background = color;
+      k.appendChild(m); k.appendChild(document.createTextNode(text)); box.appendChild(k);
+    });
+  }
+
+  // ---------- tables, every one from the data block ----------
+  document.querySelectorAll("[data-table]").forEach((box) => {
+    const t = T(box.dataset.table);
+    const table = document.createElement("table");
+    table.createCaption().textContent = t.title_pt;
+    const hr = table.createTHead().insertRow();
+    t.columns.forEach((c) => { const th = document.createElement("th"); th.textContent = c; hr.appendChild(th); });
+    const body = table.createTBody();
+    t.rows.forEach((r) => { const tr = body.insertRow(); r.forEach((c) => { const td = tr.insertCell(); td.textContent = c; if (/^[+\-−]?\d/.test(c)) td.className = "num"; }); });
+    box.appendChild(table);
+    const src = document.createElement("div"); src.className = "srcline";
+    src.textContent = (t.note_pt ? t.note_pt + " · " : "") + "Fonte: " + rel(t.source);
+    box.appendChild(src);
+  });
+
+  // ---------- interval (forest) chart ----------
+  const callColor = (c) => /^(better|TRIDENT higher)/.test(c) ? "var(--good)" : /^(worse|baseline higher)/.test(c) ? "var(--bad)" : "var(--neutral-ink)";
+  const callPt = (c) => ({ better: "melhor", worse: "pior", none: "sem diferença", equivalent: "equivalente", ahead: "TabPFN à frente" })[c.split(" ")[0]] || c;
+  function intervals(id, rows, o) {
+    const w = o.w || 760, lw = o.lw || 110, rh = o.rh || 30, m = { t: o.title ? 40 : 22, b: 44, r: 18 };
+    const h = m.t + rows.length * rh + m.b;
+    const s = svg(id, w, h, o.label);
+    if (!s) return;
+    const lo = o.lo, hi = o.hi;
+    const X = (v) => lw + (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo) * (w - lw - m.r);
+    if (o.title) el("text", { x: 8, y: 16, class: "t-ink", "font-weight": 600, "font-size": 12.5 }, s, o.title);
+    if (o.band) el("rect", { x: X(o.band[0]), y: m.t - 6, width: X(o.band[1]) - X(o.band[0]), height: rows.length * rh + 6, fill: "var(--seq-0)" }, s);
+    o.ticks.forEach((t) => {
+      el("line", { x1: X(t), x2: X(t), y1: m.t - 6, y2: m.t + rows.length * rh, stroke: t === 0 ? "var(--axis)" : "var(--grid)", "stroke-width": 1 }, s);
+      el("text", { x: X(t), y: m.t + rows.length * rh + 16, "text-anchor": "middle", class: "t-data" }, s, (t > 0 ? "+" : t < 0 ? "−" : "") + comma(Math.abs(t), o.td || 2));
+    });
+    (o.refs || []).forEach((r) => {
+      el("line", { x1: X(r.v), x2: X(r.v), y1: m.t - 6, y2: m.t + rows.length * rh, stroke: "var(--ink-2)", "stroke-width": 1 }, s);
+      el("text", { x: X(r.v) + 4, y: m.t - 9, class: "t-muted" }, s, r.label);
+    });
+    if (o.axisLabel) el("text", { x: lw, y: h - 6, class: "t-muted" }, s, o.axisLabel);
+    rows.forEach((r, i) => {
+      const yc = m.t + i * rh + rh / 2;
+      el("text", { x: lw - 10, y: yc + 4, "text-anchor": "end", class: "t-ink" }, s, r.label);
+      r.series.forEach((x, k) => {
+        const off = r.series.length > 1 ? (k - (r.series.length - 1) / 2) * 9 : 0;
+        const c = x.color || callColor(x.call);
+        el("line", { x1: X(x.lo), x2: X(x.hi), y1: yc + off, y2: yc + off, stroke: c, "stroke-width": 2, "stroke-linecap": "round" }, s);
+        el("circle", { cx: X(x.d), cy: yc + off, r: 4.5, fill: x.hollow ? "var(--surface)" : c, stroke: x.hollow ? c : "var(--surface)", "stroke-width": 2 }, s);
+        const hit = el("circle", { cx: X(x.d), cy: yc + off, r: 12, fill: "transparent" }, s);
+        hover(hit, [["tv", `${fmt(x.d)} [${fmt(x.lo)}, ${fmt(x.hi)}]`], ["tl", r.label + (x.name ? " · " + x.name : "")]].concat(x.call ? [["tl", callPt(x.call)]] : []));
+      });
+    });
+  }
+
+  // ---------- 4.1 pre-training ----------
+  (function () {
+    const a = T("cls_pretrain_e87"), b = T("cls_pretrain_e118");
+    const lv = (t) => Object.fromEntries(t.rows.map((r) => [r[0], r]));
+    const A = lv(a), B = lv(b);
+    const pct = (k) => parseInt(k, 10) + "%";
+    const rows = Object.keys(A).map((k) => ({ label: pct(k), series: [
+      { ...ci(A[k][col(a, "B − A")] + " " + A[k][col(a, "IC 95%")]), color: "var(--model)", name: "nossa configuração anterior (E87)" },
+      { ...ci(B[k][col(b, "B − A (E118)")] + " " + B[k][col(b, "IC 95%")]), color: "var(--s2)", name: "padrões do código original (E118)" } ] }));
+    legend("leg-cls-pretrain", [["var(--model)", "nossa configuração anterior (300 épocas de pré-treino, 150 de ajuste fino)"], ["var(--s2)", "padrões do código original (40 épocas em cada etapa)"]]);
+    intervals("fig-cls-pretrain", rows, { label: "Sem menos com pré-treino, macro-F1 por nível", lo: -0.02, hi: 0.012, ticks: [-0.02, -0.01, 0, 0.01], band: [-0.01, 0.01], refs: [{ v: -0.017, label: "ganho do artigo (1,7 ponto)" }], axisLabel: "sem − com pré-treino, macro-F1 (negativo: o pré-treino ajuda)" });
+  })();
+
+  // ---------- 1 pipeline diagram ----------
+  (function () {
+    const s = svg("fig-pipeline", 760, 190, "Pipeline: tabela com lacunas, pré-treino, decode por coluna, leituras");
+    if (!s) return;
+    const box = (x, w, title, lines, isNew) => {
+      el("rect", { x, y: 30, width: w, height: 112, rx: 6, fill: isNew ? "var(--model-wash)" : "var(--surface)", stroke: isNew ? "var(--model)" : "var(--axis)", "stroke-width": 1.5 }, s);
+      el("text", { x: x + 10, y: 52, class: "t-ink", "font-weight": 600, "font-size": 12.5 }, s, title);
+      lines.forEach((t, i) => el("text", { x: x + 10, y: 72 + i * 16 }, s, t));
+    };
+    const arrow = (x1, x2) => { el("line", { x1, y1: 86, x2: x2 - 6, y2: 86, stroke: "var(--axis)", "stroke-width": 1.5 }, s); el("path", { d: `M${x2 - 8},81 L${x2},86 L${x2 - 8},91 Z`, fill: "var(--axis)" }, s); };
+    box(4, 150, "Tabela com lacunas", ["lacuna real: [NULL]", "um token por coluna", "MCAR, MAR ou MNAR"], false);
+    arrow(154, 176);
+    box(176, 180, "Pré-treino (artigo)", ["esconde células observadas", "como [MASK] e prevê a", "representação de cada uma"], false);
+    el("text", { x: 186, y: 134, fill: "var(--model)", style: "fill:var(--model)" }, s, "+ alvo normalizado (nosso)");
+    arrow(356, 378);
+    box(378, 190, "Decode por coluna (nosso)", ["no lugar do classificador:", "uma cabeça por coluna", "lacunas reais como [MASK]"], true);
+    arrow(568, 590);
+    box(590, 166, "Tabela preenchida", ["o valor previsto", "em cada lacuna"], true);
+    el("text", { x: 4, y: 170, class: "t-muted" }, s, "Artigo: pré-treino → ajuste fino sobre [CLS]. Nossa versão: o mesmo encoder, com decode no lugar do classificador.");
+  })();
+
+  // ---------- 3 mechanism curves (generator formulas) ----------
+  (function () {
+    const erf = (x) => { const t = 1 / (1 + 0.3275911 * Math.abs(x)); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return x >= 0 ? y : -y; };
+    const Phi = (x) => 0.5 * (1 + erf(x / Math.SQRT2));
+    const sig = (x) => 1 / (1 + Math.exp(-x));
+    const curves = [["MNAR, incl. 0,25", (z) => Phi(0.25 * z), "var(--ord-1)"], ["MNAR, incl. 0,5 (padrão)", (z) => Phi(0.5 * z), "var(--ord-2)"], ["MNAR, incl. 1,0", (z) => Phi(z), "var(--ord-3)"], ["MNAR, incl. 2,0", (z) => Phi(2 * z), "var(--ord-4)"], ["MAR (padrão)", (z) => sig(1.5 * z), "var(--s2)"]];
+    const w = 600, h = 240, m = { l: 56, r: 150, t: 14, b: 36 };
+    const s = svg("fig-mech", w, h, "Peso de sorteio por valor padronizado");
+    if (!s) return;
+    const X = (z) => m.l + (z + 3) / 6 * (w - m.l - m.r), Y = (p) => m.t + (1 - p) * (h - m.t - m.b);
+    [0, 0.5, 1].forEach((p) => { el("line", { x1: m.l, x2: w - m.r, y1: Y(p), y2: Y(p), stroke: p === 0 ? "var(--axis)" : "var(--grid)" }, s); el("text", { x: m.l - 6, y: Y(p) + 4, "text-anchor": "end", class: "t-data" }, s, comma(p, 1)); });
+    [-3, -2, -1, 0, 1, 2, 3].forEach((z) => el("text", { x: X(z), y: h - m.b + 16, "text-anchor": "middle", class: "t-data" }, s, (z < 0 ? "−" : "") + Math.abs(z)));
+    el("text", { x: m.l, y: h - 2, class: "t-muted" }, s, "z: valor padronizado da célula (MNAR) · s: escore das colunas que decidem (MAR)");
+    const ends = [];
+    curves.forEach(([lab, f, c]) => {
+      const pts = []; for (let z = -3; z <= 3.0001; z += 0.1) pts.push(`${pts.length ? "L" : "M"}${X(z)},${Y(f(z))}`);
+      el("path", { d: pts.join(" "), fill: "none", stroke: c, "stroke-width": 2, "stroke-linejoin": "round" }, s);
+      ends.push([lab, Y(f(3))]);
+    });
+    ends.sort((a, b) => a[1] - b[1]).reduce((prev, e) => { const y = Math.max(e[1], prev + 13); el("text", { x: w - m.r + 8, y: y + 4, class: "t-ink" }, s, e[0]); return y; }, -1e9);
+    legend("leg-mech", curves.map(([lab, , c]) => [c, lab]));
+    el("text", { x: 12, y: m.t + (h - m.t - m.b) / 2, class: "t-muted", transform: `rotate(-90 12 ${m.t + (h - m.t - m.b) / 2})`, "text-anchor": "middle" }, s, "chance de sumir");
+  })();
+
+  // ---------- 8 hybrid, E174 ----------
+  (function () {
+    const t = T("e174_per_variant");
+    const lvl = (v) => parseInt((v.match(/_(\d+)nan/) || [0, 0])[1], 10);
+    const rows = t.rows.map((r) => ({ name: r[0].replace(/\s*\(trails\)/, "").replace(/_(\d+)nan$/, " $1%"), h: ci(r[col(t, "table_tabpfn − H")]), p: ci(r[col(t, "table_tabpfn − tabpfn")]) }))
+      .sort((a, b) => lvl(a.name) - lvl(b.name) || a.name.localeCompare(b.name));
+    const hollow = (c) => !/^(better|worse)/.test(c);
+    const count = (k) => { const c = { better: 0, none: 0, equivalent: 0, worse: 0 }; rows.forEach((r) => { c[r[k].call.split(" ")[0]]++; }); return c; };
+    const ch = count("h"), cp = count("p");
+    const title = (who, c) => `híbrido − ${who}: melhor ${c.better} · equiv. ${c.equivalent} · sem diferença ${c.none} · pior ${c.worse}`;
+    const opts = { lw: 130, rh: 22, w: 470, lo: -0.19, hi: 0.03, ticks: [-0.15, -0.1, -0.05, 0], axisLabel: "diferença de impute_score (negativo: híbrido melhor)" };
+    intervals("fig-hyb-h", rows.map((r) => ({ label: r.name, series: [{ ...r.h, hollow: hollow(r.h.call), name: "híbrido − H" }] })), { ...opts, title: title("H", ch), label: "E174: híbrido menos H por variante" });
+    intervals("fig-hyb-t", rows.map((r) => ({ label: r.name, series: [{ ...r.p, hollow: hollow(r.p.call), name: "híbrido − TabPFN v2" }] })), { ...opts, title: title("TabPFN", cp), label: "E174: híbrido menos TabPFN por variante" });
+    legend("leg-hyb", [["var(--good)", "melhor"], ["var(--neutral-ink)", "equivalente ou sem diferença", true], ["var(--bad)", "pior"]]);
+  })();
+
+  // ---------- 6 tallies (stacked bars of verdicts), two charts ----------
+  function tallies(id, legId, pick) {
+    const t = T("tallies_by_set");
+    const cS = col(t, "conjunto de seeds"), cL = col(t, "leitura − oponente"), cC = col(t, "melhor / sem diferença / (equivalente) / pior");
+    const rows = pick.map(([set, lab, name]) => {
+      const r = t.rows.find((x) => x[cS] === set && x[cL] === lab);
+      if (!r) throw new Error("contagem ausente: " + set + " · " + lab);
+      const n = r[cC].split("/").map((x) => parseInt(x, 10));
+      const c = n.length === 4 ? { better: n[0], none: n[1], equivalent: n[2], worse: n[3] } : { better: n[0], none: n[1], equivalent: 0, worse: n[2] };
+      return { set, name, c, total: n.reduce((a, b) => a + b, 0) };
+    });
+    const segs = [["better", "melhor", "var(--good)", "#fff"], ["none", "sem diferença", "var(--neutral)", "var(--ink)"], ["equivalent", "equivalente", "var(--neutral-ink)", "#fff"], ["worse", "pior", "var(--bad)", "#fff"]];
+    const w = 760, lw = 270, rh = 30, bh = 20, m = { t: 8, b: 8 };
+    const s = svg(id, w, m.t + rows.length * rh + m.b, "Contagens de veredito por oponente");
+    if (!s) return;
+    rows.forEach((r, i) => {
+      const y = m.t + i * rh;
+      if (i > 0 && rows[i - 1].set !== r.set) el("line", { x1: 0, x2: w, y1: y - 2, y2: y - 2, stroke: "var(--grid)" }, s);
+      el("text", { x: lw - 10, y: y + bh / 2 + 4, "text-anchor": "end", class: "t-ink" }, s, r.name);
+      let x = lw; const unit = (w - lw - 50) / 21;
+      segs.forEach(([k, lab, fill, ink]) => {
+        const v = r.c[k]; if (!v) return;
+        const sw = v * unit;
+        const rect = el("rect", { x: x + 1, y, width: Math.max(sw - 2, 1), height: bh, rx: 3, fill }, s);
+        hover(rect, [["tv", `${v} de ${r.total}`], ["tl", `${r.name} · ${lab}`]]);
+        if (sw > 18) el("text", { x: x + sw / 2, y: y + bh / 2 + 4, "text-anchor": "middle", style: `fill:${ink}`, "font-size": 11, "pointer-events": "none" }, s, String(v));
+        x += sw;
+      });
+      el("text", { x: x + 6, y: y + bh / 2 + 4, class: "t-muted t-data" }, s, `n = ${r.total}`);
+    });
+    legend(legId, segs.map(([, lab, fill]) => [fill, lab]));
+  }
+  const DEV = "dev 101/202/303", CONF = "confirmação 707/808/909";
+  tallies("fig-tallies", "leg-tallies", [[DEV, "K − bar", "desenvolvimento · K − referência simples"], [DEV, "K − tuned bar", "desenvolvimento · K − ref. simples ajustada"], [DEV, "K − strong_live (quatro clássicos)", "desenvolvimento · K − clássicos fortes"],
+    [CONF, "H − bar", "confirmação · H − referência simples"], [CONF, "K − strong_live", "confirmação · K − clássicos fortes"]]);
+  tallies("fig-tallies-tabpfn", "leg-tallies-tabpfn", [[DEV, "K − tabpfn", "desenvolvimento · K − TabPFN v2"], [CONF, "H − tabpfn (implantável)", "confirmação · H − TabPFN v2"]]);
+
+  // ---------- 9 MIMIC forest ----------
+  (function () {
+    const a = T("e148_primary"), b = T("e149_primary"), c = T("mimic_wide_e176_e177");
+    const rows = [];
+    a.rows.forEach((r) => rows.push({ label: r[0].replace("mimic-cardio_natural", "cardio · células medidas").replace("mimic-sofa_natural", "SOFA · células medidas"), series: [{ ...ci(r[col(a, "decodificador − barra [IC 95%], Holm")]), color: "var(--s2)", name: "− referência simples" }, { ...ci(r[col(a, "decodificador − TabPFN [IC 95%]")]), color: "var(--model)", hollow: true, name: "− TabPFN v2 (descritivo)" }] }));
+    b.rows.forEach((r) => rows.push({ label: r[0].replace("mimic-cardio-donor_tmatch_20nan", "cardio · transplante").replace("mimic-sofa-donor_tmatch_20nan", "SOFA · transplante"), series: [{ ...ci(r[col(b, "decodificador − barra [IC 95%], Holm")]), color: "var(--s2)", name: "− referência simples (K)" }, { ...ci(r[col(b, "decodificador − TabPFN [IC 95%]")]), color: "var(--model)", hollow: true, name: "− TabPFN v2 (descritivo)" }] }));
+    c.rows.forEach((r) => rows.push({ label: "mimic-wide · " + ({ "mimic-wide_natural": "células medidas", "mimic-wide-donor_tmatch_20nan": "transplante", "mimic-wide-donor_mcar_20nan": "MCAR (controle)" })[r[0].split(" ")[0]], series: [{ ...ci(r[col(c, "E176 decodificador − barra")]), color: "var(--s2)", name: "− referência simples" }, { ...ci(r[col(c, "E176 decodificador − TabPFN [IC 95%]")]), color: "var(--model)", name: "− TabPFN v2" }] }));
+    legend("leg-mimic", [["var(--s2)", "TRIDENT − referência simples"], ["var(--model)", "TRIDENT − TabPFN v2"], ["var(--model)", "TRIDENT − TabPFN v2, descritivo", true]]);
+    intervals("fig-mimic", rows, { label: "MIMIC-IV: TRIDENT menos referência simples e TabPFN v2", lw: 240, lo: -0.11, hi: 0.04, ticks: [-0.1, -0.05, 0, 0.03], td: 2, axisLabel: "diferença de impute_score (negativo: TRIDENT melhor)" });
+  })();
+
+})();
+</script>
+<script>
+(function () {
+  const slides = [...document.querySelectorAll(".slide")];
+  const N = slides.length, notes = document.getElementById("notes"), bar = document.getElementById("bar");
+  slides.forEach((s, i) => {
+    const f = document.createElement("div"); f.className = "foot";
+    const a = document.createElement("span"); a.textContent = s.dataset.sec || "";
+    const b = document.createElement("span"); b.textContent = `${i + 1} / ${N}`;
+    f.append(a, b); s.appendChild(f);
+  });
+  let cur = -1;
+  function go(i) {
+    i = Math.max(0, Math.min(N - 1, i));
+    if (i === cur) return;
+    if (cur >= 0) slides[cur].classList.remove("on");
+    cur = i; slides[cur].classList.add("on");
+    bar.style.width = ((cur + 1) / N * 100) + "%";
+    try { history.replaceState(null, "", "#" + (cur + 1)); } catch (e) { /* file: URLs in some engines */ }
+    const tip = document.getElementById("tip"); if (tip) tip.hidden = true;
+    const n = slides[cur].querySelector("aside.notes");
+    notes.replaceChildren();
+    if (n) [...n.children].forEach((p) => notes.appendChild(p.cloneNode(true)));
+    const h = document.createElement("p"); h.className = "hint"; h.textContent = "N: notas · ← →: navegar · F: tela cheia · Home/End";
+    notes.appendChild(h);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(k)) { e.preventDefault(); go(cur + 1); }
+    else if (["ArrowLeft", "PageUp", "Backspace"].includes(k)) { e.preventDefault(); go(cur - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(N - 1); }
+    else if (k === "n" || k === "N") notes.hidden = !notes.hidden;
+    else if (k === "f" || k === "F") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }
+  });
+  document.getElementById("prev").addEventListener("click", () => go(cur - 1));
+  document.getElementById("next").addEventListener("click", () => go(cur + 1));
+  let x0 = null;
+  document.addEventListener("touchstart", (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener("touchend", (e) => { if (x0 == null) return; const dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 50) go(cur + (dx < 0 ? 1 : -1)); x0 = null; });
+  window.addEventListener("hashchange", () => go((parseInt(location.hash.slice(1), 10) || 1) - 1));
+  go((parseInt(location.hash.slice(1), 10) || 1) - 1);
+})();
+</script>
+</html>

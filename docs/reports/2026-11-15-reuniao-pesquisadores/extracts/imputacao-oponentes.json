@@ -1,0 +1,1896 @@
+{
+ "key": "imputacao-oponentes",
+ "section": "IMPUTAÇÃO: resultados contra cada nível de oponente (resultados principais)",
+ "storyline_pt": "Para medir o TRIDENT como imputador, o fork o compara com uma escada de oponentes, todos pontuados nas mesmas células com o mesmo impute_score (1,0 = preencher com a média/moda da coluna; menor é melhor). Contra a barra fraca (o melhor entre mean_mode, kNN 5 e 10, hgb e lgbm), K é melhor em 16 de 21 variantes de desenvolvimento e em 11 de 15 de confirmação. Quando as baselines recebem um orçamento de tuning igual, só na validação (a barra ajustada, ADR 0022), as vitórias caem para 13 de 21 e 9 de 15, e o critério D4 (vencer as duas barras) dá 13 de 21 e 9 de 15. Contra o tier forte clássico (missForest, condexp, SoftImpute, ICE), K segue majoritariamente melhor: 13/7/1 no desenvolvimento e 12/1/2 na confirmação. O TabPFN v2, sem tuning, é o oponente mais forte: vence o tier forte clássico em 11 de 15 variantes de confirmação e por isso entrou no tier (ADR 0028), e com ele o quadro fica misto, com K − TabPFN 9/6/6 no desenvolvimento (depois do E108) e 6/4/5 na confirmação. A divisão segue a tabela e a taxa: o TRIDENT lidera em spambase em todas as taxas, em letter e pendigits de 20 a 60nan, em biodeg abaixo de 80nan e em kc2 de 60 a 80nan. O TabPFN lidera a 80nan e em kr-vs-kp e credit-g a partir de 40nan. A saída default (KC) perde para o TabPFN só a 80nan (4 derrotas em 15 na confirmação), e essas vitórias do TabPFN vêm com preenchimentos mais encolhidos: a dispersão do TRIDENT fica mais perto da verdade em 14 de 15 variantes (E56). Onde perde para o TabPFN nas tabelas categóricas, o déficit é uniforme por coluna (E61, sem alvo para ponderação). Em electricity os boosters ganham porque usam a coluna date como chave (E54); sem a data na linha, o TRIDENT não é pior. Os resultados não se invertem em outros conjuntos de seeds nem em sorteios MCAR novos (E51, E58, E62), e as reexecuções da ADR 0036 (E108) só moveram cinco variantes, todas a favor do TRIDENT. Contra os baselines deep externos, o TRIDENT é melhor que o MaCoDE em 20 de 21 e 14 de 15 variantes, nunca pior, e melhor que o ReMasker nas 12 variantes numéricas de confirmação (E158/E159). Isso vale depois de corrigir a regra de re-máscara, que deixava o braço do ReMasker praticamente sem treino de 60 a 80nan (E157). Fora do MCAR o ReMasker não ganha terreno (E160, refutado). Na MIMIC-IV o ReMasker publicado fica abaixo até da média, então dali não se tira conclusão sobre a vantagem do TRIDENT (E161).",
+ "findings": [
+  {
+   "experiments": [
+    "E41",
+    "E42",
+    "E44",
+    "E108",
+    "ADR 0007",
+    "ADR 0017",
+    "ADR 0022"
+   ],
+   "question_pt": "O TRIDENT (leitura K) imputa melhor que a barra de baselines clássicas, mesmo quando essas baselines recebem um orçamento de tuning igual?",
+   "design_pt": "A barra (ADR 0007/0017) é a melhor, por execução, entre mean_mode, knn5, knn10, hgb e lgbm, pontuada nas mesmas células induzidas que o modelo. A barra ajustada (E42, ADR 0022) dá a cada família uma grade declarada, escolhida pelas lacunas de validação, como K escolhe seu checkpoint. Cada contraste é a média de 15 pares de folds (5 folds × 3 seeds) do impute_score. Um veredito exige que o intervalo t de 95% exclua zero e que as três seeds concordem; equivalente significa dentro de ±1%. D4: uma vitória da tese exige K melhor que as duas barras. Há dois conjuntos: desenvolvimento (21 variantes, seeds 101/202/303, onde os defaults foram escolhidos) e confirmação (15 variantes não usadas, seeds 707/808/909, lido uma vez, E44).",
+   "result_pt": "No desenvolvimento, K − barra dá 16 melhor / 3 sem diferença / 2 pior, e K − barra ajustada dá 13/5/3. D4 dá 13 vitórias em 21, com derrota em kr-vs-kp_60nan, credit-g_80nan e electricity_20nan. Na confirmação, K − barra dá 11/3/1 e K − barra ajustada 9/3/3. Pelo D4 são 9 vitórias, 3 derrotas (electricity a 40/60nan e letter_80nan, por 0,2%) e 3 casos de nenhum dos dois. O orçamento de tuning baixa a barra em 17 de 21 variantes, tipicamente 1–3%, no máximo 5,7%.",
+   "verdict": "E44: mixed (9 wins of 15, 3 losses, by the pre-registered rule); development tallies descriptive",
+   "key_numbers": [
+    {
+     "label": "Dev 101/202/303, K vs bar (21 variants)",
+     "value": "better 16 / no difference 3 / worse 2",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:29"
+    },
+    {
+     "label": "Dev 101/202/303, K vs tuned bar",
+     "value": "better 13 / no difference 5 / worse 3",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:34"
+    },
+    {
+     "label": "Dev D4",
+     "value": "13 wins of 21; worse than either on 3 (kr-vs-kp_60nan, credit-g_80nan, electricity_20nan)",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:70"
+    },
+    {
+     "label": "Confirmation, K vs bar of 5 / tuned bar",
+     "value": "11 / none 3 / worse 1 ; 9 / 3 / 3",
+     "source": "docs/tickets/imputation-protocol/04-confirmation.md:213-214"
+    },
+    {
+     "label": "Confirmation D4 reading",
+     "value": "mixed. 9 wins of 15 (≥8 needed), and 3 losses",
+     "source": "docs/tickets/imputation-protocol/04-confirmation.md:185-186"
+    },
+    {
+     "label": "Tuning budget effect on the bar",
+     "value": "on 17 of 21 (101/202/303) and 9 of 12 (404/505/606), typically by 1–3%, at most 5.7%",
+     "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:38-39"
+    },
+    {
+     "label": "Dev, tables below zero vs bar",
+     "value": "tables below zero 8 of 9 (two-sided Wilcoxon on per-table mean relative gaps, p = 0.0195)",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:29"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "K escolhe o checkpoint pelas lacunas de validação com a verdade conhecida (leitura oráculo); a leitura implantável é H. Na confirmação, H − barra dá 11/2/1 equivalente/1 (04-confirmation.md:224). Não há tally de H − barra no conjunto 101/202/303. A barra ajustada também é oráculo, porque escolhe pelas lacunas de validação (ADR 0022:76-78). Depois de corrigir os p-valores para os vários oponentes (Holm), a barra fica em 0,1367 (thesis_101.txt:69). As derrotas de electricity vêm da chave date (ver E54)."
+  },
+  {
+   "experiments": [
+    "E41",
+    "ADR 0016",
+    "ADR 0021"
+   ],
+   "question_pt": "O TRIDENT supera o tier forte clássico (missForest, expectativa condicional, SoftImpute, ICE)?",
+   "design_pt": "O E41 rodou offline três braços lineares (condexp, SoftImpute, ICE) nas mesmas células do decoder. O missForest (ADR 0016) fica fora da barra, como baseline externa com gap próprio (ADR 0017). A ADR 0021 cria o tier forte com esses quatro membros, logados ao vivo, e o melhor deles por execução é o oponente; os leitores o chamam de strong_live (ADR 0028).",
+   "result_pt": "No desenvolvimento, K − strong_live dá 13 melhor / 7 sem diferença / 1 pior; a única derrota é credit-g_80nan, onde K já fica acima de 1,0, isto é, pior que a média/moda. Contra o missForest sozinho são 15/6/0. Na confirmação, K − strong_live dá 12/1/2, perdendo para o missForest em vehicle_80nan e biodeg_80nan. O braço condexp define a barra em poucas tabelas pequenas numéricas ou mistas a 60nan ou mais, mas só vence o modelo em credit-g_80nan.",
+   "verdict": "descriptive (E41 done); ADR 0021 accepted",
+   "key_numbers": [
+    {
+     "label": "Dev, K − strong_live (four classical)",
+     "value": "better 13 / no difference 7 / worse 1",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:28"
+    },
+    {
+     "label": "Dev, K vs missForest",
+     "value": "better 15 / no difference 6 / worse 0 (Holm 0.0312)",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:39,69"
+    },
+    {
+     "label": "Confirmation, K − strong_live",
+     "value": "better 12 / no difference 1 / worse 2",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:52"
+    },
+    {
+     "label": "Only arm better than K",
+     "value": "credit-g_80nan (condexp), on all three seed sets",
+     "source": "docs/tickets/imputation-protocol/01-linear-baselines.md:212,220-222"
+    },
+    {
+     "label": "credit-g_80nan K (above the mean/mode fill)",
+     "value": "1.0105",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:16"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Desde a ADR 0028, 'strong' nos leitores inclui o TabPFN, e as contagens antigas de K − strong passam a se chamar strong_live (ADR 0028:111-112). Não misture 13/7/1 (só clássicos) com 6/9/6 (com TabPFN)."
+  },
+  {
+   "experiments": [
+    "E55",
+    "E57",
+    "E108",
+    "ADR 0028",
+    "ADR 0037"
+   ],
+   "question_pt": "Como o TRIDENT se compara ao TabPFN v2, um modelo fundacional tabular, usado como imputador coluna a coluna e sem tuning?",
+   "design_pt": "O E55 rodou o TabPFN v2 (tabpfn==9.2.0, contexto de 10.000 linhas, 8 estimadores) offline, nos mesmos folds. A regra pré-registrada: se o TabPFN vencesse o melhor do tier forte em pelo menos 5 das 15 variantes de confirmação, seria proposto para o tier. O E57 compara também a saída default KC (calibrada, default a partir de 30% de faltantes, ADR 0027) e a leitura implantável H. O E108 reexecutou as células que a ADR 0036 mudou, e a ADR 0037 pré-calculou três variantes de confirmação com o encoder maior.",
+   "result_pt": "O TabPFN vence o melhor do tier forte clássico em 11 de 15 variantes de confirmação e não perde em nenhuma; entrou no tier forte como membro offline (ADR 0028, aceita em 2026-10-21). K − TabPFN dá 9/6/6 no desenvolvimento (depois do E108; antes era 8/6/7) e 6/4/5 na confirmação. Contra o tier forte já com o TabPFN: 6/9/6 e 6/4/5. Na confirmação, KC − TabPFN dá 6/4/1 equivalente/4, com as quatro derrotas a 80nan (pendigits, electricity, vehicle, biodeg), e H − TabPFN dá 5/5/5. A 40 e 60nan da confirmação, K nunca perde para o TabPFN (5 melhor, 4 sem diferença). A 80nan, o TabPFN vence 5 de 6; a exceção é kc2_80nan. Por tabela: o TRIDENT lidera em spambase em todas as taxas, letter e pendigits de 20 a 60nan, biodeg abaixo de 80nan e kc2 de 60 a 80nan. O TabPFN lidera a 80nan e em kr-vs-kp e credit-g a partir de 40nan.",
+   "verdict": "E55 done (decision input: TabPFN better than the strong tier on 11 of 15, propose it for the strong tier; ADR 0028 accepted); against the strong tier with TabPFN, K 'goes from mostly better to mixed'",
+   "key_numbers": [
+    {
+     "label": "TabPFN − strong_live, confirmation",
+     "value": "better 11 / no difference 4 / worse 0",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:48,55"
+    },
+    {
+     "label": "Dev K − tabpfn (current after E108)",
+     "value": "better 9 / no difference 6 / worse 6 (Wilcoxon over tables p = 0.1641; Holm 0.6562)",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:44,69"
+    },
+    {
+     "label": "Dev K − strong with TabPFN (current after E108)",
+     "value": "better 6 / no difference 9 / worse 6",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:49"
+    },
+    {
+     "label": "Confirmation K − tabpfn / K − strong (ADR 0028)",
+     "value": "6 / 4 / 5 ; 6 / 4 / 5",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:47,53"
+    },
+    {
+     "label": "Confirmation KC − tabpfn (default output)",
+     "value": "better 6 / no difference 4 / equivalent 1 / worse 4; all 4 losses at 80nan",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:74; docs/tickets/imputation-protocol/12-default-output-vs-tabpfn.md:90-92"
+    },
+    {
+     "label": "Confirmation H − tabpfn (deployable)",
+     "value": "better 5 / no difference 5 / worse 5",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:75"
+    },
+    {
+     "label": "Confirmation K − TabPFN by rate",
+     "value": "40nan 3/3/0; 60nan 2/1/0; 80nan 1/0/5",
+     "source": "docs/tickets/imputation-protocol/10-tabpfn.md:174-176"
+    },
+    {
+     "label": "Dev K − TabPFN by rate (after E108)",
+     "value": "20nan 4/5/0; 40nan 1/0/2; 60nan 3/1/2; 80nan 1/0/2",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:45-48"
+    },
+    {
+     "label": "TabPFN cost",
+     "value": "2–53 s a fold, with no training",
+     "source": "docs/tickets/imputation-protocol/10-tabpfn.md:210"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "O TabPFN roda sem tuning, enquanto o TRIDENT foi ajustado no conjunto de desenvolvimento; letter e electricity usam uma subamostra de 10.000 linhas como contexto (10-tabpfn.md:215-216). O tally de confirmação contra o TabPFN não mudou com o E108 (43-adr36-thesis-cells.md:61) nem com a ADR 0037, que só alargou as margens de pendigits_40nan (−0,0279 → −0,0489), pendigits_60nan e letter_40nan (ADR 0037:67-70). As contagens de 5/9/7 e 8/6/7 no relatório de 2026-10-21 e na ADR 0028 são anteriores ao E108."
+  },
+  {
+   "experiments": [
+    "E56",
+    "ADR 0025"
+   ],
+   "question_pt": "As vitórias do TabPFN a 80nan se mantêm em outras métricas, ou dependem do impute_score?",
+   "design_pt": "O painel de métricas da ADR 0025 (RMSE, MAE, razão normalizada por coluna, viés, dispersão, Wasserstein) foi lido para K contra o TabPFN nas 15 variantes de confirmação.",
+   "result_pt": "A razão de RMSE concorda com o impute_score nas 15 variantes. O MAE inverte duas vitórias de K (biodeg_40nan e pendigits_40nan). Os preenchimentos de K mantêm a dispersão mais perto da verdade que os do TabPFN em 14 de 15 variantes, e o Wasserstein é melhor em 11. As vitórias do TabPFN a 80nan (letter, pendigits, vehicle, biodeg, electricity) são vitórias de acurácia por célula com preenchimentos mais encolhidos.",
+   "verdict": "done (read by ADR 0025's rule as a caveat, not a reversal)",
+   "key_numbers": [
+    {
+     "label": "Spread closer to the truth (K vs TabPFN)",
+     "value": "14 of 15 variants (dispersion); Wasserstein better on 11",
+     "source": "docs/tickets/imputation-protocol/11-tabpfn-panel.md:102-103"
+    },
+    {
+     "label": "MAE reversals of K's wins",
+     "value": "biodeg_40nan (+0.089) and pendigits_40nan (+0.016)",
+     "source": "docs/tickets/imputation-protocol/11-tabpfn-panel.md:96-98"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O painel foi lido em 2026-10-21, antes das reexecuções da ADR 0036/0037. A reversão por MAE em pendigits_40nan foi medida com o K antigo (K − TabPFN −0,011, hoje −0,0489), e não achei releitura do painel depois disso."
+  },
+  {
+   "experiments": [
+    "E108",
+    "ADR 0036"
+   ],
+   "question_pt": "O que muda nas tabelas da tese quando as células que a ADR 0036 alterou (batch maior e decode mais longo em pendigits e letter) são reexecutadas com o default atual?",
+   "design_pt": "21 células no gorgona8: pendigits_20nan e letter_20nan em 101/202/303 e 42/7/13, e pendigits_40nan e letter_40nan em 707/808/909. As tabelas foram reconstruídas por script, antes e depois.",
+   "result_pt": "Só as cinco variantes da ADR 0036 se moveram, todas a favor do TRIDENT. pendigits_20nan passou de pior a melhor que o TabPFN nos dois conjuntos de desenvolvimento: +0,012 → −0,008 em 101/202/303 e +0,025 → −0,007 em 42/7/13. Em 101/202/303, K − TabPFN passou de 8/6/7 a 9/6/6, e K − strong de 5/9/7 a 6/9/6. O conjunto 42/7/13 cresce de 16 para 18 variantes, com K − barra 14/3/1, K − TabPFN 7/8/3 e D4 em 9 de 18. Na confirmação, as contagens não se movem.",
+   "verdict": "done (a rerun for reporting, not a hypothesis test)",
+   "key_numbers": [
+    {
+     "label": "pendigits_20nan K, 101/202/303",
+     "value": "0.3203 → 0.3004; K − TabPFN +0.012 worse → −0.008 better",
+     "source": "docs/tickets/imputation-protocol/43-adr36-thesis-cells.md:47"
+    },
+    {
+     "label": "letter_20nan K, 101/202/303",
+     "value": "0.4331 → 0.4206; K − TabPFN −0.021 → −0.033 better",
+     "source": "docs/tickets/imputation-protocol/43-adr36-thesis-cells.md:48"
+    },
+    {
+     "label": "101/202/303 counts that change",
+     "value": "K vs TabPFN 8/6/7 → 9/6/6; vs strong 5/9/7 → 6/9/6; vs best of all 5/8/8 → 6/8/7",
+     "source": "docs/tickets/imputation-protocol/43-adr36-thesis-cells.md:56-57"
+    },
+    {
+     "label": "42/7/13 after E108 (18 variants)",
+     "value": "K vs bar 12/3/1 → 14/3/1; vs TabPFN 5/8/3 → 7/8/3; D4 7 of 16 → 9 of 18",
+     "source": "docs/tickets/imputation-protocol/43-adr36-thesis-cells.md:58-60"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O relatório consolidado e o relatório da tabela da tese ainda citam os números antigos (43-adr36-thesis-cells.md:66). As fontes correntes são os leitores de 2026-11-03 e o diff do ticket 43. Os tallies do E58 nos outros conjuntos de seeds são anteriores ao E108 (2026-10-22-results-consolidated.md:19-21)."
+  },
+  {
+   "experiments": [
+    "E51",
+    "E58",
+    "E62"
+   ],
+   "question_pt": "A posição contra cada tier depende das seeds ou do sorteio MCAR específico?",
+   "design_pt": "O E51 usa seeds novas a 20nan (1001/2002/3003, 9 variantes). O E58 lê o TabPFN nos conjuntos de seeds que o E55 não cobriu (42/7/13, 404/505/606, E51 e a família MNAR). O E62 sorteia de novo a máscara MCAR, três vezes, em pendigits_20nan, kr-vs-kp_40nan, credit-g_60nan e biodeg_80nan; a regra exige nenhuma reversão em K − barra e K − strong.",
+   "result_pt": "No E51, K − barra dá 7/1/1 (kc2 sem diferença, electricity pior), sem reversão; K − strong_live dá 6/3/0, e H − barra repete as nove chamadas de K. Contra o tier forte com TabPFN, todo conjunto de seeds fica misto: 42/7/13 3/9/4 (5/9/4 depois do E108), 404/505/606 3/2/7, E51 1/7/1. As vitórias do TabPFN se repetem nas mesmas tabelas (credit-g e kr-vs-kp a partir de 40nan), e as do TRIDENT também (spambase, letter_20nan, kc2_60nan, biodeg_60nan). No E62, nenhuma chamada se inverte; credit-g_60nan K − barra oscila entre sem diferença e melhor. O sorteio move um contraste tanto quanto o intervalo de folds e seeds, cerca de duas vezes em biodeg_80nan.",
+   "verdict": "E51: holds; E58: done; E62: holds",
+   "key_numbers": [
+    {
+     "label": "E51 K − bar (9 variants, 20nan)",
+     "value": "better 7, no difference 1 (kc2), worse 1 (electricity)",
+     "source": "docs/tickets/imputation-protocol/08-default-refresh.md:162"
+    },
+    {
+     "label": "K − strong with TabPFN by seed set (before → after ADR 0028)",
+     "value": "42/7/13 8/7/1 → 3/9/4; 404/505/606 6/4/2 → 3/2/7; E51 6/3/0 → 1/7/1",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:152-156"
+    },
+    {
+     "label": "404/505/606 K − tabpfn",
+     "value": "better 5 / no difference 1 / worse 6",
+     "source": "docs/reports/2026-10-21-thesis-table-with-tabpfn.md:234"
+    },
+    {
+     "label": "E62 primary",
+     "value": "reversals on K − bar and K − strong: none -> holds",
+     "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:135"
+    },
+    {
+     "label": "E62 draw effect on biodeg_80nan",
+     "value": "span of the three draws' means 1.5 to 1.9 times a single draw's interval half-width",
+     "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:163"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Os tallies do E58 (42/7/13 e E51) leem pendigits_20nan e letter_20nan na configuração anterior à ADR 0036. Em 42/7/13 isso foi corrigido pelo E108; em E51 (1001/2002/3003) não achei reexecução. O pendigits_20nan do E62 (2026-10-22) também é anterior à ADR 0036."
+  },
+  {
+   "experiments": [
+    "E61"
+   ],
+   "question_pt": "Onde K perde para o TabPFN em kr-vs-kp e credit-g, existe alguma coluna presa no marginal que uma ponderação da perda pudesse corrigir?",
+   "design_pt": "O E61 decompõe, por coluna, os erros em excesso de K sobre o TabPFN nas seis variantes de kr-vs-kp e credit-g de 40 a 80nan, seeds 404/505/606. Uma coluna conta como presa no marginal se K ganha no máximo 5% sobre a moda e o TabPFN pelo menos 20%.",
+   "result_pt": "Nenhuma coluna está presa no marginal em nenhuma das seis variantes. O termo categórico carrega de 71% a 100% da diferença. K aprende cada coluna que o TabPFN aprende, alguns pontos a menos: os ganhos por coluna correlacionam de +0,76 a +0,94. Em credit-g_80nan os dois métodos ficam no marginal, com correlação de +0,09.",
+   "verdict": "no target (T10's weighting half closes)",
+   "key_numbers": [
+    {
+     "label": "Stuck columns",
+     "value": "stuck columns hold ≥ 50% of the net excess on 0 of 6 counted variants (none) -> no target",
+     "source": "docs/tickets/imputation-protocol/16-categorical-deficit.md:179"
+    },
+    {
+     "label": "Gain correlation K vs TabPFN",
+     "value": "+0.76 to +0.94",
+     "source": "docs/tickets/imputation-protocol/16-categorical-deficit.md:191-192"
+    },
+    {
+     "label": "Categorical share of the gap",
+     "value": "71–100%",
+     "source": "docs/tickets/imputation-protocol/16-categorical-deficit.md:182-183"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Um único conjunto de seeds (404/505/606), com os runs do E40 (16-categorical-deficit.md:206). A diferença descrita é uniforme, por coluna; capacidade (E59, E117) e as alavancas contra o washout (E50) também não fecharam essa lacuna (2026-10-22-results-consolidated.md:334-337)."
+  },
+  {
+   "experiments": [
+    "E54"
+   ],
+   "question_pt": "A vantagem dos boosters em electricity vem da coluna date usada como chave?",
+   "design_pt": "As células de electricity foram divididas pela presença da coluna date na linha, e K − barra foi medido em cada subconjunto. O primário são as taxas onde K − barra é pior (20 e 60nan).",
+   "result_pt": "Com a data observada na linha, K perde para a barra (+0,0252 a 20nan e +0,0334 a 60nan). Sem a data, K é melhor a 20nan (−0,0341) e sem diferença a 60nan (−0,0016). O padrão se repete a 40 e 80nan. date é uma chave de 933 níveis que os boosters leem com splits; o TRIDENT a lê como um escalar através de um MLP 1 → 16 → 128, que não resolve 933 chaves.",
+   "verdict": "supported",
+   "key_numbers": [
+    {
+     "label": "Primary",
+     "value": "date observed ['worse', 'worse'], date missing ['better', 'none'] -> supported",
+     "source": "docs/tickets/imputation-protocol/09-electricity.md:112"
+    },
+    {
+     "label": "20nan",
+     "value": "date observed +0.0252 worse; date missing −0.0341 better",
+     "source": "docs/tickets/imputation-protocol/09-electricity.md:120"
+    },
+    {
+     "label": "60nan",
+     "value": "date observed +0.0334 worse; date missing −0.0016 no difference",
+     "source": "docs/tickets/imputation-protocol/09-electricity.md:121"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Uma tabela, contra o booster não ajustado da barra, nas seeds do E51 e do E44 (09-electricity.md:153-156). Uma resposta do lado do modelo (codificação da data) foi deixada de lado pelo usuário (consolidado:333)."
+  },
+  {
+   "experiments": [
+    "E48"
+   ],
+   "question_pt": "Como o TRIDENT se compara ao MaCoDE, um imputador deep externo recente (AAAI 2025), rodado com as configurações do artigo?",
+   "design_pt": "MaCoDE vendorizado, indutivo, com as configurações do artigo (500 épocas, sem dropout, sem early stopping), nos mesmos 108 pares (variante, seed). A regra: entra no tier forte se vencer o melhor do tier forte em pelo menos 5 das 15 variantes de confirmação.",
+   "result_pt": "O TRIDENT é melhor que o MaCoDE em 20 de 21 variantes de desenvolvimento (sem diferença em kc2_20nan) e em 14 de 15 de confirmação (sem diferença em electricity_40nan), nunca pior. O MaCoDE vence o tier forte em 4 de 15 e fica como baseline deep externo. Ele é forte em tabelas grandes ou categóricas e fraco nas pequenas, onde fica pior que a barra fraca por 0,03 a 0,15.",
+   "verdict": "done (TRIDENT better on 20/21 and 14/15, never worse; MaCoDE an external deep baseline only)",
+   "key_numbers": [
+    {
+     "label": "K − macode, development",
+     "value": "better 20 / no difference 1 / worse 0",
+     "source": "docs/tickets/imputation-protocol/07-macode.md:119"
+    },
+    {
+     "label": "K − macode, confirmation",
+     "value": "better 14 / no difference 1 / worse 0",
+     "source": "docs/tickets/imputation-protocol/07-macode.md:141"
+    },
+    {
+     "label": "MaCoDE above the strong tier",
+     "value": "4 of 15 confirmation variants (fewer than 5: an external deep baseline only)",
+     "source": "docs/tickets/imputation-protocol/07-macode.md:147"
+    },
+    {
+     "label": "Margins",
+     "value": "−0.05 to −0.17 on credit-g, vehicle, biodeg, kc2 and pendigits; small on letter (−0.004 to −0.08), electricity (−0.01 to −0.05), kr-vs-kp 20–60nan (−0.01 to −0.02)",
+     "source": "docs/tickets/imputation-protocol/07-macode.md:155-159"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O MaCoDE roda sem tuning, nas configurações do artigo; as margens de desenvolvimento favorecem o TRIDENT, ajustado ali, e a confirmação é a leitura mais justa (07-macode.md:184-186). O E48 é anterior à ADR 0036/0037."
+  },
+  {
+   "experiments": [
+    "E157",
+    "E158",
+    "E159"
+   ],
+   "question_pt": "O TRIDENT supera o ReMasker, outro imputador deep baseado em re-máscara, e o ReMasker merece entrar no tier forte?",
+   "design_pt": "O ReMasker roda como baseline deep externo nas variantes numéricas de confirmação (707/808/909). O E157 usou a contagem de células mantidas do código de referência. O E158 usou a regra do artigo (re-mascarar metade das células observadas de cada linha). O E159 acrescentou letter.",
+   "result_pt": "No E157, K vence o ReMasker em 9 de 9. Mas a 60–80nan o braço quase não treinou: com menos células observadas que metade das colunas, nada era re-mascarado, e a 80nan o ReMasker ficou 0,58 a 1,11 pior que a barra. Com a regra do artigo (E158), K continua melhor em 9 de 9, e a 80nan o ReMasker volta a ficar perto da barra. O ReMasker vence o tier forte em 2 de 9 (pendigits a 40 e 60nan). Com letter (E159), K é melhor nas 12 variantes numéricas, e o ReMasker supera o tier forte em 4 de 12, só nas duas tabelas grandes a 40–60nan. Isso atinge o limiar pré-registrado: uma emenda à ADR 0021 foi proposta e ficou para decisão do usuário.",
+   "verdict": "E157: done (external baseline only); E158: done (external baseline only); E159: done",
+   "key_numbers": [
+    {
+     "label": "E158 K − remasker",
+     "value": "better 9 / no difference 0 / worse 0",
+     "source": "docs/tickets/imputation-protocol/56-remasker-paper-rule.md:87"
+    },
+    {
+     "label": "E159 K − remasker (12 numerical)",
+     "value": "better 12 / no difference 0 / worse 0",
+     "source": "docs/tickets/imputation-protocol/57-remasker-letter.md:89"
+    },
+    {
+     "label": "ReMasker above the strong tier",
+     "value": "E157 1 of 9; E158 2 of 9; E159 4 of 12",
+     "source": "docs/tickets/imputation-protocol/55-remasker.md:105; 56-remasker-paper-rule.md:105; 57-remasker-letter.md:95"
+    },
+    {
+     "label": "E157 keep-count defect at 80nan",
+     "value": "remasker − bar +0.58 to +1.11; re-masked/observed 0.000–0.001 at 0.8 missing",
+     "source": "docs/tickets/imputation-protocol/55-remasker.md:117-136"
+    },
+    {
+     "label": "Accepted thesis sentence (E158)",
+     "value": "TRIDENT supera o ReMasker nas 9 variantes numéricas do conjunto de confirmação, de 40% a 80% de lacunas; o ReMasker supera a faixa forte apenas no pendigits a 40% e 60%.",
+     "source": "docs/tickets/imputation-protocol/56-remasker-paper-rule.md:129"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "A emenda que admitiria o ReMasker no tier forte (E159) é decisão do usuário e não foi escrita (57-remasker-letter.md:47-49); ADR 0021 e ADR 0028 não listam o ReMasker. A frase da tese aceita no E158 fala em 9 variantes; a versão com 12 é uma proposta do E159 ainda sem confirmação no ticket (57-remasker-letter.md:52-55)."
+  },
+  {
+   "experiments": [
+    "E160"
+   ],
+   "question_pt": "O ReMasker ganha terreno sobre o TRIDENT quando a falta é MAR ou MNAR?",
+   "design_pt": "72 pares nas famílias MAR (células do E64, seeds 404/505/606) e MNAR probit (E45/E46, 42/7/13). O primário é (H − ReMasker) no mecanismo menos o controle MCAR, em 12 combinações de tabela e taxa.",
+   "result_pt": "A hipótese de que o ReMasker ganharia terreno foi refutada, o que favorece o TRIDENT. A diferença piora para H em só 1 de 12 combinações (biodeg probit 60nan, +0,059) e melhora em 5. Sob MAR, a vantagem do TRIDENT cresce em 4 de 6 combinações. H é melhor que o ReMasker nas 6 variantes MAR e em 5 de 6 probit (kc2_probit_60nan sem diferença).",
+   "verdict": "refuted",
+   "key_numbers": [
+    {
+     "label": "Primary",
+     "value": "Primary, (H − ReMasker) mechanism minus control over 12 table-rates: worse 1, better 5 -> refuted",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:125"
+    },
+    {
+     "label": "H better than ReMasker",
+     "value": "6/6 MAR variants; 5/6 probit variants",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:55-58"
+    }
+   ],
+   "importance": "appendix",
+   "caveat_pt": "Só tabelas pequenas; as famílias foram lidas lado a lado (58-remasker-off-mcar.md:62)."
+  },
+  {
+   "experiments": [
+    "E161"
+   ],
+   "question_pt": "Como o ReMasker se sai nas tabelas da MIMIC-IV com lacunas naturais?",
+   "design_pt": "Seis pares (cardio e SOFA × 3 seeds), ReMasker com a regra do artigo e as categorias preenchidas pela moda. O primário é o decoder − ReMasker em rmse_num_z, com Holm.",
+   "result_pt": "Pela regra, o decoder é melhor que o ReMasker nas duas tabelas (−0,809 em cardio, −0,875 em SOFA). Mas o ReMasker fica +0,80 e +0,86 de rmse_num_z acima da melhor baseline fixa, pior até que o preenchimento pela média (1,01–1,04 e 1,00–1,02). Por isso a validade do braço está em dúvida e nenhuma frase sobre a vantagem do TRIDENT foi tirada. Um diagnóstico posterior mostrou que o erro se concentra em colunas cujos valores se acumulam numa ponta da escala (doses de vasopressor, gcs_min, troponin_t, lactate).",
+   "verdict": "better by the rule, arm in doubt",
+   "key_numbers": [
+    {
+     "label": "Primary",
+     "value": "cardio −0.8088 [−0.9697, −0.6479]; sofa −0.8750 [−1.1056, −0.6444], Holm p 0.0000 -> better",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:78-79"
+    },
+    {
+     "label": "impute_score decoder / ReMasker / TabPFN (cardio)",
+     "value": "0.8072 / 1.5317 / 0.8459; bar 0.8199",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:62,67"
+    },
+    {
+     "label": "impute_score decoder / ReMasker / TabPFN (SOFA)",
+     "value": "0.8848 / 1.6283 / 0.8956; bar 0.8984",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:71,76"
+    },
+    {
+     "label": "Accepted thesis sentence",
+     "value": "Nas tabelas da MIMIC-IV, o ReMasker como publicado fica abaixo até do preenchimento pela média; o erro se concentra nas colunas cujos valores se acumulam no limite da escala, como as doses de vasopressor.",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:217"
+    }
+   ],
+   "importance": "appendix",
+   "caveat_pt": "O ticket diz explicitamente: 'No sentence is drawn on TRIDENT's lead over ReMasker here' (09-remasker-natural-gaps.md:219). Os números do decoder contra o TabPFN nessas tabelas pertencem à seção da MIMIC (E148 e seguintes)."
+  },
+  {
+   "experiments": [
+    "E43",
+    "E44",
+    "E58"
+   ],
+   "question_pt": "Onde, especificamente, o TRIDENT perde, e em que leitura?",
+   "design_pt": "Leitura cruzada das tabelas de desenvolvimento e confirmação, do E43 (checkpoint implantável, seeds 111/222/333) e da família MNAR do E58.",
+   "result_pt": "Contra o TabPFN, as perdas ficam a 80nan e em kr-vs-kp e credit-g a partir de 40nan. Contra a barra, as perdas ficam em electricity (chave date) e em credit-g_80nan, onde K = 1,0105 já é pior que a média/moda. Contra o missForest, as perdas são vehicle_80nan e biodeg_80nan na confirmação. As vitórias sobre a média/moda a 80nan nos dados de desenvolvimento do E43 são só da leitura oráculo: K bate a barra em kr-vs-kp e spambase a 80nan, mas H e M não batem em nenhuma. Na confirmação, porém, H − barra é melhor a 80nan em pendigits, letter, biodeg e kc2. Sob MNAR, H nunca perde para o TabPFN (6 melhor, 4 sem diferença), e o TabPFN não ganha terreno em relação ao MCAR (1/9/0).",
+   "verdict": "descriptive (E43 reading 3: H is the deployable headline; E58 done)",
+   "key_numbers": [
+    {
+     "label": "E43, 80nan wins over mean/mode",
+     "value": "at 80nan, K is better than the bar on kr-vs-kp and spambase, while H and M are better on none",
+     "source": "docs/tickets/imputation-protocol/03-deployable-checkpoint.md:175-177"
+    },
+    {
+     "label": "Confirmation H − bar at 80nan",
+     "value": "pendigits_80nan −0.0212, letter_80nan −0.0120, biodeg_80nan −0.0175, kc2_80nan −0.1324, all better",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/confirmation.txt:36,78,176,204"
+    },
+    {
+     "label": "MNAR H − tabpfn / MNAR minus MCAR",
+     "value": "better 6 / no difference 4 / worse 0 ; better 1 / no difference 9 / worse 0",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:141,145"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Nenhum par MNAR está a 80nan (13-tabpfn-seed-sets.md:174-175). A comparação implantável completa com o TabPFN (o híbrido 'table', ADR 0031 decisão 6) pertence a outra seção."
+  }
+ ],
+ "tables": [
+  {
+   "id": "dev_101_per_variant",
+   "title_pt": "Desenvolvimento, seeds 101/202/303 (conjunto primário): impute_score de K, H e KC e cada contraste por variante, depois do E108. Contraste K − oponente: negativo favorece o TRIDENT.",
+   "columns": [
+    "variant",
+    "K",
+    "H (E76)",
+    "KC (E76)",
+    "K − bar (melhor da barra fraca)",
+    "K − tuned bar",
+    "K − strong_live (quatro clássicos)",
+    "K − tabpfn",
+    "K − strong (ADR 0028, com TabPFN)"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp_20nan",
+     "0.5866",
+     "0.5947",
+     "—",
+     "hgb/lgbm: -0.0193 [-0.0316, -0.0070] better",
+     "tuned_bar: -0.0131 [-0.0273, +0.0011] none",
+     "-0.0749 [-0.0887, -0.0612] better",
+     "tabpfn: +0.0059 [-0.0053, +0.0172] none",
+     "tabpfn: +0.0059 [-0.0053, +0.0172] none"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "0.7258",
+     "0.7262",
+     "0.7254",
+     "hgb/lgbm: -0.0446 [-0.0523, -0.0368] better",
+     "tuned_bar: -0.0225 [-0.0317, -0.0132] better",
+     "-0.0648 [-0.0726, -0.0570] better",
+     "tabpfn: +0.0102 [+0.0013, +0.0191] worse",
+     "tabpfn: +0.0102 [+0.0013, +0.0191] worse"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "0.8711",
+     "0.8716",
+     "0.8609",
+     "hgb: -0.0379 [-0.0463, -0.0296] better",
+     "tuned_bar: +0.0137 [+0.0057, +0.0217] worse",
+     "-0.0353 [-0.0419, -0.0286] better",
+     "tabpfn: +0.0432 [+0.0352, +0.0512] worse",
+     "tabpfn: +0.0432 [+0.0352, +0.0512] worse"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "0.9815",
+     "1.0104",
+     "0.9733",
+     "mean_mode: -0.0185 [-0.0268, -0.0102] better",
+     "tuned_bar: +0.0040 [-0.0039, +0.0119] none",
+     "-0.0185 [-0.0268, -0.0102] better",
+     "tabpfn: +0.0404 [+0.0330, +0.0479] worse",
+     "tabpfn: +0.0404 [+0.0330, +0.0479] worse"
+    ],
+    [
+     "spambase_20nan",
+     "0.8529",
+     "0.8495",
+     "—",
+     "hgb/lgbm: -0.0061 [-0.0184, +0.0063] none",
+     "tuned_bar: +0.0009 [-0.0117, +0.0134] none",
+     "-0.0053 [-0.0151, +0.0045] none",
+     "tabpfn: -0.0843 [-0.0987, -0.0698] better",
+     "missforest: -0.0053 [-0.0151, +0.0045] none"
+    ],
+    [
+     "spambase_40nan",
+     "0.9023",
+     "0.9045",
+     "0.8996",
+     "hgb/lgbm: -0.0317 [-0.0411, -0.0223] better",
+     "tuned_bar: -0.0128 [-0.0194, -0.0063] better",
+     "-0.0358 [-0.0428, -0.0287] better",
+     "tabpfn: -0.0550 [-0.0672, -0.0428] better",
+     "missforest: -0.0358 [-0.0428, -0.0287] better"
+    ],
+    [
+     "spambase_60nan",
+     "0.9404",
+     "0.9438",
+     "0.9380",
+     "hgb: -0.0409 [-0.0479, -0.0339] better",
+     "tuned_bar: -0.0139 [-0.0197, -0.0082] better",
+     "-0.0163 [-0.0200, -0.0126] better",
+     "tabpfn: -0.0337 [-0.0412, -0.0262] better",
+     "condexp: -0.0163 [-0.0200, -0.0126] better"
+    ],
+    [
+     "spambase_80nan",
+     "0.9846",
+     "0.9946",
+     "0.9786",
+     "mean_mode: -0.0154 [-0.0199, -0.0108] better",
+     "tuned_bar: -0.0060 [-0.0097, -0.0022] better",
+     "-0.0144 [-0.0196, -0.0093] better",
+     "tabpfn: -0.0074 [-0.0115, -0.0033] better",
+     "tabpfn: -0.0074 [-0.0115, -0.0033] better"
+    ],
+    [
+     "credit-g_20nan",
+     "0.8751",
+     "0.8817",
+     "—",
+     "hgb: -0.0387 [-0.0556, -0.0217] better",
+     "tuned_bar: -0.0198 [-0.0354, -0.0042] better",
+     "-0.0156 [-0.0336, +0.0024] none",
+     "tabpfn: -0.0011 [-0.0140, +0.0117] none",
+     "tabpfn: -0.0011 [-0.0140, +0.0117] none"
+    ],
+    [
+     "credit-g_40nan",
+     "0.9208",
+     "0.9295",
+     "0.9183",
+     "hgb: -0.0436 [-0.0567, -0.0306] better",
+     "tuned_bar: -0.0175 [-0.0304, -0.0045] better",
+     "-0.0105 [-0.0193, -0.0016] better",
+     "tabpfn: +0.0169 [+0.0075, +0.0263] worse",
+     "tabpfn: +0.0169 [+0.0075, +0.0263] worse"
+    ],
+    [
+     "credit-g_60nan",
+     "0.9932",
+     "1.0003",
+     "0.9849",
+     "mean_mode: -0.0068 [-0.0224, +0.0088] none",
+     "tuned_bar: +0.0130 [-0.0005, +0.0264] none",
+     "+0.0049 [-0.0098, +0.0197] none",
+     "tabpfn: +0.0422 [+0.0284, +0.0560] worse",
+     "tabpfn: +0.0422 [+0.0284, +0.0560] worse"
+    ],
+    [
+     "credit-g_80nan",
+     "1.0105",
+     "1.0305",
+     "1.0048",
+     "mean_mode: +0.0105 [+0.0043, +0.0167] worse",
+     "tuned_bar: +0.0105 [+0.0043, +0.0167] worse",
+     "+0.0124 [+0.0062, +0.0186] worse",
+     "tabpfn: +0.0141 [+0.0065, +0.0217] worse",
+     "condexp/tabpfn: +0.0150 [+0.0080, +0.0219] worse"
+    ],
+    [
+     "vehicle_20nan",
+     "0.4113",
+     "0.4148",
+     "—",
+     "hgb/lgbm: -0.0525 [-0.0663, -0.0388] better",
+     "tuned_bar: -0.0477 [-0.0571, -0.0384] better",
+     "-0.0348 [-0.0604, -0.0091] better",
+     "tabpfn: -0.0077 [-0.0207, +0.0053] none",
+     "tabpfn: -0.0077 [-0.0207, +0.0053] none"
+    ],
+    [
+     "vehicle_60nan",
+     "0.6398",
+     "0.6586",
+     "0.6315",
+     "hgb/lgbm: -0.0632 [-0.0769, -0.0494] better",
+     "tuned_bar: -0.0567 [-0.0682, -0.0452] better",
+     "-0.0111 [-0.0247, +0.0025] none",
+     "tabpfn: +0.0052 [-0.0049, +0.0152] none",
+     "tabpfn: +0.0052 [-0.0049, +0.0152] none"
+    ],
+    [
+     "biodeg_20nan",
+     "0.5898",
+     "0.5991",
+     "—",
+     "hgb/lgbm: -0.0589 [-0.0808, -0.0369] better",
+     "tuned_bar: -0.0523 [-0.0705, -0.0341] better",
+     "-0.0371 [-0.0586, -0.0156] better",
+     "tabpfn: -0.0322 [-0.0616, -0.0027] better",
+     "missforest/tabpfn: -0.0302 [-0.0609, +0.0005] none"
+    ],
+    [
+     "biodeg_60nan",
+     "0.7644",
+     "0.7795",
+     "0.7610",
+     "hgb: -0.0978 [-0.1084, -0.0872] better",
+     "tuned_bar: -0.0813 [-0.0915, -0.0711] better",
+     "+0.0115 [-0.0024, +0.0255] none",
+     "tabpfn: -0.0200 [-0.0322, -0.0077] better",
+     "missforest: +0.0115 [-0.0024, +0.0255] none"
+    ],
+    [
+     "kc2_20nan",
+     "0.5363",
+     "0.5402",
+     "—",
+     "knn5: +0.0148 [-0.0840, +0.1136] none",
+     "tuned_bar: -0.0179 [-0.1091, +0.0733] none",
+     "-0.0005 [-0.1130, +0.1121] none",
+     "tabpfn: +0.0434 [-0.0570, +0.1437] none",
+     "tabpfn: +0.0434 [-0.0570, +0.1437] none"
+    ],
+    [
+     "kc2_60nan",
+     "0.5529",
+     "0.5699",
+     "0.5495",
+     "knn5: -0.1713 [-0.2299, -0.1127] better",
+     "tuned_bar: -0.1922 [-0.2520, -0.1324] better",
+     "-0.0378 [-0.0613, -0.0144] better",
+     "tabpfn: -0.0684 [-0.1178, -0.0189] better",
+     "softimpute: -0.0378 [-0.0613, -0.0144] better"
+    ],
+    [
+     "pendigits_20nan",
+     "0.3004",
+     "0.3210 (configuração anterior à ADR 0036; K era 0.3203)",
+     "—",
+     "knn10: -0.0506 [-0.0541, -0.0472] better",
+     "tuned_bar: -0.0436 [-0.0482, -0.0390] better",
+     "-0.0337 [-0.0402, -0.0272] better",
+     "tabpfn: -0.0077 [-0.0130, -0.0023] better",
+     "tabpfn: -0.0077 [-0.0130, -0.0023] better"
+    ],
+    [
+     "letter_20nan",
+     "0.4206",
+     "0.4337 (configuração anterior à ADR 0036; K era 0.4331)",
+     "—",
+     "knn10: -0.0516 [-0.0548, -0.0484] better",
+     "tuned_bar: -0.0480 [-0.0504, -0.0456] better",
+     "-0.0423 [-0.0457, -0.0389] better",
+     "tabpfn: -0.0334 [-0.0365, -0.0303] better",
+     "tabpfn: -0.0334 [-0.0365, -0.0303] better"
+    ],
+    [
+     "electricity_20nan",
+     "0.6183",
+     "0.6177",
+     "—",
+     "hgb: +0.0161 [+0.0056, +0.0267] worse",
+     "tuned_bar: +0.0387 [+0.0288, +0.0487] worse",
+     "-0.0010 [-0.0093, +0.0074] none",
+     "tabpfn: -0.0116 [-0.0237, +0.0004] none",
+     "missforest: -0.0010 [-0.0093, +0.0074] none"
+    ]
+   ],
+   "source": "K, K − bar, K − tuned, K − tabpfn, K − strong: docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:5-25 (built 2026-11-03, after E108). K − strong_live: docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:2-22. H and KC: docs/reports/2026-10-27-reuniao-orientadora/readers/remask_e76.txt:1-57 (E76 reran the 63 cells; 'K reproduced the thesis-table runs exactly', EXPERIMENTATION_LOG.md:115)",
+   "note_pt": "Induced impute_score, média de 15 pares de folds; menor é melhor, e 1,0 é a média/moda. Cada célula traz o oponente escolhido, K − oponente [IC 95%] e a chamada (better / none = sem diferença / worse / equivalent), pela regra de seed agreement com SESOI de 1%. Os valores absolutos da barra, do tier forte e do TabPFN não estão em nenhum arquivo para este conjunto. KC só é default a partir de 30% de faltantes (ADR 0027), por isso '—' a 20nan. H e KC de pendigits_20nan e letter_20nan são da configuração anterior à ADR 0036."
+  },
+  {
+   "id": "confirmation_per_variant",
+   "title_pt": "Confirmação, seeds 707/808/909 (15 variantes não usadas no desenvolvimento, lidas uma vez): barras absolutas e contrastes correntes (depois do E108 e da ADR 0037)",
+   "columns": [
+    "variant",
+    "K (E44, 2026-10-17)",
+    "bar of 5",
+    "tuned bar",
+    "K − bar",
+    "K − tuned bar",
+    "K − strong_live",
+    "K − tabpfn",
+    "KC − tabpfn",
+    "H − tabpfn",
+    "E44 reading (D4)"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "0.4259 (superado pelas reexecuções da ADR 0036/0037)",
+     "0.4912",
+     "0.4786",
+     "-0.1035 [-0.1077, -0.0994] better",
+     "-0.0910 [-0.0953, -0.0867] better",
+     "-0.1088 [-0.1149, -0.1027] better",
+     "-0.0489 [-0.0536, -0.0443] better",
+     "-0.0567 [-0.0612, -0.0522] better",
+     "-0.0446 [-0.0492, -0.0400] better",
+     "win"
+    ],
+    [
+     "pendigits_60nan",
+     "0.5856 (superado pelas reexecuções da ADR 0036/0037)",
+     "0.6424",
+     "0.6393",
+     "-0.0744 [-0.0779, -0.0709] better",
+     "-0.0713 [-0.0750, -0.0676] better",
+     "-0.1391 [-0.1460, -0.1322] better",
+     "-0.0356 [-0.0385, -0.0327] better",
+     "-0.0482 [-0.0509, -0.0454] better",
+     "-0.0262 [-0.0315, -0.0210] better",
+     "win"
+    ],
+    [
+     "pendigits_80nan",
+     "0.8304",
+     "0.8549",
+     "0.8342",
+     "-0.0245 [-0.0264, -0.0227] better",
+     "-0.0038 [-0.0054, -0.0022] better",
+     "-0.0178 [-0.0197, -0.0159] better",
+     "+0.0162 [+0.0150, +0.0174] worse",
+     "+0.0121 [+0.0107, +0.0134] worse",
+     "+0.0195 [+0.0163, +0.0228] worse",
+     "win"
+    ],
+    [
+     "letter_40nan",
+     "0.5598 (superado pelas reexecuções da ADR 0036/0037)",
+     "0.6154",
+     "0.6012",
+     "-0.0872 [-0.0897, -0.0847] better",
+     "-0.0730 [-0.0754, -0.0707] better",
+     "-0.0871 [-0.0909, -0.0832] better",
+     "-0.0661 [-0.0692, -0.0629] better",
+     "-0.0741 [-0.0772, -0.0710] better",
+     "-0.0635 [-0.0663, -0.0608] better",
+     "win"
+    ],
+    [
+     "letter_60nan",
+     "0.7175",
+     "0.7518",
+     "0.7499",
+     "-0.0343 [-0.0361, -0.0324] better",
+     "-0.0324 [-0.0342, -0.0307] better",
+     "-0.0841 [-0.0875, -0.0807] better",
+     "-0.0301 [-0.0317, -0.0284] better",
+     "-0.0331 [-0.0347, -0.0315] better",
+     "-0.0234 [-0.0264, -0.0204] better",
+     "win"
+    ],
+    [
+     "letter_80nan",
+     "0.8902",
+     "0.9041",
+     "0.8884",
+     "-0.0139 [-0.0147, -0.0131] better",
+     "+0.0018 [+0.0011, +0.0025] worse",
+     "-0.0144 [-0.0155, -0.0132] better",
+     "+0.0020 [+0.0006, +0.0034] worse",
+     "-0.0002 [-0.0016, +0.0012] equivalent",
+     "+0.0039 [+0.0018, +0.0061] worse",
+     "loss"
+    ],
+    [
+     "electricity_40nan",
+     "0.7745",
+     "0.7309",
+     "0.7249",
+     "+0.0436 [-0.0013, +0.0885] none",
+     "+0.0496 [+0.0043, +0.0949] worse",
+     "-0.0164 [-0.0614, +0.0286] none",
+     "+0.0303 [-0.0166, +0.0773] none",
+     "+0.0208 [-0.0125, +0.0541] none",
+     "+0.0285 [-0.0181, +0.0751] none",
+     "loss"
+    ],
+    [
+     "electricity_60nan",
+     "0.8298",
+     "0.8186",
+     "0.8190",
+     "+0.0112 [+0.0059, +0.0164] worse",
+     "+0.0108 [+0.0051, +0.0164] worse",
+     "-0.0902 [-0.1056, -0.0748] better",
+     "+0.0038 [-0.0022, +0.0098] none",
+     "+0.0033 [-0.0021, +0.0087] none",
+     "+0.0129 [-0.0041, +0.0299] none",
+     "loss"
+    ],
+    [
+     "electricity_80nan",
+     "0.9002",
+     "0.8999",
+     "0.8953",
+     "+0.0004 [-0.0093, +0.0100] none",
+     "+0.0050 [-0.0046, +0.0145] none",
+     "-0.0569 [-0.0656, -0.0481] better",
+     "+0.0103 [+0.0032, +0.0175] worse",
+     "+0.0087 [+0.0025, +0.0150] worse",
+     "+0.0110 [+0.0042, +0.0178] worse",
+     "neither"
+    ],
+    [
+     "vehicle_40nan",
+     "0.4970",
+     "0.5704",
+     "0.5708",
+     "-0.0734 [-0.0853, -0.0615] better",
+     "-0.0738 [-0.0878, -0.0598] better",
+     "-0.0256 [-0.0466, -0.0045] better",
+     "-0.0003 [-0.0134, +0.0127] none",
+     "+0.0002 [-0.0119, +0.0123] none",
+     "+0.0087 [-0.0081, +0.0255] none",
+     "win"
+    ],
+    [
+     "vehicle_80nan",
+     "0.8088",
+     "0.8165",
+     "0.8184",
+     "-0.0078 [-0.0202, +0.0047] none",
+     "-0.0097 [-0.0217, +0.0023] none",
+     "+0.0425 [+0.0343, +0.0506] worse",
+     "+0.0530 [+0.0443, +0.0618] worse",
+     "+0.0315 [+0.0246, +0.0383] worse",
+     "+0.0610 [+0.0520, +0.0700] worse",
+     "neither"
+    ],
+    [
+     "biodeg_40nan",
+     "0.6654",
+     "0.7413",
+     "0.7379",
+     "-0.0759 [-0.0978, -0.0541] better",
+     "-0.0725 [-0.0930, -0.0521] better",
+     "-0.0242 [-0.0390, -0.0094] better",
+     "-0.0414 [-0.0674, -0.0154] better",
+     "-0.0461 [-0.0722, -0.0200] better",
+     "-0.0416 [-0.0652, -0.0179] better",
+     "win"
+    ],
+    [
+     "biodeg_80nan",
+     "0.9712",
+     "1.0000",
+     "0.9687",
+     "-0.0288 [-0.0393, -0.0184] better",
+     "+0.0025 [-0.0075, +0.0125] none",
+     "+0.0489 [+0.0395, +0.0582] worse",
+     "+0.0525 [+0.0404, +0.0646] worse",
+     "+0.0279 [+0.0166, +0.0392] worse",
+     "+0.0638 [+0.0505, +0.0771] worse",
+     "neither"
+    ],
+    [
+     "kc2_40nan",
+     "0.5075",
+     "0.5931",
+     "0.6057",
+     "-0.0856 [-0.1505, -0.0207] better",
+     "-0.0982 [-0.1633, -0.0330] better",
+     "-0.0604 [-0.1090, -0.0118] better",
+     "-0.0016 [-0.0493, +0.0461] none",
+     "-0.0021 [-0.0477, +0.0436] none",
+     "+0.0098 [-0.0413, +0.0609] none",
+     "win"
+    ],
+    [
+     "kc2_80nan",
+     "0.6866",
+     "0.8431",
+     "0.8524",
+     "-0.1566 [-0.1998, -0.1134] better",
+     "-0.1659 [-0.2088, -0.1229] better",
+     "-0.0587 [-0.0970, -0.0205] better",
+     "-0.0577 [-0.1038, -0.0117] better",
+     "-0.0650 [-0.1052, -0.0248] better",
+     "-0.0336 [-0.0854, +0.0183] none",
+     "win"
+    ]
+   ],
+   "source": "K, bar of 5, tuned bar, reading: docs/tickets/imputation-protocol/04-confirmation.md:167-183. K − bar, K − tuned, K − strong_live: docs/reports/2026-10-27-reuniao-orientadora/readers/confirmation.txt:1-209 (per variant blocks). K/KC/H − tabpfn: docs/reports/2026-10-27-reuniao-orientadora/readers/tabpfn.txt:58-72 (built 2026-11-03, after ADR 0037)",
+   "note_pt": "Os valores absolutos das barras não mudam com reexecuções do modelo, porque são as mesmas dobras. O K absoluto de pendigits_40nan, pendigits_60nan e letter_40nan está superado pelas reexecuções da ADR 0036 (E108) e da ADR 0037; os contrastes nesta tabela já são os correntes. K − strong com TabPFN (ADR 0028) é igual a K − tabpfn em 12 linhas; nas outras três: biodeg_40nan -0.0242 better (missforest), biodeg_80nan +0.0526 worse, kc2_80nan -0.0534 better (tabpfn.txt:43-46). As chamadas de leitura D4 (win/loss/neither) do E44 se mantêm, porque as chamadas contra a barra e a barra ajustada continuam as mesmas no leitor de 2026-11-03."
+  },
+  {
+   "id": "tallies_by_set",
+   "title_pt": "Contagens melhor / sem diferença / (equivalente) / pior por conjunto de seeds e oponente, com o status depois do E108",
+   "columns": [
+    "conjunto de seeds",
+    "variantes",
+    "leitura − oponente",
+    "melhor / sem diferença / (equivalente) / pior",
+    "status depois do E108",
+    "fonte"
+   ],
+   "rows": [
+    [
+     "dev 101/202/303",
+     "21",
+     "K − bar",
+     "16 / 3 / 2",
+     "corrente (o E108 não moveu)",
+     "readers/thesis_101.txt:29"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − tuned bar",
+     "13 / 5 / 3",
+     "corrente",
+     "readers/thesis_101.txt:34"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − missforest",
+     "15 / 6 / 0",
+     "corrente",
+     "readers/thesis_101.txt:39"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − strong_live (quatro clássicos)",
+     "13 / 7 / 1",
+     "corrente",
+     "readers/tabpfn.txt:28"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − tabpfn",
+     "9 / 6 / 6",
+     "corrente (8 / 6 / 7 antes do E108)",
+     "readers/thesis_101.txt:44; 43-adr36-thesis-cells.md:56"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − strong (ADR 0028)",
+     "6 / 9 / 6",
+     "corrente (5 / 9 / 7 antes do E108)",
+     "readers/thesis_101.txt:49"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − best_of_all",
+     "6 / 8 / 7",
+     "corrente (5 / 8 / 8 antes)",
+     "readers/thesis_101.txt:59"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "D4 (melhor que bar e tuned bar)",
+     "13 vitórias de 21",
+     "corrente",
+     "readers/thesis_101.txt:70"
+    ],
+    [
+     "dev 101/202/303",
+     "21",
+     "K − macode (E48)",
+     "20 / 1 / 0",
+     "E48, anterior à ADR 0036",
+     "07-macode.md:119"
+    ],
+    [
+     "dev 101/202/303, ≥60nan",
+     "9",
+     "KC − tabpfn (descritivo)",
+     "3 / 2 / 4",
+     "sem variantes da ADR 0036",
+     "12-default-output-vs-tabpfn.md:65"
+    ],
+    [
+     "dev 101/202/303, ≥60nan",
+     "9",
+     "H − tabpfn (descritivo)",
+     "1 / 2 / 1 / 5",
+     "sem variantes da ADR 0036",
+     "12-default-output-vs-tabpfn.md:66"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "K − bar",
+     "14 / 3 / 1",
+     "corrente (16 variantes e 12/3/1 antes)",
+     "43-adr36-thesis-cells.md:122"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "K − tuned bar",
+     "9 / 5 / 2 / 2",
+     "corrente",
+     "43-adr36-thesis-cells.md:128"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "K − missforest",
+     "12 / 6 / 0",
+     "corrente",
+     "43-adr36-thesis-cells.md:134"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "K − tabpfn",
+     "7 / 8 / 3",
+     "corrente",
+     "43-adr36-thesis-cells.md:140"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "K − strong (ADR 0028)",
+     "5 / 9 / 4",
+     "corrente",
+     "43-adr36-thesis-cells.md:146"
+    ],
+    [
+     "dev 42/7/13",
+     "18",
+     "D4",
+     "9 vitórias de 18",
+     "corrente",
+     "43-adr36-thesis-cells.md:171"
+    ],
+    [
+     "dev 42/7/13",
+     "16",
+     "K − strong_live",
+     "8 / 7 / 1",
+     "anterior ao E108 (E58)",
+     "13-tabpfn-seed-sets.md:93"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "K − bar",
+     "10 / 1 / 1",
+     "não afetado (sem pendigits/letter)",
+     "2026-10-21-thesis-table-with-tabpfn.md:222"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "K − tuned bar",
+     "7 / 2 / 1 / 2",
+     "não afetado",
+     "2026-10-21-thesis-table-with-tabpfn.md:226"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "K − tabpfn",
+     "5 / 1 / 6",
+     "não afetado",
+     "2026-10-21-thesis-table-with-tabpfn.md:234"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "K − strong (ADR 0028)",
+     "3 / 2 / 7",
+     "não afetado",
+     "2026-10-21-thesis-table-with-tabpfn.md:238"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "K − strong_live",
+     "6 / 4 / 2",
+     "não afetado",
+     "13-tabpfn-seed-sets.md:110"
+    ],
+    [
+     "dev 404/505/606 (≥40nan)",
+     "12",
+     "D4",
+     "7 vitórias de 12",
+     "não afetado",
+     "2026-10-21-thesis-table-with-tabpfn.md:255"
+    ],
+    [
+     "E51, 1001/2002/3003 (20nan)",
+     "9",
+     "K − bar",
+     "7 / 1 / 1",
+     "anterior à ADR 0036 em pendigits_20nan e letter_20nan",
+     "08-default-refresh.md:162"
+    ],
+    [
+     "E51, 1001/2002/3003 (20nan)",
+     "9",
+     "K − strong_live",
+     "6 / 3 / 0",
+     "idem",
+     "08-default-refresh.md:167"
+    ],
+    [
+     "E51, 1001/2002/3003 (20nan)",
+     "9",
+     "K − strong (ADR 0028)",
+     "1 / 7 / 1",
+     "idem",
+     "13-tabpfn-seed-sets.md:125"
+    ],
+    [
+     "E51, 1001/2002/3003 (20nan)",
+     "9",
+     "K − tabpfn",
+     "2 / 6 / 1",
+     "idem",
+     "13-tabpfn-seed-sets.md:126"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − bar",
+     "11 / 3 / 1",
+     "corrente (contagens não se movem com E108 nem ADR 0037)",
+     "04-confirmation.md:213; recontado em readers/confirmation.txt"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − tuned bar",
+     "9 / 3 / 3",
+     "corrente",
+     "04-confirmation.md:214"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − missforest",
+     "12 / 1 / 2",
+     "corrente",
+     "04-confirmation.md:215"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − strong_live",
+     "12 / 1 / 2",
+     "corrente",
+     "readers/tabpfn.txt:52"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − tabpfn",
+     "6 / 4 / 5",
+     "corrente",
+     "readers/tabpfn.txt:47"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − strong (ADR 0028)",
+     "6 / 4 / 5",
+     "corrente",
+     "readers/tabpfn.txt:53"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − best_of_all",
+     "6 / 3 / 6",
+     "corrente",
+     "readers/tabpfn.txt:51"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "KC − tabpfn (saída default)",
+     "6 / 4 / 1 / 4",
+     "corrente",
+     "readers/tabpfn.txt:74"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "H − tabpfn (implantável)",
+     "5 / 5 / 5",
+     "corrente",
+     "readers/tabpfn.txt:75"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "H − bar",
+     "11 / 2 / 1 / 1",
+     "corrente",
+     "04-confirmation.md:224"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "D4",
+     "9 vitórias de 15",
+     "corrente",
+     "04-confirmation.md:185; adr/0022:67-68"
+    ],
+    [
+     "confirmação 707/808/909",
+     "15",
+     "K − macode (E48)",
+     "14 / 1 / 0",
+     "E48",
+     "07-macode.md:141"
+    ],
+    [
+     "confirmação, numéricas",
+     "9",
+     "K − remasker (E158, regra do artigo)",
+     "9 / 0 / 0",
+     "E158 (2026-11-07)",
+     "56-remasker-paper-rule.md:87"
+    ],
+    [
+     "confirmação, numéricas",
+     "12",
+     "K − remasker (E159, com letter)",
+     "12 / 0 / 0",
+     "E159",
+     "57-remasker-letter.md:89"
+    ],
+    [
+     "família MNAR (42/7/13)",
+     "10 pares",
+     "H − tabpfn sob MNAR",
+     "6 / 4 / 0",
+     "E58",
+     "13-tabpfn-seed-sets.md:141"
+    ],
+    [
+     "família MNAR (42/7/13)",
+     "10 pares",
+     "H − tabpfn sob MCAR (mesmos pares)",
+     "5 / 5 / 0",
+     "E58",
+     "13-tabpfn-seed-sets.md:144"
+    ],
+    [
+     "família MNAR (42/7/13)",
+     "10 pares",
+     "(H − tabpfn) MNAR menos MCAR",
+     "1 / 9 / 0",
+     "E58",
+     "13-tabpfn-seed-sets.md:145"
+    ]
+   ],
+   "source": "docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:29-70; readers/tabpfn.txt:23-29,47-53,73-76; docs/tickets/imputation-protocol/43-adr36-thesis-cells.md:55-61,122-171; docs/reports/2026-10-21-thesis-table-with-tabpfn.md:222-255; docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:93-145; 08-default-refresh.md:162-167; 04-confirmation.md:185,211-224; 07-macode.md:119,141; 12-default-output-vs-tabpfn.md:64-66; 56-remasker-paper-rule.md:87; 57-remasker-letter.md:89",
+   "note_pt": "'strong_live' = os quatro clássicos (missForest, condexp, SoftImpute, ICE); 'strong (ADR 0028)' = os mesmos mais o TabPFN v2. As recontagens da confirmação nas linhas de confirmation.txt reproduzem 11/3/1, 9/3/3 e 12/1/2. Um 4º número entre barras é a contagem de 'equivalent' (dentro de ±1%)."
+  },
+  {
+   "id": "dev_by_rate",
+   "title_pt": "Por taxa de faltantes: K contra a barra, a barra ajustada, o TabPFN e o tier forte com TabPFN",
+   "columns": [
+    "conjunto",
+    "taxa",
+    "K − bar",
+    "K − tuned bar",
+    "K − tabpfn",
+    "K − strong (ADR 0028)"
+   ],
+   "rows": [
+    [
+     "dev 101/202/303",
+     "20nan (9)",
+     "6 / 2 / 1",
+     "5 / 3 / 1",
+     "4 / 5 / 0",
+     "2 / 7 / 0"
+    ],
+    [
+     "dev 101/202/303",
+     "40nan (3)",
+     "3 / 0 / 0",
+     "3 / 0 / 0",
+     "1 / 0 / 2",
+     "1 / 0 / 2"
+    ],
+    [
+     "dev 101/202/303",
+     "60nan (6)",
+     "5 / 1 / 0",
+     "4 / 1 / 1",
+     "3 / 1 / 2",
+     "2 / 2 / 2"
+    ],
+    [
+     "dev 101/202/303",
+     "80nan (3)",
+     "2 / 0 / 1",
+     "1 / 1 / 1",
+     "1 / 0 / 2",
+     "1 / 0 / 2"
+    ],
+    [
+     "confirmação 707/808/909",
+     "40nan (6)",
+     "5 / 1 / 0 (contagem das linhas)",
+     "5 / 0 / 1 (contagem das linhas)",
+     "3 / 3 / 0",
+     "—"
+    ],
+    [
+     "confirmação 707/808/909",
+     "60nan (3)",
+     "2 / 0 / 1 (contagem das linhas)",
+     "2 / 0 / 1 (contagem das linhas)",
+     "2 / 1 / 0",
+     "—"
+    ],
+    [
+     "confirmação 707/808/909",
+     "80nan (6)",
+     "4 / 2 / 0",
+     "2 / 3 / 1",
+     "1 / 0 / 5",
+     "—"
+    ]
+   ],
+   "source": "dev: docs/reports/2026-10-27-reuniao-orientadora/readers/thesis_101.txt:30-33,35-38,45-48,50-53. Confirmation K − tabpfn: docs/tickets/imputation-protocol/10-tabpfn.md:174-176 (no call changed after ADR 0036/0037: 43-adr36-thesis-cells.md:61, adr/0037:69-70). Confirmation 80nan K − bar / tuned: docs/tickets/imputation-protocol/04-confirmation.md:213-214. Confirmation 40/60nan K − bar / tuned: counted from readers/confirmation.txt rows",
+   "note_pt": "melhor / sem diferença / pior. O padrão: contra a barra o TRIDENT ganha em todas as taxas; contra o TabPFN ele não perde a 20nan no desenvolvimento nem a 40–60nan na confirmação, e perde na maioria a 80nan."
+  },
+  {
+   "id": "remasker_confirmation",
+   "title_pt": "ReMasker nas variantes numéricas de confirmação: código de referência (E157) contra a regra do artigo (E158/E159)",
+   "columns": [
+    "variant",
+    "K − remasker, E157 (código de referência)",
+    "K − remasker, E158/E159 (regra do artigo)",
+    "remasker − strong (regra do artigo)",
+    "remasker − bar (regra do artigo)"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "-0.0337 [-0.0374, -0.0299] better",
+     "-0.0392 [-0.0431, -0.0354] better",
+     "-0.0695 [-0.0738, -0.0652] better",
+     "-0.0643 [-0.0663, -0.0623] better"
+    ],
+    [
+     "pendigits_60nan",
+     "-0.1725 [-0.1785, -0.1665] better",
+     "-0.0315 [-0.0354, -0.0276] better",
+     "-0.1076 [-0.1120, -0.1032] better",
+     "-0.0429 [-0.0457, -0.0401] better"
+    ],
+    [
+     "pendigits_80nan",
+     "-0.6008 [-0.6476, -0.5541] better",
+     "-0.0823 [-0.0863, -0.0783] better",
+     "+0.0645 [+0.0601, +0.0689] worse",
+     "+0.0578 [+0.0540, +0.0616] worse"
+    ],
+    [
+     "vehicle_40nan",
+     "-0.0741 [-0.0945, -0.0537] better",
+     "-0.0754 [-0.0995, -0.0514] better",
+     "+0.0498 [+0.0313, +0.0684] worse",
+     "+0.0020 [-0.0186, +0.0226] none"
+    ],
+    [
+     "vehicle_80nan",
+     "-0.6118 [-0.6769, -0.5466] better",
+     "-0.0695 [-0.0892, -0.0499] better",
+     "+0.1120 [+0.0937, +0.1303] worse",
+     "+0.0618 [+0.0449, +0.0787] worse"
+    ],
+    [
+     "biodeg_40nan",
+     "-0.1410 [-0.1765, -0.1054] better",
+     "-0.2074 [-0.2599, -0.1549] better",
+     "+0.1832 [+0.1358, +0.2306] worse",
+     "+0.1315 [+0.0928, +0.1701] worse"
+    ],
+    [
+     "biodeg_80nan",
+     "-1.1122 [-1.1991, -1.0252] better",
+     "-0.0636 [-0.0775, -0.0497] better",
+     "+0.1125 [+0.0987, +0.1263] worse",
+     "+0.0348 [+0.0224, +0.0472] worse"
+    ],
+    [
+     "kc2_40nan",
+     "-0.0676 [-0.1045, -0.0306] better",
+     "-0.1025 [-0.1414, -0.0635] better",
+     "+0.0421 [-0.0221, +0.1063] none",
+     "+0.0169 [-0.0573, +0.0911] none"
+    ],
+    [
+     "kc2_80nan",
+     "-1.1262 [-1.4605, -0.7919] better",
+     "-0.0589 [-0.0989, -0.0189] better",
+     "+0.0002 [-0.0490, +0.0493] none",
+     "-0.0977 [-0.1394, -0.0560] better"
+    ],
+    [
+     "letter_40nan",
+     "(não rodado no E157)",
+     "-0.0398 [-0.0424, -0.0373] better",
+     "-0.0472 [-0.0512, -0.0433] better",
+     "-0.0474 [-0.0502, -0.0445] better"
+    ],
+    [
+     "letter_60nan",
+     "(não rodado no E157)",
+     "-0.0123 [-0.0138, -0.0107] better",
+     "-0.0719 [-0.0751, -0.0687] better",
+     "-0.0220 [-0.0237, -0.0203] better"
+    ],
+    [
+     "letter_80nan",
+     "(não rodado no E157)",
+     "-0.0539 [-0.0562, -0.0516] better",
+     "+0.0395 [+0.0375, +0.0416] worse",
+     "+0.0400 [+0.0377, +0.0423] worse"
+    ]
+   ],
+   "source": "E157: docs/tickets/imputation-protocol/55-remasker.md:90-98; E158/E159: docs/tickets/imputation-protocol/57-remasker-letter.md:77-88 (E158's nine rows equal 56-remasker-paper-rule.md:78-86)",
+   "note_pt": "K − remasker negativo favorece o TRIDENT; remasker − strong/bar positivo significa ReMasker pior. As margens enormes do E157 a 80nan (−0,60 a −1,13) vêm do defeito da contagem de células mantidas, não de mérito do TRIDENT; a leitura da tese é a do E158."
+  },
+  {
+   "id": "macode_confirmation",
+   "title_pt": "MaCoDE no conjunto de confirmação (E48)",
+   "columns": [
+    "variant",
+    "K − macode",
+    "macode − strong",
+    "macode − bar"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "-0.1409 [-0.1449, -0.1369] better",
+     "+0.0703 [+0.0659, +0.0746] worse",
+     "+0.0755 [+0.0720, +0.0790] worse"
+    ],
+    [
+     "pendigits_60nan",
+     "-0.1645 [-0.1677, -0.1614] better",
+     "+0.0430 [+0.0381, +0.0479] worse",
+     "+0.1077 [+0.1047, +0.1106] worse"
+    ],
+    [
+     "pendigits_80nan",
+     "-0.1433 [-0.1460, -0.1405] better",
+     "+0.1254 [+0.1227, +0.1282] worse",
+     "+0.1188 [+0.1158, +0.1217] worse"
+    ],
+    [
+     "letter_40nan",
+     "-0.0246 [-0.0264, -0.0227] better",
+     "-0.0308 [-0.0344, -0.0273] better",
+     "-0.0310 [-0.0328, -0.0291] better"
+    ],
+    [
+     "letter_60nan",
+     "-0.0609 [-0.0634, -0.0585] better",
+     "-0.0232 [-0.0264, -0.0199] better",
+     "+0.0267 [+0.0250, +0.0284] worse"
+    ],
+    [
+     "letter_80nan",
+     "-0.0810 [-0.0834, -0.0786] better",
+     "+0.0667 [+0.0644, +0.0689] worse",
+     "+0.0671 [+0.0647, +0.0695] worse"
+    ],
+    [
+     "electricity_40nan",
+     "-0.0140 [-0.0608, +0.0328] none",
+     "-0.0024 [-0.0161, +0.0112] none",
+     "+0.0576 [+0.0462, +0.0689] worse"
+    ],
+    [
+     "electricity_60nan",
+     "-0.0479 [-0.0567, -0.0390] better",
+     "-0.0423 [-0.0516, -0.0331] better",
+     "+0.0590 [+0.0512, +0.0669] worse"
+    ],
+    [
+     "electricity_80nan",
+     "-0.0380 [-0.0466, -0.0295] better",
+     "-0.0189 [-0.0212, -0.0165] better",
+     "+0.0384 [+0.0354, +0.0414] worse"
+    ],
+    [
+     "vehicle_40nan",
+     "-0.1718 [-0.1936, -0.1501] better",
+     "+0.1462 [+0.1285, +0.1640] worse",
+     "+0.0984 [+0.0829, +0.1140] worse"
+    ],
+    [
+     "vehicle_80nan",
+     "-0.1338 [-0.1488, -0.1189] better",
+     "+0.1763 [+0.1638, +0.1888] worse",
+     "+0.1261 [+0.1149, +0.1372] worse"
+    ],
+    [
+     "biodeg_40nan",
+     "-0.1225 [-0.1470, -0.0980] better",
+     "+0.0983 [+0.0764, +0.1201] worse",
+     "+0.0465 [+0.0328, +0.0603] worse"
+    ],
+    [
+     "biodeg_80nan",
+     "-0.0546 [-0.0654, -0.0438] better",
+     "+0.1035 [+0.0945, +0.1126] worse",
+     "+0.0258 [+0.0172, +0.0344] worse"
+    ],
+    [
+     "kc2_40nan",
+     "-0.1339 [-0.2005, -0.0673] better",
+     "+0.0735 [+0.0179, +0.1292] worse",
+     "+0.0483 [-0.0285, +0.1251] none"
+    ],
+    [
+     "kc2_80nan",
+     "-0.1437 [-0.1855, -0.1019] better",
+     "+0.0850 [+0.0383, +0.1316] worse",
+     "-0.0129 [-0.0449, +0.0191] none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/07-macode.md:126-140",
+   "note_pt": "Medido em 2026-10-19, antes da ADR 0036/0037. Os K de pendigits e letter a 40–60nan melhoraram depois disso. 'strong' aqui é o tier forte clássico daquela data, sem TabPFN."
+  },
+  {
+   "id": "electricity_date",
+   "title_pt": "E54: K − barra em electricity, separado pela presença da data na linha",
+   "columns": [
+    "taxa",
+    "todas as células",
+    "outras 7 colunas, date observada",
+    "outras 7 colunas, date ausente"
+   ],
+   "rows": [
+    [
+     "20nan",
+     "+0.0138 [+0.0023, +0.0254] worse",
+     "+0.0252 [+0.0102, +0.0402] worse",
+     "-0.0341 [-0.0455, -0.0227] better"
+    ],
+    [
+     "40nan",
+     "+0.0436 [-0.0013, +0.0885] none",
+     "+0.0253 [+0.0075, +0.0430] worse",
+     "+0.0542 [-0.0481, +0.1566] none"
+    ],
+    [
+     "60nan",
+     "+0.0112 [+0.0059, +0.0164] worse",
+     "+0.0334 [+0.0227, +0.0440] worse",
+     "-0.0016 [-0.0110, +0.0077] none"
+    ],
+    [
+     "80nan",
+     "+0.0004 [-0.0093, +0.0100] none",
+     "+0.0546 [+0.0151, +0.0941] worse",
+     "-0.0127 [-0.0173, -0.0080] better"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/09-electricity.md:72-74,82-84,92-94,102-104",
+   "note_pt": "Positivo = K pior que a barra (hgb/lgbm). Primário a 20 e 60nan: supported."
+  },
+  {
+   "id": "categorical_deficit",
+   "title_pt": "E61: onde K perde para o TabPFN em kr-vs-kp e credit-g (seeds 404/505/606)",
+   "columns": [
+    "variant",
+    "K − TabPFN",
+    "parte categórica",
+    "parte numérica",
+    "correlação dos ganhos por coluna K vs TabPFN"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp_40nan",
+     "+0.0110",
+     "+0.0110",
+     "+0.0000",
+     "+0.94"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "+0.0434",
+     "+0.0434",
+     "+0.0000",
+     "+0.94"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "+0.0365",
+     "+0.0365",
+     "+0.0000",
+     "+0.76"
+    ],
+    [
+     "credit-g_40nan",
+     "+0.0219",
+     "+0.0155",
+     "+0.0065",
+     "+0.90"
+    ],
+    [
+     "credit-g_60nan",
+     "+0.0391",
+     "+0.0324",
+     "+0.0067",
+     "+0.81"
+    ],
+    [
+     "credit-g_80nan",
+     "+0.0139",
+     "+0.0113",
+     "+0.0025",
+     "+0.09"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/16-categorical-deficit.md:89,102,104,117,119,132,134,147,149,162,164,177",
+   "note_pt": "Positivo = K pior. Nenhuma coluna presa no marginal em nenhuma variante ('no target')."
+  },
+  {
+   "id": "mcar_draws",
+   "title_pt": "E62: as chamadas em três sorteios MCAR diferentes (seeds 42/7/13)",
+   "columns": [
+    "variant",
+    "K − bar nos 3 sorteios",
+    "K − strong (TabPFN) nos 3 sorteios",
+    "dispersão das médias vs meia-largura do intervalo (K − bar)"
+   ],
+   "rows": [
+    [
+     "pendigits_20nan",
+     "better / better / better -> same",
+     "worse / worse / worse -> same",
+     "0.0048 against 0.0032"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "better / better / better -> same",
+     "worse / worse / worse -> same",
+     "0.0022 against 0.0097"
+    ],
+    [
+     "credit-g_60nan",
+     "none / better / better -> drift",
+     "worse / worse / worse -> same",
+     "0.0051 against 0.0090"
+    ],
+    [
+     "biodeg_80nan",
+     "better / better / better -> same",
+     "worse / worse / worse -> same",
+     "0.0170 against 0.0090"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:103-104,112-113,121-122,130-131,135",
+   "note_pt": "Veredito: holds (nenhuma reversão). O pendigits_20nan do E62 é anterior à ADR 0036."
+  },
+  {
+   "id": "remasker_mimic",
+   "title_pt": "E161: ReMasker nas tabelas MIMIC-IV com lacunas naturais",
+   "columns": [
+    "tabela",
+    "métrica",
+    "decoder (TRIDENT)",
+    "ReMasker",
+    "TabPFN",
+    "barra (impute_score)"
+   ],
+   "rows": [
+    [
+     "mimic-cardio_natural",
+     "rmse_num_z",
+     "0.8116",
+     "1.6203",
+     "0.8520",
+     ""
+    ],
+    [
+     "mimic-cardio_natural",
+     "mae_num_z",
+     "0.4513",
+     "1.0186",
+     "0.4511",
+     ""
+    ],
+    [
+     "mimic-cardio_natural",
+     "impute_score",
+     "0.8072",
+     "1.5317",
+     "0.8459",
+     "0.8199"
+    ],
+    [
+     "mimic-sofa_natural",
+     "rmse_num_z",
+     "0.8855",
+     "1.7605",
+     "0.8999",
+     ""
+    ],
+    [
+     "mimic-sofa_natural",
+     "mae_num_z",
+     "0.4925",
+     "1.1353",
+     "0.4665",
+     ""
+    ],
+    [
+     "mimic-sofa_natural",
+     "impute_score",
+     "0.8848",
+     "1.6283",
+     "0.8956",
+     "0.8984"
+    ]
+   ],
+   "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:59-76",
+   "note_pt": "Menor é melhor. O ReMasker fica pior que a média (que marca 1,01–1,04 e 1,00–1,02 de rmse_num_z nessas células, 09-remasker-natural-gaps.md:85-86): arm in doubt, nenhuma frase sobre a vantagem do TRIDENT."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "impute_score",
+   "definition_pt": "Razão de erro do imputador sobre o erro de preencher com a média (colunas numéricas, RMSE em escala padronizada) ou com a moda (categóricas, taxa de erro), ponderada pela parcela de células de cada tipo. Menor é melhor; 1,0 significa não ser melhor que a média/moda. As baselines são aprendidas no fold de treino e aplicadas às mesmas células.",
+   "source": "README.md:350-354; docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md:76-78"
+  },
+  {
+   "term": "células induzidas (induced)",
+   "definition_pt": "Células que a variante _XXnan tem como faltantes e cujo valor verdadeiro está na irmã _00nan alinhada por linha. São o benchmark de imputação e o número principal das tabelas.",
+   "source": "README.md:345"
+  },
+  {
+   "term": "K",
+   "definition_pt": "O checkpoint do decode escolhido pelas lacunas de validação (ADR 0015). É uma leitura oráculo, porque usa a verdade dessas lacunas.",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:30-31"
+  },
+  {
+   "term": "KC",
+   "definition_pt": "K calibrado nas mesmas lacunas; é a saída default a partir de 30% de faltantes (ADR 0027).",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:32-33"
+  },
+  {
+   "term": "H",
+   "definition_pt": "O checkpoint pela loss, a leitura implantável (ADR 0024), que não precisa da verdade das lacunas.",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:34"
+  },
+  {
+   "term": "barra (bar, tier fraco)",
+   "definition_pt": "O melhor, por execução, entre mean_mode, knn5, knn10, hgb e lgbm, nas mesmas células. O missForest fica fora da barra.",
+   "source": "docs/adr/0017-missforest-outside-the-bar.md:30-31"
+  },
+  {
+   "term": "barra ajustada (tuned bar)",
+   "definition_pt": "A melhor família do tier fraco depois de um orçamento de tuning declarado (grades fixas, escolha pelas lacunas de validação, sem refit), calculada offline.",
+   "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:25-34,59-62"
+  },
+  {
+   "term": "tier forte (strong) e strong_live",
+   "definition_pt": "Desde a ADR 0028, o tier forte é missForest, condexp, SoftImpute, ICE e TabPFN v2 (offline). 'strong_live' são só os quatro clássicos, logados ao vivo; 'strong' inclui o TabPFN onde o estudo tem a passada offline.",
+   "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:31-42"
+  },
+  {
+   "term": "D4",
+   "definition_pt": "Critério de vitória da tese: K precisa ser melhor que a barra não ajustada e que a barra ajustada.",
+   "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:63-64"
+  },
+  {
+   "term": "regra de veredito (fold-pair t, seed agreement)",
+   "definition_pt": "Cada contraste é a média de 15 pares de folds (5 folds × 3 seeds). 'better' ou 'worse' exige que o intervalo t de 95% exclua zero e que as três seeds concordem no sinal. 'equivalent' significa dentro de ±1% (SESOI) da média do oponente; 'none' significa sem diferença.",
+   "source": "docs/tickets/imputation-protocol/04-confirmation.md:159-161; docs/reports/2026-10-27-reuniao-orientadora/page.template.html:312"
+  },
+  {
+   "term": "conjuntos de desenvolvimento e confirmação",
+   "definition_pt": "Desenvolvimento: 21 variantes onde todos os defaults foram escolhidos (seeds 101/202/303 como primário, mais 42/7/13 e 404/505/606). Confirmação: as 15 variantes não usadas, seeds 707/808/909, com a configuração congelada, lidas uma vez (E44).",
+   "source": "docs/reports/2026-10-17-thesis-table-development.md:13; docs/EXPERIMENTATION_LOG.md:83"
+  },
+  {
+   "term": "best_of_all",
+   "definition_pt": "O melhor de todos os oponentes (barra, tier forte, TabPFN e os deep externos MaCoDE/ReMasker), derivado pelos leitores e não logado.",
+   "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:79; docs/tickets/imputation-protocol/55-remasker.md:84-85"
+  },
+  {
+   "term": "tamanhos de tabela",
+   "definition_pt": "Grandes, com 10.000 linhas ou mais: pendigits (10.992), letter (20.000), electricity (45.312). Médias: kr-vs-kp (3.196), spambase (4.601). Pequenas, com cerca de 1.000 linhas ou menos: credit-g, vehicle, biodeg, kc2.",
+   "source": "docs/tickets/imputation-architecture/02-bigger-encoder-by-table-size.md:27-32"
+  }
+ ],
+ "missing": [
+  "Os valores absolutos de impute_score da barra, da barra ajustada, do tier forte e do TabPFN por variante no conjunto primário 101/202/303. As tabelas trazem só K e os contrastes K − oponente; não foram calculados aqui.",
+  "O impute_score absoluto do TabPFN por variante nas tabelas OpenML, em qualquer conjunto. Só existem os contrastes; o absoluto do TabPFN aparece apenas na MIMIC (E161).",
+  "Um tally de H − barra no conjunto 101/202/303. O E43 usa as seeds 111/222/333; o E51 só diz que H − barra repete as chamadas de K em 1001/2002/3003.",
+  "H e KC de pendigits_20nan e letter_20nan depois do E108. Os do E76 são da configuração anterior à ADR 0036.",
+  "K − strong_live em 42/7/13 depois do E108. Só existe o 8/7/1 do E58, em 16 variantes.",
+  "Uma reexecução de pendigits_20nan e letter_20nan nas seeds novas do E51 (1001/2002/3003) com a configuração da ADR 0036. Os tallies contra o TabPFN ali são anteriores.",
+  "Uma releitura do painel de métricas do E56 depois das reexecuções da ADR 0036/0037. A reversão por MAE em pendigits_40nan usa o K antigo.",
+  "Nenhum arquivo diz se a célula de confirmação de letter_60nan foi reexecutada com o encoder da ADR 0037. A ADR 0037 diz que as tabelas leem só pendigits_40nan, pendigits_60nan e letter_40nan pré-calculados.",
+  "Uma decisão escrita sobre admitir o ReMasker no tier forte depois do E159 (4 de 12). O ticket a deixa para o usuário, e não achei ADR que o faça.",
+  "Uma versão atualizada do relatório consolidado e do relatório da tabela da tese com os números do E108. O ticket 43 marca isso como 'Still to do'."
+ ],
+ "do_not_claim": [
+  "'O TRIDENT supera o TabPFN.' O resultado é misto: 9/6/6 no desenvolvimento e 6/4/5 na confirmação, com derrotas a 80nan e em kr-vs-kp e credit-g a partir de 40nan (thesis_101.txt:44; tabpfn.txt:47).",
+  "'O TRIDENT perde nas tabelas pequenas.' As fontes situam as derrotas na taxa (80nan) e nas tabelas categóricas (kr-vs-kp, credit-g). kc2, pequena, vence o TabPFN a 60–80nan, e biodeg vence abaixo de 80nan (consolidado:48-52). A frase 'fraco nas tabelas pequenas' do E48 se refere ao MaCoDE.",
+  "'O TRIDENT supera a média/moda a 80nan' como resultado implantável. No desenvolvimento do E43, essa vitória é só do oráculo K (H e M não batem a barra em nenhuma variante a 80nan), e em credit-g_80nan K = 1,0105, pior que a média/moda (03-deployable-checkpoint.md:175-177; thesis_101.txt:16).",
+  "'O TRIDENT supera a barra ajustada em quase tudo.' São 13/5/3 no desenvolvimento e 9/3/3 na confirmação, e o D4 dá 13 de 21 e 9 de 15.",
+  "'A vantagem sobre a barra é significativa entre tabelas depois de corrigir para vários oponentes.' Com Holm, bar = 0,1367 e tabpfn = 0,6562; só o missForest fica abaixo de 0,05 (0,0312) (thesis_101.txt:69).",
+  "'13/7/1 contra o tier forte' sem dizer que é só o tier clássico (strong_live). Com o TabPFN no tier, o placar é 6/9/6 (ADR 0028:102-106; thesis_101.txt:49).",
+  "'O E108 confirma ou sustenta algo.' É uma reexecução para relatório, não um teste de hipótese.",
+  "'O TRIDENT é melhor no 80nan em distribuição, logo vence o TabPFN ali.' O E56 diz que o TabPFN vence em acurácia por célula (RMSE e MAE) e que K mantém a dispersão mais perto da verdade em 14 de 15. Isso é uma ressalva, não uma reversão (ADR 0025 decisão 4).",
+  "'O TRIDENT supera o ReMasker na MIMIC-IV.' O E161 não tira essa frase: o ReMasker ficou pior que a média, então o braço está em dúvida (09-remasker-natural-gaps.md:84-88,219).",
+  "'O ReMasker faz parte do tier forte.' A emenda à ADR 0021 é decisão do usuário e não foi escrita.",
+  "Usar as margens do E157 a 80nan (K − ReMasker −0,60 a −1,13) como evidência. Elas vêm do defeito da contagem de células mantidas; a leitura da tese é a do E158.",
+  "'O TRIDENT supera imputadores deep em geral.' Só dois baselines deep externos foram testados (MaCoDE e ReMasker), sem tuning e com as configurações dos artigos, e o modelo fundacional TabPFN lidera a 80nan.",
+  "'Electricity mostra uma falha geral do TRIDENT.' A perda está ligada à chave date (E54); sem a data na linha, K não é pior que a barra.",
+  "'K é a saída implantável.' K e KC escolhem e calibram pela verdade das lacunas de validação (oráculo); a leitura implantável é H, e a saída implantável com TabPFN é o híbrido 'table' (ADR 0031 decisão 6, outra seção).",
+  "Citar 8/6/7, 5/9/7 ou 16 variantes em 42/7/13 como números atuais. Foram superados pelo E108."
+ ],
+ "figure_ideas": [
+  "Mapa de calor variante × oponente (barra, barra ajustada, missForest, strong_live, TabPFN) com as chamadas better/none/worse em cores, um painel para o desenvolvimento 101/202/303 (21 linhas) e outro para a confirmação (15 linhas); tabelas dev_101_per_variant e confirmation_per_variant.",
+  "Gráfico de pontos com intervalo de K − TabPFN por variante, agrupado por taxa (20/40/60/80nan), desenvolvimento e confirmação lado a lado, com zero marcado e uma faixa de ±1% de SESOI; o salto a 80nan e kr-vs-kp/credit-g ficam visíveis.",
+  "Escada de oponentes: barras empilhadas better/none/worse para mean_mode → barra → barra ajustada → tier forte clássico → TabPFN, nos dois conjuntos (tabela tallies_by_set).",
+  "Barras de K − TabPFN por taxa (tabela dev_by_rate): contagens melhor/sem diferença/pior a 20, 40, 60 e 80nan.",
+  "Antes e depois do ReMasker: K − ReMasker do E157 contra o E158 a 80nan, mostrando que o colapso era defeito do braço (tabela remasker_confirmation).",
+  "Pequeno painel do E54: K − barra em electricity, data observada contra data ausente, por taxa (tabela electricity_date)."
+ ]
+}

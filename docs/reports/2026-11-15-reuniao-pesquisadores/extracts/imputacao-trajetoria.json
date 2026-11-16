@@ -1,0 +1,1390 @@
+{
+ "key": "imputacao-trajetoria",
+ "section": "IMPUTATION: how the default was reached (the development path), E19 to E59 and the large-table ADRs",
+ "storyline_pt": "O caminho começou com um diagnóstico: no E19 (primeira comparação do decodificador contra imputadores simples) o modelo ficava abaixo do melhor baseline em só 6 de 21 variantes. Buscar hiperparâmetros não resolveu: no E21 (Optuna completo, 40 trials) o modelo ajustado não bateu a barra em nenhuma variante nas células induzidas, e no E39 (re-tune) os vencedores não bateram os defaults em nenhuma. O ganho veio de mudanças de método, cada uma testada contra o default anterior com a regra de leitura fixada antes de rodar e com a cláusula 'pior em nenhuma': alvo normalizado com decode de 450 épocas (E30, ADR 0013: melhor em 9 de 21, pior em nenhuma), lacunas mostradas como [MASK] no decode (E32, ADR 0014: 11 de 21, pior em nenhuma; replicado em seeds novas no E33: 13 de 21) e checkpoint escolhido nas lacunas de validação (E34, ADR 0015: 3, pior em nenhuma; replicado no E35: 6). Nas mesmas seeds (42/7/13), o impute_score médio das 21 variantes de desenvolvimento caiu de 0.7929 para 0.7745, 0.7542, 0.7446 e 0.7416 (menor é melhor; 1.0 é o preenchimento por média/moda). O que não passou ficou de fora ou restrito: [MASK] também no pré-treino não ganhou nada (E36), o encoder maior só entrou nas tabelas grandes porque piorou 4 tabelas pequenas (E38, ADR 0018), e a calibração só vale de 40nan para cima (ADR 0027). A confirmação com a configuração congelada em 15 variantes novas (E44) leu 'mixed': 9 vitórias e 3 derrotas (electricity_40nan, electricity_60nan e letter_80nan). O projeto também separou o que é oráculo do que é implantável: K e KC usam a tabela completa de validação, H é a leitura implantável (ADR 0024), e as vitórias a 80nan sobre a média/moda são só de oráculo no desenvolvimento. O pré-treino acrescenta pouco: o decode reconstrói do zero um encoder tão bom quanto (E24, E49 a E53). Por fim, as tabelas grandes ganharam um batch grande (ADR 0036) e o encoder maior a 40 e 60nan (ADR 0037), os dois só depois de replicação em seeds novas, e o encoder maior também se sustenta sob MAR e MNAR (E119, E121).",
+ "findings": [
+  {
+   "experiments": [
+    "E19"
+   ],
+   "question_pt": "O primeiro decodificador de imputação (E19, a primeira comparação contra os imputadores simples da ADR 0007) batia os baselines?",
+   "design_pt": "21 variantes de desenvolvimento, cinco folds, seed 42; estudo não pré-registrado, lido depois do backfill dos baselines.",
+   "result_pt": "O modelo ficou abaixo do melhor baseline em 6 de 21 variantes, nunca com intervalos disjuntos; um baseline ficou abaixo dele com intervalos disjuntos em 3. O hgb (HistGradientBoosting usado como imputador) define a barra em 13 de 21; a 80% de lacunas e em credit-g_60nan nada bate a média/moda.",
+   "verdict": "done (diagnosis, not pre-registered)",
+   "key_numbers": [
+    {
+     "label": "variantes em que o modelo fica abaixo do melhor baseline",
+     "value": "6 of 21",
+     "source": "docs/EXPERIMENTATION_LOG.md:638"
+    },
+    {
+     "label": "variantes em que hgb define a barra",
+     "value": "13 of 21",
+     "source": "docs/EXPERIMENTATION_LOG.md:641"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Uma seed só e sem regra fixada antes; serve como ponto de partida, não como teste."
+  },
+  {
+   "experiments": [
+    "E21",
+    "E39"
+   ],
+   "question_pt": "Buscar hiperparâmetros (E21, Optuna de perfil completo; E39, re-tune sob os defaults novos) resolve a distância para a barra?",
+   "design_pt": "E21: 40 trials em 7 variantes, pergunta pré-registrada. E39: arquivo promovido (F), defaults (D) e vencedor re-ajustado (T) em 5 variantes, 15 pares de folds, pré-registrado.",
+   "result_pt": "No E21 o modelo ajustado não bate a barra em nenhuma variante nas células induzidas. No E39 os arquivos promovidos antigos pioram três variantes e o re-tune não bate os defaults em nenhuma; os três arquivos foram removidos (ADR 0019).",
+   "verdict": "E21: beats the bar nowhere (induced); E39: re-tuning beats the defaults nowhere",
+   "key_numbers": [
+    {
+     "label": "E21, citação da conclusão",
+     "value": "On the induced population, the headline, it beats the bar nowhere.",
+     "source": "docs/EXPERIMENTATION_LOG.md:717-718"
+    },
+    {
+     "label": "E39 credit-g_40nan, F / D / T",
+     "value": "0.9662 / 0.9208 / 0.9162",
+     "source": "docs/EXPERIMENTATION_LOG.md:1364"
+    },
+    {
+     "label": "E39 credit-g_40nan, D − F (negativo favorece D)",
+     "value": "−0.0454, D better",
+     "source": "docs/EXPERIMENTATION_LOG.md:1364"
+    },
+    {
+     "label": "E39 kr-vs-kp_40nan, D − F",
+     "value": "−0.0368, D better",
+     "source": "docs/EXPERIMENTATION_LOG.md:1365"
+    },
+    {
+     "label": "E39, leitura geral",
+     "value": "the stale files hurt on three variants, and the re-tuning beats the defaults nowhere",
+     "source": "docs/EXPERIMENTATION_LOG.md:1376-1377"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "No E21 a busca ajudou contra os próprios defaults em pendigits_20nan (−0.054) e letter_20nan (−0.046), mas sem bater a barra (docs/EXPERIMENTATION_LOG.md:707-708)."
+  },
+  {
+   "experiments": [
+    "E24",
+    "E25",
+    "E26"
+   ],
+   "question_pt": "O pré-treino ajuda a imputação, e com qual objetivo? (E24: com e sem pré-treino; E25: objetivos alternativos; E26: objetivo normalizado com decode longo)",
+   "design_pt": "4 variantes, seeds 42/7/13, 15 pares de folds. Braços: A (pré-treino embedding 300 + decode 150), B (0 + 150), C (0 + 450), V (alvo em valores), N (embedding_normalized), M (N + decode 450).",
+   "result_pt": "No E24 nenhuma variante mostra 'pré-treino ajuda' contra nenhum; em pendigits_20nan o pré-treino atrapalha e o decode longo sem pré-treino ganha e passa o knn10. No E25 o alvo normalizado nunca é pior que o objetivo original, é melhor em duas variantes e melhor que nenhum pré-treino em três de quatro. No E26, M é melhor que C só em kr-vs-kp_40nan.",
+   "verdict": "done (E24: no variant shows pre-training helps against none)",
+   "key_numbers": [
+    {
+     "label": "E24 pendigits_20nan, B − A (positivo favorece A)",
+     "value": "−0.0216 [−0.0250, −0.0181], pre-training hurts",
+     "source": "docs/EXPERIMENTATION_LOG.md:858"
+    },
+    {
+     "label": "E24 pendigits_20nan, C − A",
+     "value": "−0.0664 [−0.0701, −0.0627], C better than A",
+     "source": "docs/EXPERIMENTATION_LOG.md:858"
+    },
+    {
+     "label": "E25 pendigits_20nan, N − A (negativo favorece N)",
+     "value": "−0.0373, N better",
+     "source": "docs/EXPERIMENTATION_LOG.md:905"
+    },
+    {
+     "label": "E25 credit-g_80nan, N − A",
+     "value": "−0.0147, N better",
+     "source": "docs/EXPERIMENTATION_LOG.md:903"
+    },
+    {
+     "label": "E26 kr-vs-kp_40nan, M − C",
+     "value": "−0.0205 [−0.0373, −0.0037], M better",
+     "source": "docs/reports/2026-10-19-t28-why-pretraining-adds-little.md:82"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O ganho de M sobre C confunde objetivo e orçamento (750 épocas contra 450). O resultado de kr-vs-kp no E24 (C − A) depende de um par rodado em outra máquina, declarado em emenda."
+  },
+  {
+   "experiments": [
+    "E30"
+   ],
+   "question_pt": "O candidato M (alvo normalizado no pré-treino e decode de 450 épocas) pode virar o default no lugar de A (o primeiro decodificador)? (E30, estudo confirmatório nas 21 variantes; ADR 0013 é a decisão)",
+   "design_pt": "189 células: 21 variantes × braços A, M e P (M com paciência 50) × seeds 42/7/13. Regra fixada antes: um candidato se qualifica se nenhuma variante mostrar 'A better'; veredito só com intervalo t de 95% excluindo zero e as três seeds no mesmo sinal.",
+   "result_pt": "M é melhor que A em 9 variantes e pior em nenhuma; P é melhor em 7 e pior em 2, então só M se qualifica. A média das 21 variantes vai de 0.7929 (A) para 0.7745 (M), contra 0.7781 do melhor baseline; M fica abaixo do melhor baseline em 11 variantes (A: 7). Uma célula de M custa 1.65x o tempo de A.",
+   "verdict": "M qualifies (by the rule fixed in advance); adopted 2026-10-01 (ADR 0013)",
+   "key_numbers": [
+    {
+     "label": "M − A, contagem",
+     "value": "M better on 9 variants, A better on none, no detectable difference on 12",
+     "source": "docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md:106"
+    },
+    {
+     "label": "média nas 21 variantes: M / A / melhor baseline",
+     "value": "0.7745 / 0.7929 / 0.7781",
+     "source": "docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md:28-31"
+    },
+    {
+     "label": "pendigits_20nan, M − A",
+     "value": "−0.0682 [−0.0719, −0.0645]",
+     "source": "docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md:100"
+    },
+    {
+     "label": "custo de M",
+     "value": "1.65x A's time",
+     "source": "docs/EXPERIMENTATION_LOG.md:1038-1039"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Não encontrei uma replicação em seeds novas dedicada só a este passo; M voltou a rodar como braço de referência em seeds novas no E33. Nas células mascaradas, kr-vs-kp_20nan deu 'A better than M' (+0.021); a regra vale só para as induzidas."
+  },
+  {
+   "experiments": [
+    "E31",
+    "E32",
+    "E33"
+   ],
+   "question_pt": "Mostrar as lacunas reais como [MASK] no estágio de decode (braço G, flag DECODE_GAP_TOKEN mask) melhora sobre M? (E31 deu a pista ao pontuar coluna a coluna; E32 testou; E33 replicou em seeds novas; ADR 0014 é a decisão)",
+   "design_pt": "E32: 63 células G contra as células M do E30, seeds 42/7/13. Regra fixada antes: 'supported' se G for melhor em pelo menos 5 das 9 variantes de 60nan ou mais e pior em nenhuma delas; vira default só se nenhuma das 21 mostrar 'M better'. E33: 126 células, G e M rodados de novo nas seeds 101/202/303, nunca usadas antes em imputação.",
+   "result_pt": "E32: G melhor em 11 de 21, M melhor em nenhuma; nas 9 pesadas, 5 e 0. A média cai de 0.7745 para 0.7542 e o modelo passa a ficar abaixo do melhor baseline em 16 variantes (M: 11), ao mesmo custo por célula. E33: G melhor em 13 de 21, M em nenhuma; nas pesadas, 6 e 0; médias 0.7519 contra 0.7786.",
+   "verdict": "E32: supported; E33: replicated (by the rule fixed in advance)",
+   "key_numbers": [
+    {
+     "label": "E32, contagem",
+     "value": "G better on 11 of 21 variants, M better on none",
+     "source": "docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md:146"
+    },
+    {
+     "label": "E32, médias G / M / melhor baseline",
+     "value": "0.7542 / 0.7745 / 0.7781",
+     "source": "docs/EXPERIMENTATION_LOG.md:1116-1117"
+    },
+    {
+     "label": "E32, G − M por nível (20/40/60/80nan)",
+     "value": "−0.011 / −0.026 / −0.036 / −0.012",
+     "source": "docs/EXPERIMENTATION_LOG.md:1115"
+    },
+    {
+     "label": "E33, contagem em seeds novas",
+     "value": "G better on 13 of 21 variants, M better on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:1148-1149"
+    },
+    {
+     "label": "E33, médias G / M",
+     "value": "0.7519 / 0.7786",
+     "source": "docs/EXPERIMENTATION_LOG.md:1152"
+    },
+    {
+     "label": "E33, seis seeds juntas",
+     "value": "G better on 12, M on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:1152"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "A ADR 0014 foi aceita antes da replicação terminar (a replicação foi pré-registrada na mesma noite e confirmou). credit-g_60nan, credit-g_80nan e kr-vs-kp_80nan continuam no nível da média/moda. O E31 foi 'supported' só no limiar (5 de 9)."
+  },
+  {
+   "experiments": [
+    "E34",
+    "E35"
+   ],
+   "question_pt": "Escolher o checkpoint do decode pelas lacunas das linhas de validação (leitura K) em vez da loss na máscara de validação (leitura H) melhora? (E34 testou; E35 replicou; ADR 0015 é a decisão)",
+   "design_pt": "Leituras da mesma run, 21 variantes, 15 pares de folds. E34 nas seeds 101/202/303; E35 nas seeds 42/7/13. Regra: K se qualifica se H não for melhor em nenhuma variante.",
+   "result_pt": "E34: K melhor em 3 (todas a 80nan), H melhor em nenhuma; média 0.7519 para 0.7446. E35: K melhor em 6, H em nenhuma; médias H 0.7542, K 0.7446. A 80nan o critério por lacunas para mais cedo.",
+   "verdict": "E34: K qualifies; E35: replicated (by the rule fixed in advance)",
+   "key_numbers": [
+    {
+     "label": "E34, K − H",
+     "value": "K better on 3 (credit-g_80nan −0.020, kr-vs-kp_80nan −0.029, spambase_80nan −0.010), H better on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:1183-1184"
+    },
+    {
+     "label": "E35, K − H",
+     "value": "K better on 6, H better on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:1218-1220"
+    },
+    {
+     "label": "E35, médias H / K / KC",
+     "value": "0.7542 / 0.7446 / 0.7422",
+     "source": "docs/EXPERIMENTATION_LOG.md:1223"
+    },
+    {
+     "label": "E35, variantes abaixo do melhor baseline (H, K)",
+     "value": "16, 19",
+     "source": "docs/EXPERIMENTATION_LOG.md:1224"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "K é uma leitura de oráculo: precisa da tabela completa nas linhas de validação, que só existe no benchmark (ADR 0024). O ganho se concentra a 80nan."
+  },
+  {
+   "experiments": [
+    "E36"
+   ],
+   "question_pt": "Mostrar as lacunas como [MASK] também no pré-treino (flag --pretrain_gap_token mask) ganha algo? (E36)",
+   "result_pt": "Não: o braço novo não é melhor em nenhuma das 21 variantes e é pior em electricity_20nan; as médias ficam em 0.7450 contra 0.7446. O default continua null.",
+   "verdict": "keep null (by the rule fixed in advance)",
+   "key_numbers": [
+    {
+     "label": "PG − R",
+     "value": "R better on 1 (electricity_20nan +0.0105 [+0.0020, +0.0190]), PG better on none, no detectable difference on 20",
+     "source": "docs/EXPERIMENTATION_LOG.md:1250-1251"
+    }
+   ],
+   "importance": "appendix"
+  },
+  {
+   "experiments": [
+    "E37",
+    "E38",
+    "E121"
+   ],
+   "question_pt": "Um encoder maior (ALL: LAYERS 4, DIM_FEED 256, ENCODER_FINAL_NORM layer, contra 2 e 32 sem norma final) ajuda? (E37 triagem em 5 variantes; E38 nas 21 em seeds novas; ADR 0018 é a decisão)",
+   "design_pt": "E38: braço ALL nas 21 variantes, seeds 101/202/303 (não usadas no E37), contra a referência do default, lido por grupo de tamanho de tabela.",
+   "result_pt": "Depende do tamanho: tabelas grandes −3.0%, médias −0.2%, pequenas +1.9%, com 4 variantes pequenas piores. Adotado só em pendigits_20nan e letter_20nan, a cerca de 1.84x do custo. No E121 o ganho a 20nan se mantém sob MAR e MNAR (−4.59% a −6.50%).",
+   "verdict": "E38: supported (large tables only); E121: holds (MAR and MNAR)",
+   "key_numbers": [
+    {
+     "label": "grandes (3 variantes)",
+     "value": "−3.0% [−5.1%, −1.0%], 2 better, 0 worse, 1.84x",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:31"
+    },
+    {
+     "label": "pequenas (10 variantes)",
+     "value": "+1.9% [+0.5%, +3.2%], 0 better, 4 worse, 1.77x",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:33"
+    },
+    {
+     "label": "letter_20nan",
+     "value": "−5.6%, 0.4590 → 0.4331",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:35"
+    },
+    {
+     "label": "pendigits_20nan",
+     "value": "−3.8%, 0.3331 → 0.3203",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:36"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Mudança percentual negativa favorece o encoder maior. electricity_20nan (+0.3%, sem veredito) ficou de fora."
+  },
+  {
+   "experiments": [
+    "E40",
+    "E47",
+    "E43"
+   ],
+   "question_pt": "Calibrar a saída (KC: palpite numérico encolhido para a média de treino e categórico de baixa confiança respondido com a moda) melhora sobre K, e existe versão implantável? (E40 em seeds novas; E47 versão implantável; ADR 0027 e ADR 0024 são as decisões)",
+   "design_pt": "E40: 12 variantes de 40nan ou mais, seeds 404/505/606, pré-registrado. E43: 9 variantes de 60nan ou mais, seeds 111/222/333, compara H, M-checkpoint e K.",
+   "result_pt": "E40: KC melhor nas seis variantes nomeadas e pior em nenhuma, com ganho pequeno que cresce com as lacunas (−0.0009 a 40nan, −0.0037 a 60nan, −0.0059 a 80nan). A calibração falha a 20nan, por isso só vale de 40nan para cima. E47: a versão implantável ganha no máximo 0.4% de H. E43: H é a leitura implantável e as vitórias a 80nan sobre a média/moda são só de oráculo.",
+   "verdict": "E40: supported; E47: supported by the rule (small); E43: reading 3",
+   "key_numbers": [
+    {
+     "label": "E40, KC − K por nível",
+     "value": "−0.0009 at 40nan, −0.0037 at 60nan and −0.0059 at 80nan",
+     "source": "docs/EXPERIMENTATION_LOG.md:1426"
+    },
+    {
+     "label": "E40, maior ganho nomeado (vehicle_60nan)",
+     "value": "−1.27%",
+     "source": "docs/EXPERIMENTATION_LOG.md:1420"
+    },
+    {
+     "label": "E43, conclusão",
+     "value": "H is the deployable headline for claims that must transfer, and the 80nan wins over the mean/mode fill are oracle-only. The default stays K.",
+     "source": "docs/EXPERIMENTATION_LOG.md:1557-1558"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Nenhuma variante de 40nan ganhou veredito no E40 (docs/EXPERIMENTATION_LOG.md:1433-1434). K e KC são leituras de oráculo; o usuário decidiu em 2026-10-19 relatar KC como oráculo."
+  },
+  {
+   "experiments": [
+    "E44"
+   ],
+   "question_pt": "Com a configuração congelada, o modelo bate os baselines em variantes nunca usadas no desenvolvimento? (E44, confirmação em 15 variantes: pendigits, letter e electricity a 40/60/80nan; vehicle, biodeg e kc2 a 40/80nan)",
+   "design_pt": "45 células, pré-registrado antes da primeira. Vitória = K melhor que a barra de 5 imputadores e que a barra ajustada; derrota = pior que qualquer uma. 'Supported' exige pelo menos 8 vitórias e no máximo 2 derrotas; 'refuted', 5 derrotas ou no máximo 4 vitórias.",
+   "result_pt": "Leitura 'mixed': 9 vitórias de 15 e 3 derrotas (electricity_40nan, electricity_60nan e letter_80nan contra a barra ajustada por +0.0018). Contra a barra de 5, K é melhor em 11, sem diferença em 3, pior em 1; contra a camada forte, 12/1/2. A leitura implantável H é melhor que a barra em 11.",
+   "verdict": "mixed",
+   "key_numbers": [
+    {
+     "label": "leitura",
+     "value": "9 wins of 15 (≥8 needed), and 3 losses (≤2 needed for 'supported', ≥5 for 'refuted')",
+     "source": "docs/tickets/imputation-protocol/04-confirmation.md:185-186"
+    },
+    {
+     "label": "K contra a barra de 5 / barra ajustada / camada forte (melhor/sem diferença/pior)",
+     "value": "11/3/1; 9/3/3; 12/1/2",
+     "source": "docs/EXPERIMENTATION_LOG.md:1592-1593"
+    },
+    {
+     "label": "a 80nan, contra a barra / barra ajustada",
+     "value": "4/2/0; 2/3/1",
+     "source": "docs/EXPERIMENTATION_LOG.md:1594"
+    },
+    {
+     "label": "H contra a barra",
+     "value": "11 better, 2 no difference, 1 equivalent, 1 worse",
+     "source": "docs/EXPERIMENTATION_LOG.md:1595"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "A palavra da fonte é 'mixed', não 'supported'. electricity ficou como limite declarado. Os valores de K da tabela são os originais do E44; a ADR 0037 (linhas 67-70) diz que as tabelas da tese passaram a ler células com o encoder maior em pendigits_40nan, pendigits_60nan e letter_40nan."
+  },
+  {
+   "experiments": [
+    "E49",
+    "E50",
+    "E52",
+    "E53",
+    "E51"
+   ],
+   "question_pt": "Por que o pré-treino acrescenta pouco (tarefa T28), e o default se mantém a 20nan em seeds novas (E51)?",
+   "design_pt": "E49: curvas de decode lidas do store, sem run nova. E50: menos pré-treino ou menos taxa. E52: encoder congelado pré-treinado (FN) contra aleatório (FR). E53: sondas lineares e colapso. E51: 9 variantes _20nan nas seeds 1001/2002/3003.",
+   "result_pt": "A representação pré-treinada é real (congelada, bate um encoder aleatório em pendigits e kr-vs-kp e não colapsa), mas o decode completo aprende do zero uma tão boa quanto; o mecanismo é o 'washout'. Encurtar o pré-treino foi refutado no E50. No E51 o default a 20nan 'holds': K melhor que a barra em 7 de 9, sem diferença em kc2, pior em electricity.",
+   "verdict": "E49: done; E50: refuted; E52: mixed (2 of 4); E53: no collapse; E51: holds",
+   "key_numbers": [
+    {
+     "label": "E52 pendigits_20nan, FN − FR em K (negativo favorece o pré-treinado)",
+     "value": "−0.4392 (−53%)",
+     "source": "docs/EXPERIMENTATION_LOG.md:1890-1895"
+    },
+    {
+     "label": "E52 kr-vs-kp_40nan, FN − FR",
+     "value": "−0.1574 (−16%)",
+     "source": "docs/EXPERIMENTATION_LOG.md:1890-1895"
+    },
+    {
+     "label": "E50 pendigits, L10 − G (positivo = pior)",
+     "value": "+0.0371 (+11.6%)",
+     "source": "docs/EXPERIMENTATION_LOG.md:1818-1820"
+    },
+    {
+     "label": "E51, K − barra (melhor/sem diferença/pior)",
+     "value": "7/1/1",
+     "source": "docs/EXPERIMENTATION_LOG.md:1853-1861"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O E49 lê a loss de decode, não o impute_score. E50 rodou em seeds de desenvolvimento. O relatório T28 de 2026-10-19 é anterior a E49–E53 e não traz os números deles."
+  },
+  {
+   "experiments": [
+    "E101",
+    "E102",
+    "E103",
+    "E104",
+    "E109"
+   ],
+   "question_pt": "Um batch grande (P600: BATCH 1024, LR_PRE e LR_DECODE x4, EPOCHS_DECODE 600) ajuda nas tabelas grandes? (ADR 0036 é a decisão)",
+   "design_pt": "P600 contra o default, 15 pares de folds por variante, regra do projeto com SESOI de 1%. E101 pendigits (seeds 42/7/13); E102 replicação (7878/8989/9090); E103 letter e electricity; E104 escopo reduzido em seeds novas (1357/2468/3579); E109 pendigits_60nan (2121/3232/4343).",
+   "result_pt": "pendigits a 20 e 40nan melhora de −4.10% a −5.93% e letter de −1.46% a −3.25%, em seeds novas. A 80nan não há ganho (pendigits +0.42% pior no E102, letter +0.21% pior) e electricity não melhora em nenhum nível. Adotado em pendigits e letter a 20 e 40nan, e depois em pendigits_60nan.",
+   "verdict": "E101: supported; E102: not replicated (by its rule, worse on one); E103: letter mixed, electricity refuted; E104: replicated; E109: supported",
+   "key_numbers": [
+    {
+     "label": "pendigits_20nan, E101 / E102 / E104",
+     "value": "−5.37% better / −5.84% better / −5.93% better",
+     "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:21"
+    },
+    {
+     "label": "letter_20nan, E103 / E104",
+     "value": "−2.90% better / −3.25% better",
+     "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:25"
+    },
+    {
+     "label": "pendigits_80nan, E101 / E102",
+     "value": "+0.16% equivalent / +0.42% worse",
+     "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:24"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O escopo '20 e 40nan' foi escolhido depois de ver E101–E103; por isso o E104 o testou em seeds que nenhum deles usou, com a regra fixada antes (ADR 0036:31-33). O E102 leu 'not replicated' pela regra pré-registrada por causa de uma variante pior, abaixo do SESOI de 1%."
+  },
+  {
+   "experiments": [
+    "E59",
+    "E113",
+    "E116",
+    "E117",
+    "E119"
+   ],
+   "question_pt": "O encoder maior da ADR 0018 também ajuda pendigits e letter a 40, 60 e 80nan, e fora de MCAR? (ADR 0037 é a decisão)",
+   "design_pt": "BIG contra M, 15 pares de folds. E59 primeira leitura (40/60/80nan); E113 seeds 42/7/13; E116 seeds novas 6161/7171/8181; E117 a 80nan; E119 sob MAR (marf) e MNAR (probit).",
+   "result_pt": "A 40 e 60nan o encoder maior melhora de −1.12% a −6.04% (E113) e replica em seeds novas (−1.23% a −6.26%, E116). Sob MAR e MNAR melhora nas 4 de 4 variantes de cada mecanismo (E119). A 80nan o resultado é misto e abaixo do SESOI (E117), então ficou fora. Custo de cerca de 1.3–1.7x.",
+   "verdict": "E59: mixed; E113: supported; E116: replicated; E117: mixed; E119: holds (MAR and MNAR)",
+   "key_numbers": [
+    {
+     "label": "pendigits_40nan, E113 / E116",
+     "value": "−6.04% better / −6.26% better",
+     "source": "docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:21"
+    },
+    {
+     "label": "letter_60nan, E113 / E116",
+     "value": "−1.12% better / −1.23% better",
+     "source": "docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:24"
+    },
+    {
+     "label": "pendigits_40nan, MAR / MNAR",
+     "value": "−3.61% better / −6.89% better",
+     "source": "docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:45"
+    },
+    {
+     "label": "E117 a 80nan",
+     "value": "pendigits_80nan −0.39% (better), letter_80nan +0.37% (worse)",
+     "source": "docs/EXPERIMENTATION_LOG.md:3489-3499"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O E119 teve uma emenda (um par mudou de máquina). O E59 leu 'mixed' e na época o usuário manteve a ADR 0018 só a 20nan; a extensão veio depois, com E113 e E116."
+  },
+  {
+   "experiments": [
+    "E30",
+    "E35"
+   ],
+   "question_pt": "Quanto cada passo do default baixou o impute_score médio nas 21 variantes de desenvolvimento, nas mesmas seeds?",
+   "design_pt": "Bloco 'trajectory' de meeting_figures.json, montado por script a partir do store: média do impute_score induzido por variante nas seeds 42/7/13, depois média das 21 variantes. Passos 1 e 2 vêm dos braços A e M do E30; passos 3 a 5 são as leituras H, K e 'saída default' (KC de 40nan para cima, K a 20nan) das mesmas runs do E35.",
+   "result_pt": "A média cai de 0.7929 (primeiro decodificador) para 0.7745 (alvo normalizado, decode 450), 0.7542 (lacunas como [MASK], leitura H), 0.7446 (checkpoint nas lacunas de validação, K) e 0.7416 (saída default). Nenhuma variante foi excluída por configuração diferente ('labelled' está vazio).",
+   "verdict": "descriptive (script-built from the store)",
+   "key_numbers": [
+    {
+     "label": "passo 1, first decoder, mean_pooled",
+     "value": "0.7929396100572198",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:3991"
+    },
+    {
+     "label": "passo 2, normalised target, decode 450",
+     "value": "0.7745236438294569",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:4084"
+    },
+    {
+     "label": "passo 3, gaps as [MASK] (H)",
+     "value": "0.7542326451016905",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:4177"
+    },
+    {
+     "label": "passo 4, checkpoint on validation gaps (K)",
+     "value": "0.7445759054165849",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:4270"
+    },
+    {
+     "label": "passo 5, default output (KC from 40nan)",
+     "value": "0.7415658139553771",
+     "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:4363"
+    },
+    {
+     "label": "melhor baseline, média nas 21 (referência do E32)",
+     "value": "0.7781",
+     "source": "docs/EXPERIMENTATION_LOG.md:1117"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Os passos 4 e 5 são leituras de oráculo (K e KC); o passo implantável é o 3 (H). O passo 5 (0.7416) aplica KC só de 40nan para cima; a média de KC em todas as 21 no E35 é 0.7422. O arquivo foi gerado em 2026-11-03 e não inclui os passos das tabelas grandes (ADRs 0018, 0036, 0037)."
+  }
+ ],
+ "tables": [
+  {
+   "id": "trajectory_steps",
+   "title_pt": "Trajetória do default de imputação, passo a passo",
+   "columns": [
+    "passo",
+    "mudança",
+    "experimento (decisão)",
+    "efeito como a fonte declara",
+    "replicado em seeds novas?"
+   ],
+   "rows": [
+    [
+     "1",
+     "Barra de baselines e diagnóstico do primeiro decodificador",
+     "E19 (ADR 0007)",
+     "modelo abaixo do melhor baseline em 6 of 21",
+     "não se aplica (diagnóstico, seed 42)"
+    ],
+    [
+     "2",
+     "Busca de hiperparâmetros",
+     "E21; E39 (ADR 0019)",
+     "E21: beats the bar nowhere (induced); E39: re-tuning beats the defaults nowhere",
+     "E39 rodou nas seeds 101/202/303"
+    ],
+    [
+     "3",
+     "Alvo normalizado no pré-treino + decode 450 (M)",
+     "E24, E25, E26, E30 (ADR 0013)",
+     "M better on 9, A better on none; média 0.7929 → 0.7745; 1.65x o tempo",
+     "não encontrada replicação dedicada; M rodou de novo como referência no E33"
+    ],
+    [
+     "4",
+     "Lacunas como [MASK] no decode (G)",
+     "E31, E32 (ADR 0014)",
+     "G better on 11 of 21, M better on none; média 0.7745 → 0.7542",
+     "sim: E33, 13 of 21, M better on none (101/202/303)"
+    ],
+    [
+     "5",
+     "Checkpoint pelas lacunas de validação (K)",
+     "E34 (ADR 0015)",
+     "K better on 3, H better on none; média 0.7519 → 0.7446",
+     "sim, em outro conjunto de seeds (não novas): E35 nas seeds 42/7/13 do E32, K better on 6, H on none"
+    ],
+    [
+     "6",
+     "[MASK] também no pré-treino",
+     "E36",
+     "PG better on none, R better on 1; keep null",
+     "não adotado"
+    ],
+    [
+     "7",
+     "Encoder maior por tamanho de tabela",
+     "E37, E38 (ADR 0018)",
+     "grandes −3.0%, médias −0.2%, pequenas +1.9% (4 worse); só pendigits_20nan e letter_20nan",
+     "sim: E38 em seeds não usadas no E37; E121 holds sob MAR e MNAR"
+    ],
+    [
+     "8",
+     "Calibração da saída de 40nan para cima (KC)",
+     "E34, E35, E40, E44 (ADR 0027)",
+     "KC − K: −0.0009 / −0.0037 / −0.0059 a 40/60/80nan",
+     "sim: E40 nas seeds 404/505/606 (supported)"
+    ],
+    [
+     "9",
+     "Leitura implantável H para alegações que precisam transferir",
+     "E43 (ADR 0024)",
+     "80nan wins over the mean/mode fill are oracle-only",
+     "terceiro conjunto de seeds (111/222/333)"
+    ],
+    [
+     "10",
+     "Confirmação com configuração congelada em 15 variantes novas",
+     "E44",
+     "mixed: 9 wins of 15, 3 losses",
+     "é o próprio teste fora do desenvolvimento"
+    ],
+    [
+     "11",
+     "Por que o pré-treino acrescenta pouco; default a 20nan em seeds novas",
+     "E49, E50, E52, E53; E51",
+     "washout; E50 refuted; E51 holds (K − barra 7/1/1)",
+     "E51 nas seeds 1001/2002/3003"
+    ],
+    [
+     "12",
+     "Batch grande P600 em pendigits e letter a 20–40nan (+ pendigits_60nan)",
+     "E101, E102, E103, E104, E109 (ADR 0036)",
+     "−1.46% a −5.93% a 20–40nan; 80nan sem ganho; electricity better on none",
+     "sim: E104 replicated (1357/2468/3579); E102 not replicated pela regra"
+    ],
+    [
+     "13",
+     "Encoder maior em pendigits e letter a 40–60nan",
+     "E59, E113, E116, E117, E119 (ADR 0037)",
+     "−1.12% a −6.04% (E113); 80nan mixed",
+     "sim: E116 replicated (6161/7171/8181); E119 holds sob MAR e MNAR"
+    ]
+   ],
+   "source": "docs/EXPERIMENTATION_LOG.md:638-642,716-718,1031-1039,1111-1119,1148-1156,1183-1188,1218-1226,1250-1255,1312-1317,1426,1557-1558,1589-1598; docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:19-33; docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:19-48",
+   "note_pt": "Em todas as diferenças, negativo favorece a mudança nova (impute_score menor é melhor). A coluna de replicação diz se houve um estudo em seeds que o estudo original não usou."
+  },
+  {
+   "id": "trajectory_json",
+   "title_pt": "impute_score médio por variante a cada passo (bloco 'trajectory' de meeting_figures.json, seeds 42/7/13)",
+   "columns": [
+    "variante",
+    "first decoder",
+    "normalised target, decode 450",
+    "gaps as [MASK] (H)",
+    "checkpoint on validation gaps (K)",
+    "default output (KC from 40nan)"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp_20nan",
+     "0.6085",
+     "0.6154",
+     "0.5934",
+     "0.5863",
+     "0.5863"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "0.7643",
+     "0.7704",
+     "0.7608",
+     "0.7582",
+     "0.7533"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "0.9058",
+     "0.8942",
+     "0.8684",
+     "0.8649",
+     "0.8617"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "1.0254",
+     "1.0011",
+     "1.0100",
+     "0.9759",
+     "0.9692"
+    ],
+    [
+     "spambase_20nan",
+     "0.8826",
+     "0.8681",
+     "0.8504",
+     "0.8481",
+     "0.8481"
+    ],
+    [
+     "spambase_40nan",
+     "0.9336",
+     "0.9577",
+     "0.9065",
+     "0.9030",
+     "0.9029"
+    ],
+    [
+     "spambase_60nan",
+     "0.9740",
+     "0.9750",
+     "0.9449",
+     "0.9422",
+     "0.9393"
+    ],
+    [
+     "spambase_80nan",
+     "1.0194",
+     "1.0266",
+     "0.9971",
+     "0.9871",
+     "0.9813"
+    ],
+    [
+     "credit-g_20nan",
+     "0.8949",
+     "0.8906",
+     "0.8873",
+     "0.8818",
+     "0.8818"
+    ],
+    [
+     "credit-g_40nan",
+     "0.9818",
+     "0.9793",
+     "0.9632",
+     "0.9556",
+     "0.9501"
+    ],
+    [
+     "credit-g_60nan",
+     "1.0106",
+     "1.0119",
+     "1.0030",
+     "0.9922",
+     "0.9808"
+    ],
+    [
+     "credit-g_80nan",
+     "1.0405",
+     "1.0314",
+     "1.0157",
+     "1.0079",
+     "1.0023"
+    ],
+    [
+     "vehicle_20nan",
+     "0.4672",
+     "0.4385",
+     "0.4218",
+     "0.4178",
+     "0.4178"
+    ],
+    [
+     "vehicle_60nan",
+     "0.6810",
+     "0.6693",
+     "0.6458",
+     "0.6449",
+     "0.6353"
+    ],
+    [
+     "biodeg_20nan",
+     "0.6670",
+     "0.6210",
+     "0.5954",
+     "0.5865",
+     "0.5865"
+    ],
+    [
+     "biodeg_60nan",
+     "0.8844",
+     "0.8267",
+     "0.7684",
+     "0.7605",
+     "0.7563"
+    ],
+    [
+     "kc2_20nan",
+     "0.6093",
+     "0.5843",
+     "0.5775",
+     "0.5414",
+     "0.5414"
+    ],
+    [
+     "kc2_60nan",
+     "0.7250",
+     "0.6833",
+     "0.6168",
+     "0.5723",
+     "0.5690"
+    ],
+    [
+     "pendigits_20nan",
+     "0.4025",
+     "0.3343",
+     "0.3328",
+     "0.3324",
+     "0.3324"
+    ],
+    [
+     "letter_20nan",
+     "0.5150",
+     "0.4613",
+     "0.4598",
+     "0.4593",
+     "0.4593"
+    ],
+    [
+     "electricity_20nan",
+     "0.6589",
+     "0.6247",
+     "0.6201",
+     "0.6179",
+     "0.6179"
+    ],
+    [
+     "mean_pooled (21 variantes)",
+     "0.7929",
+     "0.7745",
+     "0.7542",
+     "0.7446",
+     "0.7416"
+    ]
+   ],
+   "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:3846-4363 (mean_pooled nas linhas 3991, 4084, 4177, 4270, 4363)",
+   "note_pt": "Valores do JSON mostrados com 4 casas; a precisão completa está no arquivo. Menor é melhor; 1.0 é o preenchimento por média/moda. A 20nan as duas últimas colunas são iguais porque a calibração só entra de 40nan para cima. As duas últimas colunas são leituras de oráculo."
+  },
+  {
+   "id": "steps_counts",
+   "title_pt": "Contagem pré-registrada do experimento que decidiu cada passo (melhor / sem diferença / pior, contra o passo anterior)",
+   "columns": [
+    "passo",
+    "better",
+    "none",
+    "worse",
+    "n"
+   ],
+   "rows": [
+    [
+     "normalised target, decode 450",
+     "9",
+     "12",
+     "0",
+     "21"
+    ],
+    [
+     "gaps as [MASK]",
+     "11",
+     "10",
+     "0",
+     "21"
+    ],
+    [
+     "gaps as [MASK], fresh seeds",
+     "13",
+     "8",
+     "0",
+     "21"
+    ],
+    [
+     "checkpoint on validation gaps",
+     "6",
+     "15",
+     "0",
+     "21"
+    ],
+    [
+     "calibration",
+     "7",
+     "5",
+     "0",
+     "12"
+    ]
+   ],
+   "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:3751-3781",
+   "note_pt": "Cada contagem está no conjunto de seeds do experimento que a decidiu (E30, E32, E33, E35, E40), não necessariamente nas seeds 42/7/13 da tabela de médias."
+  },
+  {
+   "id": "gap_token_e32_e33",
+   "title_pt": "Lacunas como [MASK]: G − M por variante no estudo original (E32, seeds 42/7/13) e na replicação (E33, seeds 101/202/303)",
+   "columns": [
+    "variante",
+    "E32 G − M [IC 95%]",
+    "E32 veredito",
+    "E33 G − M [IC 95%]",
+    "E33 veredito"
+   ],
+   "rows": [
+    [
+     "credit-g_20nan",
+     "−0.0033 [−0.0174, +0.0108]",
+     "none",
+     "−0.0200 [−0.0392, −0.0009]",
+     "G better"
+    ],
+    [
+     "credit-g_40nan",
+     "−0.0161 [−0.0302, −0.0019]",
+     "none",
+     "−0.0050 [−0.0203, +0.0103]",
+     "no detectable difference"
+    ],
+    [
+     "credit-g_60nan",
+     "−0.0090 [−0.0245, +0.0066]",
+     "none",
+     "−0.0130 [−0.0299, +0.0039]",
+     "no detectable difference"
+    ],
+    [
+     "credit-g_80nan",
+     "−0.0157 [−0.0299, −0.0015]",
+     "none",
+     "−0.0256 [−0.0477, −0.0036]",
+     "G better"
+    ],
+    [
+     "kr-vs-kp_20nan",
+     "−0.0220 [−0.0360, −0.0080]",
+     "G better",
+     "−0.0258 [−0.0349, −0.0167]",
+     "G better"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "−0.0096 [−0.0196, +0.0004]",
+     "none",
+     "−0.0161 [−0.0290, −0.0031]",
+     "G better"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "−0.0258 [−0.0348, −0.0167]",
+     "G better",
+     "−0.0249 [−0.0330, −0.0167]",
+     "G better"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "+0.0088 [−0.0137, +0.0314]",
+     "none",
+     "+0.0017 [−0.0150, +0.0185]",
+     "no detectable difference"
+    ],
+    [
+     "spambase_20nan",
+     "−0.0177 [−0.0281, −0.0072]",
+     "G better",
+     "−0.0270 [−0.0367, −0.0173]",
+     "G better"
+    ],
+    [
+     "spambase_40nan",
+     "−0.0512 [−0.0825, −0.0198]",
+     "G better",
+     "−0.0357 [−0.0508, −0.0206]",
+     "G better"
+    ],
+    [
+     "spambase_60nan",
+     "−0.0301 [−0.0590, −0.0012]",
+     "G better",
+     "−0.0757 [−0.1401, −0.0113]",
+     "G better"
+    ],
+    [
+     "spambase_80nan",
+     "−0.0295 [−0.0623, +0.0033]",
+     "none",
+     "−0.0326 [−0.0659, +0.0007]",
+     "no detectable difference"
+    ],
+    [
+     "vehicle_20nan",
+     "−0.0167 [−0.0309, −0.0025]",
+     "G better",
+     "−0.0188 [−0.0238, −0.0138]",
+     "G better"
+    ],
+    [
+     "vehicle_60nan",
+     "−0.0235 [−0.0434, −0.0036]",
+     "G better",
+     "−0.0220 [−0.0352, −0.0088]",
+     "G better"
+    ],
+    [
+     "biodeg_20nan",
+     "−0.0256 [−0.0422, −0.0090]",
+     "G better",
+     "−0.0334 [−0.0436, −0.0233]",
+     "G better"
+    ],
+    [
+     "biodeg_60nan",
+     "−0.0583 [−0.0744, −0.0422]",
+     "G better",
+     "−0.0559 [−0.0735, −0.0384]",
+     "G better"
+    ],
+    [
+     "kc2_20nan",
+     "−0.0069 [−0.0306, +0.0169]",
+     "none",
+     "−0.0281 [−0.0718, +0.0155]",
+     "no detectable difference"
+    ],
+    [
+     "kc2_60nan",
+     "−0.0666 [−0.1271, −0.0061]",
+     "G better",
+     "−0.0933 [−0.1508, −0.0358]",
+     "G better"
+    ],
+    [
+     "pendigits_20nan",
+     "−0.0015 [−0.0034, +0.0004]",
+     "none",
+     "−0.0010 [−0.0027, +0.0007]",
+     "no detectable difference"
+    ],
+    [
+     "letter_20nan",
+     "−0.0014 [−0.0025, −0.0004]",
+     "G better",
+     "−0.0012 [−0.0024, −0.0001]",
+     "no detectable difference"
+    ],
+    [
+     "electricity_20nan",
+     "−0.0046 [−0.0198, +0.0106]",
+     "none",
+     "−0.0084 [−0.0173, +0.0004]",
+     "no detectable difference"
+    ]
+   ],
+   "source": "docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md:124-144; docs/reports/2026-10-27-reuniao-orientadora/readers/gap_token_rep.txt:1-144",
+   "note_pt": "Negativo favorece G (lacunas como [MASK]). Um veredito exige intervalo excluindo zero e as três seeds no mesmo sinal, por isso alguns intervalos que excluem zero ficam sem veredito. Contagens: 11 de 21 no E32 e 13 de 21 no E33, M melhor em nenhuma nos dois."
+  },
+  {
+   "id": "confirmation_e44",
+   "title_pt": "E44: confirmação com a configuração congelada, 15 variantes fora do desenvolvimento",
+   "columns": [
+    "variante",
+    "K",
+    "bar of 5",
+    "tuned bar",
+    "K − bar",
+    "K − tuned bar",
+    "H − bar",
+    "leitura"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "0.4259",
+     "0.4912",
+     "0.4786",
+     "−0.0653, better",
+     "−0.0528, better",
+     "−0.0643, better",
+     "win"
+    ],
+    [
+     "pendigits_60nan",
+     "0.5856",
+     "0.6424",
+     "0.6393",
+     "−0.0568, better",
+     "−0.0537, better",
+     "−0.0531, better",
+     "win"
+    ],
+    [
+     "pendigits_80nan",
+     "0.8304",
+     "0.8549",
+     "0.8342",
+     "−0.0245, better",
+     "−0.0038, better",
+     "−0.0212, better",
+     "win"
+    ],
+    [
+     "letter_40nan",
+     "0.5598",
+     "0.6154",
+     "0.6012",
+     "−0.0555, better",
+     "−0.0414, better",
+     "−0.0545, better",
+     "win"
+    ],
+    [
+     "letter_60nan",
+     "0.7175",
+     "0.7518",
+     "0.7499",
+     "−0.0343, better",
+     "−0.0324, better",
+     "−0.0276, better",
+     "win"
+    ],
+    [
+     "letter_80nan",
+     "0.8902",
+     "0.9041",
+     "0.8884",
+     "−0.0139, better",
+     "+0.0018, worse",
+     "−0.0120, better",
+     "loss"
+    ],
+    [
+     "electricity_40nan",
+     "0.7745",
+     "0.7309",
+     "0.7249",
+     "+0.0436, none",
+     "+0.0496, worse",
+     "+0.0417, none",
+     "loss"
+    ],
+    [
+     "electricity_60nan",
+     "0.8298",
+     "0.8186",
+     "0.8190",
+     "+0.0112, worse",
+     "+0.0108, worse",
+     "+0.0203, worse",
+     "loss"
+    ],
+    [
+     "electricity_80nan",
+     "0.9002",
+     "0.8999",
+     "0.8953",
+     "+0.0004, none",
+     "+0.0050, none",
+     "+0.0010, equivalent",
+     "neither"
+    ],
+    [
+     "vehicle_40nan",
+     "0.4970",
+     "0.5704",
+     "0.5708",
+     "−0.0734, better",
+     "−0.0738, better",
+     "−0.0644, better",
+     "win"
+    ],
+    [
+     "vehicle_80nan",
+     "0.8088",
+     "0.8165",
+     "0.8184",
+     "−0.0078, none",
+     "−0.0097, none",
+     "+0.0002, none",
+     "neither"
+    ],
+    [
+     "biodeg_40nan",
+     "0.6654",
+     "0.7413",
+     "0.7379",
+     "−0.0759, better",
+     "−0.0725, better",
+     "−0.0761, better",
+     "win"
+    ],
+    [
+     "biodeg_80nan",
+     "0.9712",
+     "1.0000",
+     "0.9687",
+     "−0.0288, better",
+     "+0.0025, none",
+     "−0.0175, better",
+     "neither"
+    ],
+    [
+     "kc2_40nan",
+     "0.5075",
+     "0.5931",
+     "0.6057",
+     "−0.0856, better",
+     "−0.0982, better",
+     "−0.0742, better",
+     "win"
+    ],
+    [
+     "kc2_80nan",
+     "0.6866",
+     "0.8431",
+     "0.8524",
+     "−0.1566, better",
+     "−0.1659, better",
+     "−0.1324, better",
+     "win"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/04-confirmation.md:167-183",
+   "note_pt": "Negativo favorece o TRIDENT. K é a leitura de oráculo e H a implantável. Leitura pela regra fixada antes: mixed (9 vitórias, 3 derrotas). Valores de K originais do E44, anteriores ao encoder maior da ADR 0037."
+  },
+  {
+   "id": "encoder_by_size_e38",
+   "title_pt": "E38: encoder maior por tamanho de tabela (seeds 101/202/303)",
+   "columns": [
+    "grupo",
+    "variantes",
+    "ALL better",
+    "ALL worse",
+    "mudança média [IC 95%]",
+    "custo por célula"
+   ],
+   "rows": [
+    [
+     "large, ≥10,000 rows",
+     "3",
+     "2",
+     "0",
+     "−3.0% [−5.1%, −1.0%]",
+     "1.84x"
+    ],
+    [
+     "medium, 3,196–4,601 rows",
+     "8",
+     "1",
+     "0",
+     "−0.2% [−0.6%, +0.2%]",
+     "1.95x"
+    ],
+    [
+     "small, ~520–1,055 rows",
+     "10",
+     "0",
+     "4",
+     "+1.9% [+0.5%, +3.2%]",
+     "1.77x"
+    ]
+   ],
+   "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:29-33",
+   "note_pt": "Mudança relativa do impute_score; negativo favorece o encoder maior."
+  },
+  {
+   "id": "large_tables",
+   "title_pt": "Tabelas grandes: batch grande (ADR 0036) e encoder maior (ADR 0037 e ADR 0018, decisão 4), com replicação e MAR/MNAR",
+   "columns": [
+    "variante",
+    "P600 − default: estudo original",
+    "P600: seeds novas",
+    "BIG − M: E113 (42/7/13)",
+    "BIG − M: E116 (6161/7171/8181)",
+    "BIG − M sob MAR (marf)",
+    "BIG − M sob MNAR (probit)"
+   ],
+   "rows": [
+    [
+     "pendigits_20nan",
+     "E101 −5.37% better",
+     "E102 −5.84% better; E104 −5.93% better",
+     "",
+     "",
+     "−4.59% better (E121)",
+     "−5.00% better (E121)"
+    ],
+    [
+     "pendigits_40nan",
+     "E101 −4.27% better",
+     "E102 −4.21% better; E104 −4.10% better",
+     "−6.04% better",
+     "−6.26% better",
+     "−3.61% better (E119)",
+     "−6.89% better (E119)"
+    ],
+    [
+     "pendigits_60nan",
+     "E101 −1.19% better",
+     "E102 −1.18% better; E109 −1.34% better",
+     "−3.14% better",
+     "−3.09% better",
+     "−4.73% better (E119)",
+     "−3.55% better (E119)"
+    ],
+    [
+     "pendigits_80nan",
+     "E101 +0.16% equivalent",
+     "E102 +0.42% worse",
+     "",
+     "",
+     "",
+     ""
+    ],
+    [
+     "letter_20nan",
+     "E103 −2.90% better",
+     "E104 −3.25% better",
+     "",
+     "",
+     "−5.81% better (E121)",
+     "−6.50% better (E121)"
+    ],
+    [
+     "letter_40nan",
+     "E103 −1.46% better",
+     "E104 −1.54% better",
+     "−5.47% better",
+     "−5.45% better",
+     "−5.94% better (E119)",
+     "−5.30% better (E119)"
+    ],
+    [
+     "letter_60nan",
+     "E103 −0.13% equivalent",
+     "",
+     "−1.12% better",
+     "−1.23% better",
+     "−5.06% better (E119)",
+     "−1.79% better (E119)"
+    ],
+    [
+     "letter_80nan",
+     "E103 +0.21% worse",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ],
+    [
+     "electricity, 20–80nan",
+     "E103 better on none",
+     "",
+     "",
+     "",
+     "",
+     ""
+    ]
+   ],
+   "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:19-29; docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:19-24,43-48; docs/adr/0018-bigger-encoder-on-the-large-tables.md:55-58",
+   "note_pt": "Mudança relativa do impute_score, 15 pares de folds por variante, SESOI de 1%; negativo favorece a mudança. Célula vazia = não testado nesse estudo. A 80nan nenhuma das duas mudanças foi adotada."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "impute_score",
+   "definition_pt": "Erro de imputação normalizado, medido nas células induzidas (valores conhecidos que foram escondidos para o teste). Menor é melhor; 1.0 equivale a preencher com a média (numéricas) ou a moda (categóricas).",
+   "source": "docs/EXPERIMENTATION_LOG.md:5-6"
+  },
+  {
+   "term": "variante (ex.: credit-g_40nan)",
+   "definition_pt": "Uma tabela com uma taxa de lacunas induzidas; credit-g_40nan é a tabela credit-g com 40% das células removidas. São 21 variantes de desenvolvimento e 15 de confirmação.",
+   "source": "docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:3852-3874; docs/tickets/imputation-protocol/04-confirmation.md:167-183"
+  },
+  {
+   "term": "veredito por variante (better / worse / none)",
+   "definition_pt": "Diferença pareada por seed e fold (15 pares: 3 seeds × 5 folds) com intervalo t de 95%; só há veredito quando o intervalo exclui zero e as três seeds concordam no sinal.",
+   "source": "docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md:40-42"
+  },
+  {
+   "term": "regra 'pior em nenhuma'",
+   "definition_pt": "Regra de leitura fixada antes de rodar: um candidato só vira default se nenhuma variante mostrar o default anterior como melhor.",
+   "source": "docs/tickets/imputation-pretraining/07-confirmatory-21-variants.md:45-51; docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md:59-67"
+  },
+  {
+   "term": "replicado em seeds novas",
+   "definition_pt": "O mesmo contraste rodado de novo em seeds que nenhum estudo anterior usou, com o critério de 'replicated' escrito antes; no E33 as seeds 101, 202 e 303.",
+   "source": "docs/tickets/imputation-token-shape/03-replication-on-fresh-seeds.md:22-23,41-48"
+  },
+  {
+   "term": "A, M, G",
+   "definition_pt": "A é o primeiro decodificador (pré-treino embedding 300 épocas + decode 150). M é o default da ADR 0013 (PRETRAIN_OBJECTIVE embedding_normalized, EPOCHS_DECODE 450, LR_SCHEDULER cosine). G é M com as lacunas reais mostradas como [MASK] no decode (DECODE_GAP_TOKEN mask, ADR 0014).",
+   "source": "docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md:43-47; docs/tickets/imputation-token-shape/02-gaps-as-mask-in-training.md:151-154"
+  },
+  {
+   "term": "H, K, KC",
+   "definition_pt": "Três leituras da mesma run. H: checkpoint escolhido pela loss na máscara de validação; é a leitura implantável. K: checkpoint escolhido nas lacunas das linhas de validação; é oráculo porque precisa da tabela completa. KC: K calibrado nas mesmas lacunas, usado como saída default onde a taxa de lacunas medida é de 0.3 ou mais.",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:29-38; docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:18-28; docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:27-29,57-58"
+  },
+  {
+   "term": "bar of 5, tuned bar, strong tier",
+   "definition_pt": "A barra é o melhor entre cinco imputadores simples (média/moda, kNN 5 e 10, HGB e LightGBM). A barra ajustada é a mesma com hiperparâmetros buscados. A camada forte reúne missForest, esperança condicional, SoftImpute e ICE, com o TabPFN v2 como membro offline.",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:29-38"
+  },
+  {
+   "term": "equivalent / SESOI de 1%",
+   "definition_pt": "Uma diferença é 'equivalent' quando o intervalo fica inteiro dentro de ±1% da média do oponente, o menor efeito que o projeto considera relevante.",
+   "source": "docs/tickets/imputation-protocol/04-confirmation.md:88-126"
+  },
+  {
+   "term": "ALL / BIG (encoder maior)",
+   "definition_pt": "Encoder com LAYERS 4, DIM_FEED 256 e ENCODER_FINAL_NORM layer, contra o default de 2 camadas, DIM_FEED 32 e sem norma final.",
+   "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:21-22; docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json:3985"
+  },
+  {
+   "term": "P600",
+   "definition_pt": "Treino com BATCH 1024, LR_PRE e LR_DECODE quatro vezes maiores (0.00136 e 0.004) e EPOCHS_DECODE 600, contra batch 256 e decode de 450 épocas.",
+   "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:12-16,41-42"
+  }
+ ],
+ "missing": [
+  "Uma replicação em seeds novas dedicada só ao passo M (E30, ADR 0013): não encontrada no log nem na ADR; M só voltou a rodar como braço de referência no E33.",
+  "O relatório docs/reports/2026-10-19-t28-why-pretraining-adds-little.md é um rascunho anterior a E49–E53 e não contém os resultados deles; os números de E49, E50, E52 e E53 vêm só das entradas do log (docs/EXPERIMENTATION_LOG.md:1766-1939).",
+  "Não abri os Outcomes dos tickets de E34, E35, E36, E37, E38, E39, E40, E43, E47, E49–E53, E51, E59, E101–E104, E109, E113, E116, E117, E119 e E121; para eles os números vêm das entradas do log e das ADRs, que resumem os tickets.",
+  "Tabelas por variante de E34 e E35 (K − H): existem em readers/selection.txt e readers/selection_rep.txt, não lidas; só as contagens e médias do log foram usadas.",
+  "meeting_figures.json 'trajectory' não tem passos para as mudanças nas tabelas grandes (ADRs 0018, 0036, 0037) nem para as 15 variantes de confirmação; não há média por passo depois do passo 5.",
+  "As entradas E27, E28 e E29 (parada antecipada, batch 1024, cabeças em lote) foram lidas só pela linha do índice (docs/EXPERIMENTATION_LOG.md:66-68).",
+  "Os commits de pré-registro de E30, E32, E33, E34, E35 e E38 não foram anotados por hash; a evidência usada é a seção 'fixed before launch' / 'fixed now' de cada ticket. Hashes anotados só para E21 (8716eb8), E39 (00766f4), E40 (5634858) e E43 (9a7e249), conforme o log."
+ ],
+ "do_not_claim": [
+  "'O TRIDENT bate todos os baselines de imputação': a confirmação E44 leu 'mixed' (9 vitórias, 3 derrotas), electricity perde a 40 e 60nan, e contra a barra ajustada a 80nan o placar é 2/3/1.",
+  "'O E44 confirmou/suportou o default': a palavra da fonte é 'mixed'.",
+  "'O modelo implantado alcança os números de K ou KC': K e KC são leituras de oráculo que usam a tabela completa de validação; a leitura implantável é H (ADR 0024) e a calibração implantável do E47 ganha no máximo 0.4% de H.",
+  "'A 80nan o modelo vence a média/moda': no desenvolvimento essas vitórias são só de oráculo (E43), e credit-g_60nan, credit-g_80nan e kr-vs-kp_80nan ficam no nível da média/moda em H.",
+  "'O pré-treino é o que faz a imputação funcionar': no E24 nenhuma variante mostra ganho contra nenhum pré-treino, e E49–E53 apontam que o decode reconstrói um encoder tão bom do zero (washout).",
+  "'Encurtar ou tirar o pré-treino é seguro': o E50 foi refutado (pendigits piora +3.4% e +11.6% com menos pré-treino ou taxa menor).",
+  "'O ajuste de hiperparâmetros melhorou o modelo': E21 não bate a barra em nenhuma variante induzida e no E39 o re-tune não bate os defaults em nenhuma.",
+  "'O encoder maior ou o batch grande ajudam em geral': o encoder maior piora 4 tabelas pequenas (E38), electricity não ganha com nenhum dos dois, e a 80nan os resultados são mistos ou piores (E102, E103, E117).",
+  "'Todo default foi replicado em seeds novas antes de ser adotado': a ADR 0014 foi aceita antes de o E33 terminar, a ADR 0015 antes do E35, e o passo M (ADR 0013) não tem replicação dedicada encontrada; o correto é 'replicado em seeds novas' para G, K, encoder maior, P600 e calibração.",
+  "'A queda de 0.7929 para 0.7416 é o ganho implantável': os dois últimos passos (0.7446 e 0.7416) são leituras de oráculo; em H a média é 0.7542.",
+  "'O E102 replicou o batch grande': pela regra pré-registrada leu 'not replicated' (pendigits_80nan +0.42% pior); a replicação válida é o E104, em escopo reduzido escolhido depois de ver os dados e testado em seeds novas.",
+  "'A calibração ajuda a 40nan': nenhuma variante de 40nan ganhou veredito no E40; o limiar é seguro, mas ocioso a 40."
+ ],
+ "figure_ideas": [
+  "Gráfico de degraus com o mean_pooled dos cinco passos (0.7929, 0.7745, 0.7542, 0.7446, 0.7416) e uma linha horizontal no melhor baseline (0.7781), marcando os passos 4 e 5 como oráculo e anotando em cada degrau a contagem melhor/sem diferença/pior de steps_counts.",
+  "Gráfico de pontos pareados por variante: G − M no E32 (seeds 42/7/13) ao lado do E33 (seeds 101/202/303), com intervalos de 95%, para mostrar a replicação.",
+  "Linha do tempo dos passos com três marcas por passo: regra fixada antes, 'pior em nenhuma' e replicado em seeds novas (sim/não).",
+  "Barras por grupo de tamanho de tabela para o encoder maior (−3.0%, −0.2%, +1.9%), mostrando por que a mudança ficou restrita às tabelas grandes.",
+  "Tabela de vitória/derrota do E44 por variante, colorida por leitura (win, loss, neither), com electricity em destaque como limite declarado."
+ ]
+}

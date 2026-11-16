@@ -1,0 +1,2194 @@
+{
+ "key": "mimic",
+ "section": "As tabelas MIMIC-IV (T50, T55, T57): dados, três jeitos de obter uma verdade, e resultados E148–E180",
+ "storyline_pt": "Até aqui, toda tabela do projeto era completa e tinha lacunas cortadas por um mecanismo que o próprio projeto escreveu. Na MIMIC-IV a lacuna é a decisão do clínico de não medir, e não existe valor verdadeiro para ela. Construímos duas visões da mesma coorte de 11.082 internações de UTI com suspeita de infecção (mimic-cardio, 22 atributos; mimic-sofa, 17 atributos; rótulo óbito hospitalar, 16,5%). Depois veio uma terceira tabela, mimic-wide, com 65.366 primeiras internações, bem acima do contexto de 10.000 linhas do TabPFN v2. As lacunas são informativas: morrem 19,9% dos pacientes com lactato medido e 7,9% dos sem lactato. Como as lacunas reais não têm verdade, usamos três jeitos de obtê-la: esconder células observadas e deixar as lacunas naturais como entrada (E148), transplantar padrões reais de lacuna para linhas completas (E149), e injetar mecanismos conhecidos em tabelas completas (E156). Nos dois primeiros, o decodificador do TRIDENT tem impute_score menor (melhor) que a melhor baseline da barra: cerca de 1,5% do escore da barra nas lacunas naturais, e −0.0455 (cardio) e −0.0272 (SOFA) sob padrões transplantados. Contra o TabPFN o quadro é misto: o TRIDENT leva vantagem nas tabelas naturais e no cardio transplantado, mas perde no SOFA tmatch (+0.0265). O híbrido implantável com TabPFN (ADR 0031, decisão 6) fecha essa diferença no SOFA tmatch e não piora em nenhuma variante, em três conjuntos de sementes (E163, E166, E171). Nas tabelas naturais ele é seguro, mas quase não ganha nada (E173). Na mimic-wide, o decodificador supera o TabPFN v2 nas lacunas naturais (−0.0991) e nos padrões transplantados (−0.0577) e fica empatado sob MCAR (E176). Treinado com só 10.000 linhas por fold, ele mantém 84% e 82% dessa vantagem (E177); ali o híbrido só devolve o preenchimento de H, sem ganho (E178, refutado: inofensivo e desnecessário). Os limites: as células escondidas são sorteadas entre valores medidos, os doadores são pacientes mais graves, tudo vem de uma coorte de um hospital, e preencher melhor não ajudou um classificador de mortalidade (E150). O E180, que separa o efeito das linhas do efeito dos passos de otimização, está em andamento.",
+ "findings": [
+  {
+   "experiments": [
+    "T50 stage 0 (tickets mimic/01, mimic/02)",
+    "T57 (mimic-wide, mimic/14)",
+    "E156 (tabelas -semi)"
+   ],
+   "question_pt": "Que tabelas clínicas foram construídas, de onde vêm, e como as lacunas naturais se distribuem?",
+   "design_pt": "mimic-cardio e mimic-sofa são duas visões das mesmas 11.082 internações de UTI. A coorte é a de suspeita de infecção do kg-impute: antibiótico prescrito e administrado, cultura pedida, primeira internação de cada paciente. O rótulo `class` é o óbito hospitalar (hospital_expire_flag), 16,5%. mimic-cardio traz 15 variáveis medidas (cada uma é a média das horas observadas nas primeiras 30 h, e vira lacuna quando nunca foi observada), 4 vasopressores (dose máxima, com 0 quando não houve infusão, o que não conta como lacuna), idade, sexo e tipo de admissão: são 22 atributos, 20 deles numéricos. mimic-sofa traz o pior valor bruto de cada componente do SOFA nas horas 1 a 24, mais idade, sexo e tipo de admissão: são 17 atributos, 14 numéricos, e os categóricos são pf_on_vent, gender e admission_type. mimic-wide sai dos eventos brutos da MIMIC-IV 3.1: primeira internação de cada paciente, 65.366 linhas, 23 variáveis medidas em 30 h, mais idade, sexo e tipo de admissão. Os valores são cortados nos percentis 0,5 e 99,5 da coorte inteira. As tabelas completas ficam fora do repositório, em /scratch/diogoneiss/trident-data (variável TRIDENT_DATASETS_ROOT), nas duas máquinas, com os hashes rastreados em datasets/external_tables.sha256. No repositório fica só um recorte real de 1.000 internações, mimic-cardio-toy.",
+   "result_pt": "As lacunas se concentram em poucas colunas e são informativas. No cardio, faltam troponina T em 65,8% das internações, pressão arterial invasiva em 57,4% a 60,3% e lactato em 28,5%; as demais ficam abaixo de 6%. As 14 colunas com lacuna perdem, em média, 21,0% das células. No SOFA, faltam PaO2/FiO2 e a flag de ventilação em 56,5%, bilirrubina em 47,0% e débito urinário em 28,6%; a média nas 10 colunas com lacuna é 20,0%. A mortalidade muda com a medição: 19,9% com lactato medido contra 7,9% sem; 24,1% contra 12,5% para troponina; no SOFA, 22,2% contra 12,1% (PaO2/FiO2) e 22,0% contra 10,3% (bilirrubina). O débito urinário vai no sentido oposto (15,2% contra 19,7%). As lacunas vêm em blocos: o cardio tem 55 padrões distintos, e cinco deles cobrem 81% das linhas. Na mimic-wide faltam só 4,2% das células medidas (PTT 16,4%, INR 15,8%, cálcio 8,9%, pressões 6,2%). Como checagem, os eventos brutos reproduzem as 15 colunas compartilhadas de mimic-cardio_natural lacuna por lacuna (100,0%).",
+   "verdict": "descritivo (dados)",
+   "caveat_pt": "As porcentagens de lacuna não medem a mesma coisa em todas as tabelas. Para cardio e SOFA, os arquivos dão a média das colunas que têm lacuna (21,0% e 20,0%), não a taxa sobre todas as células. Para as doadoras e para a mimic-wide, a taxa é sobre todas as células de atributo. Há uma só coorte, de um só hospital, e as duas tabelas de 11.082 linhas são duas visões da mesma população, não duas replicações. O corte nos percentis foi ajustado na coorte inteira, incluindo as linhas de teste. Óbitos e altas dentro da janela de observação não foram removidos: 1.715 internações saíram da UTI em menos de 24 h e 333 pacientes morreram em até 30 h.",
+   "key_numbers": [
+    {
+     "label": "internações na coorte kg-impute (cardio e SOFA)",
+     "value": "11,082",
+     "source": "docs/tickets/mimic/02-tables.md:11"
+    },
+    {
+     "label": "óbito hospitalar (rótulo)",
+     "value": "16.5%",
+     "source": "docs/tickets/mimic/02-tables.md:15"
+    },
+    {
+     "label": "mimic-cardio: atributos; colunas com lacuna e sua lacuna média",
+     "value": "22 features; the 14 columns with gaps miss 21.0% of their cells on average",
+     "source": "docs/tickets/mimic/02-tables.md:43"
+    },
+    {
+     "label": "mimic-sofa: atributos",
+     "value": "17 features",
+     "source": "docs/tickets/mimic/02-tables.md:58"
+    },
+    {
+     "label": "mimic-sofa: colunas com lacuna e sua lacuna média",
+     "value": "columns with gaps: 10, their mean gap 20.0%",
+     "source": "/scratch/diogoneiss/trident-data/build_report.txt:44"
+    },
+    {
+     "label": "numéricas usadas pelo ReMasker (cardio, SOFA)",
+     "value": "cardio 20 of 22, sofa 14 of 17",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:18"
+    },
+    {
+     "label": "mortalidade com lactato medido / sem",
+     "value": "19.9% / 7.9%",
+     "source": "docs/tickets/mimic/02-tables.md:43-44"
+    },
+    {
+     "label": "padrões de lacuna no cardio",
+     "value": "55 distinct patterns on the cardio table, five of them 81% of the rows",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:7"
+    },
+    {
+     "label": "mimic-wide: linhas, óbitos",
+     "value": "65,366 rows, deaths 10.8%",
+     "source": "docs/tickets/mimic/14-wide-table.md:30"
+    },
+    {
+     "label": "mimic-wide: células medidas em lacuna",
+     "value": "4.2% of their cells are gaps (PTT 16.4%, INR 15.8%, calcium 8.9%, the pressures 6.2%, magnesium 4.6%)",
+     "source": "docs/tickets/mimic/14-wide-table.md:35"
+    },
+    {
+     "label": "autochecagem mimic-wide contra mimic-cardio",
+     "value": "gap for gap (100.0%) and value for value (median relative difference 0.0000)",
+     "source": "docs/tickets/mimic/14-wide-table.md:39-40"
+    },
+    {
+     "label": "internações com UTI < 24 h; óbitos em 30 h",
+     "value": "1,715; 333",
+     "source": "docs/tickets/mimic/02-tables.md:88-89"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E148",
+    "E149",
+    "E156",
+    "E150"
+   ],
+   "question_pt": "Como dar uma verdade ao preenchimento quando a lacuna real não tem valor verdadeiro?",
+   "design_pt": "(1) `_natural` (E148): as lacunas naturais entram como [NULL] e se escondem células observadas das linhas de teste. É a população masked, com taxa nominal de 0,2 e sorteio uniforme entre as células medidas. (2) Variantes `-donor` (E149): as linhas completas de cada tabela recebem padrões reais de lacuna. Em `tmatch`, cada linha doadora copia o padrão inteiro da internação incompleta mais próxima, pela distância euclidiana nas colunas padronizadas com menos de 1% de lacunas. Em `trand`, os mesmos padrões são permutados entre as linhas, o que mantém os blocos e remove a dependência da linha. Em `mcar`, cada coluna recebe o mesmo número de lacunas em posições uniformes. As três variantes têm a mesma contagem por coluna, e o sufixo _20nan é só um rótulo: a taxa real é 12,9% (cardio) e 10,5% (SOFA) das células. A verdade é a tabela doadora completa (população induced). (3) Mecanismos conhecidos (E156): tabelas completas cortadas das naturais (mimic-sofa-semi, 10.553 linhas e 6 colunas; mimic-cardio-semi, 10.795 linhas e 8 colunas), com 60% de lacunas injetadas por três mecanismos: um que depende do desfecho (odds 3), auto-mascaramento probit (inclinação 0,5) e MCAR. Há ainda um caminho sem verdade célula a célula: julgar os preenchimentos pelo desempenho de um classificador de mortalidade (E150).",
+   "result_pt": "Cada caminho mede uma coisa diferente. (1) mede quão bem se reconstroem valores que foram medidos, com o padrão real de lacunas em volta. (2) mede o preenchimento sob a geometria real das lacunas, com verdade conhecida. (3) mede o efeito de um mecanismo conhecido sobre a predição. Nenhum deles pontua uma lacuna verdadeira.",
+   "verdict": "desenho",
+   "caveat_pt": "Em (1), as células escondidas são um sorteio entre valores medidos: um lactato não medido não é um lactato medido. Em (2), os doadores são os pacientes com tudo medido, e são mais graves (33,5% e 25,4% de óbitos contra 16,5%). Além disso, o transplante carrega onde as lacunas caem, não o que os valores ausentes seriam: tmatch é no máximo MAR dadas as colunas de pareamento. Em (3), as tabelas são pequenas (6 e 8 colunas) e as duas saem da mesma coorte.",
+   "key_numbers": [
+    {
+     "label": "doadora cardio: linhas, óbitos",
+     "value": "1,292 rows, 33.5% deaths",
+     "source": "docs/tickets/mimic/02-tables.md:67"
+    },
+    {
+     "label": "doadora SOFA: linhas, óbitos",
+     "value": "2,143 rows, 25.4% deaths",
+     "source": "docs/tickets/mimic/02-tables.md:68"
+    },
+    {
+     "label": "doadora cardio: lacunas, fração de células, padrões tmatch/trand/mcar",
+     "value": "3,659 | 12.9% | 30 / 30 / 171",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:57"
+    },
+    {
+     "label": "doadora SOFA: lacunas, fração de células, padrões tmatch/trand/mcar",
+     "value": "3,830 | 10.5% | 29 / 29 / 74",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:58"
+    },
+    {
+     "label": "mimic-wide-donor",
+     "value": "its 46,501 complete rows ... tmatch, trand and mcar at 12.6% of feature cells (label 20nan): 152,057 gaps each, 177 distinct row patterns from 16,175 incomplete stays",
+     "source": "docs/tickets/mimic/14-wide-table.md:36-38"
+    },
+    {
+     "label": "tabelas -semi do E156",
+     "value": "mimic-sofa-semi: 10,553 rows ... 16.4% deaths; mimic-cardio-semi: 10,795 rows ... 16.6% deaths",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:33-36"
+    },
+    {
+     "label": "mecanismos do E156",
+     "value": "outcome --odds 3, probit --slope 0.5, mcar; 60% of each column's cells; data seed 5858",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:39-41"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E148"
+   ],
+   "question_pt": "Com as lacunas naturais na entrada, o decodificador reconstrói células observadas escondidas melhor que a melhor baseline da barra?",
+   "design_pt": "Tabelas mimic-cardio_natural e mimic-sofa_natural, com os defaults de imputação e --decode_checkpoint masked (leitura M). Sementes 42/7/13 × 5 folds, 6 runs, 15 réplicas pareadas por (semente, fold). O primário é o impute_score do decodificador menos o da melhor baseline da barra, nas mesmas células, com IC t de 95% e correção de Holm sobre as duas tabelas. O TabPFN v2 rodou offline nas mesmas células, como leitura descritiva.",
+   "result_pt": "Supported nas duas tabelas. No cardio, 0.8072 contra 0.8199 (hgb): −0.0127 [−0.0177, −0.0076], Holm p 0.0002. No SOFA, 0.8848 contra 0.8984 (hgb): −0.0137 [−0.0202, −0.0072], Holm p 0.0005. A diferença é de cerca de 1,5% do escore da barra. Na leitura descritiva, o decodificador tem a menor média entre todos os imputadores, incluindo o strong tier; o mais próximo é o ICE no cardio, com 0.8191. Ele também fica abaixo do TabPFN: −0.0387 [−0.0443, −0.0331] no cardio (TabPFN 0.8459) e −0.0108 [−0.0165, −0.0052] no SOFA (TabPFN 0.8956). Essa vantagem está no erro quadrático. Em MAE, o cardio empata (0.451) e o SOFA fica pior (0.493 contra 0.467 do TabPFN). Entre as 8 colunas esparsas, o decodificador tem o menor RMSE da barra em 7; a exceção é PaO2/FiO2, onde lgbm marca 0.797 e o decodificador 0.820. A troponina é quase imprevisível para todos: o melhor RMSE é 1.007 z e a média marca 1.044.",
+   "verdict": "supported",
+   "caveat_pt": "As células escondidas são um sorteio uniforme entre valores medidos, então este estudo não diz quão bem as lacunas verdadeiras são preenchidas. Foi uma série de sementes em duas visões de uma coorte, e não levou a mudança de default nem de ADR. A comparação com o TabPFN é descritiva, sem teste, e o ticket diz que dela não sai afirmação contra o TabPFN.",
+   "key_numbers": [
+    {
+     "label": "cardio natural: decodificador − barra (hgb), impute_score",
+     "value": "-0.0127 [-0.0177, -0.0076], Holm p 0.0002 -> better",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:62"
+    },
+    {
+     "label": "SOFA natural: decodificador − barra (hgb)",
+     "value": "-0.0137 [-0.0202, -0.0072], Holm p 0.0005 -> better",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:63"
+    },
+    {
+     "label": "tamanho relativo",
+     "value": "about 1.5% of the bar's score on each table",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:119"
+    },
+    {
+     "label": "cardio: decodificador − TabPFN",
+     "value": "-0.0387 [-0.0443, -0.0331] (TabPFN 0.8459)",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:64"
+    },
+    {
+     "label": "SOFA: decodificador − TabPFN",
+     "value": "-0.0108 [-0.0165, -0.0052] (TabPFN 0.8956)",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:66"
+    },
+    {
+     "label": "RMSE/MAE contra TabPFN (cardio)",
+     "value": "rmse_num_z 0.8116 against 0.8520, mae_num_z 0.4513 against 0.4511",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:65"
+    },
+    {
+     "label": "RMSE/MAE contra TabPFN (SOFA)",
+     "value": "rmse_num_z 0.8855 against 0.8999, mae_num_z 0.4925 against 0.4665",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:67"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E149"
+   ],
+   "question_pt": "Sob padrões reais de lacuna, copiados de internações reais para linhas completas, o decodificador preenche melhor que a melhor baseline da barra?",
+   "design_pt": "Tabelas doadoras mimic-cardio-donor (1.292 linhas) e mimic-sofa-donor (2.143 linhas), cada uma nas variantes tmatch, trand e mcar, com sementes 42/7/13 e cinco folds: 18 runs com os defaults de imputação. A leitura é K, o checkpoint escolhido nas lacunas de validação (ADR 0015). O primário, em tmatch, é o impute_score nas células induced menos o da melhor baseline, com 15 réplicas, IC t de 95% e correção de Holm. Ficam como leitura descritiva tmatch − trand, trand − mcar e o TabPFN em tmatch.",
+   "result_pt": "Supported nas duas doadoras. No cardio, 0.8606 contra 0.9061: −0.0455 [−0.0604, −0.0307], Holm p abaixo de 0.0001. No SOFA, 0.9209 contra 0.9481: −0.0272 [−0.0423, −0.0122], Holm p 0.0017. Isso é cerca de 5% e 3% do escore da barra. Em tmatch, o decodificador tem a menor média de todos os imputadores nas duas tabelas; no cardio, o condexp (0.8616) fica tão perto que os níveis não os distinguem. Considerando as seis variantes, o decodificador tem a menor média em cinco; a exceção é o SOFA mcar, onde o missForest marca 0.9151 contra 0.9237. Contra o TabPFN em tmatch, as tabelas discordam. No cardio o decodificador é melhor, −0.0600 [−0.0698, −0.0503] (TabPFN 0.9206, acima até da barra). No SOFA o TabPFN é melhor, +0.0265 [+0.0155, +0.0375] (0.8944, o menor de todos), em RMSE e também em MAE. Nos contrastes, tmatch − trand tem todos os intervalos contendo zero. Em trand − mcar no cardio, o escore do decodificador sobe +0.0660 [+0.0465, +0.0854], mas a distância à barra não se move.",
+   "verdict": "supported",
+   "caveat_pt": "Os doadores são mais graves que a coorte. O transplante carrega onde as lacunas caem, não os valores, e tmatch é no máximo MAR dadas as colunas de pareamento. Nenhum contraste descritivo permite ler um mecanismo, e a afirmação vale só contra a barra. Foi uma série de sementes. Atenção: o ticket diz que o ICE fica acima da média/moda em toda variante transplantada, mas a própria tabela mostra ICE 0.9992 no cardio tmatch, abaixo de 1.0000; essa frase não deve ser repetida.",
+   "key_numbers": [
+    {
+     "label": "cardio tmatch: decodificador − barra",
+     "value": "-0.0455 [-0.0604, -0.0307], Holm p 0.0000 -> better",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:114"
+    },
+    {
+     "label": "SOFA tmatch: decodificador − barra",
+     "value": "-0.0272 [-0.0423, -0.0122], Holm p 0.0017 -> better",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:115"
+    },
+    {
+     "label": "tamanho relativo",
+     "value": "About 5% and 3% of the bar's score",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:134"
+    },
+    {
+     "label": "cardio tmatch: decodificador − TabPFN",
+     "value": "-0.0600 [-0.0698, -0.0503] (TabPFN 0.9206)",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:116"
+    },
+    {
+     "label": "SOFA tmatch: decodificador − TabPFN",
+     "value": "+0.0265 [+0.0155, +0.0375] (TabPFN 0.8944)",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:118"
+    },
+    {
+     "label": "SOFA mcar: missForest abaixo do decodificador",
+     "value": "missforest 0.9151, decoder 0.9237",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:113"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E163",
+    "E166",
+    "E171 (regra do E163, descritiva)"
+   ],
+   "question_pt": "No SOFA tmatch, único caso clínico em que o TabPFN liderava, o híbrido implantável (ADR 0031 decisão 6) fecha a diferença sem piorar em nenhuma variante?",
+   "design_pt": "O lado do modelo é H, a leitura implantável do ADR 0024 (--decode_checkpoint loss --decode_calibration none). O híbrido table_tabpfn mistura os preenchimentos de H e do TabPFN com um peso numérico e uma escolha categórica por tabela. Esses pesos são escolhidos nas células observadas escondidas da validação do fold, sem usar a tabela completa. Rodaram as seis variantes transplantadas nas sementes 42/7/13 (E163) e 4545/5656/6767 (E166), 18 runs cada. TabPFN v2 e missForest foram re-ajustados em cada fold de treino. A regra vale nos dois tmatch: supported se o híbrido for melhor que H em ao menos um, pior que H em nenhum e pior que o TabPFN em nenhum. O veredito sai por par de folds, com IC t de 95%, concordância de sementes e SESOI de 1% da média do oponente.",
+   "result_pt": "Supported nas duas séries. No SOFA tmatch, H fica atrás do TabPFN (0.9156 contra 0.8951 no E163). Ali o table_tabpfn é melhor que H (−0.0151 [−0.0212, −0.0090]; no E166, −0.0114 [−0.0178, −0.0049]) e não tem veredito contra o TabPFN (+0.0054; +0.0061). No cardio tmatch, ele é equivalente a H ou sem veredito (−0.0034; −0.0022) e muito melhor que o TabPFN (−0.0674; −0.0561). Em cada série, o híbrido é melhor que H em 5 das 6 variantes. Nas duas séries ele é pior que o TabPFN no SOFA trand (+0.0111; +0.0149). Uma terceira série (101/202/303, no E171) leu a mesma regra como supported de novo, com −0.0179 no SOFA tmatch. O escopo da decisão 6 do ADR 0031 foi estendido às variantes transplantadas da MIMIC-IV em 2026-11-09 19:51 GMT-3.",
+   "verdict": "supported (E163); supported (E166)",
+   "caveat_pt": "Valem as mesmas ameaças do E149: doadores mais graves, e tmatch no máximo MAR dadas as colunas de pareamento. No E166, H foi treinado no medusa1 e TabPFN e missForest foram re-ajustados no gorgona8, o mesmo arranjo em todo par; isso é um desvio do ADR 0035 (estudos só se dividem entre servidores por semente). O H do E163 não é o K do E149, então os níveis dos dois estudos não se comparam diretamente.",
+   "key_numbers": [
+    {
+     "label": "E163 SOFA tmatch: table_tabpfn − H",
+     "value": "-0.0151 [-0.0212, -0.0090] better",
+     "source": "docs/tickets/mimic/10-hybrid-transplant.md:99"
+    },
+    {
+     "label": "E163 SOFA tmatch: table_tabpfn − tabpfn",
+     "value": "+0.0054 [-0.0010, +0.0118] none",
+     "source": "docs/tickets/mimic/10-hybrid-transplant.md:100"
+    },
+    {
+     "label": "E163 PRIMARY",
+     "value": "better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported",
+     "source": "docs/tickets/mimic/10-hybrid-transplant.md:124"
+    },
+    {
+     "label": "E166 SOFA tmatch: table_tabpfn − H",
+     "value": "-0.0114 [-0.0178, -0.0049] better",
+     "source": "docs/tickets/mimic/11-hybrid-transplant-seeds.md:90"
+    },
+    {
+     "label": "E166 PRIMARY",
+     "value": "better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported",
+     "source": "docs/tickets/mimic/11-hybrid-transplant-seeds.md:121"
+    },
+    {
+     "label": "E171, regra do E163 (terceira série)",
+     "value": "better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported",
+     "source": "docs/tickets/mimic/12-hybrid-crossfit-seeds.md:132"
+    },
+    {
+     "label": "pior que TabPFN no SOFA trand (E163, E166)",
+     "value": "+0.0111, +0.0149",
+     "source": "docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:134-135"
+    },
+    {
+     "label": "extensão da decisão 6",
+     "value": "Decision 6's scope extended to the MIMIC-IV transplant variants 2026-11-09 19:51 GMT-3 with E163 and E166",
+     "source": "docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:9"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E176"
+   ],
+   "question_pt": "Numa tabela clínica várias vezes maior que o contexto de 10.000 linhas do TabPFN v2, o decodificador se mantém contra ele?",
+   "design_pt": "Três variantes: mimic-wide_natural com a leitura M (população masked), e mimic-wide-donor_tmatch_20nan e mimic-wide-donor_mcar_20nan com os defaults (leitura K, células induced). Sementes 42/7/13, 9 runs. O TabPFN v2 rodou offline nos mesmos folds e células. A regra é por par de folds, com concordância de sementes e margem de 1% da média do TabPFN; os primários são natural e tmatch. O fold de treino tem 45.756 linhas (natural) e 32.550 (doadora), enquanto o TabPFN v2 usa no máximo 10.000 linhas observadas por coluna (CONTEXT_ROWS = 10_000).",
+   "result_pt": "Supported. O decodificador é melhor que o TabPFN v2 nas lacunas naturais, −0.0991 [−0.1001, −0.0982] (0.6652 contra 0.7644, 13% do escore do TabPFN), e nos padrões transplantados, −0.0577 [−0.0592, −0.0562] (0.9086 contra 0.9662, 6%), com todas as sementes concordando. Sob MCAR, −0.0044 [−0.0056, −0.0032] é chamado de melhor, mas fica abaixo da margem de 1% (0.0072); na prática, empate. O decodificador é melhor que a barra nas três variantes. Já o TabPFN fica pior que a melhor baseline da barra nas lacunas naturais (0.7644 contra 0.6887) e no tmatch (0.9662 contra 0.9352).",
+   "verdict": "supported",
+   "caveat_pt": "O estudo não mostra que a vantagem vem do teto de linhas. Sob MCAR, com o mesmo teto, os dois empatam; a vantagem acompanha os padrões reais de lacuna. Por que o TabPFN cai abaixo da barra nos padrões reais não foi examinado. O TabPFN usado é o v2, como o ADR 0028 o fixa; nada se afirma sobre a v2.5, que aceita 50.000 amostras. É uma tabela, com uma série de sementes.",
+   "key_numbers": [
+    {
+     "label": "natural: decodificador − TabPFN v2",
+     "value": "-0.0991 [-0.1001, -0.0982], by seed -0.0994, -0.0981, -0.0999 -> better",
+     "source": "docs/tickets/mimic/14-wide-table.md:94"
+    },
+    {
+     "label": "tmatch: decodificador − TabPFN v2",
+     "value": "-0.0577 [-0.0592, -0.0562], by seed -0.0582, -0.0576, -0.0572 -> better",
+     "source": "docs/tickets/mimic/14-wide-table.md:97"
+    },
+    {
+     "label": "mcar: decodificador − TabPFN v2",
+     "value": "-0.0044 [-0.0056, -0.0032] ... -> better (under the 1% margin (0.0072))",
+     "source": "docs/tickets/mimic/14-wide-table.md:100; docs/tickets/mimic/14-wide-table.md:107-108"
+    },
+    {
+     "label": "tamanho relativo",
+     "value": "13% of TabPFN's score ... (6%)",
+     "source": "docs/tickets/mimic/14-wide-table.md:105-106"
+    },
+    {
+     "label": "linhas do fold de treino",
+     "value": "45,756 on the natural table and 32,550 on the donor table",
+     "source": "docs/tickets/mimic/14-wide-table.md:41-42"
+    },
+    {
+     "label": "contexto do TabPFN",
+     "value": "CONTEXT_ROWS = 10_000",
+     "source": "src/training/tabpfn_baseline.py:56"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E177"
+   ],
+   "question_pt": "Treinado com só 10.000 linhas por fold, o decodificador ainda bate o TabPFN v2 na mimic-wide?",
+   "design_pt": "Usa a flag --train_rows 10000: o modelo treina numa amostra de semente fixa das linhas de treino do fold. O scaler, os preenchimentos ingênuos, as baselines, as linhas de validação e as células pontuadas não mudam, então os escores ficam nas mesmas unidades do E176. Os braços são M10k e D10k, nas mesmas 9 células e contra os mesmos arquivos do TabPFN do E176, com a mesma regra.",
+   "result_pt": "Supported. O decodificador com teto é melhor que o TabPFN: −0.0833 [−0.0843, −0.0823] nas lacunas naturais (0.6811 contra 0.7644) e −0.0474 [−0.0486, −0.0462] no tmatch (0.9188 contra 0.9662). Ele mantém 84% e 82% da vantagem do E176. Ainda assim, é pior que o decodificador do E176 nas três variantes (+0.0158, +0.0103, +0.0132). Sob MCAR, fica atrás do TabPFN, +0.0087 [+0.0073, +0.0101], além da margem, e empata com a barra (0.7303).",
+   "verdict": "supported",
+   "caveat_pt": "O teto pesa contra o TRIDENT. Ele conta 10.000 linhas com suas lacunas, enquanto o TabPFN conta 10.000 linhas observadas por coluna; no tmatch, o TRIDENT vê cerca de 4.200 valores de PTT contra 10.000. As épocas são as da tabela inteira, então o braço com teto faz bem menos passos de otimização: 3,3 a 4,6 vezes menos segundo o ticket do E177, ou 3,2 a 4,5 segundo o do E180. Por isso o efeito das linhas e o dos passos não estão separados aqui; o E180 faz essa separação.",
+   "key_numbers": [
+    {
+     "label": "natural (10.000 linhas): decodificador − TabPFN",
+     "value": "-0.0833 [-0.0843, -0.0823], by seed -0.0839, -0.0825, -0.0835 -> better",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:74"
+    },
+    {
+     "label": "tmatch (10.000 linhas): decodificador − TabPFN",
+     "value": "-0.0474 [-0.0486, -0.0462], by seed -0.0474, -0.0478, -0.0470 -> better",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:78"
+    },
+    {
+     "label": "parcela da vantagem mantida",
+     "value": "84% of E176's lead on the natural table (−0.0991) and 82% on tmatch (−0.0577)",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:90-91"
+    },
+    {
+     "label": "mcar (10.000 linhas): decodificador − TabPFN",
+     "value": "+0.0087 [+0.0073, +0.0101], by seed +0.0090, +0.0079, +0.0092 -> worse",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:82"
+    },
+    {
+     "label": "com teto − E176 (natural, tmatch, mcar)",
+     "value": "+0.0158, +0.0103 and +0.0132",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:92-93"
+    },
+    {
+     "label": "razão de passos (E177 e E180)",
+     "value": "3.3 times fewer optimizer steps on the donor table and 4.6 times fewer on the natural one / 3.2 to 4.5 times fewer",
+     "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:17-18; docs/tickets/mimic/17-wide-table-matched-steps.md:7"
+    }
+   ],
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E173"
+   ],
+   "question_pt": "O híbrido implantável também é seguro nas duas tabelas com lacunas naturais, onde H já liderava o TabPFN?",
+   "design_pt": "H nas duas tabelas naturais, pontuado na população masked, já que elas não têm células induced. Duas séries de sementes foram pré-registradas juntas: 101/202/303, no gorgona8, e 4545/5656/6767, no medusa1. Aplica-se a regra do E163 em cada série, e o resultado é supported se as duas séries lerem supported.",
+   "result_pt": "Supported nas duas séries. O table_tabpfn é melhor que H no cardio (−0.0025 [−0.0049, −0.0000]; −0.0043 [−0.0069, −0.0017]), equivalente no SOFA (−0.0017; −0.0007) e melhor que o TabPFN nas duas tabelas (cardio −0.0462 e −0.0432; SOFA −0.0183 e −0.0215). O ganho sobre H é de 0,3% a 0,5% do escore de H no cardio, e nenhum no SOFA. O escopo da decisão 6 foi estendido a estas tabelas em 2026-11-12 22:24 GMT-3.",
+   "verdict": "supported",
+   "caveat_pt": "O ADR registra que aqui o híbrido é uma saída segura, não melhor: a vantagem sobre o TabPFN já era do próprio H (E148). A leitura é na população masked e não se compara com os escores induced das variantes transplantadas. Os níveis de H aqui (0.7957 e 0.7935 no cardio) vêm de outra leitura e de outras sementes que o M do E148 (0.8072).",
+   "key_numbers": [
+    {
+     "label": "série 101/202/303: table_tabpfn − H (cardio)",
+     "value": "-0.0025 [-0.0049, -0.0000] better",
+     "source": "docs/tickets/mimic/13-hybrid-natural-gaps.md:116"
+    },
+    {
+     "label": "série 4545/5656/6767: table_tabpfn − H (cardio)",
+     "value": "-0.0043 [-0.0069, -0.0017] better",
+     "source": "docs/tickets/mimic/13-hybrid-natural-gaps.md:148"
+    },
+    {
+     "label": "tamanho do ganho",
+     "value": "0.3% to 0.5% of H's score on the cardio table and none on SOFA",
+     "source": "docs/tickets/mimic/13-hybrid-natural-gaps.md:100"
+    },
+    {
+     "label": "o que o ADR exige dizer",
+     "value": "here the hybrid is a safe output, not a better one",
+     "source": "docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:146-147"
+    }
+   ],
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E150"
+   ],
+   "question_pt": "Os preenchimentos do decodificador nas lacunas naturais ajudam um classificador de mortalidade? E o próprio padrão de lacunas ajuda?",
+   "design_pt": "Uma regressão logística fixa (L2, C = 1, class_weight balanced) nas duas tabelas naturais, com quatro entradas: N (média/moda), NI (N mais um indicador por coluna), T (preenchimento do decodificador do E148, em que o fold k usa só o decodificador do fold k) e TI (T mais indicadores). Sementes 42/7/13 × 5 folds. O primário compara T − N e NI − N em macro-F1, com Holm sobre os quatro testes. Nenhum treinamento novo.",
+   "result_pt": "(i) Não se sustenta: T − N dá +0.0014 [−0.0012, +0.0040] no cardio e +0.0020 [−0.0006, +0.0046] no SOFA, Holm p 0.35 nos dois. (ii) NI − N se sustenta só no SOFA: +0.0087 [+0.0047, +0.0126], Holm p 0.0012; no cardio dá +0.0014, Holm p 0.35. TI − NI dá +0.0008 e −0.0014: quando o padrão já está dado, os preenchimentos não acrescentam nada. Toda diferença de macro-F1 fica abaixo de 0.01.",
+   "verdict": "(i) not supported on either table; (ii) holds on the SOFA table only",
+   "caveat_pt": "É um leitor linear, com uma série de sementes. Um classificador melhor não torna os preenchimentos mais próximos dos valores não medidos. Os níveis do classificador do próprio TRIDENT e do TabPFN não foram rodados.",
+   "key_numbers": [
+    {
+     "label": "cardio T − N",
+     "value": "+0.0014 [-0.0012, +0.0040], Holm p 0.3532 -> does not hold",
+     "source": "docs/tickets/mimic/05-downstream-mortality.md:69"
+    },
+    {
+     "label": "SOFA T − N",
+     "value": "+0.0020 [-0.0006, +0.0046], Holm p 0.3532 -> does not hold",
+     "source": "docs/tickets/mimic/05-downstream-mortality.md:72"
+    },
+    {
+     "label": "SOFA NI − N",
+     "value": "+0.0087 [+0.0047, +0.0126], Holm p 0.0012 -> holds",
+     "source": "docs/tickets/mimic/05-downstream-mortality.md:73"
+    },
+    {
+     "label": "cardio NI − N",
+     "value": "+0.0014 [-0.0005, +0.0034], Holm p 0.3532 -> does not hold",
+     "source": "docs/tickets/mimic/05-downstream-mortality.md:70"
+    }
+   ],
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E161"
+   ],
+   "question_pt": "Contra um baseline profundo (o ReMasker, um autoencoder mascarado) nas lacunas naturais, como fica o decodificador?",
+   "design_pt": "O ReMasker como publicado (remask paper, 600 épocas, batch 64), sem ajuste, nas mesmas células masked do E148 (42/7/13 × 5 folds). Ele só trata colunas numéricas (20 de 22 no cardio, 14 de 17 no SOFA); as categóricas são preenchidas pela moda. O primário é o rmse_num_z do decodificador menos o do ReMasker, com Holm.",
+   "result_pt": "Pela regra, o decodificador é melhor: −0.8088 [−0.9697, −0.6479] no cardio e −0.8750 [−1.1056, −0.6444] no SOFA, Holm p < 0.0001. Mas o ReMasker (rmse_num_z 1.6203 e 1.7605) fica pior até que a média, que marca 1.01–1.04 e 1.00–1.02 nas mesmas células, e fica +0.80 e +0.86 acima da melhor baseline fixa. Um diagnóstico mostrou onde ele funciona e onde falha. Nas colunas correlacionadas (pressões, hemoglobina e hematócrito), marca 0.39–0.71 contra 0.95–1.12 da média. Nas colunas cujos valores se acumulam numa ponta da escala (doses de vasopressor, gcs_min, troponina, lactato), marca 1.3–4.3. A frase aceita para a tese é: «Nas tabelas da MIMIC-IV, o ReMasker como publicado fica abaixo até do preenchimento pela média; o erro se concentra nas colunas cujos valores se acumulam no limite da escala, como as doses de vasopressor.»",
+   "verdict": "better by the rule, arm in doubt",
+   "caveat_pt": "Um baseline pior que a média não diz nada sobre um baseline profundo competente. Por isso nenhuma frase sobre vantagem do TRIDENT sobre o ReMasker foi tirada daqui.",
+   "key_numbers": [
+    {
+     "label": "cardio: decodificador − ReMasker, rmse_num_z",
+     "value": "-0.8088 [-0.9697, -0.6479], Holm p 0.0000 -> better",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:78"
+    },
+    {
+     "label": "SOFA: decodificador − ReMasker, rmse_num_z",
+     "value": "-0.8750 [-1.1056, -0.6444], Holm p 0.0000 -> better",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:79"
+    },
+    {
+     "label": "preenchimento pela média nas mesmas células",
+     "value": "1.01–1.04 on cardio and 1.00–1.02 on SOFA",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:85-86"
+    },
+    {
+     "label": "frase aceita",
+     "value": "Nas tabelas da MIMIC-IV, o ReMasker como publicado fica abaixo até do preenchimento pela média; o erro se concentra nas colunas cujos valores se acumulam no limite da escala, como as doses de vasopressor.",
+     "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:217"
+    }
+   ],
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E178"
+   ],
+   "question_pt": "Na mimic-wide, onde o TabPFN sozinho é fraco, o híbrido implantável ainda é seguro e ainda ganha algo?",
+   "design_pt": "H nas três variantes da mimic-wide, sementes 42/7/13, 9 runs; TabPFN v2 e missForest re-ajustados por fold. Aplica-se a regra do E163 nos primários natural e tmatch. O ticket avisou antes da leitura que um resultado 'refutado' por empate com H significaria um híbrido inofensivo e desnecessário.",
+   "result_pt": "Refutado pela regra, porque não é melhor que H em nenhum primário: table_tabpfn − H dá +0.0000, equivalente, no natural e no tmatch, e o híbrido é melhor que o TabPFN (−0.0990 e −0.0575). Com o TabPFN tão atrás, a regra escolhe o preenchimento de H. Sob MCAR há um pequeno ganho sobre H (−0.0024 [−0.0034, −0.0014], 0,3% do escore de H) e sobre o TabPFN (−0.0062). O escopo da decisão 6 não foi estendido à mimic-wide.",
+   "verdict": "refuted (harmless and unneeded)",
+   "caveat_pt": "H foi treinado no medusa1 em sete células e no gorgona8 em duas, uma divisão que não é por semente e por isso desvia do ADR 0035. TabPFN e missForest foram re-ajustados no gorgona8 nas nove células. Cada linha da regra é um par de folds dentro de uma mesma célula.",
+   "key_numbers": [
+    {
+     "label": "natural: table_tabpfn − H",
+     "value": "+0.0000 [+0.0000, +0.0000] equivalent",
+     "source": "docs/tickets/mimic/16-wide-table-hybrid.md:130"
+    },
+    {
+     "label": "tmatch: table_tabpfn − H",
+     "value": "+0.0000 [+0.0000, +0.0000] equivalent",
+     "source": "docs/tickets/mimic/16-wide-table-hybrid.md:141"
+    },
+    {
+     "label": "mcar: table_tabpfn − H",
+     "value": "-0.0024 [-0.0034, -0.0014] better",
+     "source": "docs/tickets/mimic/16-wide-table-hybrid.md:152"
+    },
+    {
+     "label": "PRIMARY",
+     "value": "better than H on none, worse than H on none, worse than TabPFN on none -> refuted",
+     "source": "docs/tickets/mimic/16-wide-table-hybrid.md:161"
+    }
+   ],
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E148",
+    "E149",
+    "E150",
+    "E163",
+    "E166",
+    "E173",
+    "E176",
+    "E177",
+    "E178"
+   ],
+   "question_pt": "Quais ameaças à validade os tickets listam?",
+   "design_pt": "Ameaças coletadas dos tickets e dos ADRs.",
+   "result_pt": "(a) No E148, as células escondidas são um sorteio uniforme entre valores medidos; um lactato não medido não é um medido, então nada aqui pontua uma lacuna verdadeira. (b) Os doadores, que são os pacientes com tudo medido, são mais graves (33,5% e 25,4% de óbitos contra 16,5%). (c) O transplante carrega onde as lacunas caem, não o que os valores seriam; tmatch é no máximo MAR dadas as colunas de pareamento. (d) Há uma coorte, de um hospital; cardio e SOFA são duas visões da mesma população, não duas replicações. A mimic-wide é outra tabela, mas do mesmo banco. (e) Sementes: E148, E149, E176 e E177 usam uma série cada (42/7/13). O híbrido nas variantes transplantadas foi replicado em três séries (E163, E166, E171), e nas tabelas naturais em duas (E173). (f) O corte nos percentis foi ajustado na coorte inteira, incluindo as linhas de teste. (g) Óbitos e altas dentro da janela de observação não foram removidos. (h) No E150, um único leitor linear. (i) Divisões entre máquinas: no E166, H no medusa1 e TabPFN no gorgona8; no E178, divisão que não é por semente. (j) O TabPFN usado é o v2, como o ADR 0028 o fixa.",
+   "verdict": "descritivo",
+   "key_numbers": [
+    {
+     "label": "células escondidas",
+     "value": "the hidden cells are a uniform draw among values that were measured. An unmeasured lactate is not a measured one (deaths 7.9% against 19.9%)",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:30-31"
+    },
+    {
+     "label": "doadores mais graves",
+     "value": "deaths 33.5% among the 1,292 cardio donors and 25.4% among the 2,143 SOFA donors, against 16.5% in the cohort",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:32-33"
+    },
+    {
+     "label": "transplante",
+     "value": "A transplant carries where the gaps fall, not what the missing values were: tmatch is at most missing at random given the matching columns",
+     "source": "docs/tickets/mimic/04-pattern-transplant.md:34-35"
+    },
+    {
+     "label": "uma coorte",
+     "value": "One hospital, one cohort definition.",
+     "source": "docs/tickets/mimic/02-tables.md:92"
+    },
+    {
+     "label": "duas visões",
+     "value": "They are two views of one population, not two replications.",
+     "source": "docs/tickets/mimic/02-tables.md:12-13"
+    },
+    {
+     "label": "clip fora dos folds",
+     "value": "The clip limits are percentiles of the whole cohort, test rows included",
+     "source": "docs/tickets/mimic/02-tables.md:90"
+    },
+    {
+     "label": "uma série de sementes",
+     "value": "One seed set on two views of one cohort.",
+     "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:148"
+    }
+   ],
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E171"
+   ],
+   "question_pt": "A escolha cross-fit do outro lado do híbrido (TabPFN ou missForest, por fold) piora o híbrido aceito nas variantes clínicas?",
+   "design_pt": "As seis variantes transplantadas, sementes 101/202/303, 18 runs de H no gorgona8. A regra é supported se o crossfit for pior que H em nenhum tmatch e pior que table_tabpfn em nenhum tmatch.",
+   "result_pt": "Mixed. O crossfit não é pior que H em nenhum tmatch (cardio −0.0055, SOFA −0.0088, ambos sem veredito), mas é pior que table_tabpfn no SOFA tmatch, +0.0091 [+0.0013, +0.0169], e também no SOFA trand (+0.0103). Uma emenda para a escolha cross-fit não deve cobrir tabelas clínicas.",
+   "verdict": "mixed",
+   "key_numbers": [
+    {
+     "label": "SOFA tmatch: crossfit − table_tabpfn",
+     "value": "+0.0091 [+0.0013, +0.0169] worse",
+     "source": "docs/tickets/mimic/12-hybrid-crossfit-seeds.md:107"
+    },
+    {
+     "label": "E171 PRIMARY",
+     "value": "worse than H on none, worse than `table_tabpfn` on ['mimic-sofa-donor_tmatch_20nan'] -> mixed",
+     "source": "docs/tickets/mimic/12-hybrid-crossfit-seeds.md:133"
+    }
+   ],
+   "importance": "appendix"
+  },
+  {
+   "experiments": [
+    "E153",
+    "E154",
+    "E151 (origem da decisão 8, tabelas OpenML)"
+   ],
+   "question_pt": "O intervalo de 90% calibrado por coluna e por tercil de lacunas da linha (ADR 0030 decisão 8, vindo do E151 em tabelas OpenML com MCAR injetado) ajuda nas tabelas da MIMIC-IV?",
+   "design_pt": "Leitura offline dos ledgers do E149 (E153, células induced transplantadas) e do E148 (E154, células masked). Comparam-se dois braços: C, uma largura por coluna, e MC, uma largura por coluna e por tercil. A medida u é a falta de cobertura do pior bin abaixo de 0.90. Calibração oráculo, SESOI de 0.01.",
+   "result_pt": "Refutado nos dois estudos, pelo ramo 'u(C) perto de 0': uma largura por coluna já cobre todos os tercis. No E153 (tmatch), u(MC) − u(C) dá −0.0016 [−0.0075, +0.0044] no cardio e +0.0009 [−0.0052, +0.0070] no SOFA, ambos equivalentes. No E154 (linhas naturais), dá +0.0006 [−0.0035, +0.0048] e −0.0000 [−0.0036, +0.0036], também equivalentes. O MC custa largura a mais: 0,6% a 3,0% no E153 e 1,2% a 1,3% no E154. A emenda ao ADR 0030 foi proposta ao usuário, sem editar o ADR.",
+   "verdict": "refuted (E153); refuted (E154)",
+   "caveat_pt": "A calibração é oráculo, feita com as lacunas de outros folds de teste. As taxas estão perto de 20nan, com 1 a 5 lacunas por linha nas doadoras. No E154, as células são valores medidos.",
+   "key_numbers": [
+    {
+     "label": "E153 primário",
+     "value": "{'mimic-cardio-donor': 'equivalent', 'mimic-sofa-donor': 'equivalent'} -> refuted",
+     "source": "docs/tickets/mimic/07-conformal-real-patterns.md:106"
+    },
+    {
+     "label": "E154 primário",
+     "value": "{'mimic-cardio_natural': 'equivalent', 'mimic-sofa_natural': 'equivalent'} -> refuted",
+     "source": "docs/tickets/mimic/08-conformal-natural-gaps.md:78"
+    },
+    {
+     "label": "E151 (OpenML) Q1",
+     "value": "Q1 better on 11 of 15 under K, worse on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:4141"
+    }
+   ],
+   "importance": "appendix"
+  },
+  {
+   "experiments": [
+    "E152"
+   ],
+   "question_pt": "Nas lacunas naturais do SOFA, onde os indicadores ajudaram a regressão logística (E150), o pipeline passa no portão de controle positivo G1 do programa C15? O C15 compara prever com [NULL] contra imputar mais indicador.",
+   "design_pt": "A tabela é mimic-sofa-num_natural (o SOFA com as categóricas numerizadas). Três braços: A1 ([NULL]), A2 (preenchimento missForest mais indicador) e A3 (missForest sem indicador); sementes 42/7/13 × 5 folds, intervalos com correção de Nadeau–Bengio. G1 passa se A2 bater A3 em log loss e se A1 ler a lacuna da bilirrubina com o sinal que a coorte mostra.",
+   "result_pt": "G1 falha. A1 lê a lacuna com o sinal da coorte (−0.651 logit, IC corrigido [−0.851, −0.452]), mas A2 não bate A3 em log loss: −0.0153, com IC [−0.1066, +0.0760]. A questão RQ2 para no portão também com lacunas naturais.",
+   "verdict": "G1 fails",
+   "key_numbers": [
+    {
+     "label": "A2 − A3 log loss relativo",
+     "value": "-0.0153 [-0.1066, +0.0760] (plain [-0.0550, +0.0244])",
+     "source": "docs/tickets/mimic/06-sofa-positive-control.md:71"
+    },
+    {
+     "label": "contraste de A1 em bilirubin_max",
+     "value": "-0.651 [-0.851, -0.452] logit",
+     "source": "docs/tickets/mimic/06-sofa-positive-control.md:72"
+    }
+   ],
+   "importance": "appendix"
+  },
+  {
+   "experiments": [
+    "E156"
+   ],
+   "question_pt": "Em tabelas MIMIC completas com mecanismos conhecidos, o [NULL] (A1) fecha a distância para missForest com indicador (A2) quando a lacuna depende do desfecho?",
+   "design_pt": "Tabelas mimic-sofa-semi e mimic-cardio-semi, com 60% de lacunas injetadas (outcome odds 3, probit 0.5, MCAR). A1 e A2 nas sementes 2525/4747/6969 × 5 folds, 36 células. A medida é a diferença das diferenças em macro-F1, com IC corrigido de Nadeau–Bengio.",
+   "result_pt": "Not confirmed: toda chamada saiu no verdict. O primário (desfecho menos MCAR, agregado) dá +0.0069 [−0.0212, +0.0350]. Falta a premissa: sob MCAR, A1 não fica atrás de A2 (+0.0002 e −0.0007 de macro-F1). Os arquivos com mecanismo de desfecho são informativos pelo G2 (+7,7% e +21,9%).",
+   "verdict": "not confirmed",
+   "caveat_pt": "O intervalo corrigido tem cerca de ±0.03, o triplo da faixa de 'holds', então nenhum veredito era alcançável com efeitos deste tamanho. As tabelas são pequenas (6 e 8 colunas) e saem da mesma coorte.",
+   "key_numbers": [
+    {
+     "label": "primário agregado",
+     "value": "+0.0069 [-0.0212, +0.0350] ... -> no verdict",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:130"
+    }
+   ],
+   "importance": "appendix"
+  },
+  {
+   "experiments": [
+    "E180"
+   ],
+   "question_pt": "A perda do braço com 10.000 linhas no E177 se deve às linhas ou aos passos de otimização?",
+   "design_pt": "Três braços por variante. F é a tabela inteira; C usa 10.000 linhas e 300/450 épocas, como no E177; S usa 10.000 linhas com as épocas escaladas para os passos de F (960/1440 na doadora, 1343/2014 no natural; batch 256). São 3 variantes × 42/7/13 = 27 runs no gorgona8. C − F confirma a premissa, S − C mede os passos e S − F mede as linhas. O resultado é supported se os dois primários lerem 'steps' ou 'both'.",
+   "result_pt": "Em andamento, sem resultado.",
+   "verdict": "in progress",
+   "caveat_pt": "O custo estimado vai de um dia e meio a cinco dias, conforme a disputa pela GPU. Os braços C e F são re-treinados no gorgona8 para manter os pares numa máquina só (ADR 0035).",
+   "key_numbers": [
+    {
+     "label": "status",
+     "value": "in progress",
+     "source": "docs/EXPERIMENTATION_LOG.md:219"
+    },
+    {
+     "label": "pré-registro",
+     "value": "pre-registered 2026-11-14 19:39 GMT-3",
+     "source": "docs/EXPERIMENTATION_LOG.md:4844"
+    }
+   ],
+   "importance": "appendix"
+  }
+ ],
+ "tables": [
+  {
+   "id": "mimic_datasets",
+   "title_pt": "As tabelas MIMIC-IV: origem, tamanho, atributos e lacunas",
+   "columns": [
+    "tabela",
+    "coorte / origem",
+    "linhas",
+    "atributos (categóricos)",
+    "óbito (class)",
+    "lacunas, como o arquivo informa",
+    "variantes",
+    "estudos"
+   ],
+   "rows": [
+    [
+     "mimic-cardio_natural",
+     "kg-impute suspected-infection cohort (antibiotic prescribed and given, culture ordered, first stay of each patient); tensors, 30 one-hour bins",
+     "11,082",
+     "22 features (gender, admission_type)",
+     "16.5%",
+     "the 14 columns with gaps miss 21.0% of their cells on average",
+     "_natural",
+     "E148, E150, E154, E161, E173"
+    ],
+    [
+     "mimic-sofa_natural",
+     "the same 11,082 ICU stays; worst raw value of each SOFA component, hours 1 to 24",
+     "11,082",
+     "17 features (pf_on_vent, gender, admission_type)",
+     "16.5%",
+     "columns with gaps: 10, their mean gap 20.0%",
+     "_natural; mimic-sofa-num_natural (E152)",
+     "E148, E150, E152, E154, E161, E173"
+    ],
+    [
+     "mimic-cardio-donor",
+     "rows with every feature present, cut from mimic-cardio",
+     "1,292",
+     "22 features (gender, admission_type)",
+     "33.5%",
+     "3659 gaps, 12.9% of feature cells",
+     "tmatch / trand / mcar _20nan",
+     "E149, E153, E163, E166, E171"
+    ],
+    [
+     "mimic-sofa-donor",
+     "rows with every feature present, cut from mimic-sofa",
+     "2,143",
+     "17 features (pf_on_vent, gender, admission_type)",
+     "25.4%",
+     "3830 gaps, 10.5% of feature cells",
+     "tmatch / trand / mcar _20nan",
+     "E149, E153, E163, E166, E171"
+    ],
+    [
+     "mimic-wide_natural",
+     "every patient's first ICU stay, raw MIMIC-IV 3.1 chart and lab events, first 30 h",
+     "65,366",
+     "23 measured variables plus age, gender and admission type (gender, admission_type)",
+     "10.8%",
+     "4.2% of their cells are gaps",
+     "_natural",
+     "E176, E177, E178, E180"
+    ],
+    [
+     "mimic-wide-donor",
+     "its 46,501 complete rows",
+     "46,501",
+     "as mimic-wide (gender, admission_type)",
+     "não informado",
+     "152,057 gaps each, 12.6% of feature cells",
+     "tmatch, mcar (trand cut, not run)",
+     "E176, E177, E178, E180"
+    ],
+    [
+     "mimic-sofa-semi",
+     "complete cut of mimic-sofa (columns with at most 5% natural gaps)",
+     "10,553",
+     "6: meanbp_min, platelet_min, creatinine_max, bun_max, sf_ratio, age",
+     "16.4%",
+     "60% injected: outcome odds 3, probit slope 0.5, mcar (data seed 5858)",
+     "outcome3p0 / probit0p5 / mcar _s5858_60nan",
+     "E156"
+    ],
+    [
+     "mimic-cardio-semi",
+     "complete cut of mimic-cardio",
+     "10,795",
+     "8: heart_rate, spo2, potassium, magnesium, hemoglobin, hematocrit, sodium, age",
+     "16.6%",
+     "60% injected, as above",
+     "outcome3p0 / probit0p5 / mcar _s5858_60nan",
+     "E156"
+    ],
+    [
+     "mimic-cardio-toy",
+     "1,000 real stays of mimic-cardio, fixed seed, stratified by the label; tracked in the repository",
+     "1,000",
+     "22 (gender, admission_type)",
+     "16.5%",
+     "columns with gaps: 13, their mean gap 22.3%",
+     "_natural",
+     "smoke only"
+    ]
+   ],
+   "source": "docs/tickets/mimic/02-tables.md:11-15,20-29,43,47-63,67-69; /scratch/diogoneiss/trident-data/build_report.txt:4-6,22,25-27,42-44,56; /scratch/diogoneiss/trident-data/variants_report.txt:2-12; docs/tickets/mimic/14-wide-table.md:30-38,63-65; docs/tickets/c15-mnar-prediction/12-mechanism-split.md:29-41; docs/tickets/mimic/01-external-datasets-root.md:58-62; docs/tickets/mimic/06-sofa-positive-control.md:18-21; datasets/categorical_columns/mimic-*.txt:1",
+   "note_pt": "As colunas de lacuna não medem a mesma coisa. Para cardio, SOFA e toy, o valor é a média das colunas que têm lacuna. Para as doadoras e a mimic-wide, é a fração de todas as células de atributo. O sufixo _20nan das doadoras é só um rótulo, a taxa mais próxima entre 20/40/60/80. As tabelas completas ficam em /scratch/diogoneiss/trident-data, fora do repositório."
+  },
+  {
+   "id": "mimic_natural_gaps_by_column",
+   "title_pt": "Lacunas naturais por coluna e mortalidade com e sem a medida (cardio e SOFA, 11.082 internações)",
+   "columns": [
+    "tabela",
+    "coluna",
+    "gap",
+    "deaths measured / not"
+   ],
+   "rows": [
+    [
+     "mimic-cardio",
+     "troponin_t",
+     "65.8%",
+     "24.1% / 12.5%"
+    ],
+    [
+     "mimic-cardio",
+     "abp_systolic",
+     "60.3%",
+     "19.1% / 14.8%"
+    ],
+    [
+     "mimic-cardio",
+     "abp_diastolic",
+     "60.3%",
+     "19.1% / 14.8%"
+    ],
+    [
+     "mimic-cardio",
+     "abp_mean",
+     "57.4%",
+     "19.9% / 14.0%"
+    ],
+    [
+     "mimic-cardio",
+     "lactate",
+     "28.5%",
+     "19.9% / 7.9%"
+    ],
+    [
+     "mimic-cardio",
+     "nibp_mean",
+     "5.6%",
+     "16.5% / 16.3%"
+    ],
+    [
+     "mimic-cardio",
+     "nibp_diastolic",
+     "5.6%",
+     "16.5% / 16.4%"
+    ],
+    [
+     "mimic-cardio",
+     "nibp_systolic",
+     "5.5%",
+     "16.5% / 16.3%"
+    ],
+    [
+     "mimic-cardio",
+     "magnesium",
+     "2.3%",
+     "16.6% / 11.9%"
+    ],
+    [
+     "mimic-cardio",
+     "hemoglobin",
+     "0.6%",
+     "16.4% / 37.7%"
+    ],
+    [
+     "mimic-cardio",
+     "potassium",
+     "0.6%",
+     "16.4% / 35.9%"
+    ],
+    [
+     "mimic-cardio",
+     "hematocrit",
+     "0.6%",
+     "16.4% / 39.7%"
+    ],
+    [
+     "mimic-cardio",
+     "sodium",
+     "0.6%",
+     "16.4% / 37.1%"
+    ],
+    [
+     "mimic-cardio",
+     "spo2",
+     "0.1%",
+     "16.5% / 50.0%"
+    ],
+    [
+     "mimic-sofa",
+     "pf_ratio",
+     "56.5%",
+     "22.2% / 12.1%"
+    ],
+    [
+     "mimic-sofa",
+     "pf_on_vent",
+     "56.5%",
+     "22.2% / 12.1%"
+    ],
+    [
+     "mimic-sofa",
+     "bilirubin_max",
+     "47.0%",
+     "22.0% / 10.3%"
+    ],
+    [
+     "mimic-sofa",
+     "uo_24hr",
+     "28.6%",
+     "15.2% / 19.7%"
+    ],
+    [
+     "mimic-sofa",
+     "platelet_min",
+     "4.1%",
+     "16.4% / 18.2%"
+    ],
+    [
+     "mimic-sofa",
+     "bun_max",
+     "3.3%",
+     "16.5% / 17.0%"
+    ],
+    [
+     "mimic-sofa",
+     "creatinine_max",
+     "3.3%",
+     "16.5% / 16.6%"
+    ],
+    [
+     "mimic-sofa",
+     "gcs_min",
+     "0.4%",
+     "16.4% / 43.6%"
+    ],
+    [
+     "mimic-sofa",
+     "sf_ratio",
+     "0.1%",
+     "16.5% / 53.3%"
+    ],
+    [
+     "mimic-sofa",
+     "meanbp_min",
+     "0.0%",
+     "16.5% / 0.0%"
+    ]
+   ],
+   "source": "/scratch/diogoneiss/trident-data/build_report.txt:7-20,45-54 (o mesmo arquivo citado em docs/tickets/mimic/02-tables.md:3; resumido em 02-tables.md:31-45,58-63)",
+   "note_pt": "'gap' é a fração de internações que nunca tiveram a variável observada. As colunas com lacuna abaixo de 1% têm muito poucas linhas sem a medida, então a mortalidade 'sem medida' delas se apoia em poucos casos."
+  },
+  {
+   "id": "mimic_donor_variants",
+   "title_pt": "Variantes transplantadas (E149): padrões reais de lacuna nas linhas completas",
+   "columns": [
+    "doadora",
+    "linhas",
+    "internações que cederam o padrão",
+    "lacunas",
+    "fração das células",
+    "padrões de linha tmatch / trand / mcar",
+    "linhas completas sob mcar",
+    "lacuna por coluna nas doadoras (coorte entre parênteses)"
+   ],
+   "rows": [
+    [
+     "mimic-cardio-donor",
+     "1,292",
+     "1,052",
+     "3,659",
+     "12.9%",
+     "30 / 30 / 171",
+     "21",
+     "troponin 68.0% (cohort 65.8%), arterial systolic pressure 57.7% (60.3%), lactate 18.0% (28.5%)"
+    ],
+    [
+     "mimic-sofa-donor",
+     "2,143",
+     "1,513",
+     "3,830",
+     "10.5%",
+     "29 / 29 / 74",
+     "190",
+     "bilirubin 64.8% (47.0%), PaO2/FiO2 35.4% (56.5%), urine output 33.3% (28.6%)"
+    ]
+   ],
+   "source": "docs/tickets/mimic/04-pattern-transplant.md:55-58,62-66; /scratch/diogoneiss/trident-data/variants_report.txt:2-12",
+   "note_pt": "As três variantes têm a mesma contagem de lacunas por coluna. tmatch e trand não deixam nenhuma linha completa."
+  },
+  {
+   "id": "e148_primary",
+   "title_pt": "E148: células observadas escondidas nas tabelas com lacunas naturais (leitura M; impute_score, menor é melhor; 1.0 = média/moda)",
+   "columns": [
+    "tabela",
+    "decodificador",
+    "barra (melhor baseline)",
+    "decodificador − barra [IC 95%], Holm",
+    "TabPFN v2",
+    "decodificador − TabPFN [IC 95%]",
+    "RMSE / MAE contra TabPFN"
+   ],
+   "rows": [
+    [
+     "mimic-cardio_natural",
+     "0.8072",
+     "0.8199 (['hgb'])",
+     "-0.0127 [-0.0177, -0.0076], Holm p 0.0002 -> better",
+     "0.8459",
+     "-0.0387 [-0.0443, -0.0331]",
+     "rmse_num_z 0.8116 against 0.8520, mae_num_z 0.4513 against 0.4511, acc_cat 0.5824 against 0.5685"
+    ],
+    [
+     "mimic-sofa_natural",
+     "0.8848",
+     "0.8984 (['hgb'])",
+     "-0.0137 [-0.0202, -0.0072], Holm p 0.0005 -> better",
+     "0.8956",
+     "-0.0108 [-0.0165, -0.0052]",
+     "rmse_num_z 0.8855 against 0.8999, mae_num_z 0.4925 against 0.4665, acc_cat 0.6099 against 0.6117"
+    ]
+   ],
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:58-67",
+   "note_pt": "Um valor negativo em A − B favorece A. São 15 réplicas (3 sementes × 5 folds). O TabPFN é só descritivo: não entra na regra e não foi testado."
+  },
+  {
+   "id": "e148_all_imputers",
+   "title_pt": "E148: impute_score médio de cada imputador nas mesmas células (15 folds; menor é melhor)",
+   "columns": [
+    "imputador",
+    "mimic-cardio_natural",
+    "mimic-sofa_natural"
+   ],
+   "rows": [
+    [
+     "decoder",
+     "0.8072",
+     "0.8848"
+    ],
+    [
+     "ice",
+     "0.8191",
+     "0.9246"
+    ],
+    [
+     "hgb",
+     "0.8199",
+     "0.8984"
+    ],
+    [
+     "lgbm",
+     "0.8245",
+     "0.9083"
+    ],
+    [
+     "missforest",
+     "0.8303",
+     "0.9391"
+    ],
+    [
+     "condexp",
+     "0.8347",
+     "0.9348"
+    ],
+    [
+     "knn10",
+     "0.8845",
+     "0.9802"
+    ],
+    [
+     "softimpute",
+     "0.8967",
+     "0.9706"
+    ],
+    [
+     "knn5",
+     "0.9183",
+     "1.0250"
+    ],
+    [
+     "mean_mode",
+     "1.0000",
+     "1.0000"
+    ],
+    [
+     "TabPFN (offline)",
+     "0.8459",
+     "0.8956"
+    ],
+    [
+     "ReMasker (E161; categoricals mode-filled)",
+     "1.5317",
+     "1.6283"
+    ]
+   ],
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:59,61,64,66; docs/tickets/mimic/09-remasker-natural-gaps.md:62,71",
+   "note_pt": "A barra junta mean_mode, knn5, knn10, hgb e lgbm. O strong tier junta missForest, condexp, SoftImpute e ICE, mais o TabPFN offline. O impute_score do ReMasker mistura as categóricas preenchidas pela moda, por isso o primário do E161 usa rmse_num_z."
+  },
+  {
+   "id": "e148_sparse_columns",
+   "title_pt": "E148: RMSE em unidades z nas colunas esparsas (células masked, média de 15 folds)",
+   "columns": [
+    "imputador",
+    "abp_diastolic",
+    "abp_mean",
+    "abp_systolic",
+    "lactate",
+    "troponin_t",
+    "bilirubin_max",
+    "pf_ratio",
+    "uo_24hr"
+   ],
+   "rows": [
+    [
+     "condexp",
+     "0.5786",
+     "0.5903",
+     "0.7130",
+     "0.8879",
+     "1.0375",
+     "0.9599",
+     "0.9487",
+     "0.9344"
+    ],
+    [
+     "decoder",
+     "0.5087",
+     "0.5964",
+     "0.6252",
+     "0.8350",
+     "1.0162",
+     "0.9280",
+     "0.8197",
+     "0.9085"
+    ],
+    [
+     "hgb",
+     "0.5279",
+     "0.6073",
+     "0.6498",
+     "0.8752",
+     "1.0654",
+     "0.9599",
+     "0.7974",
+     "0.9284"
+    ],
+    [
+     "ice",
+     "0.5127",
+     "0.5723",
+     "0.6187",
+     "0.8740",
+     "1.0067",
+     "0.9827",
+     "0.9436",
+     "0.9388"
+    ],
+    [
+     "knn10",
+     "0.6642",
+     "0.7658",
+     "0.7526",
+     "0.9076",
+     "1.0579",
+     "0.9862",
+     "0.9200",
+     "0.9598"
+    ],
+    [
+     "knn5",
+     "0.6797",
+     "0.8140",
+     "0.7765",
+     "0.9311",
+     "1.0966",
+     "1.0322",
+     "0.9519",
+     "0.9987"
+    ],
+    [
+     "lgbm",
+     "0.5327",
+     "0.6183",
+     "0.6518",
+     "0.8627",
+     "1.0636",
+     "0.9599",
+     "0.7970",
+     "0.9262"
+    ],
+    [
+     "mean_mode",
+     "1.0096",
+     "1.0033",
+     "0.9652",
+     "1.0298",
+     "1.0439",
+     "0.9950",
+     "0.9907",
+     "1.0068"
+    ],
+    [
+     "missforest",
+     "0.5390",
+     "0.6073",
+     "0.6539",
+     "0.8557",
+     "1.0298",
+     "0.9509",
+     "0.8223",
+     "0.9435"
+    ],
+    [
+     "softimpute",
+     "0.6833",
+     "0.7057",
+     "0.7508",
+     "0.9284",
+     "1.3004",
+     "1.1465",
+     "1.1440",
+     "1.0405"
+    ]
+   ],
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:69-104",
+   "note_pt": "As cinco primeiras colunas são de mimic-cardio_natural e as três últimas de mimic-sofa_natural. Menor é melhor."
+  },
+  {
+   "id": "e149_primary",
+   "title_pt": "E149: padrões reais transplantados, primário em tmatch (leitura K, células induced)",
+   "columns": [
+    "variante",
+    "decodificador",
+    "barra",
+    "melhor baseline por run",
+    "decodificador − barra [IC 95%], Holm",
+    "TabPFN v2",
+    "decodificador − TabPFN [IC 95%]",
+    "RMSE / MAE contra TabPFN"
+   ],
+   "rows": [
+    [
+     "mimic-cardio-donor_tmatch_20nan",
+     "0.8606",
+     "0.9061",
+     "['hgb', 'knn10', 'lgbm']",
+     "-0.0455 [-0.0604, -0.0307], Holm p 0.0000 -> better",
+     "0.9206",
+     "-0.0600 [-0.0698, -0.0503]",
+     "rmse_num_z 0.8580 against 0.9176, mae_num_z 0.5521 against 0.5776"
+    ],
+    [
+     "mimic-sofa-donor_tmatch_20nan",
+     "0.9209",
+     "0.9481",
+     "['knn10', 'lgbm']",
+     "-0.0272 [-0.0423, -0.0122], Holm p 0.0017 -> better",
+     "0.8944",
+     "+0.0265 [+0.0155, +0.0375]",
+     "rmse_num_z 0.8158 against 0.7936, mae_num_z 0.5484 against 0.5173, acc_cat 0.7386 against 0.7470"
+    ]
+   ],
+   "source": "docs/tickets/mimic/04-pattern-transplant.md:102,108,114-119",
+   "note_pt": "Um valor negativo favorece o decodificador e um positivo favorece o oponente. O ticket lê 'Holm p 0.0000' como 'below 0.0001'."
+  },
+  {
+   "id": "e149_all_imputers",
+   "title_pt": "E149: impute_score médio por imputador nas seis variantes transplantadas (15 folds; menor é melhor)",
+   "columns": [
+    "variante",
+    "decoder",
+    "bar",
+    "condexp",
+    "missforest",
+    "hgb",
+    "lgbm",
+    "knn10",
+    "knn5",
+    "ice",
+    "mean_mode",
+    "softimpute"
+   ],
+   "rows": [
+    [
+     "mimic-cardio-donor_tmatch_20nan",
+     "0.8606",
+     "0.9061",
+     "0.8616",
+     "0.8964",
+     "0.9080",
+     "0.9104",
+     "0.9122",
+     "0.9395",
+     "0.9992",
+     "1.0000",
+     "1.2209"
+    ],
+    [
+     "mimic-cardio-donor_trand_20nan",
+     "0.8491",
+     "0.9078",
+     "0.8657",
+     "0.9089",
+     "0.9127",
+     "0.9122",
+     "0.9078",
+     "0.9430",
+     "1.0983",
+     "1.0000",
+     "1.1978"
+    ],
+    [
+     "mimic-cardio-donor_mcar_20nan",
+     "0.7831",
+     "0.8257",
+     "0.7930",
+     "0.8004",
+     "0.8263",
+     "0.8288",
+     "0.8771",
+     "0.9171",
+     "0.8259",
+     "1.0000",
+     "1.0124"
+    ],
+    [
+     "mimic-sofa-donor_tmatch_20nan",
+     "0.9209",
+     "0.9481",
+     "0.9305",
+     "0.9822",
+     "0.9579",
+     "0.9629",
+     "0.9482",
+     "0.9943",
+     "1.9002",
+     "1.0000",
+     "1.2129"
+    ],
+    [
+     "mimic-sofa-donor_trand_20nan",
+     "0.9339",
+     "0.9730",
+     "0.9423",
+     "0.9711",
+     "0.9902",
+     "0.9908",
+     "0.9754",
+     "1.0042",
+     "1.5812",
+     "1.0000",
+     "1.0711"
+    ],
+    [
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9237",
+     "0.9473",
+     "0.9318",
+     "0.9151",
+     "0.9482",
+     "0.9521",
+     "0.9546",
+     "0.9856",
+     "0.9615",
+     "1.0000",
+     "1.0529"
+    ]
+   ],
+   "source": "docs/tickets/mimic/04-pattern-transplant.md:102-113",
+   "note_pt": "'bar' é a média da melhor baseline escolhida em cada run, por isso pode ficar abaixo da média de qualquer baseline isolada."
+  },
+  {
+   "id": "e149_contrasts",
+   "title_pt": "E149: contrastes descritivos entre variantes (o que os blocos e a dependência da linha custam)",
+   "columns": [
+    "doadora",
+    "contraste",
+    "escore do decodificador [IC 95%]",
+    "distância à barra [IC 95%]"
+   ],
+   "rows": [
+    [
+     "mimic-cardio-donor",
+     "tmatch − trand",
+     "+0.0115 [-0.0083, +0.0314]",
+     "+0.0132 [-0.0061, +0.0325]"
+    ],
+    [
+     "mimic-cardio-donor",
+     "trand − mcar",
+     "+0.0660 [+0.0465, +0.0854]",
+     "-0.0161 [-0.0374, +0.0052]"
+    ],
+    [
+     "mimic-sofa-donor",
+     "tmatch − trand",
+     "-0.0130 [-0.0286, +0.0027]",
+     "+0.0119 [-0.0130, +0.0368]"
+    ],
+    [
+     "mimic-sofa-donor",
+     "trand − mcar",
+     "+0.0102 [-0.0020, +0.0224]",
+     "-0.0155 [-0.0401, +0.0092]"
+    ]
+   ],
+   "source": "docs/tickets/mimic/04-pattern-transplant.md:120-127",
+   "note_pt": "Um valor positivo no escore significa que o primeiro termo é mais difícil. O ticket diz que nenhum dos dois contrastes sustenta uma leitura de mecanismo."
+  },
+  {
+   "id": "e150_mortality",
+   "title_pt": "E150: regressão logística de óbito hospitalar por entrada (médias de 15 folds; maior é melhor)",
+   "columns": [
+    "tabela",
+    "entrada",
+    "macro_f1",
+    "auroc",
+    "auprc"
+   ],
+   "rows": [
+    [
+     "mimic-cardio",
+     "N",
+     "0.6566",
+     "0.8020",
+     "0.5438"
+    ],
+    [
+     "mimic-cardio",
+     "NI",
+     "0.6581",
+     "0.8110",
+     "0.5503"
+    ],
+    [
+     "mimic-cardio",
+     "T",
+     "0.6580",
+     "0.8056",
+     "0.5471"
+    ],
+    [
+     "mimic-cardio",
+     "TI",
+     "0.6588",
+     "0.8121",
+     "0.5520"
+    ],
+    [
+     "mimic-sofa",
+     "N",
+     "0.6629",
+     "0.8148",
+     "0.5082"
+    ],
+    [
+     "mimic-sofa",
+     "NI",
+     "0.6716",
+     "0.8226",
+     "0.5287"
+    ],
+    [
+     "mimic-sofa",
+     "T",
+     "0.6649",
+     "0.8180",
+     "0.5203"
+    ],
+    [
+     "mimic-sofa",
+     "TI",
+     "0.6701",
+     "0.8250",
+     "0.5371"
+    ]
+   ],
+   "source": "docs/tickets/mimic/05-downstream-mortality.md:59-68",
+   "note_pt": "N é a média/moda; NI acrescenta indicadores; T usa o preenchimento do decodificador; TI usa T com indicadores. Contrastes: cardio T − N +0.0014 [-0.0012, +0.0040] e NI − N +0.0014 [-0.0005, +0.0034]; SOFA T − N +0.0020 [-0.0006, +0.0046] e NI − N +0.0087 [+0.0047, +0.0126] (holds) (05:69-74)."
+  },
+  {
+   "id": "e153_e154_intervals",
+   "title_pt": "E153/E154: intervalo de 90% binado por tercil de lacunas da linha (MC) contra uma largura por coluna (C)",
+   "columns": [
+    "estudo",
+    "variante",
+    "Q1 u(MC) − u(C) [IC 95%] veredito",
+    "u(C)",
+    "u(MC)",
+    "largura (MC − C) / C",
+    "cobertura C (bin baixo, topo)",
+    "cobertura MC (bin baixo, topo)",
+    "fallback"
+   ],
+   "rows": [
+    [
+     "E153",
+     "mimic-cardio-donor_tmatch_20nan",
+     "-0.0016 [-0.0075, +0.0044] equivalent",
+     "0.027",
+     "0.026",
+     "+0.030 [+0.023, +0.037] worse",
+     "0.899 (low bin 0.894, top 0.900)",
+     "0.902 (low bin 0.904, top 0.899)",
+     "0.05"
+    ],
+    [
+     "E153",
+     "mimic-sofa-donor_tmatch_20nan",
+     "+0.0009 [-0.0052, +0.0070] equivalent",
+     "0.018",
+     "0.019",
+     "+0.006 [+0.001, +0.010] worse",
+     "0.900 (low bin 0.889, top 0.909)",
+     "0.900 (low bin 0.901, top 0.905)",
+     "0.01"
+    ],
+    [
+     "E153",
+     "mimic-cardio-donor_trand_20nan",
+     "-0.0044 [-0.0112, +0.0023] none",
+     "0.024",
+     "0.019",
+     "+0.017 [+0.013, +0.022] worse",
+     "0.900 (low bin 0.912, top 0.893)",
+     "0.902 (low bin 0.902, top 0.895)",
+     "0.04"
+    ],
+    [
+     "E153",
+     "mimic-sofa-donor_trand_20nan",
+     "-0.0015 [-0.0056, +0.0026] equivalent",
+     "0.022",
+     "0.020",
+     "+0.014 [+0.011, +0.017] worse",
+     "0.901 (low bin 0.904, top 0.894)",
+     "0.903 (low bin 0.902, top 0.901)",
+     "0.01"
+    ],
+    [
+     "E153",
+     "mimic-cardio-donor_mcar_20nan",
+     "-0.0062 [-0.0144, +0.0021] none",
+     "0.034",
+     "0.027",
+     "+0.020 [+0.012, +0.027] worse",
+     "0.901 (low bin 0.906, top 0.888)",
+     "0.901 (low bin 0.901, top 0.904)",
+     "0.06"
+    ],
+    [
+     "E153",
+     "mimic-sofa-donor_mcar_20nan",
+     "+0.0053 [-0.0082, +0.0188] none",
+     "0.022",
+     "0.028",
+     "+0.008 [+0.002, +0.013] worse",
+     "0.901 (low bin 0.908, top 0.902)",
+     "0.901 (low bin 0.902, top 0.894)",
+     "0.07"
+    ],
+    [
+     "E154",
+     "mimic-cardio_natural",
+     "+0.0006 [-0.0035, +0.0048] equivalent",
+     "0.009",
+     "0.010",
+     "+0.012 [+0.009, +0.015] worse",
+     "0.900 (low bin 0.893, top 0.898)",
+     "0.900 (low bin 0.900, top 0.900)",
+     "0.00"
+    ],
+    [
+     "E154",
+     "mimic-sofa_natural",
+     "-0.0000 [-0.0036, +0.0036] equivalent",
+     "0.008",
+     "0.008",
+     "+0.013 [+0.010, +0.016] worse",
+     "0.900 (low bin 0.894, top 0.905)",
+     "0.901 (low bin 0.900, top 0.901)",
+     "0.00"
+    ]
+   ],
+   "source": "docs/tickets/mimic/07-conformal-real-patterns.md:90-103; docs/tickets/mimic/08-conformal-natural-gaps.md:74-75",
+   "note_pt": "u é a falta de cobertura do pior bin abaixo de 0.90; menor é melhor. Na largura, um valor positivo significa que MC fica mais largo. Só tmatch (E153) e as tabelas naturais (E154) entram na regra."
+  },
+  {
+   "id": "e161_remasker",
+   "title_pt": "E161: ReMasker como publicado nas células masked das tabelas naturais",
+   "columns": [
+    "tabela",
+    "rmse_num_z decoder / ReMasker / TabPFN",
+    "mae_num_z decoder / ReMasker / TabPFN",
+    "impute_score decoder / ReMasker / TabPFN",
+    "PRIMARY decoder − ReMasker, rmse_num_z [IC 95%], Holm",
+    "ReMasker − best fixed baseline, rmse_num_z",
+    "ReMasker fit por fold"
+   ],
+   "rows": [
+    [
+     "mimic-cardio_natural",
+     "0.8116 / 1.6203 / 0.8520",
+     "0.4513 / 1.0186 / 0.4511",
+     "0.8072 / 1.5317 / 0.8459",
+     "-0.8088 [-0.9697, -0.6479], Holm p 0.0000 -> better",
+     "+0.8021 [+0.6403, +0.9639]",
+     "791 s"
+    ],
+    [
+     "mimic-sofa_natural",
+     "0.8855 / 1.7605 / 0.8999",
+     "0.4925 / 1.1353 / 0.4665",
+     "0.8848 / 1.6283 / 0.8956",
+     "-0.8750 [-1.1056, -0.6444], Holm p 0.0000 -> better",
+     "+0.8596 [+0.6296, +1.0896]",
+     "1944 s"
+    ]
+   ],
+   "source": "docs/tickets/mimic/09-remasker-natural-gaps.md:59-79",
+   "note_pt": "Na mesma célula, a média marca 1.01–1.04 (cardio) e 1.00–1.02 (SOFA) em rmse_num_z (09:85-86). O ReMasker fica pior que a média, por isso o estudo é lido como 'arm in doubt'."
+  },
+  {
+   "id": "hybrid_transplant_e163_e166_e171",
+   "title_pt": "Híbrido implantável (table_tabpfn) nas variantes transplantadas, três séries de sementes (lado do modelo H; impute_score nas células induced)",
+   "columns": [
+    "estudo (sementes)",
+    "variante",
+    "H",
+    "tabpfn",
+    "missforest",
+    "table_tabpfn",
+    "table_tabpfn − H [IC 95%]",
+    "table_tabpfn − tabpfn [IC 95%]",
+    "crossfit − table_tabpfn [IC 95%]"
+   ],
+   "rows": [
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_tmatch_20nan",
+     "0.8566",
+     "0.9206",
+     "0.8964",
+     "0.8532",
+     "-0.0034 [-0.0081, +0.0012] equivalent",
+     "-0.0674 [-0.0769, -0.0580] better",
+     "—"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_trand_20nan",
+     "0.8624",
+     "0.8999",
+     "0.9089",
+     "0.8468",
+     "-0.0156 [-0.0211, -0.0101] better",
+     "-0.0532 [-0.0652, -0.0412] better",
+     "—"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_mcar_20nan",
+     "0.8003",
+     "0.7731",
+     "0.8004",
+     "0.7750",
+     "-0.0253 [-0.0354, -0.0153] better",
+     "+0.0019 [-0.0048, +0.0085] none",
+     "—"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_tmatch_20nan",
+     "0.9156",
+     "0.8951",
+     "0.9822",
+     "0.9005",
+     "-0.0151 [-0.0212, -0.0090] better",
+     "+0.0054 [-0.0010, +0.0118] none",
+     "—"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_trand_20nan",
+     "0.9315",
+     "0.9001",
+     "0.9711",
+     "0.9113",
+     "-0.0202 [-0.0338, -0.0065] better",
+     "+0.0111 [+0.0057, +0.0166] worse",
+     "—"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9264",
+     "0.8925",
+     "0.9151",
+     "0.9025",
+     "-0.0239 [-0.0337, -0.0141] better",
+     "+0.0100 [-0.0018, +0.0219] none",
+     "—"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_tmatch_20nan",
+     "0.8691",
+     "0.9230",
+     "0.8966",
+     "0.8669",
+     "-0.0022 [-0.0105, +0.0062] none",
+     "-0.0561 [-0.0681, -0.0440] better",
+     "-0.0012 [-0.0057, +0.0032] equivalent"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_trand_20nan",
+     "0.8605",
+     "0.8998",
+     "0.8978",
+     "0.8468",
+     "-0.0137 [-0.0225, -0.0048] better",
+     "-0.0529 [-0.0658, -0.0401] better",
+     "-0.0005 [-0.0057, +0.0047] equivalent"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_mcar_20nan",
+     "0.8037",
+     "0.7703",
+     "0.8003",
+     "0.7736",
+     "-0.0301 [-0.0397, -0.0206] better",
+     "+0.0034 [-0.0042, +0.0109] none",
+     "+0.0046 [-0.0002, +0.0094] none"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_tmatch_20nan",
+     "0.9136",
+     "0.8961",
+     "0.9795",
+     "0.9022",
+     "-0.0114 [-0.0178, -0.0049] better",
+     "+0.0061 [-0.0046, +0.0168] none",
+     "+0.0054 [+0.0007, +0.0102] worse"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_trand_20nan",
+     "0.9330",
+     "0.9029",
+     "0.9731",
+     "0.9178",
+     "-0.0153 [-0.0200, -0.0105] better",
+     "+0.0149 [+0.0012, +0.0285] worse",
+     "+0.0024 [-0.0026, +0.0074] equivalent"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9214",
+     "0.8952",
+     "0.9156",
+     "0.9031",
+     "-0.0183 [-0.0248, -0.0119] better",
+     "+0.0078 [-0.0029, +0.0186] none",
+     "+0.0031 [-0.0003, +0.0065] equivalent"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-cardio-donor_tmatch_20nan",
+     "0.8610",
+     "0.9197",
+     "0.8954",
+     "0.8561",
+     "-0.0049 [-0.0109, +0.0012] none",
+     "-0.0636 [-0.0767, -0.0505] better",
+     "-0.0007 [-0.0016, +0.0003] equivalent"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-cardio-donor_trand_20nan",
+     "0.8522",
+     "0.9009",
+     "0.9079",
+     "0.8426",
+     "-0.0096 [-0.0186, -0.0006] better",
+     "-0.0583 [-0.0692, -0.0473] better",
+     "+0.0003 [-0.0040, +0.0047] equivalent"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-cardio-donor_mcar_20nan",
+     "0.7988",
+     "0.7691",
+     "0.7985",
+     "0.7708",
+     "-0.0280 [-0.0376, -0.0184] better",
+     "+0.0017 [-0.0032, +0.0066] equivalent",
+     "+0.0028 [-0.0013, +0.0070] equivalent"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-sofa-donor_tmatch_20nan",
+     "0.9147",
+     "0.8923",
+     "0.9744",
+     "0.8967",
+     "-0.0179 [-0.0231, -0.0127] better",
+     "+0.0044 [-0.0022, +0.0111] none",
+     "+0.0091 [+0.0013, +0.0169] worse"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-sofa-donor_trand_20nan",
+     "0.9275",
+     "0.8994",
+     "0.9708",
+     "0.9068",
+     "-0.0207 [-0.0275, -0.0139] better",
+     "+0.0074 [+0.0016, +0.0132] worse",
+     "+0.0103 [+0.0004, +0.0202] worse"
+    ],
+    [
+     "E171 (101/202/303)",
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9206",
+     "0.8940",
+     "0.9213",
+     "0.9043",
+     "-0.0163 [-0.0210, -0.0115] better",
+     "+0.0103 [+0.0038, +0.0169] worse",
+     "+0.0006 [-0.0012, +0.0024] equivalent"
+    ]
+   ],
+   "source": "docs/tickets/mimic/10-hybrid-transplant.md:69-118; docs/tickets/mimic/11-hybrid-transplant-seeds.md:54-118; docs/tickets/mimic/12-hybrid-crossfit-seeds.md:65-129",
+   "note_pt": "Menor é melhor. Em A − B, um valor negativo favorece A. O veredito sai por par de folds com concordância de sementes; 'none' significa sem veredito. A SESOI é 1% da média do oponente. O E163 é anterior ao código do crossfit, por isso aparece '—'. H é a leitura implantável (ADR 0024), não o K do E149."
+  },
+  {
+   "id": "hybrid_natural_e173",
+   "title_pt": "E173: híbrido implantável nas tabelas com lacunas naturais (população masked), duas séries de sementes",
+   "columns": [
+    "série",
+    "tabela",
+    "H",
+    "tabpfn",
+    "missforest",
+    "table_tabpfn",
+    "table_tabpfn − H [IC 95%]",
+    "table_tabpfn − tabpfn [IC 95%]",
+    "crossfit − table_tabpfn [IC 95%]",
+    "primário da série"
+   ],
+   "rows": [
+    [
+     "101/202/303 (gorgona8)",
+     "mimic-cardio_natural",
+     "0.7957",
+     "0.8394",
+     "0.8221",
+     "0.7932",
+     "-0.0025 [-0.0049, -0.0000] better",
+     "-0.0462 [-0.0528, -0.0397] better",
+     "-0.0004 [-0.0013, +0.0006] equivalent",
+     "supported"
+    ],
+    [
+     "101/202/303 (gorgona8)",
+     "mimic-sofa_natural",
+     "0.8735",
+     "0.8902",
+     "0.9346",
+     "0.8718",
+     "-0.0017 [-0.0039, +0.0005] equivalent",
+     "-0.0183 [-0.0217, -0.0150] better",
+     "+0.0005 [-0.0006, +0.0017] equivalent",
+     "supported"
+    ],
+    [
+     "4545/5656/6767 (medusa1)",
+     "mimic-cardio_natural",
+     "0.7935",
+     "0.8324",
+     "0.8206",
+     "0.7892",
+     "-0.0043 [-0.0069, -0.0017] better",
+     "-0.0432 [-0.0493, -0.0371] better",
+     "+0.0002 [-0.0006, +0.0010] equivalent",
+     "supported"
+    ],
+    [
+     "4545/5656/6767 (medusa1)",
+     "mimic-sofa_natural",
+     "0.8779",
+     "0.8988",
+     "0.9344",
+     "0.8772",
+     "-0.0007 [-0.0026, +0.0012] equivalent",
+     "-0.0215 [-0.0270, -0.0161] better",
+     "+0.0004 [-0.0009, +0.0016] equivalent",
+     "supported"
+    ]
+   ],
+   "source": "docs/tickets/mimic/13-hybrid-natural-gaps.md:113-136,145-168",
+   "note_pt": "Menor é melhor. Esta leitura é na população masked e não se compara com as variantes transplantadas."
+  },
+  {
+   "id": "mimic_wide_e176_e177",
+   "title_pt": "mimic-wide (65.366 linhas): decodificador contra TabPFN v2, com a tabela inteira (E176) e com teto de 10.000 linhas por fold (E177)",
+   "columns": [
+    "variante (população)",
+    "decodificador E176",
+    "TabPFN v2 (fit por fold)",
+    "barra",
+    "E176 decodificador − TabPFN [IC 95%]",
+    "E176 decodificador − barra",
+    "decodificador E177 (10.000 linhas)",
+    "E177 − TabPFN [IC 95%]",
+    "E177 − barra",
+    "E177 − E176"
+   ],
+   "rows": [
+    [
+     "mimic-wide_natural (masked; M / M10k)",
+     "0.6652",
+     "0.7644 (fit 19 s a fold)",
+     "0.6887",
+     "-0.0991 [-0.1001, -0.0982] -> better",
+     "-0.0234 [-0.0242, -0.0226] -> better",
+     "0.6811",
+     "-0.0833 [-0.0843, -0.0823] -> better",
+     "-0.0076 [-0.0086, -0.0066] -> better",
+     "+0.0158 [+0.0153, +0.0163] -> worse"
+    ],
+    [
+     "mimic-wide-donor_tmatch_20nan (induced; D / D10k)",
+     "0.9086",
+     "0.9662 (fit 25 s a fold)",
+     "0.9352",
+     "-0.0577 [-0.0592, -0.0562] -> better",
+     "-0.0266 [-0.0281, -0.0252] -> better",
+     "0.9188",
+     "-0.0474 [-0.0486, -0.0462] -> better",
+     "-0.0164 [-0.0178, -0.0149] -> better",
+     "+0.0103 [+0.0093, +0.0112] -> worse"
+    ],
+    [
+     "mimic-wide-donor_mcar_20nan (induced; D / D10k)",
+     "0.7171",
+     "0.7216 (fit 26 s a fold)",
+     "0.7303",
+     "-0.0044 [-0.0056, -0.0032] -> better",
+     "-0.0132 [-0.0137, -0.0127] -> better",
+     "0.7303",
+     "+0.0087 [+0.0073, +0.0101] -> worse",
+     "-0.0000 [-0.0010, +0.0009] -> equivalent",
+     "+0.0132 [+0.0120, +0.0143] -> worse"
+    ]
+   ],
+   "source": "docs/tickets/mimic/14-wide-table.md:93-102; docs/tickets/mimic/15-wide-table-capped-rows.md:73-85",
+   "note_pt": "impute_score, menor é melhor; em A − B, um valor negativo favorece A. A margem é 1% da média do TabPFN (0.0072 no mcar). No mcar, o −0.0044 do E176 é chamado de 'better', mas fica abaixo da margem, e o ticket o lê como empate. O E177 usa os mesmos arquivos do TabPFN do E176, sem re-ajuste."
+  },
+  {
+   "id": "mimic_wide_hybrid_e178",
+   "title_pt": "E178: híbrido implantável na mimic-wide (lado do modelo H; sementes 42/7/13)",
+   "columns": [
+    "variante",
+    "H",
+    "tabpfn",
+    "missforest",
+    "table_tabpfn",
+    "table_tabpfn − H [IC 95%]",
+    "table_tabpfn − tabpfn [IC 95%]",
+    "table_missforest − H [IC 95%]"
+   ],
+   "rows": [
+    [
+     "mimic-wide_natural",
+     "0.6653",
+     "0.7644",
+     "0.6968",
+     "0.6653",
+     "+0.0000 [+0.0000, +0.0000] equivalent",
+     "-0.0990 [-0.0999, -0.0981] better",
+     "+0.0000 [-0.0000, +0.0001] equivalent"
+    ],
+    [
+     "mimic-wide-donor_tmatch_20nan",
+     "0.9087",
+     "0.9662",
+     "1.0177",
+     "0.9087",
+     "+0.0000 [+0.0000, +0.0000] equivalent",
+     "-0.0575 [-0.0591, -0.0559] better",
+     "+0.0000 [+0.0000, +0.0000] equivalent"
+    ],
+    [
+     "mimic-wide-donor_mcar_20nan",
+     "0.7178",
+     "0.7216",
+     "0.8147",
+     "0.7154",
+     "-0.0024 [-0.0034, -0.0014] better",
+     "-0.0062 [-0.0069, -0.0054] better",
+     "+0.0001 [-0.0001, +0.0004] equivalent"
+    ]
+   ],
+   "source": "docs/tickets/mimic/16-wide-table-hybrid.md:127-161",
+   "note_pt": "O primário é 'refuted' porque o híbrido não é melhor que H em nenhum primário, embora também não seja pior em nenhum. O ticket lê isso como inofensivo e desnecessário."
+  },
+  {
+   "id": "e156_mechanisms",
+   "title_pt": "E156: tabelas MIMIC completas com mecanismos conhecidos (60% de lacunas): G2 e A1 − A2 por arquivo",
+   "columns": [
+    "arquivo",
+    "G2: queda relativa de log loss com indicadores [IC]",
+    "G2",
+    "A1 − A2 macro-F1",
+    "A1 − A2 log loss"
+   ],
+   "rows": [
+    [
+     "mimic-sofa-semi_outcome3p0_s5858_60nan",
+     "+0.0774 [+0.0720, +0.0828]",
+     "informative",
+     "+0.0062",
+     "-0.0119"
+    ],
+    [
+     "mimic-sofa-semi_probit0p5_s5858_60nan",
+     "+0.0038 [+0.0016, +0.0059]",
+     "not informative",
+     "+0.0045",
+     "-0.0029"
+    ],
+    [
+     "mimic-sofa-semi_mcar_s5858_60nan",
+     "+0.0024 [-0.0001, +0.0048]",
+     "not informative",
+     "+0.0002",
+     "-0.0039"
+    ],
+    [
+     "mimic-cardio-semi_outcome3p0_s5858_60nan",
+     "+0.2186 [+0.2095, +0.2278]",
+     "informative",
+     "+0.0070",
+     "-0.0115"
+    ],
+    [
+     "mimic-cardio-semi_probit0p5_s5858_60nan",
+     "+0.0076 [+0.0050, +0.0102]",
+     "not informative",
+     "+0.0067",
+     "-0.0057"
+    ],
+    [
+     "mimic-cardio-semi_mcar_s5858_60nan",
+     "+0.0051 [+0.0018, +0.0083]",
+     "not informative",
+     "-0.0007",
+     "+0.0028"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:111-125",
+   "note_pt": "A1 é o [NULL] do TRIDENT; A2 é o preenchimento do missForest mais um indicador. Em macro-F1, A1 − A2 positivo favorece A1; em log loss, negativo favorece A1. Primário agregado: +0.0069 [-0.0212, +0.0350], no verdict (12-mechanism-split.md:130)."
+  },
+  {
+   "id": "e180_arms",
+   "title_pt": "E180 (em andamento): épocas do braço S, 10.000 linhas com os passos da tabela inteira",
+   "columns": [
+    "tabela",
+    "épocas de pré-treino",
+    "épocas de decodificação"
+   ],
+   "rows": [
+    [
+     "donor (tmatch, mcar)",
+     "960",
+     "1440"
+    ],
+    [
+     "natural",
+     "1343",
+     "2014"
+    ]
+   ],
+   "source": "docs/tickets/mimic/17-wide-table-matched-steps.md:45-48",
+   "note_pt": "Os braços F (tabela inteira) e C (10.000 linhas, 300/450 épocas) também são re-treinados. São 27 runs, e ainda não há nenhum resultado."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "impute_score",
+   "definition_pt": "Razão de erro célula a célula, ponderada entre colunas numéricas e categóricas: w_num × (rmse_num_z / RMSE da média) + w_cat × (erro categórico / erro da moda). Menor é melhor. O preenchimento por média/moda vale 1.0 por construção.",
+   "source": "README.md:350; README.md:355; README.md:421"
+  },
+  {
+   "term": "população masked (células observadas escondidas)",
+   "definition_pt": "Células medidas das linhas de teste que se escondem para pontuar, com taxa nominal de 0,2 e sorteio entre células observadas. As lacunas naturais da linha continuam como entrada [NULL]. É o único jeito de pontuar uma tabela sem irmã completa.",
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:8-10; README.md:304"
+  },
+  {
+   "term": "população induced",
+   "definition_pt": "As lacunas da própria variante, pontuadas contra a tabela completa. Só existe quando há uma irmã completa, como as doadoras; as tabelas _natural não têm.",
+   "source": "docs/tickets/mimic/10-hybrid-transplant.md:11-12; docs/tickets/mimic/13-hybrid-natural-gaps.md:18-19"
+  },
+  {
+   "term": "barra (melhor baseline, bar)",
+   "definition_pt": "O menor impute_score alcançado, nas mesmas células, por qualquer das baselines fracas: mean_mode, knn5, knn10, hgb e lgbm, todas ajustadas só no fold de treino. O missForest fica fora da barra.",
+   "source": "README.md:355"
+  },
+  {
+   "term": "strong tier",
+   "definition_pt": "O conjunto de baselines fortes: missForest, condexp, SoftImpute e ICE, mais o TabPFN v2 como membro offline (ADR 0028).",
+   "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:71; docs/adr/0021-two-tiers-of-baseline-imputers.md:47"
+  },
+  {
+   "term": "TabPFN v2 (contexto de 10.000 linhas)",
+   "definition_pt": "Modelo de fundação tabular usado como imputador, coluna a coluna, com 8 estimadores. Seu contexto vai até 10.000 linhas observadas por coluna; acima disso, usa uma subamostra de semente fixa.",
+   "source": "docs/tickets/mimic/14-wide-table.md:5-7; src/training/tabpfn_baseline.py:56"
+  },
+  {
+   "term": "leituras M, K, H",
+   "definition_pt": "M é o checkpoint escolhido pela máscara de validação (--decode_checkpoint masked), usado nas tabelas naturais. K é o checkpoint induced do ADR 0015, escolhido nas lacunas de validação, usado nas doadoras. H é a leitura implantável do ADR 0024 (--decode_checkpoint loss --decode_calibration none), o lado do modelo nos híbridos.",
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:17-20; docs/tickets/mimic/10-hybrid-transplant.md:13-16"
+  },
+  {
+   "term": "table_tabpfn (híbrido implantável, ADR 0031 decisão 6)",
+   "definition_pt": "Mistura dos preenchimentos de H e do TabPFN, com um peso numérico e uma escolha categórica por tabela. Os pesos são escolhidos nas células observadas escondidas da validação do fold, sem usar a tabela completa.",
+   "source": "docs/tickets/mimic/16-wide-table-hybrid.md:5-7"
+  },
+  {
+   "term": "table_missforest, pick, crossfit",
+   "definition_pt": "table_missforest é a mesma regra com o missForest no lugar do TabPFN. pick escolhe por fold o híbrido que pontua menos nas células de validação, as mesmas que escolhem os pesos. crossfit escolhe o lado pelo escore de validação de cada lado medido fora da amostra.",
+   "source": "docs/tickets/mimic/10-hybrid-transplant.md:29-34; docs/tickets/mimic/12-hybrid-crossfit-seeds.md:5-6"
+  },
+  {
+   "term": "tmatch / trand / mcar",
+   "definition_pt": "Variantes das doadoras. Em tmatch, cada linha completa copia o padrão de lacunas da internação incompleta mais próxima. Em trand, os mesmos padrões são permutados entre as linhas. Em mcar, cada coluna recebe a mesma contagem de lacunas em posições uniformes.",
+   "source": "docs/tickets/mimic/04-pattern-transplant.md:17-23"
+  },
+  {
+   "term": "regra por par de folds (fold-pair rule)",
+   "definition_pt": "Usa as 15 diferenças por (semente, fold), com IC t de 95% e concordância das três sementes. A equivalência usa uma margem (SESOI) de 1% da média do oponente. Os vereditos possíveis são better, worse, equivalent ou none (sem veredito).",
+   "source": "docs/tickets/mimic/10-hybrid-transplant.md:47-48; docs/tickets/mimic/14-wide-table.md:69-70"
+  },
+  {
+   "term": "Holm",
+   "definition_pt": "Correção de comparações múltiplas usada nos primários do E148, E149, E150 e E161, aplicada sobre as duas tabelas, ou sobre os quatro testes no E150.",
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:24-26"
+  },
+  {
+   "term": "rmse_num_z",
+   "definition_pt": "RMSE nas células numéricas em unidades z, ou seja, em desvios-padrão da coluna.",
+   "source": "docs/tickets/mimic/03-masked-cells-natural-gaps.md:69; docs/tickets/mimic/09-remasker-natural-gaps.md:40-41"
+  },
+  {
+   "term": "u, C, MC (intervalos do ADR 0030 decisão 8)",
+   "definition_pt": "C é um intervalo conformal de 90% com uma largura por coluna. MC usa uma largura por coluna e por tercil da contagem de lacunas da linha. u é a falta de cobertura do pior bin abaixo de 0.90; menor é melhor.",
+   "source": "docs/tickets/mimic/07-conformal-real-patterns.md:31-36"
+  },
+  {
+   "term": "A1 / A2 / A3, G1, G2 (programa C15)",
+   "definition_pt": "A1 é o [NULL] do TRIDENT, A2 é o preenchimento do missForest mais indicador de lacuna, e A3 é o missForest sem indicador. G1 é um portão de controle positivo: A2 precisa bater A3 em log loss e A1 precisa ler a lacuna com o sinal da coorte. G2 mede se os indicadores reduzem a log loss, isto é, se a lacuna é informativa.",
+   "source": "docs/tickets/mimic/06-sofa-positive-control.md:23-24,33-41; docs/tickets/c15-mnar-prediction/12-mechanism-split.md:111"
+  },
+  {
+   "term": "--train_rows",
+   "definition_pt": "Flag do E177: o pré-treino e o decodificador treinam numa amostra de semente fixa de N linhas de treino do fold. O scaler, as baselines, a validação e as células pontuadas não mudam. O default é 0, todas as linhas.",
+   "source": "docs/tickets/mimic/15-wide-table-capped-rows.md:25-31"
+  }
+ ],
+ "missing": [
+  "Taxa global de células ausentes em mimic-cardio_natural e mimic-sofa_natural. Os arquivos só dão a média das colunas que têm lacuna (21.0% e 20.0%) e, no log, 'about a fifth' para o cardio (docs/EXPERIMENTATION_LOG.md:4027-4028). Não calculei nenhuma taxa.",
+  "Lista completa de lacunas por coluna da mimic-wide_natural: o ticket dá só PTT, INR, cálcio, pressões e magnésio (14:35). Também não encontrei a taxa de óbito da mimic-wide-donor.",
+  "Resultados do E180: o log marca 'Results: pending' (docs/EXPERIMENTATION_LOG.md:4861).",
+  "Os níveis descritivos do E150 (classificador do próprio TRIDENT e TabPFN de classificação nas tabelas naturais) não rodaram (docs/tickets/mimic/05-downstream-mortality.md:85-87).",
+  "Nenhum relatório, página ou figura cobre a MIMIC-IV: docs/reports/*.md não menciona MIMIC, e meeting_figures.json e page.template.html (reunião de 2026-10-27, v6 de 2026-11-03) têm 0 menções.",
+  "Frase de tese aceita para E148, E149, E163/E166, E173, E176 ou E177: não encontrei nenhuma. Só a do E161 foi aceita (09:217). Para E176/E177, a redação ficou como decisão do usuário (14:116-117; 15:101-102).",
+  "Por que o TabPFN v2 fica abaixo da barra nos padrões reais da mimic-wide: o ticket diz que não foi examinado (14:113-114).",
+  "A variante trand da mimic-wide foi cortada (14:36-37), mas não foi rodada em nenhum estudo (14:63-65).",
+  "Uma segunda coorte ou hospital (eICU): citada como possível e fora do T50 (02-tables.md:92)."
+ ],
+ "do_not_claim": [
+  "«O TRIDENT preenche melhor as lacunas verdadeiras da MIMIC-IV»: nenhum estudo pontua uma lacuna verdadeira. As células masked são valores medidos (03:30-31, 03:143-145), e o transplante não carrega os valores ausentes (04:161-163).",
+  "«O TRIDENT supera o TabPFN nas tabelas clínicas de 11.082 linhas» em geral: no SOFA tmatch o TabPFN é melhor (+0.0265, 04:118). A vantagem do E148 sobre o TabPFN é descritiva, sem teste, e o ticket diz 'no claim against TabPFN follows' (03:141-142).",
+  "«O TRIDENT bate um baseline profundo (ReMasker) em dados clínicos»: o ReMasker ficou abaixo da média, e nenhuma frase sobre a vantagem foi tirada (09:84-88, 09:219).",
+  "«Imputar com o TRIDENT melhora a predição de mortalidade»: a parte (i) do E150 não se sustenta, e toda diferença fica abaixo de 0.01 de macro-F1 (05:77-84).",
+  "«O híbrido melhora o TRIDENT nas tabelas naturais ou na mimic-wide»: o ADR exige dizer 'a safe output, not a better one' (ADR 0031:146-147). Na mimic-wide, o híbrido é equivalente a H, com leitura refutada (16:165-169).",
+  "«A vantagem na mimic-wide vem do teto de contexto do TabPFN»: o próprio ticket diz que isso não foi mostrado (14:110-114). Com 10.000 linhas, o TRIDENT mantém 84% e 82% da vantagem (15:88-91).",
+  "«O TRIDENT é melhor que o TabPFN sob MCAR na mimic-wide»: o −0.0044 fica abaixo da margem de 1% (14:107-109), e com teto de 10.000 linhas o TRIDENT fica pior (+0.0087, 15:95-96).",
+  "Qualquer afirmação sobre o TabPFN v2.5, que aceita 50.000 amostras: o estudo só cobre o v2 como o ADR 0028 o fixa (14:22-23).",
+  "Uma leitura de mecanismo a partir de tmatch − trand ou trand − mcar: todos os intervalos de tmatch − trand contêm zero, e o ticket nega a leitura (04:145-148).",
+  "«A perda do braço de 10.000 linhas é por falta de linhas»: linhas e passos de otimização não estão separados (15:92-94); o E180 ainda está em andamento.",
+  "«O intervalo binado por lacunas da linha é necessário na MIMIC»: o E153 e o E154 foram refutados pelo ramo em que uma largura por coluna já cobre (07:70-73; 08:61-63). O ADR 0030 não foi editado.",
+  "«A escolha cross-fit do lado melhora o híbrido em tabelas clínicas»: o E171 deu mixed, e o cross-fit é pior que table_tabpfn no SOFA tmatch (12:48-60).",
+  "«O [NULL] do TRIDENT aproveita melhor a lacuna informativa que imputar mais indicador»: o G1 falha no SOFA (E152, 06:79-88) e o E156 deu not confirmed (12-mechanism-split.md:146-155).",
+  "«Cardio e SOFA são duas replicações»: são duas visões da mesma população (02-tables.md:12-13). Também não se pode generalizar para outros hospitais: há uma coorte, de um hospital (02-tables.md:92).",
+  "«O decodificador é o melhor imputador em todas as variantes transplantadas»: no SOFA mcar o missForest é menor (0.9151 contra 0.9237, 04:113). A frase do ticket de que o ICE fica acima da média/moda em toda variante transplantada é contrariada pelo ICE 0.9992 no cardio tmatch (04:103).",
+  "Comparar níveis de leituras diferentes como se fossem a mesma coisa, como o M do E148 (0.8072) com o H do E173 (0.7957), ou o K do E149 com o H do E163: mudam a leitura e as sementes, e escores masked e induced não se comparam (ADR 0031:147-148).",
+  "Apresentar hgb ou lgbm como oponentes de classificação, ou mencionar GBDT na classificação: aqui eles aparecem só como imputadores da barra."
+ ],
+ "figure_ideas": [
+  "Barras horizontais do impute_score por imputador no E148, uma faceta por tabela natural, com a linha da média/moda em 1.0 e o TabPFN marcado à parte (tabela e148_all_imputers).",
+  "Gráfico de pontos com IC de 95% de 'decodificador − oponente' ao longo das leituras: E148 natural contra a barra e contra o TabPFN, E149 tmatch contra a barra e contra o TabPFN, E176 e E177 mimic-wide contra o TabPFN. Linha vertical em 0; à esquerda, o TRIDENT é melhor.",
+  "Gráfico de floresta do table_tabpfn − H e do table_tabpfn − tabpfn nas 6 variantes × 3 séries de sementes (E163, E166, E171), destacando o SOFA tmatch.",
+  "Barras de lacuna por coluna (cardio e SOFA) com a mortalidade com e sem a medida ao lado, para mostrar que a lacuna é informativa (tabela mimic_natural_gaps_by_column).",
+  "Esquema dos três jeitos de obter uma verdade: masked em _natural, transplante em -donor (tmatch, trand, mcar) e mecanismos injetados em -semi.",
+  "Pares de barras na mimic-wide: E176 (tabela inteira) contra E177 (10.000 linhas) contra TabPFN v2 nas três variantes, mostrando a parcela de 84% e 82% da vantagem e a troca de lado sob MCAR."
+ ]
+}

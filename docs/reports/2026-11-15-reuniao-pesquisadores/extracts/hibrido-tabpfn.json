@@ -1,0 +1,1495 @@
+{
+ "key": "hibrido-tabpfn",
+ "section": "O híbrido com TabPFN (ADR 0031): ponto final da história de imputação",
+ "storyline_pt": "O ponto de partida foi o E60 (média simples entre o preenchimento do TRIDENT e o do TabPFN v2): a mistura foi melhor que os dois em 10 de 15 variantes, sinal de que os erros dos dois modelos são complementares. A replicação E66 confirmou isso apenas no piso da regra (3 de 9 variantes contadas) e mostrou que em células categóricas a média simples não tem o que combinar. Pesos por coluna escolhidos com acesso à tabela completa (E69 e E74) deram leituras mistas e viraram a forma de benchmark do ADR 0031 (decisões 1 a 5), que não é implantável e cujo ganho sobre o padrão vem em grande parte do próprio TabPFN. A primeira versão implantável, com pesos por coluna escolhidos em células observadas escondidas da validação, foi refutada no E82: ficou pior que o TabPFN em 5 de 10 variantes difíceis porque havia poucas células de seleção por coluna. A regra `table` (um peso numérico e uma escolha categórica para a tabela inteira) resolveu isso no desenvolvimento (E89) e foi confirmada em sementes novas (E90 e E91): nunca pior que H nem que o TabPFN em 17 variantes MCAR e melhor que H em 14. A 20% de faltantes (E95) e nas sementes da tese (E174) o resultado se manteve: no E174 o híbrido é pior que H em nenhuma de 26 variantes, pior que o TabPFN em uma (credit-g_80nan), melhor que H em 19 e melhor que o TabPFN em 16. Fora do MCAR sintético a leitura é mista (E93) e, sob o auto-mascaramento mais íngreme, todo híbrido perde para H em dois conjuntos de sementes (E170 e E172), por isso o escopo sintético do ADR continua só MCAR. Trocar o outro lado para missForest ou escolher o lado por validação cruzada não deu motivo para substituir o híbrido aceito (E162, E164, E167; E165, E168, E169, E171). Nas tabelas MIMIC-IV o híbrido fecha a distância de H para o TabPFN no SOFA com padrões reais transplantados (E163, E166), nunca é pior nas duas tabelas com lacunas naturais mas ganha pouco (E173), e na tabela larga é inofensivo e desnecessário (E178, refutado). O híbrido é uma saída opcional e offline que precisa do TabPFN na hora de preencher, e o ADR 0031 não permite dizer que ele é um imputador melhor que o TabPFN em geral.",
+ "findings": [
+  {
+   "experiments": [
+    "E60"
+   ],
+   "importance": "supporting",
+   "question_pt": "A média simples entre o preenchimento do TRIDENT (leitura K, checkpoint escolhido nas lacunas da validação) e o do TabPFN v2 é melhor que cada um sozinho?",
+   "design_pt": "15 variantes de confirmação, sementes 707/808/909, 45 pares. Mistura igual: média dos dois preenchimentos nas células numéricas e a categoria do modelo nas categóricas. Regra: complementar se a mistura bate os dois em 5 ou mais variantes. Diferenças em impute_score (menor é melhor; negativo favorece a mistura).",
+   "result_pt": "A mistura bate os dois em 10 de 15 variantes. Contra K: melhor em 14, sem diferença em 1, pior em 0. Contra o TabPFN: melhor em 11, sem diferença em 1, equivalente em 3, pior em 0. De 40nan a 60nan bate os dois em 8 de 9.",
+   "verdict": "complementary",
+   "caveat_pt": "K lê a tabela completa, então esta mistura não é implantável. O ticket avisa que os zeros de 'pior' são aritmética da média, não um achado, e que o estudo é descritivo: nenhuma decisão ou padrão sai dele.",
+   "key_numbers": [
+    {
+     "label": "variantes em que a mistura bate os dois",
+     "value": "10 of 15",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/15-tabpfn-blend.md:64"
+    },
+    {
+     "label": "blend − model (K): better / no difference / worse",
+     "value": "14 / 1 / 0",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/15-tabpfn-blend.md:61"
+    },
+    {
+     "label": "blend − tabpfn: better / no difference / equivalent / worse",
+     "value": "11 / 1 / 3 / 0",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/15-tabpfn-blend.md:62"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E66"
+   ],
+   "importance": "appendix",
+   "question_pt": "A complementaridade do E60 se repete em outras tabelas e sementes?",
+   "design_pt": "12 variantes, sementes 404/505/606, 36 pares; 9 contadas (kr-vs-kp, toda categórica, fica fora da contagem). Regra: complementar se bate os dois em 3 ou mais.",
+   "result_pt": "A mistura bate os dois em 3 de 9 contadas (spambase_80nan, vehicle_60nan, biodeg_60nan), exatamente o mínimo da regra. Em credit-g a mistura é pior que o TabPFN nas três taxas (+0.0139, +0.0302, +0.0095).",
+   "verdict": "complementary, at the floor",
+   "caveat_pt": "O ticket diz que a complementaridade é real mas mais estreita do que os 10 de 15 do E60 sugeriam, e que em células categóricas esta mistura não tem o que fazer média.",
+   "key_numbers": [
+    {
+     "label": "variantes em que a mistura bate os dois",
+     "value": "3 of 9 counted",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/21-tabpfn-blend-replication.md:73"
+    },
+    {
+     "label": "veredito",
+     "value": "complementary, at the floor",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/21-tabpfn-blend-replication.md:76"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E69"
+   ],
+   "importance": "supporting",
+   "question_pt": "Pesos por coluna, em vez da média simples, fazem a mistura superar o TabPFN nas 10 variantes difíceis (aquelas em que a mistura igual não foi melhor que o TabPFN)?",
+   "design_pt": "Peso por coluna em {0, 0.25, 0.5, 0.75, 1} (categóricas: escolhe a categoria de um dos dois modelos), escolhido nas células induzidas das outras quatro dobras, portanto lendo a tabela completa. Lado do modelo: K. Regra: suportado se melhor que o TabPFN em 4 ou mais das 10 difíceis; refutado se no máximo 1.",
+   "result_pt": "Contra o TabPFN nas 10 difíceis: melhor em 3 (electricity_80nan, vehicle_80nan, biodeg_80nan), pior em 1 (kr-vs-kp_60nan, +0.0016). No conjunto de 21 variantes a mistura ponderada bate o modelo e o TabPFN em 13, contra 10 da mistura igual.",
+   "verdict": "mixed",
+   "caveat_pt": "Suportado exigia 4. Em tabelas categóricas a escolha por coluna alcança o TabPFN, não o ultrapassa. Os pesos usam a tabela completa: classe de benchmark, não implantável.",
+   "key_numbers": [
+    {
+     "label": "primário: weighted − TabPFN nas 10 difíceis",
+     "value": "better on 3, worse on 1 -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/24-blend-weights.md:134"
+    },
+    {
+     "label": "ponderada bate os dois",
+     "value": "13 (de 21)",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/24-blend-weights.md:131"
+    },
+    {
+     "label": "igual bate os dois",
+     "value": "10",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/24-blend-weights.md:132"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E74"
+   ],
+   "importance": "supporting",
+   "question_pt": "O híbrido por coluna, agora com KC (K calibrado, o padrão do benchmark) como lado do modelo e em sementes novas, melhora o padrão sem perder para o TabPFN?",
+   "design_pt": "10 variantes difíceis, sementes 1212/2323/3434, 30 células. Regra: suportado se melhor que KC em 8 ou mais e pior que o TabPFN em no máximo 1.",
+   "result_pt": "Melhor que KC em 7 de 10 e pior em nenhuma; contra o TabPFN: melhor em 3, sem diferença em 1, equivalente em 4, pior em 2 (kr-vs-kp_40nan +0.0053 e kr-vs-kp_60nan +0.0036). O TabPFN sozinho já é melhor que KC em 8 das 10.",
+   "verdict": "mixed",
+   "caveat_pt": "Deu origem às decisões 1 a 5 do ADR 0031: saída opcional, offline, de classe de informação igual à de KC (não implantável sem tabela completa), escopo MCAR. O ADR obriga a dizer que a regra do E74 não foi cumprida e que a maior parte do ganho sobre KC é do próprio TabPFN.",
+   "key_numbers": [
+    {
+     "label": "weighted − model (KC): better / no difference / worse",
+     "value": "7 / 3 / 0",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/27-hybrid-output.md:72"
+    },
+    {
+     "label": "weighted − tabpfn: better / no difference / equivalent / worse",
+     "value": "3 / 1 / 4 / 2",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/27-hybrid-output.md:73"
+    },
+    {
+     "label": "tabpfn − model (KC): better / no difference / worse",
+     "value": "8 / 2 / 0",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/27-hybrid-output.md:75"
+    },
+    {
+     "label": "ressalva do ADR",
+     "value": "most of the hybrid's gain over KC is TabPFN's own",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:44"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E82"
+   ],
+   "importance": "essential",
+   "question_pt": "Dá para escolher os pesos por coluna sem a tabela completa, usando só células observadas da validação escondidas de propósito?",
+   "design_pt": "10 variantes difíceis, sementes 1212/2323/3434. Lado do modelo: H (leitura implantável do ADR 0024). As células observadas da validação são divididas em 5 grupos, cada grupo é escondido como [MASK] e preenchido por H e pelo TabPFN; os pesos por coluna saem daí. Comparado também com um oráculo que usa a tabela completa.",
+   "result_pt": "O híbrido implantável por coluna é melhor que H em 10 de 10, mas pior que o TabPFN em 5 (vehicle_80nan, biodeg_80nan, kr-vs-kp_60nan, kr-vs-kp_80nan, credit-g_60nan) e pior que o oráculo em 6. Em vehicle_80nan e biodeg_80nan havia mediana de 18 e 21 células de seleção por coluna por dobra, contra 2719 e 902 em electricity.",
+   "verdict": "refuted",
+   "caveat_pt": "A leitura posterior do ticket e do ADR é que a perda está na seleção, não em H: as células de seleção vêm só da validação, cerca de 10% das linhas.",
+   "key_numbers": [
+    {
+     "label": "primário",
+     "value": "better than H on 10 of 10, worse on none, and worse than TabPFN on 5 -> refuted",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/31-deployable-hybrid.md:145"
+    },
+    {
+     "label": "deployable − tabpfn: better / no difference / equivalent / worse",
+     "value": "2 / 2 / 1 / 5",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/31-deployable-hybrid.md:138"
+    },
+    {
+     "label": "deployable − oracle: better / no difference / equivalent / worse",
+     "value": "0 / 3 / 1 / 6",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/31-deployable-hybrid.md:139"
+    },
+    {
+     "label": "células de seleção por coluna por dobra, vehicle_80nan",
+     "value": "median 18, min 9",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/31-deployable-hybrid.md:128"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E89"
+   ],
+   "importance": "supporting",
+   "question_pt": "Uma regra de seleção mais simples, com menos parâmetros, evita a perda do E82?",
+   "design_pt": "Quatro regras lidas sobre as mesmas células e sementes do E82: `column`, `table` (um peso numérico e uma escolha categórica por tabela), `shrunk` e `pooled`. É uma leitura de desenvolvimento por construção: as regras foram escritas depois de ler o E82.",
+   "result_pt": "`table` é melhor que H em 10 de 10, pior em nenhuma, e pior que o TabPFN em 0; `column` continua pior que o TabPFN em 5, `shrunk` em 2, `pooled` em 3. O ticket chama `table` de a mais forte das quatro: uma única escolha categórica por tabela é o que alcança o TabPFN em kr-vs-kp.",
+   "verdict": "supported (development)",
+   "caveat_pt": "Mesmas sementes do E82, logo não confirma nada sozinho; a confirmação é o E90/E91.",
+   "key_numbers": [
+    {
+     "label": "`table` no desenvolvimento",
+     "value": "better than H on 10 of 10, worse on none, worse than TabPFN on 0 -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/33-hybrid-selection-rules.md:95"
+    },
+    {
+     "label": "veredito do Outcome",
+     "value": "supported (development)",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/33-hybrid-selection-rules.md:74"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E90",
+    "E91"
+   ],
+   "importance": "essential",
+   "question_pt": "A regra `table` se sustenta em sementes novas, nas variantes difíceis (E90) e nas variantes em que a mistura igual já batia o TabPFN (E91)?",
+   "design_pt": "Sementes 4545/5656/6767. E90: 10 variantes difíceis, 30 células. E91: 7 variantes, 21 células. Lado do modelo H; TabPFN v2 reajustado em cada dobra de treino. Regra fixada antes: `table`. Diferenças em impute_score nas células induzidas do teste (negativo favorece o híbrido).",
+   "result_pt": "E90: melhor que H em 9 de 10, pior em nenhuma, pior que o TabPFN em 0. E91: melhor que H em 5 de 7, pior em nenhuma, pior que o TabPFN em 0. Somando: nunca pior que H nem que o TabPFN em 17 variantes, melhor que H em 14 e melhor que o TabPFN em 7. Nas 10 difíceis, contra o TabPFN: melhor em 1, equivalente em 4, sem veredito em 5.",
+   "verdict": "E90 supported, E91 supported",
+   "caveat_pt": "A regra foi escolhida nas sementes do E82 (E89) e `shrunk`, o primário do E89, não replicou (pior que o TabPFN em 4). O híbrido é um pouco pior que a mistura igual em electricity_40nan (+0.0065), kc2_40nan (+0.0325) e pendigits_40nan (+0.0026). letter e electricity_60nan ficaram de fora para caber na janela de GPU, e o prazo de treino foi movido antes de qualquer resultado ser lido. Nas difíceis o híbrido em geral empata com o TabPFN, não o supera.",
+   "key_numbers": [
+    {
+     "label": "E90 primário",
+     "value": "better than H on 9 of 10, worse on none, worse than TabPFN on 0 (none) -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/34-hybrid-confirmation.md:99"
+    },
+    {
+     "label": "E91 primário",
+     "value": "better than H on 5 of 7, worse on none, worse than TabPFN on 0 (none) -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/34-hybrid-confirmation.md:118"
+    },
+    {
+     "label": "ADR: nunca pior em",
+     "value": "17 variants",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:99"
+    },
+    {
+     "label": "ADR: melhor que H / melhor que TabPFN",
+     "value": "14 of 17 / 7",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:101"
+    },
+    {
+     "label": "ADR: nas 10 difíceis contra TabPFN",
+     "value": "better on 1, equivalent on 4, no verdict on 5",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:102"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E95"
+   ],
+   "importance": "supporting",
+   "question_pt": "O híbrido `table` tem algum custo a 20% de faltantes, onde H já é forte?",
+   "design_pt": "Nove tabelas a 20nan, sementes 4545/5656/6767, 27 células.",
+   "result_pt": "Melhor que H em 6 de 9, pior em nenhuma, pior que o TabPFN em 0; melhor que o TabPFN em 6 (electricity, letter, pendigits, spambase, biodeg, credit-g). Com E90 e E91: 26 variantes, nunca pior que H nem que o TabPFN.",
+   "verdict": "supported (no cost at 20nan)",
+   "caveat_pt": "Um pouco pior que a mistura igual em letter_20nan (+0.0018) e pendigits_20nan (+0.0095). Sem veredito contra os dois lados em kr-vs-kp, vehicle (contra o TabPFN) e kc2.",
+   "key_numbers": [
+    {
+     "label": "primário",
+     "value": "better than H on 6 of 9, worse on none, worse than TabPFN on 0 (none) -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/36-hybrid-20nan.md:62"
+    },
+    {
+     "label": "ADR: melhor que TabPFN",
+     "value": "6",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:119"
+    },
+    {
+     "label": "E95 com E90 e E91",
+     "value": "26 variants, never worse than H or TabPFN",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/36-hybrid-20nan.md:78"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E174"
+   ],
+   "importance": "essential",
+   "question_pt": "Nas sementes principais da tese (101/202/303), o híbrido `table_tabpfn` continua sem perder para H nem para o TabPFN nas 26 variantes MCAR?",
+   "design_pt": "26 variantes MCAR (as 38 do E164 menos as 12 fora de MCAR do E93) × sementes 101/202/303 = 78 execuções de H em gorgona8. Regra: suportado se pior que H em nenhuma e pior que o TabPFN em no máximo 1; três sementes fixas, sem extensão; lido uma vez em 2026-11-12 18:05 GMT-3.",
+   "result_pt": "Pior que H em nenhuma das 26 e pior que o TabPFN em uma, credit-g_80nan (+0.0068 [+0.0016, +0.0119]). Melhor que H em 19 de 26 (sem chamada em 6, equivalente em spambase_20nan). Melhor que o TabPFN em 16, equivalente em 6, sem chamada em 3.",
+   "verdict": "supported",
+   "caveat_pt": "Três emendas por queda do servidor líder (pausa, retomada, pendigits_20nan refeito), todas antes de qualquer leitura; variantes, sementes e regra não mudaram. Nas sementes 42/7/13 o mesmo híbrido era melhor que H em 23 dessas 26 e pior que o TabPFN em nenhuma; aqui 19 e uma. Nenhuma mudança de ADR foi proposta.",
+   "key_numbers": [
+    {
+     "label": "primário",
+     "value": "worse than H on none, worse than TabPFN on ['credit-g_80nan'] -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:393"
+    },
+    {
+     "label": "secundário",
+     "value": "better than H on 19 of 26, better than TabPFN on 16 of 26",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:394"
+    },
+    {
+     "label": "credit-g_80nan, híbrido − TabPFN",
+     "value": "+0.0068 [+0.0016, +0.0119] worse",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:242"
+    },
+    {
+     "label": "contra o TabPFN: equivalente / sem chamada",
+     "value": "equivalent on 6, no call on 3",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:95"
+    },
+    {
+     "label": "sementes 42/7/13 (divulgação)",
+     "value": "better than H on 23 of these 26 and worse than TabPFN on none",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:98"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E93"
+   ],
+   "importance": "essential",
+   "question_pt": "O híbrido `table` vale também sob MAR e MNAR sintéticos?",
+   "design_pt": "12 variantes a 60nan, sementes 4545/5656/6767, 36 células: MNAR por auto-mascaramento probit (biodeg com inclinações 0.25, 0.5, 1.0 e 2.0; vehicle, kc2 e spambase com 0.5) e MAR `marf` (biodeg, kc2, vehicle, spambase, credit-g). A regra exigia melhor que H em 8.",
+   "result_pt": "Melhor que H em 6 de 12, pior que H em spambase_probit_60nan (+0.0090 [+0.0056, +0.0124]) e pior que o TabPFN em credit-g_marf_60nan (+0.0184 [+0.0084, +0.0284]). Contra o TabPFN é melhor em 10 de 12. Sob MNAR e MAR a média de H já fica abaixo da do TabPFN em 9 das 12 variantes.",
+   "verdict": "mixed",
+   "caveat_pt": "Por isso o escopo da decisão 6 do ADR 0031 continua MCAR para dados sintéticos. Quatro células foram retreinadas depois de um reinício do servidor medusa1, antes de qualquer leitura. A perda para H em spambase_probit_60nan reaparece em mais dois conjuntos de sementes (E167 +0.0082, E172 +0.0067).",
+   "key_numbers": [
+    {
+     "label": "primário",
+     "value": "better than H on 6 of 12, worse on ['spambase_probit_60nan'], worse than TabPFN on 1 (['credit-g_marf_60nan']) -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:90"
+    },
+    {
+     "label": "spambase_probit_60nan, table − H",
+     "value": "+0.0090 [+0.0056, +0.0124] worse",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:82"
+    },
+    {
+     "label": "credit-g_marf_60nan, table − tabpfn",
+     "value": "+0.0184 [+0.0084, +0.0284] worse",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:87"
+    },
+    {
+     "label": "escopo no ADR",
+     "value": "Synthetic MAR and MNAR stay outside",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:112"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E170",
+    "E172"
+   ],
+   "importance": "essential",
+   "question_pt": "Escolher o outro lado por validação cruzada (TabPFN ou missForest) elimina a fraqueza do híbrido fora de MCAR?",
+   "design_pt": "E170: 6 variantes fora de MCAR, sementes 42/7/13. E172: as 12 variantes do E93, sementes 101/202/303, 36 execuções de H em gorgona8. Positivo em 'híbrido − H' significa híbrido pior.",
+   "result_pt": "Não. Em biodeg_probit2p0_60nan, o auto-mascaramento mais íngreme, a escolha cruzada é pior que H (+0.0095 no E170; +0.0066 no E172) e `table_tabpfn` também (+0.0106; +0.0066 [+0.0043, +0.0090]); no E172 o híbrido com missForest também perde para H ali (+0.0011). No E172 `table_tabpfn` é pior que H em 2 das 12 (biodeg_probit2p0_60nan e spambase_probit_60nan).",
+   "verdict": "mixed",
+   "caveat_pt": "O ticket conclui que sob o auto-mascaramento mais íngreme todo híbrido perde para H em dois conjuntos de sementes e que o escopo só-MCAR do ADR 0031 para MAR e MNAR sintéticos se mantém. As perdas são pequenas (abaixo de 0.011 de impute_score) e o híbrido continua melhor que o TabPFN ali (−0.0166 no E172).",
+   "key_numbers": [
+    {
+     "label": "E170 primário",
+     "value": "worse than H on ['biodeg_probit2p0_60nan'] -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:47"
+    },
+    {
+     "label": "E170: crossfit − H e table_tabpfn − H",
+     "value": "+0.0095 [+0.0051, +0.0139]; +0.0106",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:51"
+    },
+    {
+     "label": "E172: crossfit − H em biodeg_probit2p0_60nan",
+     "value": "+0.0066 [+0.0043, +0.0090]",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:48"
+    },
+    {
+     "label": "E172: scores em biodeg_probit2p0_60nan",
+     "value": "H 0.9311, tabpfn 0.9543, table_tabpfn 0.9377",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:98"
+    },
+    {
+     "label": "conclusão do E170",
+     "value": "under the steepest self-masking every hybrid loses to H on two seed sets",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:57"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E162",
+    "E164",
+    "E167"
+   ],
+   "importance": "supporting",
+   "question_pt": "A mesma regra `table` funciona com missForest (imputador por florestas) no lugar do TabPFN, onde H perde para o missForest?",
+   "design_pt": "E162: vehicle_80nan e biodeg_80nan, só CPU sobre células existentes. E164: 38 variantes, sementes 4545/5656/6767, 114 pares. E167: 12 variantes em sementes novas 42/7/13.",
+   "result_pt": "E162: o híbrido `table` com missForest é melhor que H (vehicle −0.064, biodeg −0.072) e melhor que o missForest (−0.021, −0.012). E164: pior que H em uma variante, kc2_marf_60nan (+0.0213), pior que o missForest em nenhuma, melhor que H em 23 de 38 e nas 7 em que H perde para o missForest. E167: pior que H em nenhuma de 12 e pior que o missForest em nenhuma.",
+   "verdict": "E162 Supported; E164 Mixed; E167 supported",
+   "caveat_pt": "As duas variantes do E162 foram escolhidas olhando a tabela completa. O E164 ficou a uma perda de suportado. No E167 o H veio de medusa1 e o outro lado de gorgona8 (desvio do ADR 0035, igual em todos os pares). A decisão 6 do ADR 0031 descreve só o lado TabPFN; estender ao missForest ficou como proposta não escrita.",
+   "key_numbers": [
+    {
+     "label": "E162: hybrid − H e hybrid − missForest (sementes do E90)",
+     "value": "vehicle −0.064, biodeg −0.072; −0.021, −0.012",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/59-missforest-hybrid.md:43"
+    },
+    {
+     "label": "E164 primário",
+     "value": "worse than H on ['kc2_marf_60nan'], worse than missForest on none -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/60-missforest-hybrid-generality.md:172"
+    },
+    {
+     "label": "E164 secundário",
+     "value": "better than H on 23 of 38",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/60-missforest-hybrid-generality.md:173"
+    },
+    {
+     "label": "E167 primário",
+     "value": "worse than H on none, worse than missForest on none -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/62-hybrid-fresh-seeds.md:201"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E165",
+    "E168",
+    "E169",
+    "E171"
+   ],
+   "importance": "appendix",
+   "question_pt": "Vale a pena escolher o outro lado (TabPFN ou missForest) em cada dobra, em vez de usar sempre o TabPFN?",
+   "design_pt": "`pick` (E165): ajusta a regra `table` com cada lado nas células de validação e fica com o que pontua menos nessas mesmas células. `crossfit` (E168): cada um dos 5 grupos da validação é preenchido com pesos escolhidos nos outros 4, e o lado com menor erro é escolhido. E169: as outras 26 variantes em sementes 42/7/13. E171: variantes MIMIC-IV com padrões transplantados.",
+   "result_pt": "`pick` é pior que H em spambase_probit_60nan e kc2_marf_60nan (E165). `crossfit` é suportado nas 12 variantes que o motivaram (pior que H em nenhuma, melhor que `table_tabpfn` em 7), mas nas outras 26 não é melhor que `table_tabpfn` em nenhuma e é pior em 2 (E169), e em MIMIC é pior que `table_tabpfn` no SOFA `tmatch` (+0.0091 [+0.0013, +0.0169], E171).",
+   "verdict": "E165 Mixed; E168 supported; E169 mixed; E171 mixed",
+   "caveat_pt": "O E169 conclui que a evidência não favorece uma emenda ao ADR 0031 trocando `table_tabpfn` pela escolha cruzada. No E169 a passada offline rodou em gorgona8 depois da falha da GPU de medusa1 (desvio do ADR 0035, igual em todos os pares).",
+   "key_numbers": [
+    {
+     "label": "E165 primário",
+     "value": "worse than H on ['spambase_probit_60nan', 'kc2_marf_60nan'] ... -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:197"
+    },
+    {
+     "label": "E168 primário",
+     "value": "`crossfit`: worse than H on none; against `table_tabpfn` better on 7 listed, worse on none -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/62-hybrid-fresh-seeds.md:204"
+    },
+    {
+     "label": "E169 primário",
+     "value": "worse than H on ['biodeg_probit2p0_60nan'], worse than `table_tabpfn` on ['credit-g_marf_60nan', 'biodeg_20nan'] -> mixed",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/64-crossfit-generality.md:376"
+    },
+    {
+     "label": "E169 secundário",
+     "value": "`crossfit` better than `table_tabpfn` on none; better than H on 19 of 26",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/64-crossfit-generality.md:377"
+    },
+    {
+     "label": "E171: crossfit − table_tabpfn no SOFA tmatch",
+     "value": "+0.0091 [+0.0013, +0.0169]",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/12-hybrid-crossfit-seeds.md:49"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E163",
+    "E166"
+   ],
+   "importance": "supporting",
+   "question_pt": "Em tabelas clínicas MIMIC-IV com padrões reais de ausência transplantados de linhas doadoras, o híbrido fecha a distância de H para o TabPFN onde H perde?",
+   "design_pt": "Seis variantes a 20nan (tabelas cardio e SOFA; `tmatch` e `trand` carregam padrões reais transplantados, `mcar` é o controle). E163: sementes 42/7/13, 18 execuções. E166: sementes 4545/5656/6767. Primárias: as duas `tmatch`.",
+   "result_pt": "No SOFA `tmatch`, onde H perde para o TabPFN (0.9156 contra 0.8951 no E163), o híbrido é melhor que H (−0.0151 no E163; −0.0114 no E166) e sem chamada contra o TabPFN (+0.0054; +0.0061). No cardio `tmatch` é equivalente ou sem chamada contra H (−0.0034; −0.0022) e melhor que o TabPFN (−0.0674; −0.0561). Melhor que H em 5 de 6 variantes em cada conjunto de sementes.",
+   "verdict": "supported (E163); supported (E166)",
+   "caveat_pt": "O híbrido é pior que o TabPFN em mimic-sofa-donor_trand_20nan nos dois conjuntos (+0.0111, +0.0149), fora das primárias; o ADR obriga a dizer isso. No E166 H rodou em medusa1 e o outro lado em gorgona8. Com estes dois estudos a decisão 6 foi estendida a essas variantes em 2026-11-09 19:51 GMT-3, só para padrões transplantados.",
+   "key_numbers": [
+    {
+     "label": "E163 SOFA tmatch: scores",
+     "value": "H 0.9156, tabpfn 0.8951, table_tabpfn 0.9005",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/10-hybrid-transplant.md:96"
+    },
+    {
+     "label": "E163 SOFA tmatch: table_tabpfn − H",
+     "value": "-0.0151 [-0.0212, -0.0090] better",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/10-hybrid-transplant.md:99"
+    },
+    {
+     "label": "E163 primário",
+     "value": "better than H on ['mimic-sofa-donor_tmatch_20nan'], worse than H on none, worse than TabPFN on none -> supported",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/10-hybrid-transplant.md:124"
+    },
+    {
+     "label": "E166 SOFA tmatch: table_tabpfn − H",
+     "value": "-0.0114 [-0.0178, -0.0049] better",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/11-hybrid-transplant-seeds.md:90"
+    },
+    {
+     "label": "E166 SOFA trand: table_tabpfn − tabpfn",
+     "value": "+0.0149 [+0.0012, +0.0285] worse",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/11-hybrid-transplant-seeds.md:102"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E173"
+   ],
+   "importance": "supporting",
+   "question_pt": "Nas duas tabelas MIMIC-IV com lacunas naturais (sem verdade conhecida para as lacunas), o híbrido é seguro?",
+   "design_pt": "mimic-cardio_natural e mimic-sofa_natural, 11,082 linhas cada, sementes 101/202/303 (gorgona8) e 4545/5656/6767 (medusa1). Como não há células induzidas, a pontuação é na população mascarada (células observadas escondidas das linhas de teste). Suportado só se os dois conjuntos de sementes lerem suportado.",
+   "result_pt": "Nunca pior que H nem que o TabPFN. Melhor que H em cardio (−0.0025 [−0.0049, −0.0000] e −0.0043 [−0.0069, −0.0017]) e equivalente em SOFA (−0.0017, −0.0007). Melhor que o TabPFN nas duas tabelas nos dois conjuntos (cardio −0.0462 e −0.0432; SOFA −0.0183 e −0.0215).",
+   "verdict": "supported",
+   "caveat_pt": "O ganho sobre H é pequeno (0.3% a 0.5% do score de H em cardio, nenhum em SOFA) e a vantagem sobre o TabPFN já era de H (E148): o ADR diz que aqui o híbrido é uma saída segura, não uma saída melhor. Leitura na população mascarada, não comparável com os scores em células induzidas.",
+   "key_numbers": [
+    {
+     "label": "cardio natural, 101/202/303: scores",
+     "value": "H 0.7957, tabpfn 0.8394, table_tabpfn 0.7932",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/13-hybrid-natural-gaps.md:113"
+    },
+    {
+     "label": "cardio natural: table_tabpfn − H (dois conjuntos)",
+     "value": "-0.0025 [-0.0049, -0.0000] better; -0.0043 [-0.0069, -0.0017] better",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/13-hybrid-natural-gaps.md:116"
+    },
+    {
+     "label": "SOFA natural, 101/202/303: table_tabpfn − H",
+     "value": "-0.0017 [-0.0039, +0.0005] equivalent",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/13-hybrid-natural-gaps.md:127"
+    },
+    {
+     "label": "tamanho do ganho",
+     "value": "0.3% to 0.5% of H's score on the cardio table and none on SOFA",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/13-hybrid-natural-gaps.md:100"
+    },
+    {
+     "label": "frase obrigatória do ADR",
+     "value": "here the hybrid is a safe output, not a better one",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:147"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "E178"
+   ],
+   "importance": "supporting",
+   "question_pt": "Na tabela larga mimic-wide, onde o TRIDENT já está bem à frente do TabPFN v2, o híbrido acrescenta alguma coisa?",
+   "design_pt": "Três variantes (lacunas naturais, `tmatch` a 20nan e controle `mcar` a 20nan), 9 execuções de H (sete em medusa1, duas em gorgona8), outro lado reajustado em gorgona8. A regra exigia melhor que H em pelo menos uma primária.",
+   "result_pt": "Nas duas primárias o híbrido é equivalente a H (+0.0000 nas duas) e melhor que o TabPFN (−0.0990 e −0.0575): com o TabPFN tão atrás, a regra escolhe o preenchimento de H. Sob MCAR há um ganho pequeno sobre H (−0.0024, 0.3% do score de H) e sobre o TabPFN (−0.0062).",
+   "verdict": "refuted",
+   "caveat_pt": "Refutado pela cláusula 'melhor que H em nenhuma primária', lido pelo ticket como inofensivo e desnecessário: a decisão 6 não foi estendida a mimic-wide. Nesta tabela o híbrido custa um reajuste do TabPFN por dobra e devolve H nos padrões reais.",
+   "key_numbers": [
+    {
+     "label": "primário",
+     "value": "better than H on none, worse than H on none, worse than TabPFN on none -> refuted",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/16-wide-table-hybrid.md:161"
+    },
+    {
+     "label": "mimic-wide_natural: scores",
+     "value": "H 0.6653, tabpfn 0.7644, table_tabpfn 0.6653",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/16-wide-table-hybrid.md:127"
+    },
+    {
+     "label": "mimic-wide_natural: table_tabpfn − tabpfn",
+     "value": "-0.0990 [-0.0999, -0.0981] better",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/16-wide-table-hybrid.md:131"
+    },
+    {
+     "label": "mcar: table_tabpfn − H",
+     "value": "-0.0024 [-0.0034, -0.0014] better",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/16-wide-table-hybrid.md:152"
+    }
+   ]
+  },
+  {
+   "experiments": [
+    "ADR 0031"
+   ],
+   "importance": "essential",
+   "question_pt": "O que exatamente o ADR 0031 (decisão sobre a saída híbrida opcional com TabPFN) permite afirmar, e quais são os limites do híbrido?",
+   "design_pt": "ADR aceito em 2026-10-27 12:51 GMT-3; decisão 6 (forma implantável) aceita em 2026-10-29; escopo estendido a 20nan em 2026-10-31, às variantes MIMIC-IV com padrões transplantados em 2026-11-09 e às duas tabelas MIMIC-IV com lacunas naturais em 2026-11-12.",
+   "result_pt": "A forma implantável junta H e o TabPFN v2 com a regra `table`; nada nela lê a tabela completa. É opcional e offline: precisa do extra `tabpfn`, de um reajuste do TabPFN por dobra de treino, não tem flag nem mudança em src/, e os preenchimentos e pesos são arquivos ao lado da execução, nunca gravados no store do MLflow. As manchetes não mudam: H continua a leitura implantável e KC o padrão do benchmark. Escopo: MCAR sintético, mais os dois casos MIMIC-IV; MAR e MNAR sintéticos ficam fora.",
+   "verdict": "accepted (ADR 0031, decision 6)",
+   "caveat_pt": "O ADR proíbe dizer que o híbrido é um imputador melhor que o TabPFN em geral (nas variantes difíceis ele em geral empata) e que a forma por coluna da decisão 1 é implantável. O propósito declarado é medir a viabilidade do método.",
+   "key_numbers": [
+    {
+     "label": "o que é",
+     "value": "H (ADR 0024) and TabPFN v2 refit on each training fold, blended with E89's `table` rule",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:81"
+    },
+    {
+     "label": "classe de informação",
+     "value": "Nothing in it reads the complete table: the selection truths are observed values",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:88"
+    },
+    {
+     "label": "forma atual",
+     "value": "needs the `tabpfn` extra and no `src/` change. Its fills and weights are files beside the run, never logged into the store",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:94"
+    },
+    {
+     "label": "o que não pode dizer",
+     "value": "It still cannot say the hybrid beats TabPFN in general: on the hard variants it mostly matches it",
+     "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:182"
+    }
+   ]
+  }
+ ],
+ "tables": [
+  {
+   "id": "e174_per_variant",
+   "title_pt": "E174: híbrido `table_tabpfn` nas 26 variantes MCAR, sementes da tese 101/202/303 (impute_score, menor é melhor; diferença negativa favorece o híbrido)",
+   "columns": [
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn",
+    "table_tabpfn − H",
+    "table_tabpfn − tabpfn"
+   ],
+   "rows": [
+    [
+     "biodeg_80nan (trails)",
+     "0.9886",
+     "0.9189",
+     "0.9168",
+     "-0.0719 [-0.0865, -0.0572] better",
+     "-0.0021 [-0.0050, +0.0008] equivalent"
+    ],
+    [
+     "vehicle_80nan (trails)",
+     "0.8154",
+     "0.7547",
+     "0.7539",
+     "-0.0615 [-0.0706, -0.0525] better",
+     "-0.0009 [-0.0031, +0.0014] equivalent"
+    ],
+    [
+     "credit-g_40nan (trails)",
+     "0.9267",
+     "0.9039",
+     "0.9045",
+     "-0.0222 [-0.0307, -0.0136] better",
+     "+0.0006 [-0.0040, +0.0052] equivalent"
+    ],
+    [
+     "electricity_20nan (trails)",
+     "0.6154",
+     "0.6300",
+     "0.6102",
+     "-0.0052 [-0.0114, +0.0009] none",
+     "-0.0197 [-0.0272, -0.0123] better"
+    ],
+    [
+     "letter_20nan",
+     "0.4213",
+     "0.4541",
+     "0.4073",
+     "-0.0139 [-0.0146, -0.0133] better",
+     "-0.0467 [-0.0496, -0.0438] better"
+    ],
+    [
+     "spambase_20nan",
+     "0.8510",
+     "0.9372",
+     "0.8497",
+     "-0.0013 [-0.0036, +0.0010] equivalent",
+     "-0.0874 [-0.1002, -0.0747] better"
+    ],
+    [
+     "electricity_40nan",
+     "0.7435",
+     "0.7447",
+     "0.7338",
+     "-0.0098 [-0.0227, +0.0031] none",
+     "-0.0110 [-0.0173, -0.0047] better"
+    ],
+    [
+     "electricity_80nan",
+     "0.9036",
+     "0.8892",
+     "0.8882",
+     "-0.0154 [-0.0279, -0.0029] better",
+     "-0.0010 [-0.0016, -0.0003] better"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "0.7262",
+     "0.7156",
+     "0.7182",
+     "-0.0080 [-0.0145, -0.0015] better",
+     "+0.0026 [-0.0026, +0.0078] none"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "0.8716",
+     "0.8279",
+     "0.8279",
+     "-0.0437 [-0.0513, -0.0362] better",
+     "+0.0000 [+0.0000, +0.0000] equivalent"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "1.0104",
+     "0.9412",
+     "0.9412",
+     "-0.0692 [-0.0865, -0.0520] better",
+     "+0.0000 [+0.0000, +0.0000] equivalent"
+    ],
+    [
+     "credit-g_60nan",
+     "1.0004",
+     "0.9510",
+     "0.9525",
+     "-0.0479 [-0.0609, -0.0349] better",
+     "+0.0015 [-0.0043, +0.0073] equivalent"
+    ],
+    [
+     "credit-g_80nan",
+     "1.0329",
+     "0.9964",
+     "1.0032",
+     "-0.0297 [-0.0464, -0.0131] better",
+     "+0.0068 [+0.0016, +0.0119] worse"
+    ],
+    [
+     "biodeg_40nan",
+     "0.6670",
+     "0.7142",
+     "0.6539",
+     "-0.0131 [-0.0216, -0.0045] better",
+     "-0.0603 [-0.0803, -0.0402] better"
+    ],
+    [
+     "kc2_40nan",
+     "0.4979",
+     "0.4879",
+     "0.4418",
+     "-0.0561 [-0.1157, +0.0036] none",
+     "-0.0461 [-0.0833, -0.0089] better"
+    ],
+    [
+     "kc2_80nan",
+     "0.6866",
+     "0.7207",
+     "0.6812",
+     "-0.0055 [-0.0371, +0.0261] none",
+     "-0.0395 [-0.0570, -0.0220] better"
+    ],
+    [
+     "pendigits_40nan",
+     "0.3913",
+     "0.4371",
+     "0.3781",
+     "-0.0132 [-0.0141, -0.0123] better",
+     "-0.0590 [-0.0618, -0.0561] better"
+    ],
+    [
+     "pendigits_60nan",
+     "0.5751",
+     "0.6044",
+     "0.5557",
+     "-0.0194 [-0.0212, -0.0176] better",
+     "-0.0487 [-0.0510, -0.0463] better"
+    ],
+    [
+     "pendigits_80nan",
+     "0.8340",
+     "0.8145",
+     "0.8102",
+     "-0.0238 [-0.0263, -0.0212] better",
+     "-0.0042 [-0.0052, -0.0032] better"
+    ],
+    [
+     "vehicle_40nan",
+     "0.4958",
+     "0.4987",
+     "0.4822",
+     "-0.0137 [-0.0186, -0.0087] better",
+     "-0.0166 [-0.0260, -0.0071] better"
+    ],
+    [
+     "pendigits_20nan",
+     "0.3024",
+     "0.3080",
+     "0.2846",
+     "-0.0177 [-0.0188, -0.0166] better",
+     "-0.0234 [-0.0280, -0.0188] better"
+    ],
+    [
+     "kr-vs-kp_20nan",
+     "0.5947",
+     "0.5806",
+     "0.5845",
+     "-0.0102 [-0.0201, -0.0003] better",
+     "+0.0039 [-0.0045, +0.0123] none"
+    ],
+    [
+     "biodeg_20nan",
+     "0.5906",
+     "0.6220",
+     "0.5781",
+     "-0.0125 [-0.0222, -0.0028] better",
+     "-0.0438 [-0.0739, -0.0138] better"
+    ],
+    [
+     "credit-g_20nan",
+     "0.8855",
+     "0.8763",
+     "0.8769",
+     "-0.0085 [-0.0173, +0.0002] none",
+     "+0.0007 [-0.0081, +0.0095] none"
+    ],
+    [
+     "vehicle_20nan",
+     "0.4133",
+     "0.4190",
+     "0.4024",
+     "-0.0109 [-0.0144, -0.0074] better",
+     "-0.0166 [-0.0264, -0.0069] better"
+    ],
+    [
+     "kc2_20nan",
+     "0.5430",
+     "0.4930",
+     "0.4517",
+     "-0.0913 [-0.1880, +0.0054] none",
+     "-0.0413 [-0.0710, -0.0115] better"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:106-385 (totais em :393-394)",
+   "note_pt": "Ordem das linhas igual à do printout. Intervalos de 95% sobre 15 diferenças (3 sementes × 5 dobras). `none` significa sem veredito. `(trails)` marca variantes em que H perde para o missForest por mais de 1%. Contagem das linhas: contra H, better 19, none 6, equivalent 1, worse 0; contra o TabPFN, better 16, equivalent 6, none 3, worse 1."
+  },
+  {
+   "id": "e90_per_variant",
+   "title_pt": "E90: regra `table` nas 10 variantes difíceis, sementes novas 4545/5656/6767",
+   "columns": [
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn (ticket 61)",
+    "table − model (H)",
+    "table − tabpfn",
+    "table − equal"
+   ],
+   "rows": [
+    [
+     "electricity_40nan",
+     "0.7544",
+     "0.7427",
+     "0.7404",
+     "-0.0140 [-0.0350, +0.0070] none",
+     "-0.0023 [-0.0127, +0.0080] none",
+     "+0.0065 [+0.0023, +0.0106] worse"
+    ],
+    [
+     "electricity_80nan",
+     "0.8981",
+     "0.8907",
+     "0.8897",
+     "-0.0084 [-0.0101, -0.0066] better",
+     "-0.0010 [-0.0017, -0.0003] better",
+     "-0.0004 [-0.0012, +0.0003] equivalent"
+    ],
+    [
+     "vehicle_80nan",
+     "0.8119",
+     "0.7536",
+     "0.7539",
+     "-0.0581 [-0.0633, -0.0528] better",
+     "+0.0002 [-0.0019, +0.0023] equivalent",
+     "-0.0062 [-0.0092, -0.0032] better"
+    ],
+    [
+     "biodeg_80nan",
+     "0.9855",
+     "0.9188",
+     "0.9162",
+     "-0.0693 [-0.0775, -0.0611] better",
+     "-0.0027 [-0.0055, +0.0001] equivalent",
+     "-0.0108 [-0.0150, -0.0067] better"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "0.7256",
+     "0.7118",
+     "0.7184",
+     "-0.0072 [-0.0132, -0.0012] better",
+     "+0.0065 [-0.0002, +0.0133] none",
+     "-0.0072 [-0.0132, -0.0012] better"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "0.8715",
+     "0.8301",
+     "0.8301",
+     "-0.0414 [-0.0474, -0.0355] better",
+     "+0.0000 [+0.0000, +0.0000] equivalent",
+     "-0.0414 [-0.0474, -0.0355] better"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "1.0096",
+     "0.9406",
+     "0.9445",
+     "-0.0652 [-0.0809, -0.0494] better",
+     "+0.0039 [-0.0044, +0.0121] none",
+     "-0.0652 [-0.0809, -0.0494] better"
+    ],
+    [
+     "credit-g_40nan",
+     "0.9378",
+     "0.8999",
+     "0.8997",
+     "-0.0381 [-0.0500, -0.0261] better",
+     "-0.0003 [-0.0033, +0.0028] equivalent",
+     "-0.0311 [-0.0414, -0.0208] better"
+    ],
+    [
+     "credit-g_60nan",
+     "1.0018",
+     "0.9510",
+     "0.9564",
+     "-0.0454 [-0.0590, -0.0317] better",
+     "+0.0054 [-0.0041, +0.0149] none",
+     "-0.0336 [-0.0460, -0.0212] better"
+    ],
+    [
+     "credit-g_80nan",
+     "1.0382",
+     "1.0028",
+     "1.0077",
+     "-0.0305 [-0.0489, -0.0121] better",
+     "+0.0049 [-0.0041, +0.0139] none",
+     "-0.0215 [-0.0356, -0.0074] better"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/34-hybrid-confirmation.md:87-99; coluna table_tabpfn de /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:41-77",
+   "note_pt": "O ticket do E90 não imprime o score médio do híbrido; a coluna `table_tabpfn` vem do printout do E165, que releu as mesmas células e sementes (H e TabPFN coincidem nas duas fontes). `table − equal` compara com a mistura igual."
+  },
+  {
+   "id": "e91_per_variant",
+   "title_pt": "E91: regra `table` nas 7 variantes em que a mistura igual já batia o TabPFN, sementes 4545/5656/6767",
+   "columns": [
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn (ticket 61)",
+    "table − model (H)",
+    "table − tabpfn",
+    "table − equal"
+   ],
+   "rows": [
+    [
+     "biodeg_40nan",
+     "0.6832",
+     "0.7149",
+     "0.6616",
+     "-0.0216 [-0.0297, -0.0135] better",
+     "-0.0533 [-0.0740, -0.0326] better",
+     "-0.0019 [-0.0068, +0.0029] none"
+    ],
+    [
+     "kc2_40nan",
+     "0.5057",
+     "0.5067",
+     "0.4883",
+     "-0.0174 [-0.0621, +0.0273] none",
+     "-0.0184 [-0.0467, +0.0099] none",
+     "+0.0325 [+0.0058, +0.0592] worse"
+    ],
+    [
+     "kc2_80nan",
+     "0.6802",
+     "0.7396",
+     "0.6811",
+     "+0.0009 [-0.0287, +0.0305] none",
+     "-0.0585 [-0.0780, -0.0390] better",
+     "+0.0084 [-0.0035, +0.0203] none"
+    ],
+    [
+     "pendigits_40nan",
+     "0.4274",
+     "0.4363",
+     "0.4151",
+     "-0.0122 [-0.0128, -0.0117] better",
+     "-0.0212 [-0.0230, -0.0193] better",
+     "+0.0026 [+0.0020, +0.0032] worse"
+    ],
+    [
+     "pendigits_60nan",
+     "0.5902",
+     "0.6038",
+     "0.5763",
+     "-0.0139 [-0.0155, -0.0124] better",
+     "-0.0275 [-0.0293, -0.0258] better",
+     "+0.0004 [-0.0002, +0.0009] equivalent"
+    ],
+    [
+     "pendigits_80nan",
+     "0.8360",
+     "0.8144",
+     "0.8108",
+     "-0.0253 [-0.0295, -0.0210] better",
+     "-0.0036 [-0.0056, -0.0017] better",
+     "-0.0014 [-0.0024, -0.0003] better"
+    ],
+    [
+     "vehicle_40nan",
+     "0.4964",
+     "0.5008",
+     "0.4829",
+     "-0.0135 [-0.0217, -0.0052] better",
+     "-0.0179 [-0.0291, -0.0067] better",
+     "+0.0015 [-0.0001, +0.0032] equivalent"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/34-hybrid-confirmation.md:109-118; coluna table_tabpfn de /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:82-106",
+   "note_pt": "Mesma observação da tabela do E90 sobre a coluna `table_tabpfn`."
+  },
+  {
+   "id": "e95_per_variant",
+   "title_pt": "E95: regra `table` nas nove tabelas a 20nan, sementes 4545/5656/6767",
+   "columns": [
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn (ticket 61)",
+    "table − model (H)",
+    "table − tabpfn",
+    "table − equal"
+   ],
+   "rows": [
+    [
+     "electricity_20nan",
+     "0.6233",
+     "0.6259",
+     "0.6132",
+     "-0.0101 [-0.0145, -0.0057] better",
+     "-0.0128 [-0.0241, -0.0014] better",
+     "+0.0044 [-0.0014, +0.0103] none"
+    ],
+    [
+     "letter_20nan",
+     "0.4345",
+     "0.4542",
+     "0.4189",
+     "-0.0156 [-0.0161, -0.0151] better",
+     "-0.0353 [-0.0374, -0.0332] better",
+     "+0.0018 [+0.0012, +0.0024] worse"
+    ],
+    [
+     "pendigits_20nan",
+     "0.3200",
+     "0.3090",
+     "0.2986",
+     "-0.0214 [-0.0221, -0.0207] better",
+     "-0.0103 [-0.0149, -0.0057] better",
+     "+0.0095 [+0.0083, +0.0106] worse"
+    ],
+    [
+     "spambase_20nan",
+     "0.8479",
+     "0.9367",
+     "0.8476",
+     "-0.0003 [-0.0014, +0.0007] equivalent",
+     "-0.0891 [-0.1057, -0.0725] better",
+     "-0.0180 [-0.0240, -0.0120] better"
+    ],
+    [
+     "kr-vs-kp_20nan",
+     "0.5899",
+     "0.5847",
+     "0.5882",
+     "-0.0017 [-0.0075, +0.0040] none",
+     "+0.0035 [-0.0034, +0.0103] none",
+     "-0.0017 [-0.0075, +0.0040] none"
+    ],
+    [
+     "biodeg_20nan",
+     "0.5930",
+     "0.6150",
+     "0.5763",
+     "-0.0167 [-0.0256, -0.0079] better",
+     "-0.0387 [-0.0573, -0.0201] better",
+     "+0.0074 [-0.0012, +0.0160] none"
+    ],
+    [
+     "credit-g_20nan",
+     "0.8858",
+     "0.8727",
+     "0.8687",
+     "-0.0171 [-0.0267, -0.0075] better",
+     "-0.0041 [-0.0076, -0.0005] better",
+     "-0.0095 [-0.0186, -0.0005] better"
+    ],
+    [
+     "vehicle_20nan",
+     "0.4197",
+     "0.4170",
+     "0.4053",
+     "-0.0144 [-0.0191, -0.0096] better",
+     "-0.0117 [-0.0277, +0.0043] none",
+     "+0.0037 [-0.0005, +0.0079] none"
+    ],
+    [
+     "kc2_20nan",
+     "0.5369",
+     "0.5029",
+     "0.4782",
+     "-0.0587 [-0.1218, +0.0045] none",
+     "-0.0247 [-0.0646, +0.0152] none",
+     "+0.0094 [-0.0135, +0.0324] none"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/36-hybrid-20nan.md:51-62; coluna table_tabpfn de /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:160-192"
+  },
+  {
+   "id": "e93_per_variant",
+   "title_pt": "E93: regra `table` fora de MCAR (MNAR probit e MAR `marf`, 60nan), sementes 4545/5656/6767; leitura mista, fora do escopo do ADR",
+   "columns": [
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn (ticket 61)",
+    "table − model (H)",
+    "table − tabpfn"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p25_60nan",
+     "0.9114",
+     "0.9150",
+     "0.9048",
+     "-0.0066 [-0.0111, -0.0021] better",
+     "-0.0102 [-0.0155, -0.0050] better"
+    ],
+    [
+     "biodeg_probit_60nan",
+     "0.9123",
+     "0.9246",
+     "0.9140",
+     "+0.0017 [-0.0050, +0.0084] equivalent",
+     "-0.0106 [-0.0146, -0.0065] better"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "0.9306",
+     "0.9379",
+     "0.9300",
+     "-0.0006 [-0.0023, +0.0012] equivalent",
+     "-0.0078 [-0.0101, -0.0056] better"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "0.9321",
+     "0.9545",
+     "0.9380",
+     "+0.0059 [-0.0003, +0.0121] none",
+     "-0.0165 [-0.0211, -0.0119] better"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "0.6308",
+     "0.6225",
+     "0.6139",
+     "-0.0169 [-0.0202, -0.0136] better",
+     "-0.0086 [-0.0135, -0.0037] better"
+    ],
+    [
+     "kc2_probit_60nan",
+     "0.7253",
+     "0.7757",
+     "0.7317",
+     "+0.0063 [-0.0205, +0.0331] none",
+     "-0.0440 [-0.0569, -0.0312] better"
+    ],
+    [
+     "spambase_probit_60nan",
+     "0.9597",
+     "0.9955",
+     "0.9687",
+     "+0.0090 [+0.0056, +0.0124] worse",
+     "-0.0268 [-0.0310, -0.0226] better"
+    ],
+    [
+     "biodeg_marf_60nan",
+     "0.6864",
+     "0.7056",
+     "0.6643",
+     "-0.0221 [-0.0328, -0.0115] better",
+     "-0.0413 [-0.0606, -0.0220] better"
+    ],
+    [
+     "kc2_marf_60nan",
+     "0.5987",
+     "0.6701",
+     "0.6078",
+     "+0.0091 [-0.0031, +0.0214] none",
+     "-0.0623 [-0.1058, -0.0188] better"
+    ],
+    [
+     "vehicle_marf_60nan",
+     "0.4510",
+     "0.4445",
+     "0.4356",
+     "-0.0154 [-0.0226, -0.0082] better",
+     "-0.0089 [-0.0408, +0.0230] none"
+    ],
+    [
+     "spambase_marf_60nan",
+     "0.9058",
+     "0.9354",
+     "0.8986",
+     "-0.0071 [-0.0099, -0.0043] better",
+     "-0.0368 [-0.0429, -0.0306] better"
+    ],
+    [
+     "credit-g_marf_60nan",
+     "0.9353",
+     "0.9054",
+     "0.9238",
+     "-0.0116 [-0.0183, -0.0048] better",
+     "+0.0184 [+0.0084, +0.0284] worse"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:76-90; coluna table_tabpfn de /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:111-155",
+   "note_pt": "`probit` sem número é inclinação 0.5; `probit2p0` é o auto-mascaramento mais íngreme."
+  },
+  {
+   "id": "mimic_hybrid",
+   "title_pt": "Híbrido `table_tabpfn` nas tabelas MIMIC-IV (E163, E166, E173, E178); impute_score, diferença negativa favorece o híbrido",
+   "columns": [
+    "estudo (sementes)",
+    "variant",
+    "H",
+    "TabPFN v2",
+    "table_tabpfn",
+    "table_tabpfn − H",
+    "table_tabpfn − tabpfn",
+    "fonte (linhas)"
+   ],
+   "rows": [
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_tmatch_20nan (primary)",
+     "0.8566",
+     "0.9206",
+     "0.8532",
+     "-0.0034 [-0.0081, +0.0012] equivalent",
+     "-0.0674 [-0.0769, -0.0580] better",
+     "mimic/10:69-73"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_trand_20nan",
+     "0.8624",
+     "0.8999",
+     "0.8468",
+     "-0.0156 [-0.0211, -0.0101] better",
+     "-0.0532 [-0.0652, -0.0412] better",
+     "mimic/10:78-82"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-cardio-donor_mcar_20nan",
+     "0.8003",
+     "0.7731",
+     "0.7750",
+     "-0.0253 [-0.0354, -0.0153] better",
+     "+0.0019 [-0.0048, +0.0085] none",
+     "mimic/10:87-91"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_tmatch_20nan (primary)",
+     "0.9156",
+     "0.8951",
+     "0.9005",
+     "-0.0151 [-0.0212, -0.0090] better",
+     "+0.0054 [-0.0010, +0.0118] none",
+     "mimic/10:96-100"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_trand_20nan",
+     "0.9315",
+     "0.9001",
+     "0.9113",
+     "-0.0202 [-0.0338, -0.0065] better",
+     "+0.0111 [+0.0057, +0.0166] worse",
+     "mimic/10:105-109"
+    ],
+    [
+     "E163 (42/7/13)",
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9264",
+     "0.8925",
+     "0.9025",
+     "-0.0239 [-0.0337, -0.0141] better",
+     "+0.0100 [-0.0018, +0.0219] none",
+     "mimic/10:114-118"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_tmatch_20nan (primary)",
+     "0.8691",
+     "0.9230",
+     "0.8669",
+     "-0.0022 [-0.0105, +0.0062] none",
+     "-0.0561 [-0.0681, -0.0440] better",
+     "mimic/11:54-58"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_trand_20nan",
+     "0.8605",
+     "0.8998",
+     "0.8468",
+     "-0.0137 [-0.0225, -0.0048] better",
+     "-0.0529 [-0.0658, -0.0401] better",
+     "mimic/11:65-69"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-cardio-donor_mcar_20nan",
+     "0.8037",
+     "0.7703",
+     "0.7736",
+     "-0.0301 [-0.0397, -0.0206] better",
+     "+0.0034 [-0.0042, +0.0109] none",
+     "mimic/11:76-80"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_tmatch_20nan (primary)",
+     "0.9136",
+     "0.8961",
+     "0.9022",
+     "-0.0114 [-0.0178, -0.0049] better",
+     "+0.0061 [-0.0046, +0.0168] none",
+     "mimic/11:87-91"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_trand_20nan",
+     "0.9330",
+     "0.9029",
+     "0.9178",
+     "-0.0153 [-0.0200, -0.0105] better",
+     "+0.0149 [+0.0012, +0.0285] worse",
+     "mimic/11:98-102"
+    ],
+    [
+     "E166 (4545/5656/6767)",
+     "mimic-sofa-donor_mcar_20nan",
+     "0.9214",
+     "0.8952",
+     "0.9031",
+     "-0.0183 [-0.0248, -0.0119] better",
+     "+0.0078 [-0.0029, +0.0186] none",
+     "mimic/11:109-113"
+    ],
+    [
+     "E173 (101/202/303)",
+     "mimic-cardio_natural (primary)",
+     "0.7957",
+     "0.8394",
+     "0.7932",
+     "-0.0025 [-0.0049, -0.0000] better",
+     "-0.0462 [-0.0528, -0.0397] better",
+     "mimic/13:113-117"
+    ],
+    [
+     "E173 (101/202/303)",
+     "mimic-sofa_natural (primary)",
+     "0.8735",
+     "0.8902",
+     "0.8718",
+     "-0.0017 [-0.0039, +0.0005] equivalent",
+     "-0.0183 [-0.0217, -0.0150] better",
+     "mimic/13:124-128"
+    ],
+    [
+     "E173 (4545/5656/6767)",
+     "mimic-cardio_natural (primary)",
+     "0.7935",
+     "0.8324",
+     "0.7892",
+     "-0.0043 [-0.0069, -0.0017] better",
+     "-0.0432 [-0.0493, -0.0371] better",
+     "mimic/13:145-149"
+    ],
+    [
+     "E173 (4545/5656/6767)",
+     "mimic-sofa_natural (primary)",
+     "0.8779",
+     "0.8988",
+     "0.8772",
+     "-0.0007 [-0.0026, +0.0012] equivalent",
+     "-0.0215 [-0.0270, -0.0161] better",
+     "mimic/13:156-160"
+    ],
+    [
+     "E178 (42/7/13)",
+     "mimic-wide_natural (primary)",
+     "0.6653",
+     "0.7644",
+     "0.6653",
+     "+0.0000 [+0.0000, +0.0000] equivalent",
+     "-0.0990 [-0.0999, -0.0981] better",
+     "mimic/16:127-131"
+    ],
+    [
+     "E178 (42/7/13)",
+     "mimic-wide-donor_tmatch_20nan (primary)",
+     "0.9087",
+     "0.9662",
+     "0.9087",
+     "+0.0000 [+0.0000, +0.0000] equivalent",
+     "-0.0575 [-0.0591, -0.0559] better",
+     "mimic/16:138-142"
+    ],
+    [
+     "E178 (42/7/13)",
+     "mimic-wide-donor_mcar_20nan",
+     "0.7178",
+     "0.7216",
+     "0.7154",
+     "-0.0024 [-0.0034, -0.0014] better",
+     "-0.0062 [-0.0069, -0.0054] better",
+     "mimic/16:149-153"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/10-hybrid-transplant.md:69-124; /scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/11-hybrid-transplant-seeds.md:54-121; /scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/13-hybrid-natural-gaps.md:113-168; /scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/16-wide-table-hybrid.md:127-161; sementes do E178: docs/tickets/mimic/16-wide-table-hybrid.md:23",
+   "note_pt": "Na coluna de fonte, `mimic/NN` abrevia os tickets em /scratch2/diogoneiss/TRIDENT/docs/tickets/mimic/. As variantes `_natural` são pontuadas na população mascarada e não se comparam com as demais."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "impute_score",
+   "definition_pt": "Métrica principal de imputação: erro do modelo dividido pelo erro do preenchimento por média (numéricas) ou moda (categóricas), ponderado pela fração de células de cada tipo. Menor é melhor; 1.0 significa igual a preencher com média ou moda.",
+   "source": "/scratch2/diogoneiss/TRIDENT/README.md:350-353"
+  },
+  {
+   "term": "células induzidas e células mascaradas",
+   "definition_pt": "Induzidas: células que a variante `_XXnan` perdeu de propósito e cujo valor verdadeiro está na tabela completa `_00nan`; são o benchmark real. Mascaradas: células observadas escondidas só para pontuar; existem em toda variante e são a única população nas tabelas com lacunas naturais.",
+   "source": "/scratch2/diogoneiss/TRIDENT/README.md:344-345"
+  },
+  {
+   "term": "H",
+   "definition_pt": "Leitura implantável do TRIDENT (ADR 0024): fica com a época de menor perda na máscara fixa de validação, sem calibração; nada no treino lê a tabela completa. É o lado do modelo no híbrido implantável.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:25-36; /scratch2/diogoneiss/TRIDENT/scripts/experiments/deployable_hybrid.py:123"
+  },
+  {
+   "term": "K e KC",
+   "definition_pt": "K: checkpoint escolhido nas lacunas da própria validação pontuadas contra a tabela completa (ADR 0015), portanto um limite de oráculo. KC: K depois da calibração ajustada nessas mesmas lacunas (ADR 0027), o padrão do benchmark.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:18-21; /scratch2/diogoneiss/TRIDENT/docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:24-32"
+  },
+  {
+   "term": "TabPFN v2 (strong tier, offline)",
+   "definition_pt": "Modelo fundacional tabular usado como imputador, um modelo por coluna, reajustado em cada dobra de treino. Membro offline do nível forte de baselines (ADR 0028), fixado em `tabpfn==9.2.0`, `ModelVersion.V2`, contexto de 10,000 linhas, 8 estimadores.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:31-33"
+  },
+  {
+   "term": "regra `table` / `table_tabpfn` (híbrido implantável, ADR 0031 decisão 6)",
+   "definition_pt": "Em cada dobra, as células observadas da partição de validação são sorteadas em 5 grupos; cada grupo é escondido como [MASK], junto das lacunas reais, e preenchido pelo H daquela dobra e pelo TabPFN v2 reajustado no treino. Com esses pares (preenchimento, valor observado) escolhe-se, para a tabela inteira, um único peso numérico w em {0, 0.25, 0.5, 0.75, 1} que minimiza o erro quadrático somado sobre as colunas, com o resíduo de cada coluna dividido pelo desvio-padrão dela no treino (empate fica em 0.5), e uma única escolha categórica: a categoria do TabPFN só se ele acertar estritamente mais células escondidas, senão a do modelo. O preenchimento final das células de teste é w·H + (1 − w)·TabPFN nas numéricas e o lado escolhido nas categóricas. As verdades usadas são valores observados, então a tabela completa nunca é lida.",
+   "source": "/scratch2/diogoneiss/TRIDENT/scripts/experiments/hybrid_selection_rules.py:105-120; /scratch2/diogoneiss/TRIDENT/scripts/experiments/deployable_hybrid.py:8-21,59-91; /scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:81-89"
+  },
+  {
+   "term": "mistura igual (equal blend)",
+   "definition_pt": "Média dos dois preenchimentos nas células numéricas e a categoria do modelo nas categóricas (E60, E66). No código, peso 0.5.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/15-tabpfn-blend.md:15-21; /scratch2/diogoneiss/TRIDENT/scripts/experiments/blend_weights.py:48"
+  },
+  {
+   "term": "híbrido por coluna com ajuste cruzado (ADR 0031 decisões 1 a 5)",
+   "definition_pt": "KC misturado com o TabPFN v2 com um peso por coluna da grade {0, 0.25, 0.5, 0.75, 1} (categóricas: categoria de um dos dois), escolhido nas células induzidas das outras quatro dobras. Lê a tabela completa: classe de informação de KC, não implantável.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:22-30,56-76; /scratch2/diogoneiss/TRIDENT/scripts/experiments/blend_weights.py:47,62-86"
+  },
+  {
+   "term": "variantes difíceis (HARD)",
+   "definition_pt": "As 10 variantes em que a mistura igual não foi melhor que o TabPFN: electricity_40nan, electricity_80nan, vehicle_80nan, biodeg_80nan, e kr-vs-kp e credit-g a 40, 60 e 80nan.",
+   "source": "/scratch2/diogoneiss/TRIDENT/scripts/experiments/blend_weights.py:56-57"
+  },
+  {
+   "term": "veredito por variante (better / worse / equivalent / none)",
+   "definition_pt": "Teste t sobre as diferenças A − B por dobra, juntando as sementes (15 diferenças), com intervalo de 95%. `better`: intervalo todo abaixo de zero e a média de cada semente negativa. `worse`: o espelho. `equivalent`: intervalo dentro de ±SESOI, que é 1% da média do oponente. `none`: nenhum dos três (nos textos: sem veredito, sem chamada, sem diferença).",
+   "source": "/scratch2/diogoneiss/TRIDENT/scripts/experiments/report_common.py:236-253; /scratch2/diogoneiss/TRIDENT/scripts/experiments/blend_weights.py:49; /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/67-hybrid-thesis-seeds.md:395"
+  },
+  {
+   "term": "nomes de variantes",
+   "definition_pt": "`<tabela>_<taxa>nan` é MCAR com 20, 40, 60 ou 80% de células faltantes. `_probit…_60nan` é MNAR por auto-mascaramento (inclinações 0.25, 0.5, 1.0, 2.0). `_marf_60nan` é MAR. Em MIMIC-IV, `tmatch` e `trand` carregam padrões reais de ausência transplantados de linhas doadoras, `mcar` é o controle e `_natural` são as lacunas naturais.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:19-25; /scratch2/diogoneiss/TRIDENT/docs/adr/0031-an-opt-in-offline-hybrid-output-with-tabpfn.md:125-126,138-141"
+  },
+  {
+   "term": "`table_missforest`, `pick`, `crossfit`",
+   "definition_pt": "`table_missforest`: a mesma regra `table` com missForest no lugar do TabPFN. `pick`: escolhe em cada dobra o lado (TabPFN ou missForest) que pontua menos nas mesmas células de validação usadas para ajustar. `crossfit`: a mesma escolha feita com ajuste cruzado entre os 5 grupos de validação; empate fica com o TabPFN. Nenhum dos três substituiu `table_tabpfn`.",
+   "source": "/scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/59-missforest-hybrid.md:43-53; /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/61-hybrid-side-pick.md:197-211; /scratch2/diogoneiss/TRIDENT/docs/tickets/imputation-protocol/64-crossfit-generality.md:81-83"
+  }
+ ],
+ "missing": [
+  "O ticket do E90/E91 (34-hybrid-confirmation.md) não imprime o score médio do próprio híbrido; a coluna `table_tabpfn` das tabelas E90, E91, E95 e E93 foi copiada do printout do E165 (61-hybrid-side-pick.md), que releu as mesmas células e sementes.",
+  "Não encontrei uma tabela única que junte, por variante, os três conjuntos de sementes (4545/5656/6767, 42/7/13 e 101/202/303) do híbrido nas 26 variantes MCAR; para 42/7/13 só anotei o resumo da divulgação do E174 (melhor que H em 23 de 26, pior que o TabPFN em nenhuma), não os números por variante dos tickets 62 e 64.",
+  "Custo de tempo do híbrido (duração do reajuste do TabPFN por dobra) não aparece nos trechos lidos; o ADR só diz que exige um reajuste por coluna por dobra.",
+  "Nenhuma avaliação do híbrido em tarefa posterior (classificação com os dados preenchidos) foi encontrada nos arquivos desta seção.",
+  "As sementes do E178 e o desenho completo do E171 não foram anotados: desses tickets li só o Outcome.",
+  "Tabelas por variante do E69 e do E74 não foram devolvidas aqui: parte dos intervalos não foi anotada; os totais estão nos key_numbers.",
+  "Não abri meeting_figures.json nem page.template.html da página da reunião anterior, então não sei se já existe uma figura do híbrido pronta para reaproveitar."
+ ],
+ "do_not_claim": [
+  "Não dizer que o híbrido é um imputador melhor que o TabPFN em geral: o ADR 0031 proíbe (linhas 178-183) e nas 10 variantes difíceis ele é melhor em 1, equivalente em 4 e sem veredito em 5.",
+  "Não dizer que o híbrido nunca é pior que o TabPFN sem qualificar: é pior em credit-g_80nan nas sementes da tese (E174, +0.0068), em credit-g_marf_60nan (E93, +0.0184) e em mimic-sofa-donor_trand_20nan nos dois conjuntos de sementes (+0.0111, +0.0149). A frase 'nunca pior que H nem que o TabPFN' vale para as 17 variantes de E90/E91 e as 9 de E95, nas sementes 4545/5656/6767.",
+  "Não dizer que o híbrido funciona sob MAR e MNAR sintéticos: o E93 é misto, o escopo do ADR é só MCAR, e sob o auto-mascaramento mais íngreme todo híbrido perde para H em dois conjuntos de sementes (E170, E172).",
+  "Não apresentar o ganho do híbrido sobre H ou KC como mérito só do TRIDENT: o ADR diz que a maior parte do ganho é do próprio TabPFN.",
+  "Não dizer que o híbrido é o padrão do TRIDENT ou que está embutido no código: é opcional, offline, sem flag e sem mudança em src/; as manchetes continuam sendo H (implantável) e KC (benchmark).",
+  "Não dizer que a forma por coluna (E69, E74, decisões 1 a 5) é implantável: os pesos dela leem a tabela completa.",
+  "Não usar o E89 como confirmação: é leitura de desenvolvimento nas mesmas sementes do E82; a confirmação é E90/E91.",
+  "Não somar as 26 variantes do E174 às 26 de E90/E91/E95 como se fossem 52 variantes: são as mesmas variantes em outras sementes.",
+  "Não dizer que o híbrido melhora a imputação em MIMIC-IV de modo geral: nas lacunas naturais o ganho sobre H é de 0.3% a 0.5% em cardio e nenhum em SOFA ('saída segura, não melhor'), e em mimic-wide o E178 foi refutado (inofensivo e desnecessário).",
+  "Não atribuir ao híbrido a vantagem sobre o TabPFN nas tabelas MIMIC-IV naturais e em mimic-wide: essa vantagem já era de H sozinho.",
+  "Não comparar scores da população mascarada (tabelas `_natural`) com scores de células induzidas.",
+  "Não dizer que escolher o lado (missForest ou TabPFN) por validação cruzada é melhor que `table_tabpfn`: E169, E170, E171 e E172 são mistos e não houve emenda ao ADR.",
+  "Não dizer que o híbrido com missForest foi adotado: E162 e E167 são suportados e E164 é misto, mas a decisão 6 do ADR 0031 descreve só o lado TabPFN."
+ ],
+ "figure_ideas": [
+  "Gráfico de pontos por variante (dumbbell) com H, TabPFN v2 e `table_tabpfn` nas 26 variantes do E174, agrupado por tabela e ordenado por taxa de faltantes; eixo impute_score com a linha 1.0 (média/moda) marcada.",
+  "Forest plot do E174 com `híbrido − H` e `híbrido − TabPFN` e seus intervalos de 95% por variante, colorido pelo veredito (better, equivalent, none, worse), destacando credit-g_80nan.",
+  "Diagrama em passos da regra `table`: validação observada, 5 grupos escondidos como [MASK], preenchimento por H e por TabPFN, escolha de um peso e de um lado categórico por tabela, aplicação no teste.",
+  "Linha do tempo da evolução do híbrido com o veredito de cada estudo: E60 (complementary), E69/E74 (mixed), E82 (refuted), E89 (supported, development), E90/E91 (supported), E95 (supported), E174 (supported).",
+  "Mapa de escopo do ADR 0031: dentro (MCAR 20 a 80nan, MIMIC-IV com padrões transplantados, MIMIC-IV com lacunas naturais), fora (MAR e MNAR sintéticos, mimic-wide), com o estudo que sustenta cada caixa.",
+  "Painel pequeno do E82 mostrando o número mediano de células de seleção por coluna (18 e 21 contra 902 e 2719) ao lado do veredito contra o TabPFN, para explicar por que a regra por coluna falhou."
+ ]
+}

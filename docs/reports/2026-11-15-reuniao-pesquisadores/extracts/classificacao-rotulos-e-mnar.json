@@ -1,0 +1,1937 @@
+{
+ "key": "classificacao-rotulos-e-mnar",
+ "section": "Classificação, segunda metade: onde o desenho do TRIDENT ainda pode importar? Ausência informativa (C15, H2 e TabPFN sob MNAR), a separação [NULL]/[MASK] (C1) e o regime de rótulos escassos (ADR 0038)",
+ "storyline_pt": "Com todos os rótulos de treino, o pré-treino não chega ao classificador do TRIDENT: em E131 (C1, quatro tabelas a 60% de ausência) S − B ficou em +0,0040 [−0,0077; +0,0157], e a separação [NULL]/[MASK] contra um token único por coluna (S − T) foi inconclusiva. E132 mostrou o motivo: um encoder pré-treinado e congelado dá à cabeça cerca de +0,009 de macro-F1 sobre um encoder aleatório congelado, mas o ajuste fino completo acrescenta cerca de +0,10 a partir de qualquer início e apaga o que o pré-treino deixou (washout). Nenhuma correção do lado do ajuste fino recupera esse canal: encoder a um décimo da taxa, congelamento inicial, orçamentos de 30 e 50 épocas e quatro schedules ficaram todos sem veredito (E133–E135). Com poucos rótulos o canal abre: com um quarto dos rótulos S − B foi +0,016 (E136) e se manteve em seeds novas com a validação também escassa, +0,022 [+0,009; +0,035] (E138, holds). O ganho é maior quanto mais escassos os rótulos (+0,029 a 10%, +0,022 a 25%, +0,016 a 50%, +0,004 com todos; E140) e fica estável entre 20% e 60% de ausência, fechando a 80% (E143). Nas 21 variantes confirmatórias, com cinco seeds, o ganho é +0,010 [+0,005; +0,016], com 8 variantes melhores e nenhuma pior (E141, holds), e não vem de o seletor de época escasso prejudicar B (E144, not supported); o ADR 0038 registra esse regime sem mudar nenhum default. Mesmo onde o pré-treino chega à cabeça, separar [NULL] de [MASK] não ajuda: S − T é inconclusivo sob MNAR e T fica à frente sob MCAR (E136). Na frente C15 a pergunta era se o [NULL] usa uma lacuna informativa tão bem quanto missForest + indicador (H2); o estudo parou duas vezes no portão G1 porque o indicador do comparador não superou o preenchimento sem indicador, embora o [NULL] (A1) lesse a lacuna com o sinal certo em todos os controles (E124, E128). Contra o TabPFN v2, que lidera o TRIDENT por cerca de +0,028 sob MCAR nessas tabelas, a vantagem não encolhe sob MNAR dependente do valor (E137, interação sem veredito), mas encolhe de 0,03 a 0,05 de macro-F1 sob MNAR dependente do desfecho, o que foi confirmado em sorteio e seeds novos (E139, E142), sem virar liderança do TRIDENT. O teste direto de H2 com portão externo terminou inconclusivo nas duas primárias (E155), o padrão 'paridade só onde a lacuna depende do desfecho' não se repetiu em tabelas do MIMIC-IV (E156), e o portão nas lacunas naturais da tabela SOFA falhou (E152).",
+ "findings": [
+  {
+   "experiments": [
+    "E131"
+   ],
+   "importance": "essential",
+   "question_pt": "Com todos os rótulos de treino, manter [NULL] (lacuna real) separado de [MASK] (célula escondida pelo pré-treino) melhora a classificação em relação a um token único por coluna? E o pré-treino chega a ajudar o classificador?",
+   "design_pt": "Quatro tabelas a 60% de ausência sob MNAR probit (biodeg, kc2, vehicle, spambase) e seus irmãos MCAR. Braços: S (desenho do TRIDENT), T (token amarrado, PRETRAIN_HOLE_TOKEN null) e B (sem pré-treino, EPOCHS_PRE 0). Seeds 42/7/13 × 5 folds = 15 réplicas pareadas por arquivo; pré-treino embedding_normalized (override), 300/150 épocas, cosine_legacy. Macro-F1 de teste, IC t 95% simples, Nadeau–Bengio ao lado. S − T > 0 favorece a separação; S − B > 0 favorece o pré-treino.",
+   "result_pt": "S − T agrupado foi −0,0034 [−0,0110; +0,0042] nos arquivos MNAR e −0,0024 [−0,0107; +0,0060] nos MCAR; nenhum arquivo melhor ou pior. O portão G2 de C1 falhou: S − B = +0,0040 [−0,0077; +0,0157] (MNAR) e +0,0034 [−0,0025; +0,0093] (MCAR). Com todos os rótulos o pré-treino não chega ao classificador de forma mensurável, então a separação não tem por onde agir. Os vetores [MASK]_j e [NULL]_j continuam tão distintos quanto na inicialização (cosseno mediano entre −0,02 e +0,01). O objetivo do artigo (ANCHOR) não muda o quadro (+0,005).",
+   "verdict": "inconclusive (G2 fails)",
+   "key_numbers": [
+    {
+     "label": "S − T pooled, MNAR, macro-F1",
+     "value": "-0.0034 [-0.0110, +0.0042] -> Inconclusive",
+     "source": "docs/tickets/c1-split/03-primary.md:63"
+    },
+    {
+     "label": "G2 S − B, MNAR",
+     "value": "+0.0040 [-0.0077, +0.0157] -> fails",
+     "source": "docs/tickets/c1-split/03-primary.md:64"
+    },
+    {
+     "label": "S − T pooled, MCAR",
+     "value": "-0.0024 [-0.0107, +0.0060]",
+     "source": "docs/tickets/c1-split/03-primary.md:75"
+    },
+    {
+     "label": "G2 S − B, MCAR",
+     "value": "+0.0034 [-0.0025, +0.0093] -> fails",
+     "source": "docs/tickets/c1-split/03-primary.md:76"
+    },
+    {
+     "label": "Anchor S(embedding_normalized) − S(embedding), pooled",
+     "value": "+0.005 [−0.003, +0.013]",
+     "source": "docs/tickets/c1-split/03-primary.md:117"
+    },
+    {
+     "label": "cos([MASK]_j, [NULL]_j) mediano",
+     "value": "between −0.02 and +0.01",
+     "source": "docs/tickets/c1-split/03-primary.md:119"
+    }
+   ],
+   "caveat_pt": "Pela regra é Inconclusive e não Null: sem canal de pré-treino (S ≈ B), um empate não diz que a separação é inútil. Cada arquivo MNAR é um único sorteio; o não-determinismo da GPU chega a 0,009 de macro-F1 entre execuções da mesma seed (docs/tickets/c1-split/03-primary.md:45-47)."
+  },
+  {
+   "experiments": [
+    "E132"
+   ],
+   "importance": "essential",
+   "question_pt": "Por que o pré-treino não ajuda com todos os rótulos: ele não deixa nada útil no encoder, ou deixa e o ajuste fino completo apaga (washout)?",
+   "design_pt": "FP: encoder pré-treinado congelado, só a cabeça treina. FR: encoder aleatório congelado (EPOCHS_PRE 0), só a cabeça treina. Mesmos 8 arquivos e 15 réplicas de E131. FP − FR > 0 = o pré-treino deixa estrutura legível pela cabeça. S − FP e B − FR medem o que o ajuste fino completo acrescenta.",
+   "result_pt": "FP − FR = +0,0092 [+0,0013; +0,0171] nos arquivos MNAR e +0,0160 [+0,0043; +0,0277] nos MCAR: o pré-treino deixa conteúdo, cerca de um ponto de macro-F1. Mas o ajuste fino completo acrescenta dez vezes mais a partir de qualquer início: S − FP = +0,0979 e B − FR = +0,1031 (MNAR). As curvas de perda mostram o ajuste fino com mínimo de validação nas épocas 13–24 e overfitting depois de cerca da época 20, igual para S e B.",
+   "verdict": "done (washout); pela regra do ticket: content present",
+   "key_numbers": [
+    {
+     "label": "FP − FR pooled, MNAR",
+     "value": "+0.0092 [+0.0013, +0.0171] (NB [-0.0091, +0.0274])",
+     "source": "docs/tickets/c1-split/04-channel-probe.md:58"
+    },
+    {
+     "label": "FP − FR pooled, MCAR",
+     "value": "+0.0160 [+0.0043, +0.0277]",
+     "source": "docs/tickets/c1-split/04-channel-probe.md:68"
+    },
+    {
+     "label": "S − FP / B − FR, MNAR",
+     "value": "+0.0979; B − FR: +0.1031",
+     "source": "docs/tickets/c1-split/04-channel-probe.md:60"
+    },
+    {
+     "label": "S − FP / B − FR, MCAR",
+     "value": "+0.1109; B − FR: +0.1235",
+     "source": "docs/tickets/c1-split/04-channel-probe.md:70"
+    },
+    {
+     "label": "época do mínimo de validação no ajuste fino",
+     "value": "13–24",
+     "source": "docs/tickets/c1-split/04-channel-probe.md:98"
+    }
+   ],
+   "caveat_pt": "O +0,009 é um piso: as cabeças congeladas ainda melhoravam (épocas mantidas 132–149 de 150), docs/tickets/c1-split/04-channel-probe.md:102-103 e 05-finetuning-fix.md:97-98. O intervalo Nadeau–Bengio de FP − FR no MNAR chega a −0,009. Figura existente: docs/tickets/c1-split/figures/e132_loss_curves.png."
+  },
+  {
+   "experiments": [
+    "E133",
+    "E134",
+    "E135"
+   ],
+   "importance": "supporting",
+   "question_pt": "Dá para preservar o que o pré-treino deixa mudando o ajuste fino: encoder mais lento, congelamento inicial, menos épocas ou outro schedule?",
+   "design_pt": "E133: LRS (encoder a um décimo da taxa da cabeça) e FRZ (cabeça sozinha nas primeiras 50 épocas) contra S. E134: 30 e 50 épocas contra 150 sob cosine_legacy. E135: cosine, warmup_cosine, plateau e constant contra cosine_legacy. Mesmos 8 arquivos, 15 réplicas; X − S > 0 favorece o braço novo; Holm dentro de cada estudo.",
+   "result_pt": "Nada ajuda. LRS − S = −0,0013 e FRZ − S = −0,0027 nos arquivos MNAR, sem veredito; eles só atrasam a época do mínimo de validação em 50 a 100 épocas e chegam ao mesmo macro-F1. S30 = −0,0081 (Holm 0,058) com dois arquivos piores; S50 = −0,0009, só um argumento de custo. Nenhum schedule supera cosine_legacy. Em nenhum orçamento S − B abre um canal de pré-treino.",
+   "verdict": "no verdict (E133, E134, E135)",
+   "key_numbers": [
+    {
+     "label": "LRS − S pooled, MNAR",
+     "value": "-0.0013 [-0.0067, +0.0041]",
+     "source": "docs/tickets/c1-split/05-finetuning-fix.md:61"
+    },
+    {
+     "label": "FRZ − S pooled, MNAR",
+     "value": "-0.0027 [-0.0142, +0.0088]",
+     "source": "docs/tickets/c1-split/05-finetuning-fix.md:63"
+    },
+    {
+     "label": "S30 − S(150)",
+     "value": "−0.0081 [−0.0153, −0.0010], Holm 0.058, no verdict",
+     "source": "docs/tickets/c1-split/06-finetuning-budget.md:46"
+    },
+    {
+     "label": "S50 − S(150)",
+     "value": "−0.0009 [−0.0049, +0.0031], no verdict",
+     "source": "docs/tickets/c1-split/06-finetuning-budget.md:47"
+    },
+    {
+     "label": "schedules contra cosine_legacy",
+     "value": "no schedule beats `cosine_legacy` (every arm Holm p ≥ 0.85)",
+     "source": "docs/EXPERIMENTATION_LOG.md:174"
+    }
+   ],
+   "caveat_pt": "Uma única taxa base (0,001), não tunada; valores de LRS e FRZ testados uma vez. Fecha o lado do ajuste fino para C1, não para outras perguntas."
+  },
+  {
+   "experiments": [
+    "E136"
+   ],
+   "importance": "essential",
+   "question_pt": "Com poucos rótulos (um décimo ou um quarto), o pré-treino em todas as linhas passa a ajudar a cabeça? Se sim, a separação [NULL]/[MASK] fica testável?",
+   "design_pt": "S, T e B com FINETUNE_LABEL_FRACTION 0,1 e 0,25 (fração estratificada dos rótulos de treino; o pré-treino continua vendo todas as linhas). Validação com todos os rótulos (seletor oráculo, compartilhado pelos braços). 8 arquivos, seeds 42/7/13 × 5 folds, 144 células. Portão: S(f) − B(f) agrupado, Holm sobre as duas frações; só com o portão aberto lê-se S(f) − T(f).",
+   "result_pt": "A um décimo o canal ficou fechado (+0,0109 [−0,0046; +0,0264]); a um quarto abriu: S25 − B25 = +0,0158 [+0,0072; +0,0244], Holm 0,0031, 4 arquivos melhores e nenhum pior: o primeiro canal positivo de pré-treino sob ajuste fino completo na classificação do projeto. A escassez custa caro (S25 − S com todos os rótulos = −0,094). Com o canal aberto, a separação foi testada e não passou: S25 − T25 nos arquivos MNAR = −0,0024 [−0,0121; +0,0073], inconclusivo; nos MCAR (descritivo) −0,0119 [−0,0229; −0,0008], com T à frente.",
+   "verdict": "gate open at 25%; split inconclusive",
+   "key_numbers": [
+    {
+     "label": "S10 − B10, pooled 8 arquivos",
+     "value": "+0.0109 [−0.0046, +0.0264], Holm 0.155, closed",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:63"
+    },
+    {
+     "label": "S25 − B25, pooled 8 arquivos",
+     "value": "+0.0158 [+0.0072, +0.0244], Holm 0.0031, OPEN",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:64"
+    },
+    {
+     "label": "custo da escassez S10 − S / S25 − S",
+     "value": "−0.154 [−0.171, −0.136]; S25 − S −0.094 [−0.101, −0.086]",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:66"
+    },
+    {
+     "label": "S25 − T25, MNAR",
+     "value": "−0.0024 [−0.0121, +0.0073] → Inconclusive",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:67-68"
+    },
+    {
+     "label": "S25 − T25, MCAR (descritivo)",
+     "value": "−0.0119 [−0.0229, −0.0008]",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:72"
+    },
+    {
+     "label": "linhas rotuladas por fold (biodeg / kc2 / vehicle / spambase)",
+     "value": "73 / 36 / 59 / 322 at a tenth, 184 / 91 / 147–148 / 805 at a quarter",
+     "source": "docs/tickets/c1-split/08-label-scarce.md:57"
+    }
+   ],
+   "caveat_pt": "Seletor oráculo: a validação manteve todos os rótulos, então não é um protocolo implantável (docs/tickets/c1-split/08-label-scarce.md:48-51). Nessas frações todo arquivo menos spambase tem um único batch por época, e o cosine_legacy vira uma única descida de 150 épocas, um regime diferente do de E131 (docs/tickets/c1-split/08-label-scarce.md:29-32). kc2 a um décimo tem 7 positivos."
+  },
+  {
+   "experiments": [
+    "E138"
+   ],
+   "importance": "essential",
+   "question_pt": "O canal de um quarto dos rótulos se mantém em seeds novas quando a validação também é escassa, ou seja, na forma que um usuário com poucos rótulos poderia usar?",
+   "design_pt": "S25V contra B25V: fração 0,25 no treino e também na validação (FINETUNE_SCARCE_VALIDATION on). Os 8 arquivos de C1, seeds de confirmação 1515/2626/3737 × 5 folds, 48 células. Regra: holds se o IC t 95% simples agrupado ficar acima de 0. Positivo favorece o pré-treino.",
+   "result_pt": "Holds: S25V − B25V = +0,0218 [+0,0090; +0,0346], p 0,0026; melhor em 3 arquivos (spambase_probit_60nan, vehicle_60nan, spambase_60nan), pior em nenhum. Metade MNAR +0,018, metade MCAR +0,026; a log loss favorece S em 8 de 8 arquivos. É maior que a leitura oráculo de E136 (+0,016).",
+   "verdict": "holds",
+   "key_numbers": [
+    {
+     "label": "S25V − B25V pooled (8 arquivos)",
+     "value": "+0.0218 [+0.0090, +0.0346], NB [−0.0077, +0.0512], p 0.0026",
+     "source": "docs/tickets/c1-split/09-scarce-confirmation.md:61"
+    },
+    {
+     "label": "metades",
+     "value": "MNAR +0.018, MCAR +0.026",
+     "source": "docs/tickets/c1-split/09-scarce-confirmation.md:63"
+    },
+    {
+     "label": "linhas de validação a um quarto (biodeg, kc2, vehicle, spambase)",
+     "value": "biodeg 26, kc2 13, vehicle 21, spambase 115",
+     "source": "docs/tickets/c1-split/09-scarce-confirmation.md:22"
+    }
+   ],
+   "caveat_pt": "O intervalo Nadeau–Bengio cruza zero. Só 60nan e uma fração. kc2 tem 13 linhas de validação (cerca de 3 positivos). As seeds novas mudam folds e inicialização, não o sorteio da ausência."
+  },
+  {
+   "experiments": [
+    "E140"
+   ],
+   "importance": "essential",
+   "question_pt": "Como o valor do pré-treino varia com a fração de rótulos disponível?",
+   "design_pt": "S(f)V − B(f)V em f = 0,1 e 0,5, validação escassa, os 8 arquivos de C1, seeds 1515/2626/3737 × 5 folds, 96 células; Holm sobre as duas frações. O quarto de E138 e o ponto com todos os rótulos de E131 entram ao lado.",
+   "result_pt": "Curva monotônica: +0,0290 [+0,0165; +0,0416] a 10%, +0,0218 a 25% (E138), +0,0157 [+0,0075; +0,0239] a 50% e +0,004 [−0,008; +0,016] com todos os rótulos. As duas frações novas abrem o canal; nenhum arquivo piora em fração alguma. Quanto mais escassos os rótulos, mais o pré-treino vale.",
+   "verdict": "done (descriptive); channel OPEN at 10% and 50%",
+   "key_numbers": [
+    {
+     "label": "10% (E140)",
+     "value": "+0.0290 [+0.0165, +0.0416], NB [+0.0002, +0.0579], Holm 0.0004",
+     "source": "docs/tickets/c1-split/10-label-fraction-curve.md:30"
+    },
+    {
+     "label": "25% (E138, ao lado)",
+     "value": "+0.0218 [+0.0090, +0.0346]",
+     "source": "docs/tickets/c1-split/10-label-fraction-curve.md:31"
+    },
+    {
+     "label": "50% (E140)",
+     "value": "+0.0157 [+0.0075, +0.0239], NB [−0.0031, +0.0345], Holm 0.0010",
+     "source": "docs/tickets/c1-split/10-label-fraction-curve.md:32"
+    },
+    {
+     "label": "100% (E131, seletor oráculo)",
+     "value": "+0.004 [−0.008, +0.016], closed",
+     "source": "docs/tickets/c1-split/10-label-fraction-curve.md:33"
+    },
+    {
+     "label": "kc2 a 10% (36 rotuladas, 5 de validação)",
+     "value": "+0.087 [+0.010, +0.165]",
+     "source": "docs/tickets/c1-split/10-label-fraction-curve.md:36-37"
+    }
+   ],
+   "caveat_pt": "O ponto de 100% vem de outro estudo (E131): seeds 42/7/13, validação inteira, e o valor coincide com o G2 de E131 só nos quatro arquivos MNAR (docs/tickets/c1-split/03-primary.md:64), não com os 8. E136 leu 10% fechado (+0,0109, seeds 42/7/13, seletor oráculo); as duas leituras ficam como escritas, e E144 atribui a diferença às seeds. A hipótese do seletor, levantada aqui, foi retirada (docs/tickets/c1-split/10-label-fraction-curve.md:46-48)."
+  },
+  {
+   "experiments": [
+    "E141"
+   ],
+   "importance": "essential",
+   "question_pt": "O canal de um quarto dos rótulos vale no conjunto confirmatório de 21 variantes, base de uma frase de tese?",
+   "design_pt": "S25V contra B25V nas 21 variantes de E30 (credit-g, kr-vs-kp e spambase a 20/40/60/80nan; vehicle, biodeg e kc2 a 20 e 60nan; pendigits, letter e electricity a 20nan), cada uma na sua configuração resolvida (encoders dos ADRs 0036/0037 onde promovidos), seeds 42/7/13/101/202 × 5 folds = 25 réplicas por variante, 210 células. Holds se o IC t 95% simples agrupado ficar acima de 0; grupos descritivos.",
+   "result_pt": "Holds: +0,0101 [+0,0045; +0,0157] agrupado sobre as 21 variantes; 8 melhores (spambase nos quatro níveis, pendigits, letter, electricity, kr-vs-kp_40nan) e nenhuma pior. Por grupo: categóricas +0,0087, numéricas pequenas +0,0080 [−0,0040; +0,0201], spambase +0,0118, grandes +0,0159 [+0,0127; +0,0190]. O ganho é menor que nas quatro tabelas a 60nan (+0,010 contra +0,022) porque as 21 são majoritariamente de 20–40nan e grandes; o ganho mais nítido é nas tabelas grandes (electricity +0,021 [+0,019; +0,023]).",
+   "verdict": "holds",
+   "key_numbers": [
+    {
+     "label": "S25V − B25V pooled sobre 21",
+     "value": "+0.0101 [+0.0045, +0.0157] (NB [−0.0060, +0.0262]) → HOLDS",
+     "source": "docs/tickets/c1-split/11-stage2-21-variants.md:36"
+    },
+    {
+     "label": "variantes melhores / piores",
+     "value": "8 of 21 variants better, none worse",
+     "source": "docs/tickets/c1-split/11-stage2-21-variants.md:45"
+    },
+    {
+     "label": "grupo large",
+     "value": "+0.0159 [+0.0127, +0.0190]",
+     "source": "docs/tickets/c1-split/11-stage2-21-variants.md:43"
+    },
+    {
+     "label": "grupo small numeric",
+     "value": "+0.0080 [−0.0040, +0.0201]",
+     "source": "docs/tickets/c1-split/11-stage2-21-variants.md:41"
+    },
+    {
+     "label": "electricity_20nan",
+     "value": "+0.021 [+0.019, +0.023]",
+     "source": "docs/tickets/c1-split/11-stage2-21-variants.md:51"
+    }
+   ],
+   "caveat_pt": "O intervalo Nadeau–Bengio cruza zero (docs/tickets/c1-split/11-stage2-21-variants.md:52-53); a regra pré-registrada é o intervalo simples. As tabelas pequenas ficam indecididas. Contraste interno, S contra B: nenhum baseline nem TabPFN rodou com rótulos escassos."
+  },
+  {
+   "experiments": [
+    "E143"
+   ],
+   "importance": "supporting",
+   "question_pt": "O canal de um quarto dos rótulos depende do nível de ausência?",
+   "design_pt": "S25V contra B25V nos arquivos MCAR de biodeg, kc2, vehicle e spambase a 20, 40 e 80nan, seeds 1515/2626/3737 × 5 folds, 72 células; agrupado sobre as quatro tabelas por nível, Holm sobre os três níveis; a metade MCAR de E138 dá o 60nan.",
+   "result_pt": "Plano de 20 a 60% de ausência (+0,0246 a 20nan, +0,0234 a 40nan, +0,0258 a 60nan) e fechado a 80% (+0,0040 [−0,0164; +0,0245]), onde só spambase ainda ganha. Nenhuma tabela piora em nível algum. O canal não cresce com a ausência.",
+   "verdict": "done (descriptive); OPEN at 20nan and 40nan, closed at 80nan",
+   "key_numbers": [
+    {
+     "label": "20nan",
+     "value": "+0.0246 [+0.0048, +0.0445], Holm 0.0392",
+     "source": "docs/tickets/c1-split/12-missingness-levels.md:24"
+    },
+    {
+     "label": "40nan",
+     "value": "+0.0234 [+0.0057, +0.0410], Holm 0.0392",
+     "source": "docs/tickets/c1-split/12-missingness-levels.md:25"
+    },
+    {
+     "label": "60nan (metade MCAR de E138)",
+     "value": "+0.0258 [+0.0083, +0.0432]",
+     "source": "docs/tickets/c1-split/12-missingness-levels.md:26"
+    },
+    {
+     "label": "80nan",
+     "value": "+0.0040 [−0.0164, +0.0245], Holm 0.6786, closed",
+     "source": "docs/tickets/c1-split/12-missingness-levels.md:27"
+    }
+   ],
+   "caveat_pt": "Só MCAR e quatro tabelas. Os motivos para o fechamento a 80% são duas leituras não testadas (docs/tickets/c1-split/12-missingness-levels.md:32-36)."
+  },
+  {
+   "experiments": [
+    "E144"
+   ],
+   "importance": "supporting",
+   "question_pt": "O ganho com validação escassa vem de B escolher pior a sua época (seletor), e não do conteúdo do pré-treino?",
+   "design_pt": "Completa os quadrados seletor × seeds: efeito do seletor = (S(f)V − B(f)V) − (S(f) − B(f)), pareado por (arquivo, seed, fold), seeds 42/7/13 e 1515/2626/3737, 30 réplicas, Holm sobre 10% e 25%. Supported se > 0 com Holm p < 0,05.",
+   "result_pt": "Not supported nas duas frações: −0,0056 [−0,0194; +0,0081] a 10% e −0,0056 [−0,0161; +0,0050] a 25%; 16 de 16 linhas por arquivo sem diferença. O ganho em rótulos escassos é do pré-treino, não um artefato do seletor de B. A diferença entre E136 (10% fechado) e E140 (10% aberto) vem das seeds. Em seis seeds, S − B a 10% é +0,0172 (escasso) e +0,0228 (oráculo).",
+   "verdict": "not supported",
+   "key_numbers": [
+    {
+     "label": "efeito do seletor a 10%",
+     "value": "−0.0056 [−0.0194, +0.0081], Holm 0.57",
+     "source": "docs/tickets/c1-split/13-selector-squares.md:58"
+    },
+    {
+     "label": "efeito do seletor a 25%",
+     "value": "−0.0056 [−0.0161, +0.0050], Holm 0.57",
+     "source": "docs/tickets/c1-split/13-selector-squares.md:59"
+    },
+    {
+     "label": "S − B em seis seeds, escasso / oráculo, 10%",
+     "value": "+0.0172 / +0.0228",
+     "source": "docs/tickets/c1-split/13-selector-squares.md:58"
+    },
+    {
+     "label": "S − B em seis seeds, escasso / oráculo, 25%",
+     "value": "+0.0142 / +0.0198",
+     "source": "docs/tickets/c1-split/13-selector-squares.md:59"
+    }
+   ],
+   "caveat_pt": "92 das 168 células migraram para gorgona8, então o contraste de segunda ordem cruza máquinas para os pares cujos braços antigos rodaram na medusa1 (docs/tickets/c1-split/13-selector-squares.md:42-49); o resultado é um nulo bem dentro do intervalo."
+  },
+  {
+   "experiments": [
+    "ADR 0038",
+    "E138",
+    "E140",
+    "E141",
+    "E143",
+    "E144"
+   ],
+   "importance": "essential",
+   "question_pt": "O que o projeto decidiu formalmente sobre o regime de rótulos escassos?",
+   "design_pt": "ADR 0038, aceito pelo usuário em 2026-11-05, a partir de E138, E140, E141, E143 e E144.",
+   "result_pt": "O ajuste fino com rótulos escassos vira um regime documentado: o pré-treino vê todas as linhas do split de treino sem rótulos, e o ajuste fino vê uma fração estratificada f dos rótulos, sorteada uma vez por fold. A forma implantável sorteia a validação do mesmo jeito; a forma com validação inteira é diagnóstica. Nenhum default muda: as flags ficam em 1.0 e off, e a classificação continua bit-idêntica. Escopo da afirmação: frações de 0,1 a 0,5, de 20 a 60nan (fechado a 80nan), MCAR nas 21 variantes e MNAR probit em quatro tabelas, pré-treino embedding_normalized.",
+   "verdict": "accepted 2026-11-05",
+   "key_numbers": [
+    {
+     "label": "status",
+     "value": "accepted 2026-11-05",
+     "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:3"
+    },
+    {
+     "label": "defaults",
+     "value": "The flags stay at `1.0` and `off`; no promoted file changes; classification stays bit-identical",
+     "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:60-61"
+    },
+    {
+     "label": "escopo",
+     "value": "Fractions 0.1 to 0.5; 20 to 60nan (closed at 80nan); MCAR on the 21 confirmatory variants and probit MNAR on four tables; `embedding_normalized` pre-training",
+     "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:69-70"
+    },
+    {
+     "label": "com todos os rótulos (E131)",
+     "value": "S − B +0.004 [−0.008, +0.016]",
+     "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:10-11"
+    }
+   ],
+   "caveat_pt": "O ADR não decide: o objetivo de pré-treino padrão da classificação (não testado em rótulos escassos), a separação S contra T (continua fechada) nem qualquer posição contra baseline ou TabPFN em rótulos escassos (nada medido), docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:72-77. A frase de tese proposta continua 'not decided' (docs/reports/2026-10-22-results-consolidated.md:311)."
+  },
+  {
+   "experiments": [
+    "E122",
+    "E123"
+   ],
+   "importance": "appendix",
+   "question_pt": "Quais variantes MNAR têm lacunas que realmente carregam informação sobre o rótulo (portão G2 de C15, que define o conjunto primário P)?",
+   "design_pt": "19 candidatos (F1 probit, F2 dial, F3 dependente do desfecho, F5 controles positivos) × 15 células. Um modelo externo ao TRIDENT, ajustado sobre um preenchimento do missForest, é comparado com e sem um indicador 0/1 por coluna com lacuna; informativo se a queda relativa de log loss for ≥ 0,02 com IC 95% acima de 0. Os três controles F5 precisam passar. E122 leu só as linhas de validação; E123 leu fora do fold, sobre todas as linhas de treino e validação.",
+   "result_pt": "E122: inválido; dois dos três controles positivos (biodeg, kc2) falharam por falta de poder e, pela regra, C15 pararia ali. E123 (desvio escolhido pelo usuário, com parada definitiva se falhasse): válido, 3 de 3 controles; P = 5 variantes: biodeg_probit_60nan, vehicle_probit_60nan e as três variantes dependentes do desfecho com odds 3 (biodeg, kc2, spambase). A família dependente do desfecho é de longe a mais informativa; cinco das sete variantes probit não passam.",
+   "verdict": "invalid (E122); valid (E123)",
+   "key_numbers": [
+    {
+     "label": "E122",
+     "value": "invalid, positive controls failing: biodeg_noise3p0_s2060_60nan, kc2_noise3p0_s2060_60nan -> stop",
+     "source": "docs/tickets/c15-mnar-prediction/01-stage0.md:75"
+    },
+    {
+     "label": "E123",
+     "value": "valid (F5 3 of 3); P = 5 variants",
+     "source": "docs/tickets/c15-mnar-prediction/02-g2-out-of-fold.md:59"
+    }
+   ],
+   "caveat_pt": "O modelo externo do G2 é só instrumento interno; pela regra do próprio estudo os números do portão nunca entram em relatório, página ou tese (docs/tickets/c15-mnar-prediction/01-stage0.md:47). Na página, descrever o portão sem números."
+  },
+  {
+   "experiments": [
+    "E124",
+    "E128",
+    "E125",
+    "E126",
+    "E127"
+   ],
+   "importance": "supporting",
+   "question_pt": "O pipeline consegue ver ausência informativa onde ela é o único sinal (portão G1 de C15)? E, no conjunto de desenvolvimento, o [NULL] (A1) se compara a missForest + indicador (A2)?",
+   "design_pt": "G1 nos três controles F5 (uma coluna de ruído N(0,1) cujas lacunas seguem odds 3 no rótulo): (1) o indicador vence o preenchimento sem indicador em log loss de teste (A2 contra A4/MICE em E124, 5 células; A2 contra A3/missForest em E128, 15 células, NB corrigido); (2) o contraste direto de A1 na coluna de ruído tem o sinal da inclinação. Passa com ambas em ≥ 2 de 3 controles. E124 também rodou A1 contra A2 em 23 variantes de desenvolvimento (descritivo).",
+   "result_pt": "G1 falhou duas vezes, 1 de 3, e C15 parou para sempre (T45 fechada; E125–E127 retirados sem rodar; H2 não decidida). A condição 2 valeu em todos os controles: A1 lê a lacuna informativa com o sinal certo (E128: +1,78, +2,89, +1,68 logit, todos com IC acima de 0). A condição 1 só valeu em spambase, a maior tabela: o indicador do comparador não superou o preenchimento simples em biodeg e kc2. No desenvolvimento, A1 foi inferior a A2 em 5 de 23 variantes, não-inferior em nenhuma e inconclusivo em 18; seu macro-F1 é menor em 17 de 23, inclusive sob MCAR.",
+   "verdict": "G1 failed (E124); G1 failed again (E128); E125–E127 withdrawn unrun",
+   "key_numbers": [
+    {
+     "label": "G1 E124",
+     "value": "Primary (G1): 1 of 3 -> fails",
+     "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:68"
+    },
+    {
+     "label": "G1 E128",
+     "value": "Primary (G1 again): 1 of 3 -> fails",
+     "source": "docs/tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md:57"
+    },
+    {
+     "label": "condição 2, contraste de A1 (E128, biodeg / kc2 / spambase)",
+     "value": "+1.78 [+1.46, +2.09], +2.89 [+0.58, +5.20], +1.68 [+1.46, +1.90] logit",
+     "source": "docs/tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md:60-61"
+    },
+    {
+     "label": "condição 1, A2 − A3 spambase (única que passa)",
+     "value": "-0.0983 [-0.1527, -0.0440]",
+     "source": "docs/tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md:56"
+    },
+    {
+     "label": "A1 contra A2 no desenvolvimento",
+     "value": "A1 is *inferior* on 5 of 23 variants",
+     "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:118"
+    },
+    {
+     "label": "macro-F1 de A1 menor que A2",
+     "value": "lower on 17 of 23 by point estimate",
+     "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:120"
+    }
+   ],
+   "caveat_pt": "O G1 testa o indicador do comparador dentro do TRIDENT, não se as lacunas carregam informação (docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:13-16). A leitura de desenvolvimento é descritiva, seeds 42/7/13, não decide H2. Ameaça não medida em E128: o preenchimento do missForest numa coluna de ruído pode revelar parte da lacuna para A3."
+  },
+  {
+   "experiments": [
+    "E137"
+   ],
+   "importance": "supporting",
+   "question_pt": "A vantagem do TabPFN v2 sobre o TRIDENT na classificação resiste a uma ausência informativa (MNAR) controlada? Um indicador explícito de ausência ajuda o TabPFN?",
+   "design_pt": "TabPFN v2 sem tuning, um ajuste por fold, contexto = split de treino, probabilidades balanceadas como primária; braço native (NaN cru) e braço mask (uma coluna 0/1 por feature anexada). Pareado com as 69 células de A1 de E124 (F0 MCAR, F1 probit, F2 dial probit, F3 dependente do desfecho; seeds 42/7/13 × 5 folds). Primária: interação (braço − A1) no arquivo probit menos o mesmo no irmão MCAR, 7 pares, Holm. Sinal: braço − A1 > 0 = TabPFN à frente; interação < 0 = a vantagem encolhe sob MNAR.",
+   "result_pt": "O TabPFN lidera A1 por +0,0284 sob MCAR, +0,0360 sob MNAR probit e +0,0484 no dial probit; a interação MNAR − MCAR não tem veredito para nenhum braço (native +0,0076 [−0,0014; +0,0166]): a vantagem não encolhe sob MNAR dependente do valor, e se algo cresce. A máscara explícita não acrescenta nada (+0,0003). Só na família dependente do desfecho (F3) a vantagem some (−0,0031 [−0,0087; +0,0025]), com A1 à frente em kc2, mas sem irmão MCAR nesse estudo.",
+   "verdict": "done; primary interaction: no verdict (both arms)",
+   "key_numbers": [
+    {
+     "label": "native − A1, F0 MCAR / F1 probit / F2 / F3",
+     "value": "+0.0284 [+0.0236, +0.0332] | +0.0360 [+0.0277, +0.0443] | +0.0484 [+0.0371, +0.0597] | −0.0031 [−0.0087, +0.0025]",
+     "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:53"
+    },
+    {
+     "label": "interação native MNAR − MCAR",
+     "value": "+0.0076 [−0.0014, +0.0166], Holm 0.182, no verdict",
+     "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:58"
+    },
+    {
+     "label": "interação mask MNAR − MCAR",
+     "value": "+0.0038 [−0.0034, +0.0110], Holm 0.274, no verdict",
+     "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:59"
+    },
+    {
+     "label": "mask − native nos 16 arquivos MNAR",
+     "value": "+0.0003 [−0.0020, +0.0026]",
+     "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:61"
+    }
+   ],
+   "caveat_pt": "TabPFN sem tuning e com um random_state; seu contexto não vê as linhas de validação que A1 usa para escolher a época. A leitura de F3 aqui é descritiva (sem irmão MCAR do mesmo sorteio); E139 faz o teste pareado. O ADR 0032 (TabPFN no nível forte) não muda."
+  },
+  {
+   "experiments": [
+    "E139",
+    "E142"
+   ],
+   "importance": "essential",
+   "question_pt": "Onde a lacuna carrega o rótulo diretamente (MNAR dependente do desfecho), a vantagem do TabPFN v2 sobre o [NULL] do TRIDENT encolhe em relação ao mesmo sorteio MCAR?",
+   "design_pt": "E139: os seis arquivos F3 (biodeg, kc2, spambase; odds 1,5 e 3; sorteio s2060) contra irmãos MCAR com a mesma semente e os mesmos folds; A1 nos irmãos (seeds 42/7/13), TabPFN native e mask nos mesmos pares. Primária: interação (TabPFN − A1) no arquivo F3 menos no irmão, macro-F1, probabilidades balanceadas, Holm sobre os dois braços; shrinks se o IC ficar abaixo de 0. E142 (condicional): odds 3 num sorteio novo (s4848) e seeds de confirmação 1515/2626/3737, mesma regra. Interação < 0 favorece o TRIDENT relativamente.",
+   "result_pt": "E139: a vantagem encolhe nos dois braços, native −0,0451 [−0,0555; −0,0347] e mask −0,0364 [−0,0472; −0,0256], com os 12 intervalos por arquivo abaixo de zero; nos irmãos MCAR o TabPFN lidera por +0,049 / +0,051 / +0,026 (biodeg / kc2 / spambase). E142 confirma em sorteio e seeds novos: native −0,0394 [−0,0513; −0,0275] e mask −0,0278 [−0,0398; −0,0159], também com probabilidades simples. Os dois modelos leem o padrão de lacunas, mas A1 lê mais: ganho próprio (F3 − irmão) de +0,274 / +0,267 / +0,150 para A1 contra +0,236 / +0,215 / +0,121 para o TabPFN. A máscara explícita devolve ao TabPFN só parte da diferença. É a primeira leitura positiva de H2 no projeto, na forma 'contra o TabPFN'.",
+   "verdict": "shrinks (E139); confirmed (E142)",
+   "key_numbers": [
+    {
+     "label": "E139 interação pooled, native",
+     "value": "−0.0451 [−0.0555, −0.0347], NB [−0.069, −0.021], Holm < 0.0001",
+     "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:57"
+    },
+    {
+     "label": "E139 interação pooled, mask",
+     "value": "−0.0364 [−0.0472, −0.0256], NB [−0.061, −0.012], Holm < 0.0001",
+     "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:57"
+    },
+    {
+     "label": "E139 vantagem do TabPFN nos irmãos MCAR",
+     "value": "+0.049 / +0.051 / +0.026 (biodeg / kc2 / spambase)",
+     "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:60"
+    },
+    {
+     "label": "E142 interação pooled balanceada, native",
+     "value": "−0.0394 [−0.0513, −0.0275], NB [−0.067, −0.012], Holm < 0.0001",
+     "source": "docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:25"
+    },
+    {
+     "label": "E142 interação pooled balanceada, mask",
+     "value": "−0.0278 [−0.0398, −0.0159], NB [−0.055, −0.000], Holm 0.0002",
+     "source": "docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:25"
+    },
+    {
+     "label": "E142 ganho próprio F3 − irmão, A1 / TabPFN",
+     "value": "A1 +0.274 / +0.267 / +0.150 (biodeg / kc2 / spambase), TabPFN +0.236 / +0.215 / +0.121",
+     "source": "docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:30-31"
+    }
+   ],
+   "caveat_pt": "A vantagem encolhe, não vira liderança do TRIDENT: o TabPFN ainda fica à frente por até +0,013 em arquivos dependentes do desfecho de biodeg/spambase (docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:35-36). Escopo: três tabelas binárias a 60% de ausência, odds 1,5 e 3, dois sorteios, seis seeds. Esta é uma leitura contra o TabPFN, não o H2 pré-registrado (A1 não-inferior a A2). O ADR 0032 não muda; a frase de tese é decisão do usuário."
+  },
+  {
+   "experiments": [
+    "E152"
+   ],
+   "importance": "appendix",
+   "question_pt": "Nas lacunas naturais da tabela SOFA do MIMIC-IV, onde uma regressão logística ganha com indicadores de lacuna (E150), o pipeline passa no portão G1 de C15?",
+   "design_pt": "mimic-sofa-num_natural (11.082 internações, categorias tornadas numéricas); A1, A2 e A3 × seeds 42/7/13 × 5 folds; regra de E128: (1) A2 − A3 em log loss relativa com IC NB abaixo de 0; (2) contraste de A1 em bilirubin_max abaixo de 0 (sinal da coorte: 22,0% de óbito onde medida, 10,3% onde não).",
+   "result_pt": "G1 falhou: a condição 2 valeu (A1 lê a lacuna de bilirrubina com o sinal da coorte, −0,651 logit [−0,851; −0,452]), a condição 1 não (A2 − A3 = −0,0153 [−0,1066; +0,0760], seeds discordando). Mesma divisão de E128: o [NULL] vê a lacuna, e o indicador do comparador não mostra ganho mensurável sobre o preenchimento sozinho. Macro-F1 descritivo: A1 0,6568, A2 0,6684, A3 0,6664.",
+   "verdict": "G1 failed",
+   "key_numbers": [
+    {
+     "label": "A2 − A3 log loss relativa",
+     "value": "-0.0153 [-0.1066, +0.0760] (plain [-0.0550, +0.0244])",
+     "source": "docs/tickets/mimic/06-sofa-positive-control.md:71"
+    },
+    {
+     "label": "contraste de A1 em bilirubin_max",
+     "value": "-0.651 [-0.851, -0.452] logit",
+     "source": "docs/tickets/mimic/06-sofa-positive-control.md:72"
+    },
+    {
+     "label": "macro-F1 descritivo",
+     "value": "A1 0.6568, A2 0.6684, A3 0.6664",
+     "source": "docs/tickets/mimic/06-sofa-positive-control.md:74"
+    },
+    {
+     "label": "E150, logística com indicadores na SOFA",
+     "value": "+0.0087 [+0.0047, +0.0126] macro-F1, Holm p 0.0012",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:20-21"
+    }
+   ],
+   "caveat_pt": "Pela regra, RQ2 parava no portão também nas lacunas naturais; E155 contornou isso com um portão externo (desvio nomeado)."
+  },
+  {
+   "experiments": [
+    "E155"
+   ],
+   "importance": "supporting",
+   "question_pt": "Com o portão movido para fora do TRIDENT (os dados mostram que a lacuna informa), o [NULL] (A1) é não-inferior a missForest + indicador (A2) em seeds novas? Esse é o H2 pré-registrado.",
+   "design_pt": "Desvio nomeado da parada de E128, com o 'vamos no 1' do usuário. Seeds novas 8282/8383/9292. Frente sintética: sorteios novos de P (s4848: biodeg e vehicle probit0p5, biodeg/kc2/spambase outcome3p0) e seus irmãos MCAR. Frente natural: mimic-sofa-num_natural; mimic-cardio-num_natural como controle negativo. 66 células. Margens: −0,01 de macro-F1 e +2% de log loss relativa; IC NB corrigido a 97,5%, Holm sobre as duas primárias. Secundária: (A1 − A2) em P menos no irmão MCAR; > 0 = A1 ganha terreno onde a lacuna informa.",
+   "result_pt": "As duas primárias ficaram inconclusivas. Em P o macro-F1 agrupado de A1 − A2 foi −0,0269 [−0,0463; −0,0076], 2,7 vezes a margem, e por 0,0024 não leu 'reversed'; a guarda também falha (A1 inferior em vehicle_probit0p5, −0,0982). Na SOFA, +0,0021 [−0,0285; +0,0326]. A secundária leu 'gains', +0,0155 [+0,0018; +0,0291], dividida por mecanismo: nos três arquivos dependentes do desfecho A1 chega à paridade com A2 (+0,041, +0,061, +0,011 de interação), enquanto nos dois probit fica mais atrás que sob MCAR (−0,015, −0,021). O controle negativo cardio também ficou inconclusivo.",
+   "verdict": "inconclusive (both primaries); secondary: gains",
+   "key_numbers": [
+    {
+     "label": "Primária 1, A1 − A2 pooled sobre P (NB 97,5%)",
+     "value": "F1 -0.0269 [-0.0463, -0.0076] (plain [-0.0341, -0.0197])",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:155"
+    },
+    {
+     "label": "distância até 'reversed'",
+     "value": "misses *reversed* by 0.0024",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:123-124"
+    },
+    {
+     "label": "guarda: vehicle_probit0p5_s4848_60nan",
+     "value": "F1 -0.0982 [-0.1682, -0.0282]; LL +0.2194 [+0.0740, +0.3649] -> inferior",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:150"
+    },
+    {
+     "label": "Primária 2, mimic-sofa-num_natural",
+     "value": "F1 +0.0021 [-0.0285, +0.0326]; LL -0.0066 [-0.0925, +0.0793] -> inconclusive",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:160"
+    },
+    {
+     "label": "Secundária pooled (5 pares)",
+     "value": "+0.0155 [+0.0018, +0.0291] (NB [-0.0160, +0.0469]) -> gains",
+     "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:171"
+    }
+   ],
+   "caveat_pt": "O intervalo NB da secundária cruza 0; com a correção das primárias ela leria 'no verdict'. A log loss relativa explode nos arquivos odds 3 (spambase +20,8), por isso a absoluta é impressa ao lado. Nenhuma seed foi acrescentada (sem parada opcional). Antes de rodar, o desenvolvimento já pendia contra A1 (divulgado no ticket)."
+  },
+  {
+   "experiments": [
+    "E156"
+   ],
+   "importance": "supporting",
+   "question_pt": "O padrão da secundária de E155 (A1 alcança A2 onde a lacuna depende do desfecho, não onde depende do valor) se repete em tabelas novas com mecanismo conhecido?",
+   "design_pt": "Tabelas MIMIC-IV completas com ausência injetada a 60% (sorteio 5858): mimic-sofa-semi (10.553 linhas, 6 colunas) e mimic-cardio-semi (10.795 linhas, 8 colunas), cada uma com outcome odds 3, probit 0,5 e MCAR. A1 e A2, seeds novas 2525/4747/6969, 36 células. Primária: (A1 − A2) no outcome menos no MCAR, IC NB 95%; previsto 'gains'. Secundárias: probit − MCAR (previsto não gains) e outcome − probit (previsto gains).",
+   "result_pt": "Não confirmado: toda chamada ficou sem veredito. Primária +0,0069 [−0,0212; +0,0350]; probit − MCAR +0,0059; outcome − probit +0,0010. A premissa sumiu: nessas tabelas A1 não fica atrás de A2 nem sob MCAR (A1 − A2 = +0,0002 e −0,0007), então não há diferença para o mecanismo do desfecho fechar; A1 fica a até 0,007 de A2 nos seis arquivos, com log loss menor nos dois arquivos de desfecho.",
+   "verdict": "not confirmed (every call no verdict)",
+   "key_numbers": [
+    {
+     "label": "Primária pooled (2 tabelas), outcome − MCAR",
+     "value": "+0.0069 [-0.0212, +0.0350] (plain [-0.0053, +0.0191]) -> no verdict",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:130"
+    },
+    {
+     "label": "Secundária 2 pooled, outcome − probit",
+     "value": "+0.0010 [-0.0283, +0.0303] -> no verdict",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:140"
+    },
+    {
+     "label": "A1 − A2 nos arquivos MCAR (sofa / cardio)",
+     "value": "F1 +0.0002 / F1 -0.0007",
+     "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:122,125"
+    }
+   ],
+   "caveat_pt": "O intervalo corrigido tem cerca de ±0,03 de largura, três vezes a faixa de 'holds', então nem 'gains' nem 'holds' eram alcançáveis com efeitos desse tamanho. As duas tabelas compartilham a coorte (não são duas réplicas independentes) e têm poucas colunas. Com E155, a frase de H2 fica só com as primárias inconclusivas de E155."
+  },
+  {
+   "experiments": [
+    "E129",
+    "E130"
+   ],
+   "importance": "appendix",
+   "question_pt": "Antes da primária de C1: as lacunas dos arquivos MNAR carregam informação do rótulo que as dos irmãos MCAR não carregam (G1 de C1)? E o braço T não muda nada fora do pré-treino?",
+   "design_pt": "E129: regressão logística só na matriz 0/1 de lacunas, ajustada no treino e avaliada na validação, AUROC MNAR − MCAR, 15 folds por tabela; passa se o intervalo agrupado ficar acima de 0 e nenhuma tabela for negativa. E130: smoke determinístico de B contra BT em biodeg_probit_60nan, seed 42.",
+   "result_pt": "G1 de C1 passou em 4 de 4 tabelas: as sondas MCAR ficam no acaso (AUROC 0,48–0,60) e as MNAR em 0,60–0,70; diferença agrupada +0,1257 [+0,1071; +0,1444]. O smoke passou: B e BT bit-idênticos nos cinco folds.",
+   "verdict": "G1 passes (E129); passes (E130)",
+   "key_numbers": [
+    {
+     "label": "G1 (C1) AUROC MNAR − MCAR pooled",
+     "value": "+0.1257 [+0.1071, +0.1444]",
+     "source": "docs/tickets/c1-split/01-g1-probe.md:34"
+    },
+    {
+     "label": "maior |P(B) − P(BT)|",
+     "value": "0.00e+00",
+     "source": "docs/tickets/c1-split/02-integrity-smoke.md:26"
+    }
+   ],
+   "caveat_pt": "O padrão de lacunas prevê a classe nesses arquivos, mas acrescenta pouco quando os valores preenchidos já estão no modelo (docs/tickets/c1-split/01-g1-probe.md:38-42)."
+  }
+ ],
+ "tables": [
+  {
+   "id": "label_fraction_curve",
+   "title_pt": "Curva da fração de rótulos: S − B em macro-F1 de teste (positivo favorece o pré-treino)",
+   "columns": [
+    "labels",
+    "pooled S − B",
+    "NB",
+    "p",
+    "Holm",
+    "channel",
+    "files better / worse"
+   ],
+   "rows": [
+    [
+     "10% (E140)",
+     "+0.0290 [+0.0165, +0.0416]",
+     "[+0.0002, +0.0579]",
+     "0.0002",
+     "0.0004",
+     "OPEN",
+     "kc2_60nan (+0.087), vehicle_60nan (+0.044) / none"
+    ],
+    [
+     "25% (E138, beside)",
+     "+0.0218 [+0.0090, +0.0346]",
+     "[−0.0077, +0.0512]",
+     "0.0026",
+     "—",
+     "open",
+     "spambase ×2, vehicle_60nan / none"
+    ],
+    [
+     "50% (E140)",
+     "+0.0157 [+0.0075, +0.0239]",
+     "[−0.0031, +0.0345]",
+     "0.0010",
+     "0.0010",
+     "OPEN",
+     "none / none"
+    ],
+    [
+     "100% (E131, oracle selector)",
+     "+0.004 [−0.008, +0.016]",
+     "",
+     "",
+     "",
+     "closed",
+     ""
+    ]
+   ],
+   "source": "docs/tickets/c1-split/10-label-fraction-curve.md:28-33",
+   "note_pt": "Negrito do original removido. 10%, 25% e 50%: S(f)V − B(f)V com validação escassa (forma implantável), seeds 1515/2626/3737 × 5 folds, agrupado sobre os 8 arquivos de C1 (biodeg, kc2, vehicle, spambase a 60nan, probit e MCAR). 100%: E131, todos os rótulos, validação inteira (seletor oráculo), seeds 42/7/13; o valor coincide com o G2 de E131 só nos quatro arquivos MNAR (docs/tickets/c1-split/03-primary.md:64; metade MCAR +0.0034 [-0.0025, +0.0093], linha 76). Leituras com seletor oráculo nas seeds 42/7/13 estão na tabela e136_gate (10% fechado ali); E144 atribui a diferença a 10% às seeds."
+  },
+  {
+   "id": "e136_gate",
+   "title_pt": "E136: S(f) − B(f) com seletor oráculo (validação inteira), seeds 42/7/13",
+   "columns": [
+    "fraction",
+    "pooled",
+    "NB",
+    "p",
+    "Holm",
+    "channel",
+    "files better / worse"
+   ],
+   "rows": [
+    [
+     "0.10",
+     "+0.0109 [−0.0046, +0.0264]",
+     "[−0.0248, +0.0466]",
+     "0.155",
+     "0.155",
+     "closed",
+     "spambase_probit, vehicle_60nan / biodeg_probit (−0.019)"
+    ],
+    [
+     "0.25",
+     "+0.0158 [+0.0072, +0.0244]",
+     "[−0.0041, +0.0357]",
+     "0.0015",
+     "0.0031",
+     "OPEN",
+     "kc2_probit, vehicle_probit, spambase_probit, spambase_60nan / none"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/08-label-scarce.md:61-64",
+   "note_pt": "Negrito removido. Agrupado sobre os 8 arquivos, 15 réplicas. Custo da escassez ao lado: S10 − S(todos os rótulos) −0.154, S25 − S −0.094 (linha 66)."
+  },
+  {
+   "id": "e144_selector",
+   "title_pt": "E144: efeito do seletor (S(f)V − B(f)V) − (S(f) − B(f)), seis seeds",
+   "columns": [
+    "labels",
+    "selector effect",
+    "NB",
+    "p",
+    "Holm",
+    "verdict",
+    "S − B scarce / oracle (six seeds)"
+   ],
+   "rows": [
+    [
+     "10%",
+     "−0.0056 [−0.0194, +0.0081]",
+     "[−0.0482, +0.0369]",
+     "0.41",
+     "0.57",
+     "not supported",
+     "+0.0172 / +0.0228"
+    ],
+    [
+     "25%",
+     "−0.0056 [−0.0161, +0.0050]",
+     "[−0.0382, +0.0270]",
+     "0.29",
+     "0.57",
+     "not supported",
+     "+0.0142 / +0.0198"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/13-selector-squares.md:56-59",
+   "note_pt": "Seeds 42/7/13 e 1515/2626/3737, 30 réplicas; > 0 significaria que o seletor escasso alarga S − B."
+  },
+  {
+   "id": "e141_groups",
+   "title_pt": "E141: S25V − B25V nas 21 variantes confirmatórias, cinco seeds, por grupo",
+   "columns": [
+    "group",
+    "pooled",
+    "variants better / worse"
+   ],
+   "rows": [
+    [
+     "pooled over 21",
+     "+0.0101 [+0.0045, +0.0157] (NB [−0.0060, +0.0262]) → HOLDS",
+     ""
+    ],
+    [
+     "categorical (credit-g, kr-vs-kp)",
+     "+0.0087 [+0.0003, +0.0171]",
+     "kr-vs-kp_40nan (+0.012) / none"
+    ],
+    [
+     "small numeric (vehicle, biodeg, kc2)",
+     "+0.0080 [−0.0040, +0.0201]",
+     "none / none (biodeg_60nan −0.036 [−0.093, +0.020], no verdict)"
+    ],
+    [
+     "spambase",
+     "+0.0118 [+0.0061, +0.0175]",
+     "all four levels (+0.011 to +0.015) / none"
+    ],
+    [
+     "large (pendigits, letter, electricity)",
+     "+0.0159 [+0.0127, +0.0190]",
+     "all three (+0.010, +0.017, +0.021) / none"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/11-stage2-21-variants.md:36-43",
+   "note_pt": "Seeds 42/7/13/101/202 × 5 folds (25 réplicas por variante), validação escassa, positivo favorece o pré-treino. 8 de 21 variantes melhores, nenhuma pior (linha 45). O ticket não atribui +0.010 e +0.017 a pendigits/letter individualmente; electricity é +0.021 [+0.019, +0.023] (linha 51). Mesmos números no resumo do ADR 0038, linhas 28-32."
+  },
+  {
+   "id": "e143_levels",
+   "title_pt": "E143: S25V − B25V por nível de ausência (arquivos MCAR de biodeg, kc2, vehicle, spambase)",
+   "columns": [
+    "level",
+    "pooled S − B",
+    "NB",
+    "p",
+    "Holm",
+    "channel",
+    "tables better / worse"
+   ],
+   "rows": [
+    [
+     "20nan",
+     "+0.0246 [+0.0048, +0.0445]",
+     "[−0.0210, +0.0702]",
+     "0.0185",
+     "0.0392",
+     "OPEN",
+     "none / none"
+    ],
+    [
+     "40nan",
+     "+0.0234 [+0.0057, +0.0410]",
+     "[−0.0172, +0.0640]",
+     "0.0131",
+     "0.0392",
+     "OPEN",
+     "kc2_40nan (+0.066) / none"
+    ],
+    [
+     "60nan (E138 MCAR half, beside)",
+     "+0.0258 [+0.0083, +0.0432]",
+     "",
+     "",
+     "",
+     "open",
+     "vehicle_60nan (+0.050), spambase_60nan (+0.012) / none"
+    ],
+    [
+     "80nan",
+     "+0.0040 [−0.0164, +0.0245]",
+     "[−0.0430, +0.0511]",
+     "0.6786",
+     "0.6786",
+     "closed",
+     "spambase_80nan (+0.018) / none"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/12-missingness-levels.md:22-27",
+   "note_pt": "Negrito removido. Seeds 1515/2626/3737 × 5 folds, Holm sobre os três níveis novos."
+  },
+  {
+   "id": "e138_per_file",
+   "title_pt": "E138: S25V − B25V por arquivo, seeds novas, validação escassa",
+   "columns": [
+    "file",
+    "S25V − B25V",
+    "flag"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "−0.0015 [−0.0368, +0.0337]",
+     "no difference"
+    ],
+    [
+     "kc2_probit_60nan",
+     "+0.0280 [−0.0262, +0.0823]",
+     "no difference"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "+0.0277 [−0.0044, +0.0598]",
+     "no difference"
+    ],
+    [
+     "spambase_probit_60nan",
+     "+0.0171 [+0.0059, +0.0282]",
+     "better"
+    ],
+    [
+     "biodeg_60nan",
+     "+0.0130 [−0.0196, +0.0456]",
+     "no difference"
+    ],
+    [
+     "kc2_60nan",
+     "+0.0281 [−0.0123, +0.0684]",
+     "no difference"
+    ],
+    [
+     "vehicle_60nan",
+     "+0.0501 [+0.0136, +0.0866]",
+     "better"
+    ],
+    [
+     "spambase_60nan",
+     "+0.0119 [+0.0017, +0.0221]",
+     "better"
+    ],
+    [
+     "pooled (8 files)",
+     "+0.0218 [+0.0090, +0.0346], NB [−0.0077, +0.0512], p 0.0026",
+     "HOLDS"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/09-scarce-confirmation.md:51-61",
+   "note_pt": "Negrito removido. Seeds 1515/2626/3737 × 5 folds; positivo favorece o pré-treino."
+  },
+  {
+   "id": "e131_split_all_labels",
+   "title_pt": "E131: S − T (separação) e S − B (pré-treino) com todos os rótulos, por arquivo",
+   "columns": [
+    "file",
+    "F1 S − T",
+    "call",
+    "S − B F1"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "-0.0031 [-0.0228, +0.0167]",
+     "no difference",
+     "-0.0036"
+    ],
+    [
+     "kc2_probit_60nan",
+     "-0.0106 [-0.0331, +0.0120]",
+     "no difference",
+     "-0.0095"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "+0.0005 [-0.0179, +0.0190]",
+     "no difference",
+     "+0.0169"
+    ],
+    [
+     "spambase_probit_60nan",
+     "-0.0005 [-0.0074, +0.0063]",
+     "equivalent",
+     "+0.0120"
+    ],
+    [
+     "Pooled (MNAR)",
+     "-0.0034 [-0.0110, +0.0042]",
+     "Inconclusive",
+     "+0.0040 [-0.0077, +0.0157] -> fails"
+    ],
+    [
+     "biodeg_60nan",
+     "-0.0000 [-0.0123, +0.0123]",
+     "no difference",
+     "-0.0102"
+    ],
+    [
+     "kc2_60nan",
+     "-0.0111 [-0.0346, +0.0124]",
+     "no difference",
+     "-0.0042"
+    ],
+    [
+     "vehicle_60nan",
+     "+0.0007 [-0.0153, +0.0167]",
+     "no difference",
+     "+0.0206"
+    ],
+    [
+     "spambase_60nan",
+     "+0.0010 [-0.0033, +0.0052]",
+     "equivalent",
+     "+0.0074"
+    ],
+    [
+     "Pooled (MCAR)",
+     "-0.0024 [-0.0107, +0.0060]",
+     "Inconclusive",
+     "+0.0034 [-0.0025, +0.0093] -> fails"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/03-primary.md:58-76",
+   "note_pt": "Seeds 42/7/13 × 5 folds; S − T > 0 favorece a separação [NULL]/[MASK]; S − B > 0 favorece o pré-treino. A última coluna nas linhas Pooled é o G2 de C1."
+  },
+  {
+   "id": "e132_washout",
+   "title_pt": "E132: o que o pré-treino deixa (FP − FR) contra o que o ajuste fino completo acrescenta (S − FP, B − FR)",
+   "columns": [
+    "leitura",
+    "MNAR",
+    "MCAR"
+   ],
+   "rows": [
+    [
+     "Pooled FP − FR",
+     "+0.0092 [+0.0013, +0.0171] (NB [-0.0091, +0.0274])",
+     "+0.0160 [+0.0043, +0.0277] (NB [-0.0109, +0.0429])"
+    ],
+    [
+     "Pooled S − FP",
+     "+0.0979",
+     "+0.1109"
+    ],
+    [
+     "B − FR",
+     "+0.1031",
+     "+0.1235"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/04-channel-probe.md:58-70",
+   "note_pt": "Linhas 58 e 60 (MNAR), 68 e 70 (MCAR). Macro-F1 de teste, 15 réplicas por arquivo, agrupado sobre quatro arquivos."
+  },
+  {
+   "id": "e134_e135_finetuning",
+   "title_pt": "E134 e E135: orçamento e schedule do ajuste fino contra S (150 épocas, cosine_legacy)",
+   "columns": [
+    "arm",
+    "pooled",
+    "NB",
+    "p",
+    "Holm",
+    "verdict",
+    "files better / worse"
+   ],
+   "rows": [
+    [
+     "S30",
+     "−0.0081 [−0.0153, −0.0010]",
+     "[−0.0247, +0.0084]",
+     "0.029",
+     "0.058",
+     "no verdict",
+     "kc2 ×2 better (+0.021, +0.019) / vehicle ×2 worse (−0.041, −0.047)"
+    ],
+    [
+     "S50",
+     "−0.0009 [−0.0049, +0.0031]",
+     "[−0.0100, +0.0083]",
+     "0.644",
+     "0.644",
+     "no verdict",
+     "none / none (spambase ×2 equivalent)"
+    ],
+    [
+     "COS150",
+     "−0.0023 [−0.0054, +0.0009]",
+     "[−0.0095, +0.0050]",
+     "0.143",
+     "0.847",
+     "no verdict",
+     "none / vehicle_probit (−0.012)"
+    ],
+    [
+     "COS50",
+     "−0.0017 [−0.0064, +0.0030]",
+     "[−0.0125, +0.0091]",
+     "0.452",
+     "1.000",
+     "no verdict",
+     "none / none"
+    ],
+    [
+     "WUC150",
+     "−0.0007 [−0.0078, +0.0064]",
+     "[−0.0170, +0.0156]",
+     "0.839",
+     "1.000",
+     "no verdict",
+     "none / none"
+    ],
+    [
+     "WUC50",
+     "+0.0014 [−0.0043, +0.0072]",
+     "[−0.0118, +0.0146]",
+     "0.606",
+     "1.000",
+     "no verdict",
+     "none / none"
+    ],
+    [
+     "PLAT150",
+     "−0.0025 [−0.0059, +0.0009]",
+     "[−0.0103, +0.0053]",
+     "0.141",
+     "0.847",
+     "no verdict",
+     "none / spambase_60nan (−0.004)"
+    ],
+    [
+     "CONST150",
+     "−0.0026 [−0.0062, +0.0011]",
+     "[−0.0110, +0.0058]",
+     "0.150",
+     "0.847",
+     "no verdict",
+     "none / spambase_60nan (−0.004)"
+    ]
+   ],
+   "source": "docs/tickets/c1-split/06-finetuning-budget.md:44-47; docs/tickets/c1-split/07-finetuning-scheduler.md:43-50",
+   "note_pt": "Negrito removido. Braço − S em macro-F1, agrupado sobre os 8 arquivos (15 réplicas); Holm dentro de cada estudo (E134 sobre dois braços, E135 sobre seis). Todos os rótulos."
+  },
+  {
+   "id": "e137_tabpfn_mnar",
+   "title_pt": "E137: vantagem do TabPFN v2 sobre A1 (TabPFN − A1, macro-F1, probabilidades balanceadas) por família de ausência",
+   "columns": [
+    "arm",
+    "F0 MCAR controls (7 files)",
+    "F1 probit MNAR (7)",
+    "F2 probit scales (3)",
+    "F3 outcome-dependent (6)"
+   ],
+   "rows": [
+    [
+     "native",
+     "+0.0284 [+0.0236, +0.0332]",
+     "+0.0360 [+0.0277, +0.0443]",
+     "+0.0484 [+0.0371, +0.0597]",
+     "−0.0031 [−0.0087, +0.0025]"
+    ],
+    [
+     "mask",
+     "+0.0295 [+0.0243, +0.0347]",
+     "+0.0333 [+0.0260, +0.0406]",
+     "+0.0425 [+0.0321, +0.0530]",
+     "+0.0038 [−0.0010, +0.0086]"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:51-54",
+   "note_pt": "Positivo = TabPFN à frente. Seeds 42/7/13 × 5 folds."
+  },
+  {
+   "id": "e137_interaction",
+   "title_pt": "E137: interação (TabPFN − A1) MNAR probit − MCAR, 7 pares de irmãos",
+   "columns": [
+    "arm",
+    "pooled",
+    "NB",
+    "p",
+    "Holm",
+    "verdict"
+   ],
+   "rows": [
+    [
+     "native",
+     "+0.0076 [−0.0014, +0.0166]",
+     "[−0.0131, +0.0283]",
+     "0.091",
+     "0.182",
+     "no verdict"
+    ],
+    [
+     "mask",
+     "+0.0038 [−0.0034, +0.0110]",
+     "[−0.0127, +0.0204]",
+     "0.274",
+     "0.274",
+     "no verdict"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:56-59",
+   "note_pt": "Negrito removido. < 0 = a vantagem encolhe sob MNAR; aqui o sinal pende para o lado oposto."
+  },
+  {
+   "id": "e139_outcome_siblings",
+   "title_pt": "E139: interação (TabPFN − A1) no arquivo dependente do desfecho menos no irmão MCAR de mesma semente (s2060)",
+   "columns": [
+    "file",
+    "native",
+    "mask"
+   ],
+   "rows": [
+    [
+     "biodeg odds 1.5",
+     "−0.054 [−0.078, −0.030]",
+     "−0.041 [−0.067, −0.015]"
+    ],
+    [
+     "biodeg odds 3.0",
+     "−0.041 [−0.061, −0.020]",
+     "−0.045 [−0.065, −0.025]"
+    ],
+    [
+     "kc2 odds 1.5",
+     "−0.070 [−0.095, −0.046]",
+     "−0.050 [−0.079, −0.022]"
+    ],
+    [
+     "kc2 odds 3.0",
+     "−0.067 [−0.094, −0.041]",
+     "−0.046 [−0.072, −0.021]"
+    ],
+    [
+     "spambase odds 1.5",
+     "−0.013 [−0.020, −0.006]",
+     "−0.012 [−0.019, −0.005]"
+    ],
+    [
+     "spambase odds 3.0",
+     "−0.026 [−0.031, −0.020]",
+     "−0.024 [−0.030, −0.019]"
+    ],
+    [
+     "pooled (6 files)",
+     "−0.0451 [−0.0555, −0.0347], NB [−0.069, −0.021], Holm < 0.0001",
+     "−0.0364 [−0.0472, −0.0256], NB [−0.061, −0.012], Holm < 0.0001"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:49-57",
+   "note_pt": "Negrito removido. < 0 = a vantagem do TabPFN encolhe onde a lacuna carrega o rótulo. Probabilidades balanceadas, seeds 42/7/13 × 5 folds."
+  },
+  {
+   "id": "e142_fresh_draw",
+   "title_pt": "E142: a mesma interação no sorteio novo s4848 (odds 3), seeds 1515/2626/3737",
+   "columns": [
+    "",
+    "native",
+    "mask"
+   ],
+   "rows": [
+    [
+     "biodeg",
+     "−0.038 [−0.061, −0.016]",
+     "(per-file lines in the tally)"
+    ],
+    [
+     "kc2",
+     "−0.051 [−0.081, −0.021]",
+     ""
+    ],
+    [
+     "spambase",
+     "−0.029 [−0.035, −0.023]",
+     ""
+    ],
+    [
+     "pooled, balanced (primary)",
+     "−0.0394 [−0.0513, −0.0275], NB [−0.067, −0.012], Holm < 0.0001",
+     "−0.0278 [−0.0398, −0.0159], NB [−0.055, −0.000], Holm 0.0002"
+    ],
+    [
+     "pooled, plain (beside)",
+     "−0.0274 [−0.0482, −0.0067], Holm 0.026",
+     "−0.0219 [−0.0422, −0.0016], Holm 0.036"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:20-26",
+   "note_pt": "Negrito removido. As linhas por arquivo do braço mask não estão no ticket (só no tally)."
+  },
+  {
+   "id": "e155_h2",
+   "title_pt": "E155: H2 pré-registrado, A1 − A2 (positivo favorece o [NULL]), seeds 8282/8383/9292, NB 97,5%",
+   "columns": [
+    "variant",
+    "F1",
+    "LL (relative)",
+    "absolute LL",
+    "call"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p5_s4848_60nan",
+     "-0.0559 [-0.1169, +0.0052]",
+     "+0.1590 [-0.0924, +0.4103]",
+     "+0.0715",
+     "inconclusive"
+    ],
+    [
+     "vehicle_probit0p5_s4848_60nan",
+     "-0.0982 [-0.1682, -0.0282]",
+     "+0.2194 [+0.0740, +0.3649]",
+     "+0.1805",
+     "inferior"
+    ],
+    [
+     "biodeg_outcome3p0_s4848_60nan",
+     "+0.0000 [-0.0112, +0.0113]",
+     "+0.0893 [-1.3899, +1.5685]",
+     "-0.0041",
+     "inconclusive"
+    ],
+    [
+     "kc2_outcome3p0_s4848_60nan",
+     "+0.0197 [-0.0191, +0.0586]",
+     "+0.7412 [-2.6056, +4.0879]",
+     "-0.0160",
+     "inconclusive"
+    ],
+    [
+     "spambase_outcome3p0_s4848_60nan",
+     "-0.0002 [-0.0038, +0.0033]",
+     "+20.7835 [-75.5251, +117.0922]",
+     "+0.0019",
+     "inconclusive"
+    ],
+    [
+     "Pooled over P (5 variants)",
+     "-0.0269 [-0.0463, -0.0076] (plain [-0.0341, -0.0197])",
+     "+4.3985 [-14.8592, +23.6562] (plain [-2.7603, +11.5572])",
+     "",
+     "inconclusive (guard: inferior on vehicle_probit0p5_s4848_60nan)"
+    ],
+    [
+     "mimic-sofa-num_natural (97.5%)",
+     "+0.0021 [-0.0285, +0.0326]",
+     "-0.0066 [-0.0925, +0.0793]",
+     "-0.0043",
+     "inconclusive"
+    ],
+    [
+     "mimic-cardio-num_natural (negative control, 95%)",
+     "+0.0083 [-0.0124, +0.0290]",
+     "-0.0152 [-0.0772, +0.0469]",
+     "-0.0081",
+     "inconclusive"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:149-174",
+   "note_pt": "Margens: −0,01 de macro-F1 e +2% de log loss relativa. A linha cardio é o controle negativo, IC 95%, e não decide nada."
+  },
+  {
+   "id": "e155_secondary",
+   "title_pt": "E155, secundária: (A1 − A2) no arquivo de P menos no irmão MCAR (positivo = A1 ganha terreno)",
+   "columns": [
+    "pair",
+    "interaction (macro-F1)"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p5_s4848_60nan − biodeg_mcar_s4848_60nan",
+     "-0.0154"
+    ],
+    [
+     "vehicle_probit0p5_s4848_60nan − vehicle_mcar_s4848_60nan",
+     "-0.0205"
+    ],
+    [
+     "biodeg_outcome3p0_s4848_60nan − biodeg_mcar_s4848_60nan",
+     "+0.0405"
+    ],
+    [
+     "kc2_outcome3p0_s4848_60nan − kc2_mcar_s4848_60nan",
+     "+0.0613"
+    ],
+    [
+     "spambase_outcome3p0_s4848_60nan − spambase_mcar_s4848_60nan",
+     "+0.0114"
+    ],
+    [
+     "pooled (5 pairs)",
+     "+0.0155 [+0.0018, +0.0291] (NB [-0.0160, +0.0469]) -> gains"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:166-171",
+   "note_pt": "Intervalo simples de 95%; o NB cruza 0. Não se confirmou em E156."
+  },
+  {
+   "id": "e156_contrasts",
+   "title_pt": "E156: contrastes de diferença de diferenças de (A1 − A2) em tabelas MIMIC-IV com mecanismo injetado",
+   "columns": [
+    "contrast",
+    "table",
+    "NB 95%",
+    "plain",
+    "call"
+   ],
+   "rows": [
+    [
+     "Primary: outcome3p0 − mcar",
+     "mimic-sofa-semi",
+     "+0.0061 [-0.0446, +0.0568]",
+     "[-0.0160, +0.0281]",
+     ""
+    ],
+    [
+     "Primary: outcome3p0 − mcar",
+     "mimic-cardio-semi",
+     "+0.0078 [-0.0237, +0.0392]",
+     "[-0.0059, +0.0215]",
+     ""
+    ],
+    [
+     "Primary: outcome3p0 − mcar",
+     "pooled over 2 table(s)",
+     "+0.0069 [-0.0212, +0.0350]",
+     "[-0.0053, +0.0191]",
+     "no verdict"
+    ],
+    [
+     "Secondary 1: probit0p5 − mcar",
+     "mimic-sofa-semi",
+     "+0.0043 [-0.0505, +0.0592]",
+     "[-0.0195, +0.0282]",
+     ""
+    ],
+    [
+     "Secondary 1: probit0p5 − mcar",
+     "mimic-cardio-semi",
+     "+0.0074 [-0.0493, +0.0642]",
+     "[-0.0172, +0.0321]",
+     ""
+    ],
+    [
+     "Secondary 1: probit0p5 − mcar",
+     "pooled over 2 table(s)",
+     "+0.0059 [-0.0191, +0.0309]",
+     "[-0.0050, +0.0168]",
+     "no verdict"
+    ],
+    [
+     "Secondary 2: outcome3p0 − probit0p5",
+     "mimic-sofa-semi",
+     "+0.0017 [-0.0327, +0.0362]",
+     "[-0.0133, +0.0167]",
+     ""
+    ],
+    [
+     "Secondary 2: outcome3p0 − probit0p5",
+     "mimic-cardio-semi",
+     "+0.0003 [-0.0545, +0.0552]",
+     "[-0.0235, +0.0242]",
+     ""
+    ],
+    [
+     "Secondary 2: outcome3p0 − probit0p5",
+     "pooled over 2 table(s)",
+     "+0.0010 [-0.0283, +0.0303]",
+     "[-0.0117, +0.0138]",
+     "no verdict"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:127-140",
+   "note_pt": "Seeds 2525/4747/6969 × 5 folds; positivo = A1 ganha terreno sobre A2 no primeiro mecanismo do contraste."
+  },
+  {
+   "id": "e156_per_file",
+   "title_pt": "E156: A1 − A2 por arquivo (descritivo)",
+   "columns": [
+    "file",
+    "macro-F1",
+    "absolute test log loss"
+   ],
+   "rows": [
+    [
+     "mimic-sofa-semi_outcome3p0_s5858_60nan",
+     "+0.0062",
+     "-0.0119"
+    ],
+    [
+     "mimic-sofa-semi_probit0p5_s5858_60nan",
+     "+0.0045",
+     "-0.0029"
+    ],
+    [
+     "mimic-sofa-semi_mcar_s5858_60nan",
+     "+0.0002",
+     "-0.0039"
+    ],
+    [
+     "mimic-cardio-semi_outcome3p0_s5858_60nan",
+     "+0.0070",
+     "-0.0115"
+    ],
+    [
+     "mimic-cardio-semi_probit0p5_s5858_60nan",
+     "+0.0067",
+     "-0.0057"
+    ],
+    [
+     "mimic-cardio-semi_mcar_s5858_60nan",
+     "-0.0007",
+     "+0.0028"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/12-mechanism-split.md:120-125",
+   "note_pt": "Macro-F1 > 0 favorece A1; log loss < 0 favorece A1."
+  },
+  {
+   "id": "c15_g1_readings",
+   "title_pt": "Portão G1 de C15 nas três leituras: o indicador do comparador (condição 1) contra a leitura da lacuna pelo [NULL] (condição 2)",
+   "columns": [
+    "study",
+    "control / table",
+    "condition 1 (relative test log loss, NB)",
+    "condition 2: A1 contrast (logit, NB)",
+    "result"
+   ],
+   "rows": [
+    [
+     "E124",
+     "biodeg_noise3p0_s2060_60nan",
+     "A2 − A4 -0.0041 [-0.1805, +0.1723]",
+     "+1.778 [+1.072, +2.483]",
+     "fail"
+    ],
+    [
+     "E124",
+     "kc2_noise3p0_s2060_60nan",
+     "A2 − A4 +0.1544 [-0.3787, +0.6875]",
+     "+3.800 [-0.530, +8.129]",
+     "fail"
+    ],
+    [
+     "E124",
+     "spambase_noise3p0_s2060_60nan",
+     "A2 − A4 -0.3278 [-0.3688, -0.2869]",
+     "+1.747 [+1.238, +2.257]",
+     "pass"
+    ],
+    [
+     "E128",
+     "biodeg_noise3p0_s2060_60nan",
+     "A2 − A3 -0.0453 [-0.1862, +0.0957]",
+     "+1.775 [+1.464, +2.087]",
+     "fail"
+    ],
+    [
+     "E128",
+     "kc2_noise3p0_s2060_60nan",
+     "A2 − A3 -0.0208 [-0.1600, +0.1184]",
+     "+2.889 [+0.578, +5.201]",
+     "fail"
+    ],
+    [
+     "E128",
+     "spambase_noise3p0_s2060_60nan",
+     "A2 − A3 -0.0983 [-0.1527, -0.0440]",
+     "+1.680 [+1.457, +1.904]",
+     "pass"
+    ],
+    [
+     "E152",
+     "mimic-sofa-num_natural (bilirubin_max)",
+     "A2 − A3 -0.0153 [-0.1066, +0.0760]",
+     "-0.651 [-0.851, -0.452]",
+     "fails"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:64-66; docs/tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md:54-56; docs/tickets/mimic/06-sofa-positive-control.md:71-76",
+   "note_pt": "Condição 1 passa com IC abaixo de 0. Condição 2: nos controles F5 o sinal esperado é positivo; na SOFA o sinal da coorte é negativo (óbito 22,0% onde a bilirrubina foi medida, 10,3% onde não). E124: 5 células (seed 42); E128 e E152: 15 células. G1 passa com ambas em ≥ 2 de 3 controles (E124/E128) ou ambas na única tabela (E152)."
+  },
+  {
+   "id": "e124_development",
+   "title_pt": "E124, desenvolvimento (descritivo): A1 − A2 por variante, 15 células, seeds 42/7/13",
+   "columns": [
+    "variant",
+    "F1 (NB)",
+    "F1 plain",
+    "LL relative (NB)",
+    "H2 per-variant call"
+   ],
+   "rows": [
+    [
+     "biodeg_20nan",
+     "-0.0164 [-0.0513, +0.0186]",
+     "[-0.0316, -0.0012]",
+     "+0.0847 [-0.0500, +0.2194]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_60nan",
+     "-0.0324 [-0.0769, +0.0121]",
+     "[-0.0517, -0.0131]",
+     "+0.1623 [+0.0539, +0.2707]",
+     "inferior"
+    ],
+    [
+     "kc2_20nan",
+     "+0.0138 [-0.0438, +0.0714]",
+     "[-0.0113, +0.0389]",
+     "-0.0071 [-0.1870, +0.1729]",
+     "inconclusive"
+    ],
+    [
+     "kc2_60nan",
+     "-0.0291 [-0.0955, +0.0373]",
+     "[-0.0580, -0.0003]",
+     "+0.0842 [-0.1239, +0.2923]",
+     "inconclusive"
+    ],
+    [
+     "vehicle_20nan",
+     "-0.0290 [-0.0647, +0.0068]",
+     "[-0.0445, -0.0134]",
+     "+0.1398 [-0.0545, +0.3341]",
+     "inconclusive"
+    ],
+    [
+     "vehicle_60nan",
+     "-0.0930 [-0.1583, -0.0277]",
+     "[-0.1214, -0.0646]",
+     "+0.2617 [+0.1434, +0.3801]",
+     "inferior"
+    ],
+    [
+     "spambase_60nan",
+     "+0.0002 [-0.0126, +0.0131]",
+     "[-0.0053, +0.0058]",
+     "+0.0002 [-0.0715, +0.0720]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_probit_20nan",
+     "-0.0286 [-0.0748, +0.0175]",
+     "[-0.0487, -0.0086]",
+     "+0.1160 [-0.0964, +0.3285]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_probit_60nan",
+     "-0.0508 [-0.1048, +0.0033]",
+     "[-0.0743, -0.0272]",
+     "+0.1455 [+0.0018, +0.2892]",
+     "inconclusive"
+    ],
+    [
+     "kc2_probit_20nan",
+     "+0.0011 [-0.0313, +0.0336]",
+     "[-0.0130, +0.0153]",
+     "-0.0249 [-0.1915, +0.1418]",
+     "inconclusive"
+    ],
+    [
+     "kc2_probit_60nan",
+     "-0.0335 [-0.1118, +0.0449]",
+     "[-0.0676, +0.0006]",
+     "+0.1538 [-0.3553, +0.6629]",
+     "inconclusive"
+    ],
+    [
+     "vehicle_probit_20nan",
+     "-0.0533 [-0.0859, -0.0208]",
+     "[-0.0675, -0.0392]",
+     "+0.3012 [+0.0244, +0.5780]",
+     "inferior"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "-0.0618 [-0.1164, -0.0071]",
+     "[-0.0855, -0.0380]",
+     "+0.2455 [+0.0819, +0.4092]",
+     "inferior"
+    ],
+    [
+     "spambase_probit_60nan",
+     "-0.0014 [-0.0156, +0.0127]",
+     "[-0.0076, +0.0047]",
+     "+0.0254 [-0.0242, +0.0750]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "-0.0431 [-0.0834, -0.0027]",
+     "[-0.0606, -0.0255]",
+     "+0.1412 [+0.0270, +0.2554]",
+     "inferior"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "-0.0267 [-0.0625, +0.0092]",
+     "[-0.0423, -0.0111]",
+     "+0.1414 [+0.0159, +0.2669]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "-0.0144 [-0.0436, +0.0147]",
+     "[-0.0271, -0.0017]",
+     "+0.0301 [-0.1040, +0.1642]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_outcome1p5_s2060_60nan",
+     "+0.0140 [-0.0258, +0.0538]",
+     "[-0.0033, +0.0313]",
+     "-0.0470 [-0.2508, +0.1568]",
+     "inconclusive"
+    ],
+    [
+     "biodeg_outcome3p0_s2060_60nan",
+     "-0.0028 [-0.0132, +0.0077]",
+     "[-0.0073, +0.0018]",
+     "+1.2728 [-1.9594, +4.5049]",
+     "inconclusive"
+    ],
+    [
+     "kc2_outcome1p5_s2060_60nan",
+     "-0.0008 [-0.0422, +0.0405]",
+     "[-0.0188, +0.0171]",
+     "+0.0976 [-0.5223, +0.7175]",
+     "inconclusive"
+    ],
+    [
+     "kc2_outcome3p0_s2060_60nan",
+     "+0.0094 [-0.0226, +0.0413]",
+     "[-0.0045, +0.0233]",
+     "+2.5226 [-8.7781, +13.8232]",
+     "inconclusive"
+    ],
+    [
+     "spambase_outcome1p5_s2060_60nan",
+     "-0.0009 [-0.0100, +0.0082]",
+     "[-0.0048, +0.0030]",
+     "+0.0085 [-0.0760, +0.0930]",
+     "inconclusive"
+    ],
+    [
+     "spambase_outcome3p0_s2060_60nan",
+     "+0.0014 [-0.0009, +0.0038]",
+     "[+0.0004, +0.0025]",
+     "-0.5550 [-1.3609, +0.2510]",
+     "inconclusive"
+    ]
+   ],
+   "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:92-114",
+   "note_pt": "F1 > 0 e LL < 0 favorecem A1 ([NULL]). Descritivo: não decide H2. A log loss relativa é instável nos arquivos odds 3 (A2 chega perto de log loss 0). As linhas _20nan/_60nan sem sufixo são MCAR."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "macro-F1",
+   "definition_pt": "Média do F1 de cada classe no conjunto de teste; maior é melhor. Todas as diferenças desta seção são em macro-F1 de teste, com intervalos t de 95% sobre réplicas pareadas (seed, fold), salvo indicação.",
+   "source": "docs/reports/2026-10-22-results-consolidated.md:280-281"
+  },
+  {
+   "term": "S",
+   "definition_pt": "O classificador do TRIDENT como enviado: pré-treina o encoder em todas as linhas do split de treino (sem rótulos) e depois faz o ajuste fino com rótulos. No pré-treino, uma lacuna real vira [NULL]_j e uma célula escondida para reconstrução vira [MASK]_j.",
+   "source": "docs/plans/2026-11-04-c1-split.md:45; docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:15-16"
+  },
+  {
+   "term": "B",
+   "definition_pt": "O mesmo modelo de S sem pré-treino (EPOCHS_PRE 0): só o ajuste fino. S − B > 0 mede o que o pré-treino acrescenta.",
+   "source": "docs/plans/2026-11-04-c1-split.md:47; docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:15-16"
+  },
+  {
+   "term": "T",
+   "definition_pt": "Token amarrado: no pré-treino, as células escondidas para reconstrução também recebem o [NULL]_j da coluna (PRETRAIN_HOLE_TOKEN null), ou seja, um único tipo de token para lacunas reais e buracos do pré-treino. S − T > 0 favoreceria a separação.",
+   "source": "docs/plans/2026-11-04-c1-split.md:46"
+  },
+  {
+   "term": "BT",
+   "definition_pt": "B passando pelo caminho de código de T; usado só no smoke de integridade (B e BT devem ser bit-idênticos).",
+   "source": "docs/plans/2026-11-04-c1-split.md:48"
+  },
+  {
+   "term": "[NULL] vs [MASK] (a separação de C1)",
+   "definition_pt": "[NULL]_j marca uma lacuna real da coluna j; [MASK]_j marca uma célula que o pré-treino esconde para o modelo reconstruir. A afirmação C1 é que manter os dois separados (S) bate um token único por coluna (T) sob ausência dependente do valor.",
+   "source": "docs/plans/2026-11-04-c1-split.md:10-14"
+  },
+  {
+   "term": "FINETUNE_LABEL_FRACTION f (S10, S25, B10, B25, T10, T25)",
+   "definition_pt": "Fração estratificada f dos rótulos do split de treino que o ajuste fino vê, sorteada uma vez por fold (random_state 0) e igual para os braços pareados; o pré-treino continua vendo todas as linhas. O número no nome é a fração em %. Sem sufixo V, a validação mantém todos os rótulos (seletor oráculo).",
+   "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:53-56; docs/tickets/c1-split/08-label-scarce.md:23-25"
+  },
+  {
+   "term": "Sufixo V (S25V, B25V, S10V, B10V, S50V, B50V)",
+   "definition_pt": "Mesma fração aplicada também ao split de validação (FINETUNE_SCARCE_VALIDATION on). É a forma implantável, a que uma afirmação de tese usa; com a validação inteira é só um diagnóstico.",
+   "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:57-59"
+  },
+  {
+   "term": "Seletor oráculo / seletor escasso",
+   "definition_pt": "A época mantida é a de menor entropia cruzada ponderada por classe na validação. Com a validação inteira (oráculo) usam-se rótulos que um usuário com poucos rótulos não teria; com a validação escassa (sufixo V) a escolha é implantável.",
+   "source": "docs/plans/2026-11-03-c15-mnar-prediction.md:20-21; docs/tickets/c1-split/08-label-scarce.md:48-51"
+  },
+  {
+   "term": "FP / FR",
+   "definition_pt": "FP: encoder pré-treinado e congelado, só a cabeça treina. FR: encoder aleatório congelado (EPOCHS_PRE 0), só a cabeça treina. FP − FR mede o que o pré-treino deixa legível para a cabeça.",
+   "source": "docs/tickets/c1-split/04-channel-probe.md:21-22"
+  },
+  {
+   "term": "LRS / FRZ",
+   "definition_pt": "LRS: encoder a um décimo da taxa da cabeça (0,0001 contra 0,001). FRZ: só a cabeça treina nas primeiras 50 épocas, depois tudo na taxa base.",
+   "source": "docs/tickets/c1-split/05-finetuning-fix.md:19-21"
+  },
+  {
+   "term": "Washout",
+   "definition_pt": "O ajuste fino completo reescreve o encoder e apaga a estrutura que o pré-treino deixou; o mesmo diagnóstico a que o lado de imputação chegou (T28).",
+   "source": "docs/tickets/c1-split/04-channel-probe.md:77-80"
+  },
+  {
+   "term": "embedding_normalized",
+   "definition_pt": "Objetivo de pré-treino imposto por override em todas as células de C1, C15 e do regime escasso (decisão do usuário); o objetivo padrão da classificação não foi testado com rótulos escassos.",
+   "source": "docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:47-48,74"
+  },
+  {
+   "term": "A1",
+   "definition_pt": "Braço de C15: o classificador enviado do TRIDENT; cada lacuna vira o token [NULL] da sua coluna.",
+   "source": "src/training/c15_inputs.py:7"
+  },
+  {
+   "term": "A2",
+   "definition_pt": "Preenchimento do missForest (ajustado nas features do treino do fold) mais um indicador de lacuna lido pelo MLP de valor de cada coluna: (preenchimento, 1) na lacuna, (valor, 0) fora dela; mesmo encoder do TRIDENT. É o comparador 'imputação + indicador'.",
+   "source": "src/training/c15_inputs.py:8-9"
+  },
+  {
+   "term": "A3",
+   "definition_pt": "Preenchimento do missForest sem indicador.",
+   "source": "src/training/c15_inputs.py:10"
+  },
+  {
+   "term": "A4 / A5",
+   "definition_pt": "A4: k-ésimo sorteio MICE (IterativeImputer com sample_posterior), sem indicador; usado no G1 de E124. A5: A1 com o token de uma coluna bloqueado, um modelo nulo; nunca rodou (E127 retirado).",
+   "source": "src/training/c15_inputs.py:11-12"
+  },
+  {
+   "term": "H2 (C15, pré-registrada)",
+   "definition_pt": "Hipótese de que os tokens [NULL] predizem tão bem quanto imputação + indicador sob ausência informativa: não-inferioridade de A1 contra A2 em macro-F1 (margem −0,01) e log loss relativa (margem +2%), agrupada sobre o conjunto primário P. Só foi testada em E155, que ficou inconclusivo.",
+   "source": "docs/plans/2026-11-03-c15-mnar-prediction.md:10-12,34"
+  },
+  {
+   "term": "Leitura de H2 contra o TabPFN (E139/E142)",
+   "definition_pt": "Outra operacionalização: a interação (TabPFN − A1) num arquivo dependente do desfecho menos o mesmo no irmão MCAR de mesma semente. Negativa = a vantagem do TabPFN encolhe onde a lacuna carrega o rótulo, ou seja, o [NULL] ganha terreno relativo.",
+   "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:26-35"
+  },
+  {
+   "term": "G2 (C15)",
+   "definition_pt": "Portão dos dados, fora do TRIDENT: os indicadores de lacuna precisam reduzir em pelo menos 2% a log loss de um modelo externo, com IC 95% acima de 0, e os três controles positivos F5 precisam passar. Define o conjunto primário P.",
+   "source": "docs/tickets/c15-mnar-prediction/02-g2-out-of-fold.md:25-29; docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:18-19"
+  },
+  {
+   "term": "G1 (C15)",
+   "definition_pt": "Portão do pipeline nos controles F5: (1) o indicador vence o preenchimento sem indicador em log loss de teste (A2 contra A4 em E124, A2 contra A3 em E128/E152); (2) o contraste direto de A1 na coluna com lacuna informativa tem o sinal esperado. Passa se as duas valem em pelo menos 2 de 3 controles.",
+   "source": "docs/tickets/c15-mnar-prediction/03-stage1.md:35-42; docs/tickets/c15-mnar-prediction/07-g1-a3-decision-mode.md:37-41"
+  },
+  {
+   "term": "G1 (C1)",
+   "definition_pt": "Portão do canal de desfecho em C1: uma regressão logística só na matriz 0/1 de lacunas, avaliada por AUROC na validação; MNAR − MCAR precisa ficar acima de 0 e nenhuma tabela negativa.",
+   "source": "docs/tickets/c1-split/01-g1-probe.md:13-19"
+  },
+  {
+   "term": "G2 (C1)",
+   "definition_pt": "Portão do canal de pré-treino em C1: S − B agrupado sobre os quatro arquivos MNAR, passa se o IC simples exclui 0.",
+   "source": "docs/tickets/c1-split/03-primary.md:34"
+  },
+  {
+   "term": "P (conjunto primário de C15)",
+   "definition_pt": "As 5 variantes em que a lacuna carrega sinal pelo G2: biodeg_probit_60nan, vehicle_probit_60nan e as três variantes dependentes do desfecho com odds 3 (biodeg, kc2, spambase, sorteio s2060). E155 usou sorteios novos s4848 (probit com inclinação 0,5).",
+   "source": "docs/tickets/c15-mnar-prediction/02-g2-out-of-fold.md:59; docs/tickets/c15-mnar-prediction/11-h2-external-gate.md:47-49"
+  },
+  {
+   "term": "Famílias F0, F1, F2, F3, F5",
+   "definition_pt": "F0: controles MCAR (biodeg/kc2/vehicle a 20 e 60nan, spambase a 60nan). F1: seus irmãos MNAR probit (auto-mascaramento). F2: dial do probit em biodeg (inclinações 0,25/1/2). F3: MNAR dependente do desfecho (odds 1,5 e 3). F5: controle positivo, o arquivo MCAR mais uma coluna de ruído N(0,1) cujas lacunas seguem odds 3 no rótulo (sua única fonte de sinal).",
+   "source": "docs/tickets/c15-mnar-prediction/08-tabpfn-arm.md:25-27; docs/tickets/c15-mnar-prediction/01-stage0.md:15-22"
+  },
+  {
+   "term": "MNAR probit (dependente do valor, auto-mascaramento)",
+   "definition_pt": "Cada coluna perde sua cota MCAR de células com pesos Φ(inclinação × z), em que z é o valor padronizado da própria célula: valores altos somem mais. A chance de faltar depende do valor escondido, não do rótulo.",
+   "source": "datasets/mnar_family.py:25-27; docs/EXPERIMENTATION_LOG.md:1623-1624"
+  },
+  {
+   "term": "MNAR dependente do desfecho (F3, outcome)",
+   "definition_pt": "Cada coluna perde a cota MCAR, mas as linhas da classe 1 perdem células odds vezes mais facilmente; a lacuna carrega o rótulo diretamente. A odds 3 e 60% de ausência, a taxa realizada de ausência por classe (0/1) é 0,47/0,85 em biodeg, 0,52/0,90 em kc2 e 0,45/0,83 em spambase.",
+   "source": "datasets/mnar_family.py:14-16; docs/tickets/c15-mnar-prediction/01-stage0.md:17-20"
+  },
+  {
+   "term": "Irmão MCAR de mesma semente",
+   "definition_pt": "Arquivo MCAR gerado com os mesmos fluxos aleatórios por coluna e os mesmos folds do arquivo MNAR, o que permite ler a interação pareada (efeito sob MNAR menos efeito sob MCAR).",
+   "source": "docs/tickets/c15-mnar-prediction/09-h2-outcome-siblings.md:9-12"
+  },
+  {
+   "term": "Nadeau–Bengio (NB)",
+   "definition_pt": "Correção da variância para folds de validação cruzada sobrepostos: variância × (1/15 + 0,286) com 15 réplicas. Impressa ao lado nos estudos de C1 e do regime escasso; é a regra de decisão em C15 (E124, E128, E155, E156).",
+   "source": "docs/tickets/c1-split/03-primary.md:32-33"
+  },
+  {
+   "term": "Holm",
+   "definition_pt": "Correção para vários testes na mesma família (por exemplo, as duas frações de rótulos de E136/E140, os três níveis de E143, os dois braços do TabPFN).",
+   "source": "docs/tickets/c1-split/08-label-scarce.md:36-38"
+  },
+  {
+   "term": "cosine_legacy",
+   "definition_pt": "O schedule de taxa de aprendizado do ajuste fino pré-ADR 0003 (dente de serra com período de EPOCH_FINE passos), mantido como default da classificação depois de E135.",
+   "source": "docs/tickets/c1-split/08-label-scarce.md:29-32; docs/tickets/c1-split/07-finetuning-scheduler.md:63-66"
+  },
+  {
+   "term": "C15 e C1",
+   "definition_pt": "Duas afirmações do protocolo de tese. C15: os tokens [NULL] predizem tão bem quanto imputação + indicador sob ausência informativa (H2). C1: a separação [NULL]/[MASK] ganha seu lugar na classificação. Tarefas T45 (C15) e T46 (C1); T47 é o regime escasso e T48 o TabPFN com irmãos MCAR.",
+   "source": "docs/plans/2026-11-03-c15-mnar-prediction.md:10-12; docs/plans/2026-11-04-c1-split.md:10-14"
+  }
+ ],
+ "missing": [
+  "Números por variante das 21 variantes de E141: o ticket dá só os grupos, os nomes das 8 melhores, alguns valores (spambase +0.011 a +0.015, as grandes +0.010/+0.017/+0.021 sem atribuição exceto electricity +0.021, kr-vs-kp_40nan +0.012) e biodeg_60nan −0.036 [−0.093, +0.020] (docs/tickets/c1-split/11-stage2-21-variants.md:38-51).",
+  "Linhas por arquivo do braço mask em E142: o ticket diz '(per-file lines in the tally)' sem os valores (docs/tickets/c15-mnar-prediction/10-h2-fresh-draws.md:22).",
+  "Nível de TabPFN − A1 por arquivo dependente do desfecho no sorteio de confirmação s4848: o ticket diz só 'TabPFN still ahead by up to +0.013 on biodeg/spambase outcome files' (10-h2-fresh-draws.md:35-36); a redação proposta no relatório consolidado fala em '−0,013 e +0,005 por tabela no sorteio de confirmação' (docs/reports/2026-10-22-results-consolidated.md:324), o que não bate com o ticket. Em E139 (s2060) o ticket dá −0.005 a +0.013 (09-h2-outcome-siblings.md:61).",
+  "Macro-F1 absoluto de S e B nos regimes escassos (os tickets só dão diferenças) e macro-F1 absoluto de A1 e TabPFN em E137/E139/E142 (só diferenças); o único nível absoluto nesta seção é o de E152 (A1 0.6568, A2 0.6684, A3 0.6664).",
+  "Nenhum leitor nem figura para E122–E156 na pasta docs/reports/2026-10-27-reuniao-orientadora/ (construída em 2026-11-03); o grep por E136–E142 e 'scarce' não encontrou nada lá.",
+  "Nenhum baseline nem TabPFN foi rodado com rótulos escassos (ADR 0038:49,77); nenhuma posição externa do regime escasso existe.",
+  "O objetivo de pré-treino padrão da classificação nunca foi testado com rótulos escassos (ADR 0038:74).",
+  "Frases de tese para o regime escasso e para H2/TabPFN: propostas em 2026-11-05 e marcadas 'not decided' (docs/reports/2026-10-22-results-consolidated.md:311); não achei registro de decisão posterior.",
+  "H2.2, H2-c2 e H2b nunca rodaram (E125–E127 retirados sem rodar, docs/EXPERIMENTATION_LOG.md:164-166).",
+  "Os números do portão G2 (E122, E123 e o G2 de E156) existem nos tickets, mas não podem ir para a página (instrumento interno, docs/tickets/c15-mnar-prediction/01-stage0.md:47); por isso não estão em key_numbers."
+ ],
+ "do_not_claim": [
+  "Não citar os números do portão G2 (por exemplo, as quedas de +0.76 a +0.85 na família dependente do desfecho, ou +7.7% e +21.9% em E156) nem nomear o modelo externo do portão: pela regra do próprio C15, os números do portão nunca entram em relatório, página ou tese (docs/tickets/c15-mnar-prediction/01-stage0.md:47; docs/plans/2026-11-03-c15-mnar-prediction.md:32-33).",
+  "'H2 foi confirmada / o [NULL] é não-inferior a missForest + indicador': o H2 pré-registrado só foi testado em E155 e ficou inconclusivo nas duas primárias, pendendo contra A1 (pooled −0.0269, guarda inferior em vehicle_probit0p5); E139/E142 medem a vantagem do TabPFN, não A1 contra A2.",
+  "'O [NULL] é melhor que imputação + indicador': no desenvolvimento A1 foi inferior em 5 de 23 variantes e não-inferior em nenhuma, com macro-F1 menor em 17 de 23, inclusive sob MCAR (docs/tickets/c15-mnar-prediction/03-stage1.md:118-121).",
+  "'O TRIDENT supera ou empata com o TabPFN v2 sob MNAR': sob MNAR probit a vantagem do TabPFN fica (+0.0360, interação sem veredito, E137); sob MNAR dependente do desfecho ela encolhe, mas 'a vantagem some, sem virar liderança do TRIDENT' (docs/reports/2026-10-22-results-consolidated.md:324-325), e o TabPFN ainda fica à frente por até +0.013 em alguns arquivos (10-h2-fresh-draws.md:35-36).",
+  "'A vantagem do TabPFN encolhe sob MNAR' em geral: só sob MNAR dependente do desfecho; sob MNAR dependente do valor a interação não tem veredito e pende para o lado oposto (E137).",
+  "'O TabPFN não lê o padrão de lacunas': os dois modelos ganham com lacunas que carregam o rótulo (TabPFN +0.121 a +0.236 em E142); A1 lê de 0.03 a 0.05 a mais.",
+  "'Manter [NULL] separado de [MASK] ajuda a classificação': E131 inconclusivo com todos os rótulos; em E136, onde o canal abre, S − T é inconclusivo sob MNAR e T fica à frente sob MCAR; o ADR 0038 mantém a separação fechada (docs/adr/0038-label-scarce-fine-tuning-as-a-documented-regime.md:75-76).",
+  "'O pré-treino melhora a classificação' sem qualificação: com todos os rótulos (regime padrão) S − B = +0.004, fechado (E131; também E71 e E118 citados no ADR 0038:10-11).",
+  "'Com rótulos escassos o TRIDENT supera baselines ou o TabPFN': o contraste é interno, S contra B; nada foi medido contra baseline ou TabPFN com rótulos escassos (ADR 0038:49,77).",
+  "'O ganho com rótulos escassos vale para o pré-treino padrão do TRIDENT': toda célula usou embedding_normalized; o objetivo padrão não foi testado (ADR 0038:47-48,74).",
+  "'O ganho em E141/E138 sobrevive à correção de Nadeau–Bengio': o intervalo NB cruza zero nos dois (docs/tickets/c1-split/11-stage2-21-variants.md:52-53; 09-scarce-confirmation.md:61); a regra pré-registrada é o intervalo simples, e a frase precisa carregar a ressalva (ADR 0038:81-82).",
+  "'O ganho com rótulos escassos vale nas tabelas pequenas': grupo de numéricas pequenas +0.0080 [−0.0040, +0.0201], indecidido.",
+  "'O ganho do pré-treino cresce com a ausência': é plano de 20 a 60nan (+0.023 a +0.026) e fecha a 80nan (E143).",
+  "'O pré-treino compensa a falta de rótulos': o custo da escassez (S25 − S = −0.094, S10 − S = −0.154) é muito maior que o ganho do pré-treino (+0.016 a +0.03) (docs/tickets/c1-split/08-label-scarce.md:66).",
+  "Uma única leitura para 10% dos rótulos: E136 leu fechado (seeds 42/7/13, seletor oráculo) e E140 aberto (seeds 1515/2626/3737, seletor escasso); as duas ficam como escritas e E144 atribui a diferença às seeds.",
+  "'O seletor escasso explica parte do ganho': E144 not supported; a hipótese de E140 foi retirada.",
+  "'Uma correção do ajuste fino pode recuperar no máximo +0.009': esse valor de E132 é um piso (as cabeças congeladas não tinham convergido), não um teto (docs/tickets/c1-split/04-channel-probe.md:102-103).",
+  "'A secundária de E155 mostra que o [NULL] fecha a diferença onde a lacuna depende do desfecho': o intervalo NB dela cruza 0, e E156 não confirmou o padrão em tabelas novas (todas as chamadas no verdict).",
+  "'H2 holds' (redação de docs/TASKS.md:875): o veredito do ticket de E142 é 'shrinks' / 'confirmed', e diz respeito à vantagem do TabPFN, não ao H2 pré-registrado.",
+  "'No MIMIC-IV o [NULL] usa a lacuna melhor que o indicador': E152 G1 failed, E155 na SOFA inconclusive, E156 com A1 e A2 em paridade e sem veredito.",
+  "'C15 confirmou ou refutou H2': C15 parou no portão G1 duas vezes com H2 'undecided' (docs/EXPERIMENTATION_LOG.md:167); o teste posterior (E155) é um desvio nomeado e ficou inconclusivo."
+ ],
+ "figure_ideas": [
+  "Curva da fração de rótulos: eixo x 10% / 25% / 50% / 100%, eixo y S − B em macro-F1 com IC 95% simples (e o NB como barra mais fina); o ponto de 100% em outra marca (E131, seletor oráculo, só os arquivos MNAR); linha em zero. Fonte: tabela label_fraction_curve.",
+  "Barras por nível de ausência (E143): 20nan / 40nan / 60nan (E138 MCAR) / 80nan, S25V − B25V com IC; destacar que 80nan fecha.",
+  "Forest plot de E141: pooled sobre 21 e os quatro grupos, com IC simples e o NB pooled ao lado, linha em zero.",
+  "Washout em escala comum (E132): FP − FR (+0.0092) ao lado de S − FP (+0.0979) e B − FR (+0.1031), para mostrar a ordem de grandeza; opcionalmente a figura existente docs/tickets/c1-split/figures/e132_loss_curves.png (overfitting do ajuste fino depois da época ~20).",
+  "Vantagem do TabPFN sobre A1 por família (E137): barras F0 MCAR / F1 probit / F2 dial / F3 desfecho, mostrando que só F3 fica perto de zero; ao lado, o forest das interações por arquivo de E139 e os pooled de E142.",
+  "Diagrama dos braços: S / T / B (o que o pré-treino vê numa lacuna e num buraco) e A1 / A2 / A3 (como a lacuna chega ao encoder).",
+  "Fluxograma de C15: G2 (E122 inválido, E123 válido) → G1 falha duas vezes (E124, E128), C15 para → portão externo → E155 inconclusivo → E156 não confirmado; ramo paralelo com o TabPFN (E137 → E139 → E142). Sem números do G2.",
+  "Tabela-semáforo dos portões G1 (c15_g1_readings): condição 2 sempre verde (o [NULL] lê a lacuna), condição 1 verde só em spambase."
+ ]
+}

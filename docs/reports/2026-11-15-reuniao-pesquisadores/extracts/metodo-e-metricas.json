@@ -1,0 +1,1360 @@
+{
+ "key": "metodo-e-metricas",
+ "section": "Método e métricas de avaliação",
+ "storyline_pt": "O TRIDENT original é um Transformer para classificação tabular. Cada coluna de uma linha vira um token, com tokens próprios para célula faltante ([NULL]) e célula escondida ([MASK]). Ele pré-treina reconstruindo células mascaradas no espaço de embedding e depois faz fine-tuning de um classificador sobre o token [CLS]. O artigo afirma que trata a falta como sinal aprendível, e não como ruído a imputar. O fork mantém a classificação intacta por padrão e acrescenta uma tarefa de imputação (ADR 0004): no lugar do classificador entra uma etapa de decode, com uma cabeça por coluna que devolve o valor da célula escondida. O default de imputação de hoje veio de estudos pré-registrados contra o default anterior: alvo de pré-treino normalizado e decode de 450 épocas (ADR 0013), lacunas mostradas como [MASK] no decode (ADR 0014), checkpoint escolhido nas lacunas de validação (ADR 0015) e calibração a partir de 40% de falta (ADR 0027). Só pendigits e letter recebem um encoder maior e um batch maior (ADRs 0018, 0036 e 0037). A avaliação usa 9 tabelas, cada uma com variantes `<tabela>_<NN>nan` cortadas da tabela completa `_00nan`, com a mesma contagem de lacunas por coluna. A verdade de cada lacuna induzida é conhecida e só ela é pontuada, no fold de teste, com o `impute_score`: o erro do método como fração do erro do preenchimento por média/moda (menor é melhor, 1,0 = média/moda). Cada comparação é pareada por fold (5 folds × 3 seeds = 15 pares) e tem um único veredito: better/worse exige que o intervalo t de 95% exclua zero e que as três seeds concordem no sinal, e equivalent exige que o intervalo caia dentro de ±1% (a SESOI). Os oponentes formam dois tiers: a barra (média/moda, kNN, HGB, LightGBM) e o tier forte (missForest, condexp, SoftImpute, ICE e, offline, o TabPFN v2). A barra também aparece em versão ajustada só na validação (E42). O modelo é lido em quatro checkpoints: K e KC usam a verdade das lacunas de validação e são limites oráculo, H é a leitura implantável para alegações que precisam transferir, e M é um critério alternativo. Um painel secundário (RMSE, MAE, dispersão, Wasserstein, variação total) checa cada alegação; ele mostrou que algumas vitórias a 80nan são de precisão pontual com preenchimentos encolhidos (E56, E145). As 21 variantes de desenvolvimento são separadas das 15 de confirmação, lidas uma única vez (E44). Os dois servidores não dão o mesmo fold bit a bit, mas o deslocamento ficou dentro da SESOI (E94, E96), então um estudo pode se dividir por seed, desde que cada par fique numa só máquina (ADR 0035).",
+ "findings": [
+  {
+   "experiments": [],
+   "question_pt": "O que é o TRIDENT do artigo e o que ele afirma?",
+   "design_pt": "Leitura do README e de docs/ARCHITECTURE.md; nenhum experimento.",
+   "result_pt": "O TRIDENT é um Transformer para dados tabulares mistos, publicado na BRACIS 2025 (LNCS 16180). O TabularEmbedder transforma cada coluna de uma linha em um token: as categóricas usam uma tabela de embedding por coluna, com os tokens especiais [MASK] e [NULL], e as numéricas usam um MLP por coluna. Um token [CLS] é acrescentado no início, e o encoder faz atenção entre as colunas de uma mesma linha. No estágio 1 (pré-treino auto-supervisionado), células são mascaradas com uma probabilidade reduzida conforme a densidade de nulos da linha, e a saída do transformer em cada [MASK] é regredida por MSE contra o embedding limpo e destacado (sem gradiente) da mesma célula. No estágio 2, o classificador é ajustado de ponta a ponta sobre o [CLS]. A alegação do artigo é tratar a falta como sinal informativo e aprendível, e não como ruído a ser imputado.",
+   "verdict": "descrição (sem veredito)",
+   "key_numbers": [
+    {
+     "label": "dimensão do modelo (DIM)",
+     "value": "128",
+     "source": "src/training/types.py:235"
+    },
+    {
+     "label": "camadas do encoder",
+     "value": "2",
+     "source": "src/training/types.py:238"
+    },
+    {
+     "label": "largura do feed-forward",
+     "value": "32",
+     "source": "src/training/types.py:239"
+    },
+    {
+     "label": "cabeças de atenção",
+     "value": "16",
+     "source": "src/training/types.py:237"
+    },
+    {
+     "label": "épocas de pré-treino / fine-tuning (defaults)",
+     "value": "300 / 150",
+     "source": "src/training/types.py:241-242"
+    },
+    {
+     "label": "batch",
+     "value": "256",
+     "source": "src/training/types.py:244"
+    },
+    {
+     "label": "probabilidade de máscara (PROB_MASCARA)",
+     "value": "0.5",
+     "source": "src/training/types.py:247"
+    }
+   ],
+   "caveat_pt": "O TRIDENT do artigo foi avaliado só sob MCAR (docs/reports/2026-10-27-reuniao-orientadora/page.template.html:205). Os valores de hiperparâmetros ajustados da Table 4 do artigo não estão no repositório (page.template.html:228). Os defaults acima são os da dataclass do fork, não necessariamente os do artigo.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [],
+   "question_pt": "O que o fork acrescentou para avaliar o TRIDENT como imputador?",
+   "design_pt": "ADR 0004 (aceita em 2026-09-10): a flag --task {classification,imputation}, com classification como default e bit a bit idêntica ao que era antes.",
+   "result_pt": "No modo imputação, o pré-treino é mantido e o fine-tuning do classificador é trocado por uma etapa de decode. Ela tem uma cabeça por coluna sobre a saída do encoder. A cabeça categórica é um Linear que pontua só as categorias reais da coluna, então nunca responde [MASK], [NULL] ou o literal \"nan\". A cabeça numérica é um MLP Linear→ReLU→Linear que prevê um escalar no espaço escalado. A perda é a entropia cruzada mais LAMBDA_NUM vezes o MSE, cada termo calculado como média sobre as suas próprias células escondidas. As máscaras são sorteadas de novo a cada época com PROB_MASCARA, e o encoder é ajustado junto, não congelado. A verdade de referência vem do fato de que cada variante `_20nan`…`_80nan` está alinhada célula a célula com a `_00nan`. O treino nunca lê essa tabela irmã.",
+   "verdict": "aceito (ADR 0004)",
+   "key_numbers": [
+    {
+     "label": "decisão 2: o decode substitui o fine-tuning",
+     "value": "A decode stage replaces fine-tuning; pre-training is untouched.",
+     "source": "docs/adr/0004-imputation-decoder-task.md:66"
+    },
+    {
+     "label": "decisão 3: cabeças por coluna",
+     "value": "The decoder is a set of per-column heads on the encoder output.",
+     "source": "docs/adr/0004-imputation-decoder-task.md:73"
+    },
+    {
+     "label": "decisão 4: perda do decode",
+     "value": "categorical cross-entropy and LAMBDA_NUM times the numerical MSE, each first averaged over its own count of scored cells",
+     "source": "docs/adr/0004-imputation-decoder-task.md:85-87"
+    }
+   ],
+   "caveat_pt": "A ADR 0004 dizia originalmente que as lacunas reais entravam como [NULL] e que o decode guardava a época de menor perda de validação. As ADRs 0014 e 0015 mudaram as duas coisas (veja o próximo achado).",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E30",
+    "E32",
+    "E33",
+    "E34",
+    "E35",
+    "E40"
+   ],
+   "question_pt": "Qual é o default de imputação hoje e qual evidência sustenta cada peça?",
+   "design_pt": "Cada peça entrou por um estudo pré-registrado contra o default anterior, nas 21 variantes de desenvolvimento com 3 seeds, e virou um default só da tarefa de imputação (task_defaults), sem mudar a classificação.",
+   "result_pt": "Hoje, task_defaults(\"imputation\") fixa: PRETRAIN_OBJECTIVE embedding_normalized, EPOCHS_DECODE 450, LR_SCHEDULER cosine, DECODE_GAP_TOKEN mask, DECODE_CHECKPOINT induced e DECODE_CALIBRATION auto. (1) ADR 0011/0013: o objetivo original de pré-treino terminava de 4,2x a 7,7x pior que uma constante por coluna em prever os próprios embeddings. O alvo normalizado (layer norm sem parâmetros afins mais um preditor de duas camadas) com decode de 450 épocas (braço M do E30) foi melhor que o default anterior em 9 de 21 variantes e pior em nenhuma. (2) ADR 0014: mostrar as lacunas reais como [MASK] no decode foi melhor em 11 de 21 e pior em nenhuma (E32), e replicou com seeds novas em 13 de 21 (E33). (3) ADR 0015: o checkpoint K, a época cujas lacunas de validação pontuam melhor, foi melhor em 3 variantes, todas a 80nan, e pior em nenhuma (E34). Com as seeds do E32, foi melhor em 6 de 21 (E35). (4) ADR 0027: a partir de 30% de células faltantes medidas, a saída é calibrada nas lacunas de validação (KC). O ganho é pequeno e cresce com a falta.",
+   "verdict": "supported / replicated (E30, E32→E33, E34→E35, E40); adotado como default",
+   "key_numbers": [
+    {
+     "label": "objetivo original vs constante por coluna",
+     "value": "4.2x to 7.7x worse than a per-column constant",
+     "source": "docs/adr/0011-selectable-pretraining-objective.md:18-19"
+    },
+    {
+     "label": "E30: média das 21 variantes, M vs A vs melhor baseline",
+     "value": "0.7745, against 0.7929 for A, and 0.7781 for the best baseline",
+     "source": "docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md:29-31"
+    },
+    {
+     "label": "E30: custo de uma célula de M",
+     "value": "1.65x A's time",
+     "source": "docs/adr/0013-imputation-defaults-from-the-confirmatory-study.md:30-31"
+    },
+    {
+     "label": "E32: [MASK] no decode",
+     "value": "better on 11 variants and worse on none",
+     "source": "docs/adr/0014-gaps-shown-as-mask-in-the-decode-stage.md:26"
+    },
+    {
+     "label": "E32: média das 21 variantes",
+     "value": "0.7745 → 0.7542",
+     "source": "docs/adr/0014-gaps-shown-as-mask-in-the-decode-stage.md:30"
+    },
+    {
+     "label": "E33: replicação",
+     "value": "G better on 13 of 21 (6 of 9 heavy), worse on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:72"
+    },
+    {
+     "label": "E34: checkpoint K",
+     "value": "K better than the headline on 3 variants (credit-g_80nan −0.020, kr-vs-kp_80nan −0.029, spambase_80nan −0.010), worse on none",
+     "source": "docs/adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md:31-32"
+    },
+    {
+     "label": "E35: replicação de K",
+     "value": "K better on 6 of 21 (2 of E34's 3), worse on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:74"
+    },
+    {
+     "label": "E40: KC − K médio por nível",
+     "value": "−0.0009 at 40nan, −0.0037 at 60nan and −0.0059 at 80nan",
+     "source": "docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:44-45"
+    },
+    {
+     "label": "corte do modo auto da calibração",
+     "value": "CALIBRATION_MISSING_RATE = 0.3",
+     "source": "docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:57-58"
+    },
+    {
+     "label": "task defaults de imputação",
+     "value": "embedding_normalized, 450, cosine, mask, induced, auto",
+     "source": "src/training/types.py:200-207"
+    }
+   ],
+   "caveat_pt": "As ADRs 0013, 0014, 0015 e 0027 são exceções deliberadas à regra de que o comportamento antigo fica como default. Um único comando recupera os defaults antigos: --pretrain_objective embedding --decode_epochs 150 --lr_scheduler cosine_legacy --decode_gap_token null --decode_checkpoint loss --decode_calibration none (README.md:170). Todos esses defaults foram escolhidos nas mesmas 21 variantes, e é por isso que existe a confirmação E44. A 20nan a calibração falha (spambase_20nan) e não é aplicada.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E37",
+    "E38",
+    "E101",
+    "E102",
+    "E103",
+    "E104",
+    "E109",
+    "E113",
+    "E116",
+    "E117",
+    "E119",
+    "E121"
+   ],
+   "question_pt": "O que muda nas tabelas grandes (pendigits, letter)?",
+   "design_pt": "Arquivos promovidos por variante, sem mudar código nem o default global. Encoder maior: LAYERS 4, DIM_FEED 256 e ENCODER_FINAL_NORM layer, contra 2 / 32 / none. P600: BATCH 1024, learning rates ×4 e EPOCHS_DECODE 600.",
+   "result_pt": "ADR 0018: o encoder maior ajuda as tabelas grandes, é neutro nas médias e piora as pequenas (E38). Por isso ele só entrou em pendigits_20nan e letter_20nan, e electricity ficou de fora. ADR 0036: P600 em pendigits a 20–60nan e em letter a 20–40nan. ADR 0037: o encoder maior também em pendigits e letter a 40–60nan. Os dois encoders foram estendidos a MAR e MNAR (E119 e E121). A 80nan, o encoder maior deu resultado misto e abaixo da SESOI (E117).",
+   "verdict": "supported / replicated; ADRs 0018, 0036 e 0037 aceitas",
+   "key_numbers": [
+    {
+     "label": "E38, tabelas grandes (≥10,000 linhas)",
+     "value": "−3.0% [−5.1%, −1.0%]",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:31"
+    },
+    {
+     "label": "E38, tabelas pequenas (~520–1,055 linhas)",
+     "value": "+1.9% [+0.5%, +3.2%], 4 worse",
+     "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:33"
+    },
+    {
+     "label": "P600: learning rates resultantes",
+     "value": "0.00136 and 0.004",
+     "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:48"
+    },
+    {
+     "label": "E117 a 80nan",
+     "value": "pendigits −0.39%, letter +0.37%",
+     "source": "docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:36-37"
+    }
+   ],
+   "caveat_pt": "Os contrastes estão em % relativo do impute_score induzido, e negativo favorece o braço novo. Na ADR 0037, os arquivos MAR/MNAR copiam o P600 do irmão MCAR, então o E119 testou o encoder por cima do P600, e não o P600 em si. As células antigas dessas variantes nas tabelas da tese foram refeitas no E108.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [],
+   "question_pt": "Quais dados e variantes são usados, e como a falta é gerada?",
+   "design_pt": "9 tabelas de classificação do artigo. Cada `_NNnan` (20/40/60/80) é gerada a partir da `_00nan`: em cada coluna de atributos, round(n × taxa) linhas são sorteadas uniformemente, sem reposição, e viram NaN. O rótulo nunca é tocado.",
+   "result_pt": "As 9 tabelas vão de 522 linhas (kc2) a 45.312 (electricity). Seis são só numéricas, kr-vs-kp é só categórica e credit-g e electricity são mistas. Das 36 variantes com lacunas (9 tabelas × 4 níveis), 21 formam o conjunto de desenvolvimento, no qual todo default foi escolhido. As outras 15, que nunca informaram uma decisão (pendigits, letter e electricity a 40/60/80nan; vehicle, biodeg e kc2 a 40/80nan), formam a confirmação, lida uma única vez no E44. Os mecanismos MAR (`marf`) e MNAR (`probit`) têm variantes próprias, com a mesma convenção de nome (`<tabela>_marf_60nan`, `<tabela>_probit_60nan`). Eles são tratados na seção de mecanismos.",
+   "verdict": "descrição (protocolo)",
+   "key_numbers": [
+    {
+     "label": "níveis de falta gerados",
+     "value": "NAN_PERCENTAGES = [0.20, 0.40, 0.60, 0.80]",
+     "source": "datasets/generate_splits.py:15"
+    },
+    {
+     "label": "lacunas por coluna",
+     "value": "n_inject = int(round(n_rows * pct))",
+     "source": "datasets/generate_splits.py:36"
+    },
+    {
+     "label": "variantes de desenvolvimento",
+     "value": "the 21 variants",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:56"
+    },
+    {
+     "label": "variantes de confirmação",
+     "value": "E44's 15 variants on 707/808/909, read once",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:57"
+    }
+   ],
+   "caveat_pt": "A confirmação traz novos sorteios e novos níveis de 6 das 9 tabelas, não tabelas novas (docs/tickets/imputation-protocol/04-confirmation.md:55-56). Cada variante MCAR tem um único sorteio fixo; o E62 testou sorteios novos. Os tipos de coluna seguem a declaração do pipeline e não o dtype do pandas: o `day` de electricity é declarado categórico.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [],
+   "question_pt": "Quais células são pontuadas, e com que folds?",
+   "design_pt": "ADR 0004 decisão 5 e src/training/data.py: StratifiedKFold com 5 folds e semente igual à seed da execução. Dentro da parte de treino, uma validação estratificada de 0.1/(1 − 1/k). A pontuação é feita só no fold de teste.",
+   "result_pt": "Há duas populações. (1) Células induzidas: NaN na variante e observadas na `_00nan`. O modelo as recebe como [MASK], e elas são o número principal (headline) onde a tabela irmã existe. (2) Células auto-mascaradas: células observadas escondidas por um sorteio fixo por fold, com EVAL_MASK_RATE 0.2 e semente derivada da seed e do fold. Elas existem em toda variante e servem a buscas e diagnósticos. Células que já são NaN na `_00nan` nunca são pontuadas. Todos os baselines são pontuados exatamente nas mesmas células do modelo (ADR 0007). Uma variante tem 5 folds × 3 seeds, o que dá 15 pares de fold por contraste.",
+   "verdict": "descrição (protocolo)",
+   "key_numbers": [
+    {
+     "label": "folds",
+     "value": "StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=seed)",
+     "source": "src/training/data.py:248"
+    },
+    {
+     "label": "fração de validação",
+     "value": "validation_ratio = 0.1 / (1.0 - 1.0 / cv_folds)",
+     "source": "src/training/data.py:253"
+    },
+    {
+     "label": "taxa da máscara de avaliação",
+     "value": "eval_mask_rate: float = 0.2",
+     "source": "src/training/types.py:321"
+    },
+    {
+     "label": "semente do sorteio fixo",
+     "value": "np.random.seed((seed * 1_000_003 + fold) % (2**32))",
+     "source": "src/training/data.py:203"
+    },
+    {
+     "label": "pares de fold por contraste",
+     "value": "15 fold pairs",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:16"
+    }
+   ],
+   "caveat_pt": "O README diz que as células auto-mascaradas \"rank the fold\" (README.md:344), mas a ADR 0004 e todos os estudos usam as induzidas como população principal. A máscara de avaliação passa pelo mesmo mascaramento dinâmico do pré-treino, então ela esconde menos que 20% das células visíveis quando há muitas lacunas: cerca de 4% de uma linha a 80nan (docs/adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md:21-23).",
+   "importance": "essential"
+  },
+  {
+   "experiments": [],
+   "question_pt": "Como o erro de imputação é medido (impute_score)?",
+   "design_pt": "ADR 0004 decisão 6; src/training/imputation_metrics.py.",
+   "result_pt": "impute_score = w_num × (RMSE do modelo / RMSE do preenchimento pela média) + w_cat × (erro do modelo / erro do preenchimento pela moda). O RMSE é agregado sobre todas as células numéricas pontuadas, no espaço escalado (rmse_num_z). O erro categórico é 1 − acurácia, agregado sobre as células categóricas. w_num e w_cat são as frações de células pontuadas de cada tipo. A média e a moda são aprendidas só no fold de treino e aplicadas às mesmas células. Por construção, o preenchimento por média/moda vale 1,0. Menor é melhor, e 0,75 quer dizer que sobra 75% do erro ingênuo. Numa tabela só numérica o score é a razão de RMSE, e em kr-vs-kp é a razão de erros. Quando a coluna é constante e o erro ingênuo é zero, a razão vira 1 + erro do modelo, em vez de dividir por zero. Cada população também registra mae_num_z, acc_cat e macro_f1_cat (este por coluna), mas eles ficam fora do score.",
+   "verdict": "definição (métrica primária única, ADR 0025 decisão 1)",
+   "key_numbers": [
+    {
+     "label": "fórmula (ADR)",
+     "value": "impute_score = w_num * (rmse_num_z / rmse_num_z_baseline) + w_cat * (err_cat / err_cat_baseline)",
+     "source": "docs/adr/0004-imputation-decoder-task.md:111-112"
+    },
+    {
+     "label": "leitura",
+     "value": "Lower is better; 1.0 means no better than filling the column mean or mode.",
+     "source": "README.md:353"
+    },
+    {
+     "label": "guarda contra divisão por zero",
+     "value": "if naive_error == 0.0: return 1.0 + model_error",
+     "source": "src/training/imputation_metrics.py:115-116"
+    },
+    {
+     "label": "implementação",
+     "value": "score += (len(numerical) / total) * _ratio(metrics[\"rmse_num_z\"], naive_rmse)",
+     "source": "src/training/imputation_metrics.py:52"
+    }
+   ],
+   "caveat_pt": "Um contraste \"A − B\" em impute_score é negativo quando A erra menos. Muitos estudos posteriores (por exemplo, ADRs 0036 e 0037) falam em % relativo à média do oponente. O score mistura a razão numérica e a categórica pelo número de células, por isso a ADR 0025 exige o painel por tipo.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E41",
+    "E42",
+    "E55"
+   ],
+   "question_pt": "Contra quem o modelo é comparado?",
+   "design_pt": "ADRs 0007, 0016, 0017, 0021, 0022 e 0028. Todos os baselines são ajustados só no fold de treino e pontuados nas mesmas células. O melhor de cada tier é escolhido uma vez por execução, pela média de CV.",
+   "result_pt": "Barra (tier fraco): o melhor entre mean_mode, knn5, knn10, hgb e lgbm, registrado ao vivo em toda execução. Tier forte: missForest, condexp, SoftImpute e ICE ao vivo (strong_live) e, desde a ADR 0028, o TabPFN v2 como membro offline (strong). O TabPFN v2 roda coluna a coluna, sem tuning, com tabpfn==9.2.0, contexto de até 10.000 linhas e 8 estimadores. Barra ajustada (E42, ADR 0022): os mesmos imputadores com um orçamento declarado (grades para knn, hgb, lgbm e missForest e, a partir de 60% de falta, encolhimento em direção à média), escolhidos nas lacunas de validação, sem refit, calculados offline. Ela baixou a barra em 17 de 21 variantes, tipicamente de 1% a 3%. A regra D4 diz que uma vitória só conta se K vence a barra e a barra ajustada. Baselines só externos, fora dos tiers: MaCoDE e not-MIWAE.",
+   "verdict": "aceito (ADRs 0021, 0022 e 0028)",
+   "key_numbers": [
+    {
+     "label": "membros da barra",
+     "value": "the best of mean_mode, knn5, knn10, hgb and lgbm since ADR 0017",
+     "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:54"
+    },
+    {
+     "label": "membros do tier forte",
+     "value": "missForest, condexp, SoftImpute, ICE and TabPFN v2",
+     "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:31"
+    },
+    {
+     "label": "configuração do TabPFN",
+     "value": "tabpfn==9.2.0, ModelVersion.V2, 10,000-row context, 8 estimators",
+     "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:32"
+    },
+    {
+     "label": "E55: TabPFN contra o tier forte vivo",
+     "value": "beat the strong tier's best ... on 11 of 15 confirmation variants and was worse on none",
+     "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:14-15"
+    },
+    {
+     "label": "E42: efeito do orçamento na barra",
+     "value": "on 17 of 21 (101/202/303) and 9 of 12 (404/505/606), typically by 1–3%, at most 5.7%",
+     "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:38-39"
+    },
+    {
+     "label": "E42: K contra a barra ajustada vs não ajustada",
+     "value": "13/5/3 and 7/2/1/2 against the tuned bar, against 16/3/2 and 10/1/1 against the untuned one",
+     "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:40-41"
+    },
+    {
+     "label": "custo de uma barra ajustada ao vivo",
+     "value": "about 12 times a fit",
+     "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:53"
+    }
+   ],
+   "caveat_pt": "Toda contagem \"K − strong\" escrita antes da ADR 0028 se refere aos quatro membros vivos, ou seja, é strong_live. Com o TabPFN, K contra o tier forte passa de majoritariamente better para misto (ADR 0028:102-105). A barra ajustada é escolhida na verdade das lacunas de validação, então é um oráculo como K. A barra guardada no store continua a não ajustada.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [],
+   "question_pt": "Como uma comparação é lida (regra de veredito)?",
+   "design_pt": "ADR 0020 (aceita em 2026-10-16), implementada em scripts/experiments/report_common.py.",
+   "result_pt": "Por variante, as diferenças A − B dos 15 pares de fold são agrupadas. better: o intervalo t de 95% fica abaixo de zero e a diferença média de cada seed também é negativa. worse: o simétrico. equivalent: não houve veredito e o intervalo inteiro cabe em ±1% da média do oponente (a SESOI). Se nenhuma dessas vale, a chamada é none, impressa como \"no difference\". As contagens sempre trazem o teste nomeado ao lado. Para alegações de método no conjunto de desenvolvimento, a leitura é entre tabelas: a média por tabela do gap relativo, com teste de Wilcoxon bicaudal sobre as tabelas e Holm entre oponentes. Um intervalo de efeitos aleatórios por seed serve de sensibilidade. Na classificação, a regra é a mesma, com SESOI de 0,01 de macro-F1.",
+   "verdict": "aceito (ADR 0020)",
+   "key_numbers": [
+    {
+     "label": "SESOI de imputação",
+     "value": "±1% of the opponent's mean",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:45"
+    },
+    {
+     "label": "SESOI de classificação",
+     "value": "a SESOI of 0.01 macro-F1",
+     "source": "docs/tickets/classification-step-zero/03-tabpfn-classifier.md:43"
+    },
+    {
+     "label": "intervalo",
+     "value": "t.ppf(0.975, len(pooled) - 1) * pooled.std(ddof=1) / np.sqrt(len(pooled))",
+     "source": "scripts/experiments/report_common.py:242"
+    },
+    {
+     "label": "leitura entre tabelas",
+     "value": "per-table mean relative gap, tested with a two-sided Wilcoxon signed-rank test over the tables, with Holm across opponents",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:49-50"
+    }
+   ],
+   "caveat_pt": "\"none\", \"no difference\" e \"no verdict\" são a mesma chamada. Nos tickets, o veredito de um estudo (supported, refuted, mixed, holds) vem de uma regra de decisão pré-registrada aplicada sobre essas contagens, e não da contagem sozinha. A ADR 0020 aposentou a frase \"19 de 21 pelas médias\", que contava médias de seed.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E34",
+    "E40",
+    "E43",
+    "E44",
+    "E47"
+   ],
+   "question_pt": "Em que checkpoint o modelo é lido (K, H, M, KC)?",
+   "design_pt": "Uma única trajetória de treino por execução, com os quatro checkpoints registrados (--score_checkpoints, --score_calibrated). ADRs 0015, 0024 e 0027.",
+   "result_pt": "K é a época cujas lacunas de validação têm o melhor impute_score contra a tabela completa. É o default e o número das tabelas de benchmark, mas é um limite oráculo, porque em dados reais essa verdade não existe. H é a época de menor perda na máscara fixa de validação, o critério de toda execução antes da ADR 0015. Ela não precisa da tabela completa e é a leitura das alegações que precisam transferir (dados sem tabela completa, implantação, MNAR). M é a época cuja máscara de validação tem o melhor impute_score; nas tabelas numéricas ela é igual a H. KC é K com uma calibração ajustada nas lacunas de validação: cada coluna numérica é encolhida em direção à média de treino por um α ajustado, com prior de 30 células, e um palpite categórico de baixa confiança vira a moda. Ela é a saída default a partir de 40% de falta e também é oráculo. No E43, a leitura 3 foi a escolhida: H é a leitura implantável, e as vitórias a 80nan sobre a média/moda só existem sob K. No E44, H contra a barra foi better em 11, no difference em 2, equivalent em 1 e worse em 1, e K superou H em 5, nunca perdendo. A calibração implantável (HC_m, E47) foi supported pela regra, mas pequena.",
+   "verdict": "aceito (ADRs 0015, 0024 e 0027); E43: reading 3; E47: supported",
+   "key_numbers": [
+    {
+     "label": "E43: K vs M",
+     "value": "K better on 4 (kr-vs-kp_60nan, kr-vs-kp_80nan, credit-g_60nan, biodeg_60nan)",
+     "source": "docs/EXPERIMENTATION_LOG.md:1554"
+    },
+    {
+     "label": "E43: a 80nan",
+     "value": "K beats the bar on kr-vs-kp and spambase; H and M on none",
+     "source": "docs/EXPERIMENTATION_LOG.md:1557"
+    },
+    {
+     "label": "E44: H contra a barra; K − H",
+     "value": "better on 11, no difference on 2, equivalent on 1 and worse on 1. K − H is better on 5 and worse on none",
+     "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:37-39"
+    },
+    {
+     "label": "E47: calibração implantável",
+     "value": "HC_m better than H on 4 of 6 named, worse on none ... at most 0.4% of H, keeping 3–29% of the oracle calibration's gain",
+     "source": "docs/EXPERIMENTATION_LOG.md:86"
+    },
+    {
+     "label": "E44: KC − K",
+     "value": "better on 8 of 15, equivalent on 4, worse on none",
+     "source": "docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:42"
+    }
+   ],
+   "caveat_pt": "\"M\" tem dois sentidos no repositório. Pode ser o checkpoint da máscara de validação (E43, ADR 0024) ou o braço M do E30 (normalizado + decode 450), que E119 e E121 usam como \"o default\". Em execuções antigas com decode_checkpoint=loss (E34 e E35), o headline guardado é H, e não K; o report_common lê cada readout pelo tag e se recusa a adivinhar.",
+   "importance": "essential"
+  },
+  {
+   "experiments": [
+    "E40",
+    "E44",
+    "E56",
+    "E145"
+   ],
+   "question_pt": "Que métricas secundárias checam o impute_score, e o que elas mostraram?",
+   "design_pt": "ADR 0025: um painel offline (scripts/experiments/metric_panel.py), calculado a partir dos ledgers de fold. A alegação vale onde as razões por tipo concordam. Discordâncias distribucionais são registradas como ressalvas, não como reversões. O dist_score (ticket imputation-protocol/51) é uma métrica posterior, separada do painel.",
+   "result_pt": "O painel mede: as razões de RMSE, MAE e RMSE normalizado por coluna em relação à média; as razões de erro e de erro balanceado em relação à moda; o viés absoluto e com sinal por coluna; a dispersão (desvio-padrão dos preenchimentos sobre o das verdades, na média das colunas; 1 é ideal, abaixo de 1 indica encolhimento); a distância de Wasserstein 1-D por coluna numérica; e a variação total das frequências de categoria. No E56 (K contra TabPFN, confirmação), a razão de RMSE concordou com o impute_score nas 15 variantes. O MAE inverteu as vitórias de K em biodeg_40nan e pendigits_40nan. A dispersão de K foi melhor em 14 de 15, então as vitórias do TabPFN a 80nan são de precisão pontual com preenchimentos mais encolhidos. O dist_score combina Wasserstein e variação total como razão contra a média/moda, com os mesmos pesos do impute_score (0 é perfeito, 1 é a média/moda). No E145, escolher o checkpoint pelo dist_score melhorou a distribuição em 12 de 12 variantes, mas piorou o impute_score em 7. A 80nan, o checkpoint escolhido pelo impute_score fica perto do preenchimento por média/moda.",
+   "verdict": "E56: E55's calls stand for point accuracy; E145: done (trade-off), \"improves the distribution at a cost in point accuracy\"",
+   "key_numbers": [
+    {
+     "label": "E56: RMSE vs impute_score",
+     "value": "The RMSE ratio agrees with impute_score on all 15 variants.",
+     "source": "docs/tickets/imputation-protocol/11-tabpfn-panel.md:93"
+    },
+    {
+     "label": "E56: dispersão",
+     "value": "K's fills keep the spread better than TabPFN's on 14 of 15 variants",
+     "source": "docs/tickets/imputation-protocol/11-tabpfn-panel.md:102"
+    },
+    {
+     "label": "E145: B − A dist_score (agrupado)",
+     "value": "-0.1875 [-0.1941, -0.1808]",
+     "source": "docs/tickets/imputation-protocol/51-decode-metric.md:124"
+    },
+    {
+     "label": "E145: B − A impute_score (agrupado)",
+     "value": "+0.0397 [+0.0374, +0.0421]",
+     "source": "docs/tickets/imputation-protocol/51-decode-metric.md:125"
+    },
+    {
+     "label": "E145: credit-g a 80nan, checkpoint por impute_score",
+     "value": "dispersion 0.07, impute_score 1.007",
+     "source": "docs/EXPERIMENTATION_LOG.md:3950"
+    }
+   ],
+   "caveat_pt": "O impute_score continua sendo a única métrica primária (ADR 0025 decisão 1). No painel, a ADR 0025 prefere acurácia balanceada a macro-F1 nas categóricas. O dist_score é marginal, coluna a coluna, e um preenchimento sorteado da distribuição certa pontua bem nele, por isso só é lido ao lado do impute_score. A flag --decode_metric dist_score fica desligada por default.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [],
+   "question_pt": "Qual métrica a classificação usa?",
+   "design_pt": "ADR 0029: a busca de classificação é ranqueada no macro-F1 de validação (antes era ranqueada no de teste). O README lista acurácia, F1 micro e macro, precisão, recall e matriz de confusão.",
+   "result_pt": "A métrica dos estudos de classificação é o macro-F1 (maior é melhor), lido com a mesma regra de veredito e SESOI de 0,01 de macro-F1. A ADR 0029 corrigiu a busca do Optuna, que escolhia trials pelo macro-F1 de teste, para escolher pelo de validação.",
+   "verdict": "aceito (ADR 0029)",
+   "key_numbers": [
+    {
+     "label": "título da ADR 0029",
+     "value": "Classification search ranked on validation macro-F1",
+     "source": "docs/adr/0029-classification-search-ranked-on-validation.md:1"
+    },
+    {
+     "label": "SESOI de classificação",
+     "value": "0.01 macro-F1",
+     "source": "docs/tickets/classification-step-zero/03-tabpfn-classifier.md:43"
+    }
+   ],
+   "caveat_pt": "Os resultados de classificação ficam na seção própria. Esta seção só define a métrica.",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E86",
+    "E94",
+    "E96"
+   ],
+   "question_pt": "Os dois servidores dão o mesmo resultado, e um estudo pode ser dividido entre eles?",
+   "design_pt": "gorgona8 (RTX 3090 Ti) contra medusa1 (duas RTX 5090), no mesmo commit, com MLflow desligado. Contraste por fold: medusa − gorgona8. Imputação em % relativo (SESOI 1%), classificação em macro-F1 (SESOI 0,01).",
+   "result_pt": "Cada máquina é determinística de uma execução para outra, mas as duas dão scores de fold diferentes para a mesma célula. O E86 não chegou a veredito, com diferenças por fold de até 0,164 na imputação. No E94, a classificação foi equivalent, e a imputação não teve veredito por causa da cauda de kc2_20nan. No E96, sem kc2 e com seeds novas, a imputação foi equivalent. A ADR 0035 (aceita em 2026-10-29) permite dividir um estudo entre as máquinas por seed, em qualquer tabela, desde que os dois braços de cada par fiquem na mesma máquina. Cada execução tem o tag `host` (ADR 0034).",
+   "verdict": "E86: no verdict; E94: classification equivalent, imputation no verdict; E96: equivalent",
+   "key_numbers": [
+    {
+     "label": "E86 imputação / classificação",
+     "value": "+0.59% [−0.61%, +1.78%] over 60 fold pairs. Classification: +0.0039 [−0.0066, +0.0145] over 36",
+     "source": "docs/EXPERIMENTATION_LOG.md:2896-2897"
+    },
+    {
+     "label": "E86 maior |diferença| por fold",
+     "value": "0.164 (imputation) and 0.074 (classification)",
+     "source": "docs/EXPERIMENTATION_LOG.md:2898"
+    },
+    {
+     "label": "E94 classificação",
+     "value": "+0.0009 [−0.0056, +0.0073], 150 pairs: equivalent",
+     "source": "docs/adr/0035-studies-may-split-between-servers-by-seed.md:19-20"
+    },
+    {
+     "label": "E94 imputação",
+     "value": "+0.54% [−0.06%, +1.13%] over 350 pairs, no verdict",
+     "source": "docs/adr/0035-studies-may-split-between-servers-by-seed.md:21-22"
+    },
+    {
+     "label": "E96 imputação sem kc2",
+     "value": "+0.04% [−0.30%, +0.38%] over 250 pairs. Equivalent within ±1%.",
+     "source": "docs/adr/0035-studies-may-split-between-servers-by-seed.md:23-24"
+    }
+   ],
+   "caveat_pt": "O kc2 tem caudas pesadas entre máquinas (folds de até +0,51 no E94). Dividir um estudo em kc2 acrescenta ruído, mas não viés. O E96 testou só credit-g, vehicle e biodeg, e a extensão a todas as tabelas foi um julgamento do usuário (ADR 0035:25-26). A fixture de regressão de credit-g roda na CPU porque as máscaras de dropout em CUDA diferem entre modelos de GPU (AGENTS.md).",
+   "importance": "supporting"
+  },
+  {
+   "experiments": [
+    "E32",
+    "E33",
+    "E34",
+    "E35",
+    "E40",
+    "E43",
+    "E44",
+    "E51",
+    "E90",
+    "E174"
+   ],
+   "question_pt": "Quais conjuntos de seeds existem e o que cada um decidiu?",
+   "design_pt": "ADR 0020 decisão 5: desenvolvimento e confirmação são rotulados, e um conjunto de seeds é aposentado depois que decide alguma coisa.",
+   "result_pt": "Desenvolvimento: 42/7/13 (E32, E35), 101/202/303 (E33, E34; as seeds da tabela da tese) e 404/505/606 (E40, 12 variantes a 40nan ou mais; também a família MAR). Confirmação: 707/808/909 (E44, as 15 variantes, lidas uma vez). Outros conjuntos novos: 111/222/333 (E43), 1001/2002/3003 (E51, a 20nan) e 4545/5656/6767 (E90/E95, híbrido). As seeds da tese são 101/202/303, o conjunto primário.",
+   "verdict": "descrição (protocolo)",
+   "key_numbers": [
+    {
+     "label": "seeds de desenvolvimento",
+     "value": "42/7/13, 101/202/303 and 404/505/606",
+     "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:56"
+    },
+    {
+     "label": "seeds da tese",
+     "value": "the thesis table's seeds 101/202/303",
+     "source": "docs/EXPERIMENTATION_LOG.md:4630"
+    },
+    {
+     "label": "E43",
+     "value": "Seeds: 111/222/333, unused.",
+     "source": "docs/EXPERIMENTATION_LOG.md:1536"
+    }
+   ],
+   "caveat_pt": "Cinco variantes rodadas com 42/7/13 usaram uma configuração que não é mais o default (os arquivos removidos pela ADR 0019 e o encoder anterior à ADR 0018). Elas são rotuladas e nunca entram em agregados (ADR 0020:58-59).",
+   "importance": "appendix"
+  }
+ ],
+ "tables": [
+  {
+   "id": "datasets",
+   "title_pt": "As 9 tabelas de benchmark (atributos sem o rótulo)",
+   "columns": [
+    "tabela",
+    "linhas",
+    "categóricas",
+    "numéricas",
+    "tarefa (classes)"
+   ],
+   "rows": [
+    [
+     "credit-g",
+     "1000",
+     "13",
+     "7",
+     "Binary"
+    ],
+    [
+     "kr-vs-kp",
+     "3196",
+     "36",
+     "0",
+     "—"
+    ],
+    [
+     "spambase",
+     "4601",
+     "0",
+     "57",
+     "Binary"
+    ],
+    [
+     "vehicle",
+     "846",
+     "0",
+     "18",
+     "four classes"
+    ],
+    [
+     "kc2",
+     "522",
+     "0",
+     "21",
+     "—"
+    ],
+    [
+     "biodeg",
+     "1055",
+     "0",
+     "41",
+     "Binary"
+    ],
+    [
+     "pendigits",
+     "10992",
+     "0",
+     "16",
+     "10 classes"
+    ],
+    [
+     "letter",
+     "20000",
+     "0",
+     "16",
+     "26 classes"
+    ],
+    [
+     "electricity",
+     "45312",
+     "1",
+     "7",
+     "—"
+    ]
+   ],
+   "source": "docs/wayfinder/imputation-optuna-reduced/map.md:106-116 (linhas, tipos); README.md:475-477 (Binary); docs/tickets/c15-mnar-prediction/02-g2-out-of-fold.md:69 (vehicle); docs/tickets/classification-step-zero/03-tabpfn-classifier.md:18-19 (letter, pendigits)",
+   "note_pt": "Os tipos de coluna seguem a declaração do pipeline: o `day` de electricity é declarado categórico (map.md:118-121). O ticket docs/tickets/0003-training-loop-performance.md:73-74 diz \"35 categorical\" para kr-vs-kp e \"8 numerical\" para electricity, o que difere desta tabela. O shape (3196, 37) em docs/reviews/imputation-critique/12-reproducibility-provenance.md:84 bate com 36 atributos mais o rótulo. O README lista um 'Electrical Grid Stability' binário, mas não ficou confirmado que seja esta tabela. As classes de kr-vs-kp, kc2 e electricity não foram encontradas."
+  },
+  {
+   "id": "variant_grid",
+   "title_pt": "Papel de cada variante <tabela>_<NN>nan (MCAR)",
+   "columns": [
+    "tabela",
+    "00nan",
+    "20nan",
+    "40nan",
+    "60nan",
+    "80nan"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp",
+     "completa",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento"
+    ],
+    [
+     "spambase",
+     "completa",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento"
+    ],
+    [
+     "credit-g",
+     "completa",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento",
+     "desenvolvimento"
+    ],
+    [
+     "vehicle",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "desenvolvimento",
+     "confirmação"
+    ],
+    [
+     "biodeg",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "desenvolvimento",
+     "confirmação"
+    ],
+    [
+     "kc2",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "desenvolvimento",
+     "confirmação"
+    ],
+    [
+     "pendigits",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "confirmação",
+     "confirmação"
+    ],
+    [
+     "letter",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "confirmação",
+     "confirmação"
+    ],
+    [
+     "electricity",
+     "completa",
+     "desenvolvimento",
+     "confirmação",
+     "confirmação",
+     "confirmação"
+    ]
+   ],
+   "source": "docs/reports/2026-10-17-thesis-table-development.md:33-53 (as 21 de desenvolvimento; a mesma lista em docs/reports/2026-10-27-reuniao-orientadora/meeting_figures.json trajectory.complete); docs/tickets/imputation-protocol/04-confirmation.md:48-50 (as 15 de confirmação)",
+   "note_pt": "Esta grade foi montada a partir das duas listas. 21 variantes são de desenvolvimento e 15 de confirmação. A `_00nan` é a tabela completa que fornece a verdade e é a variante sem falta da classificação."
+  },
+  {
+   "id": "adr0018_size",
+   "title_pt": "E38: o encoder maior por tamanho de tabela (impute_score induzido, % relativo; negativo favorece o encoder maior)",
+   "columns": [
+    "group",
+    "variants",
+    "ALL better",
+    "ALL worse",
+    "mean change [95% interval]",
+    "cost a cell"
+   ],
+   "rows": [
+    [
+     "large, ≥10,000 rows",
+     "3",
+     "2",
+     "0",
+     "−3.0% [−5.1%, −1.0%]",
+     "1.84x"
+    ],
+    [
+     "medium, 3,196–4,601 rows",
+     "8",
+     "1",
+     "0",
+     "−0.2% [−0.6%, +0.2%]",
+     "1.95x"
+    ],
+    [
+     "small, ~520–1,055 rows",
+     "10",
+     "0",
+     "4",
+     "+1.9% [+0.5%, +3.2%]",
+     "1.77x"
+    ]
+   ],
+   "source": "docs/adr/0018-bigger-encoder-on-the-large-tables.md:29-33",
+   "note_pt": "Seeds 101/202/303, nas 21 variantes de desenvolvimento."
+  },
+  {
+   "id": "adr0036_p600",
+   "title_pt": "P600 (batch 1024, learning rates ×4, decode de 600 épocas) contra o default; % relativo, 15 pares de fold",
+   "columns": [
+    "variant",
+    "E101 (42/7/13)",
+    "E102 (7878/8989/9090)",
+    "E103 (42/7/13)",
+    "E104 (1357/2468/3579)"
+   ],
+   "rows": [
+    [
+     "pendigits_20nan",
+     "−5.37% better",
+     "−5.84% better",
+     "",
+     "−5.93% better"
+    ],
+    [
+     "pendigits_40nan",
+     "−4.27% better",
+     "−4.21% better",
+     "",
+     "−4.10% better"
+    ],
+    [
+     "pendigits_60nan",
+     "−1.19% better",
+     "−1.18% better",
+     "",
+     "(E109, 2121/3232/4343: −1.34% better)"
+    ],
+    [
+     "pendigits_80nan",
+     "+0.16% equivalent",
+     "+0.42% worse",
+     "",
+     ""
+    ],
+    [
+     "letter_20nan",
+     "",
+     "",
+     "−2.90% better",
+     "−3.25% better"
+    ],
+    [
+     "letter_40nan",
+     "",
+     "",
+     "−1.46% better",
+     "−1.54% better"
+    ],
+    [
+     "letter_60nan",
+     "",
+     "",
+     "−0.13% equivalent",
+     ""
+    ],
+    [
+     "letter_80nan",
+     "",
+     "",
+     "+0.21% worse",
+     ""
+    ],
+    [
+     "electricity, 20–80nan",
+     "",
+     "",
+     "better on none",
+     ""
+    ]
+   ],
+   "source": "docs/adr/0036-a-large-batch-on-pendigits-and-letter-at-20-40nan.md:19-29",
+   "note_pt": "Adotado em pendigits a 20/40/60nan e em letter a 20/40nan."
+  },
+  {
+   "id": "adr0037_encoder",
+   "title_pt": "O encoder maior em pendigits e letter a 40–60nan (BIG − default, % relativo)",
+   "columns": [
+    "variant",
+    "E113 (42/7/13)",
+    "E116 (6161/7171/8181)",
+    "MAR (marf), E119",
+    "MNAR (probit), E119"
+   ],
+   "rows": [
+    [
+     "pendigits_40nan",
+     "−6.04% better",
+     "−6.26% better",
+     "−3.61% better",
+     "−6.89% better"
+    ],
+    [
+     "pendigits_60nan",
+     "−3.14% better",
+     "−3.09% better",
+     "−4.73% better",
+     "−3.55% better"
+    ],
+    [
+     "letter_40nan",
+     "−5.47% better",
+     "−5.45% better",
+     "−5.94% better",
+     "−5.30% better"
+    ],
+    [
+     "letter_60nan",
+     "−1.12% better",
+     "−1.23% better",
+     "−5.06% better",
+     "−1.79% better"
+    ]
+   ],
+   "source": "docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:19-24 e 43-48",
+   "note_pt": "Duas tabelas da mesma ADR juntadas lado a lado, com as células copiadas sem alteração. A 20nan, o E121 deu sob MAR −4.59% (pendigits) e −5.81% (letter), e sob MNAR −5.00% e −6.50% (docs/adr/0018-bigger-encoder-on-the-large-tables.md:55-58)."
+  },
+  {
+   "id": "adr0027_kc",
+   "title_pt": "Evidência da calibração KC contra K, por estudo",
+   "columns": [
+    "study",
+    "seeds",
+    "variants",
+    "KC against K"
+   ],
+   "rows": [
+    [
+     "E34",
+     "101/202/303",
+     "the 21",
+     "never worse at 40nan and above; worse on spambase_20nan"
+    ],
+    [
+     "E35",
+     "42/7/13",
+     "the 21",
+     "the same; worse on spambase_20nan and kr-vs-kp_20nan"
+    ],
+    [
+     "E40",
+     "404/505/606",
+     "12 at 40nan and above",
+     "better on 7 of 12, including all 6 named in advance; worse on none"
+    ],
+    [
+     "E43",
+     "111/222/333",
+     "9 at 60nan and above",
+     "better on E40's six again"
+    ],
+    [
+     "E44",
+     "707/808/909",
+     "the 15 unused",
+     "better on 8 of 15, equivalent on 4, worse on none; better on pendigits_40nan and letter_40nan"
+    ]
+   ],
+   "source": "docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:36-42"
+  },
+  {
+   "id": "cross_machine",
+   "title_pt": "Deslocamento entre servidores (medusa1 − gorgona8, por fold)",
+   "columns": [
+    "estudo",
+    "tarefa",
+    "contraste",
+    "pares",
+    "veredito"
+   ],
+   "rows": [
+    [
+     "E86",
+     "imputação",
+     "+0.59% [−0.61%, +1.78%]",
+     "60",
+     "no verdict"
+    ],
+    [
+     "E86",
+     "classificação",
+     "+0.0039 [−0.0066, +0.0145]",
+     "36",
+     "no verdict"
+    ],
+    [
+     "E94",
+     "classificação",
+     "+0.0009 [−0.0056, +0.0073]",
+     "150",
+     "equivalent"
+    ],
+    [
+     "E94",
+     "imputação",
+     "+0.54% [−0.06%, +1.13%]",
+     "350",
+     "no verdict"
+    ],
+    [
+     "E96",
+     "imputação (sem kc2)",
+     "+0.04% [−0.30%, +0.38%]",
+     "250",
+     "equivalent"
+    ]
+   ],
+   "source": "docs/EXPERIMENTATION_LOG.md:2895-2898 (E86); docs/adr/0035-studies-may-split-between-servers-by-seed.md:19-24 (E94, E96)",
+   "note_pt": "Imputação em % relativo do impute_score (SESOI 1%); classificação em macro-F1 (SESOI 0,01)."
+  },
+  {
+   "id": "e145_dist_score",
+   "title_pt": "E145: checkpoint escolhido por dist_score (B) contra impute_score (A); seeds 42/7/13, 15 réplicas por variante",
+   "columns": [
+    "variant",
+    "B − A dist_score",
+    "B − A impute_score",
+    "A: dist_score / impute_score",
+    "dispersion A → B",
+    "mean kept epoch A → B"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp_40nan",
+     "−0.0410 [−0.0607 −0.0213] better",
+     "+0.0029 [−0.0073 +0.0131] no difference",
+     "0.2801 / 0.7239",
+     "n/a (no numerical column)",
+     "260 → 259"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "−0.1676 [−0.1979 −0.1374] better",
+     "+0.0299 [+0.0237 +0.0360] worse",
+     "0.4211 / 0.8668",
+     "n/a (no numerical column)",
+     "103 → 305"
+    ],
+    [
+     "kr-vs-kp_80nan",
+     "−0.6013 [−0.6552 −0.5474] better",
+     "+0.1581 [+0.1483 +0.1678] worse",
+     "0.8018 / 0.9775",
+     "n/a (no numerical column)",
+     "19 → 286"
+    ],
+    [
+     "spambase_40nan",
+     "−0.0258 [−0.0362 −0.0153] better",
+     "+0.0009 [−0.0025 +0.0043] no difference",
+     "0.5350 / 0.9014",
+     "0.479 → 0.510",
+     "271 → 356"
+    ],
+    [
+     "spambase_60nan",
+     "−0.0742 [−0.1004 −0.0480] better",
+     "+0.0017 [+0.0002 +0.0031] worse",
+     "0.6226 / 0.9414",
+     "0.406 → 0.424",
+     "138 → 338"
+    ],
+    [
+     "spambase_80nan",
+     "−0.2027 [−0.2357 −0.1697] better",
+     "+0.0200 [+0.0160 +0.0240] worse",
+     "0.7526 / 0.9872",
+     "0.264 → 0.448",
+     "56 → 392"
+    ],
+    [
+     "credit-g_40nan",
+     "−0.1525 [−0.1945 −0.1104] better",
+     "+0.0300 [+0.0188 +0.0412] worse",
+     "0.5539 / 0.9209",
+     "0.472 → 0.586",
+     "77 → 267"
+    ],
+    [
+     "credit-g_60nan",
+     "−0.2892 [−0.3607 −0.2178] better",
+     "+0.0739 [+0.0599 +0.0878] worse",
+     "0.6162 / 0.9886",
+     "0.396 → 0.646",
+     "56 → 323"
+    ],
+    [
+     "credit-g_80nan",
+     "−0.6398 [−0.6695 −0.6101] better",
+     "+0.1619 [+0.1519 +0.1719] worse",
+     "0.9222 / 1.0066",
+     "0.074 → 0.758",
+     "10 → 262"
+    ],
+    [
+     "vehicle_60nan",
+     "−0.0227 [−0.0334 −0.0120] better",
+     "+0.0011 [−0.0051 +0.0073] no difference",
+     "0.2307 / 0.6392",
+     "0.828 → 0.856",
+     "219 → 317"
+    ],
+    [
+     "biodeg_60nan",
+     "−0.0069 [−0.0116 −0.0023] better",
+     "−0.0012 [−0.0033 +0.0009] no difference",
+     "0.3195 / 0.7589",
+     "0.743 → 0.748",
+     "333 → 368"
+    ],
+    [
+     "kc2_60nan",
+     "−0.0257 [−0.0412 −0.0102] better",
+     "−0.0022 [−0.0109 +0.0064] no difference",
+     "0.2661 / 0.5750",
+     "0.897 → 0.913",
+     "201 → 343"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/51-decode-metric.md:108-121",
+   "note_pt": "Nas duas métricas, menor é melhor e negativo favorece B. Dispersão: 1 é o ideal. Leitura com --decode_calibration none nos dois braços (K sem calibração)."
+  },
+  {
+   "id": "datasets_tese",
+   "title_pt": "As nove tabelas e as taxas de falta (%) de desenvolvimento e de confirmação",
+   "columns": [
+    "tabela",
+    "linhas",
+    "atributos",
+    "classes",
+    "tipo",
+    "desenvolvimento",
+    "confirmação"
+   ],
+   "rows": [
+    [
+     "kr-vs-kp",
+     "3.196",
+     "36",
+     "2",
+     "categórico",
+     "20, 40, 60, 80",
+     "—"
+    ],
+    [
+     "spambase",
+     "4.601",
+     "57",
+     "2",
+     "numérico",
+     "20, 40, 60, 80",
+     "—"
+    ],
+    [
+     "credit-g",
+     "1.000",
+     "20",
+     "2",
+     "misto",
+     "20, 40, 60, 80",
+     "—"
+    ],
+    [
+     "vehicle",
+     "846",
+     "18",
+     "4",
+     "numérico",
+     "20, 60",
+     "40, 80"
+    ],
+    [
+     "biodeg",
+     "1.055",
+     "41",
+     "2",
+     "numérico",
+     "20, 60",
+     "40, 80"
+    ],
+    [
+     "kc2",
+     "522",
+     "21",
+     "2",
+     "numérico",
+     "20, 60",
+     "40, 80"
+    ],
+    [
+     "pendigits",
+     "10.992",
+     "16",
+     "10",
+     "numérico",
+     "20",
+     "40, 60, 80"
+    ],
+    [
+     "letter",
+     "20.000",
+     "16",
+     "26",
+     "numérico",
+     "20",
+     "40, 60, 80"
+    ],
+    [
+     "electricity",
+     "45.312",
+     "8",
+     "2",
+     "misto",
+     "20",
+     "40, 60, 80"
+    ]
+   ],
+   "source": "/scratch2/diogoneiss/Wiki/dissertacao/capitulos-v2/04-metodologia.tex:192-200 (tab:dados)",
+   "note_pt": "Copiada da tabela tab:dados da dissertação."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "TabularEmbedder",
+   "definition_pt": "Transforma cada coluna de uma linha em um token de dimensão DIM. As categóricas usam uma tabela de embedding própria, com [MASK] e [NULL]; as numéricas usam um MLP próprio. Há também um embedding posicional e um token [CLS]. O encoder faz atenção entre colunas, não entre linhas.",
+   "source": "README.md:43-47; docs/ARCHITECTURE.md:38, 103"
+  },
+  {
+   "term": "[NULL] e [MASK]",
+   "definition_pt": "[NULL] é o token de uma lacuna real da tabela. [MASK] é o token de uma célula observada que foi escondida de propósito: no pré-treino e no decode como tarefa, e na avaliação, onde as lacunas induzidas também entram como [MASK]. Desde a ADR 0014, o decode também mostra as lacunas reais como [MASK].",
+   "source": "docs/adr/0004-imputation-decoder-task.md:95-101; docs/adr/0014-gaps-shown-as-mask-in-the-decode-stage.md:36-41"
+  },
+  {
+   "term": "pré-treino embedding / embedding_normalized",
+   "definition_pt": "embedding: regride a saída do transformer em [MASK] contra o embedding limpo da célula, sem gradiente no alvo, com MSE (o objetivo do artigo e o default da classificação). embedding_normalized: o mesmo alvo, com layer norm sem parâmetros afins e lido por um preditor de duas camadas (Linear, GELU, Linear) que é descartado no fim do estágio; é o default da imputação desde a ADR 0013.",
+   "source": "docs/adr/0011-selectable-pretraining-objective.md:14-16, 43-47"
+  },
+  {
+   "term": "etapa de decode",
+   "definition_pt": "O substituto do fine-tuning na tarefa de imputação. Usa uma cabeça por coluna sobre o mesmo encoder pré-treinado e a perda CE + LAMBDA_NUM × MSE, cada termo como média sobre as suas próprias células escondidas. Tem 450 épocas por default.",
+   "source": "docs/adr/0004-imputation-decoder-task.md:66-94; src/training/types.py:202"
+  },
+  {
+   "term": "variante <tabela>_<NN>nan",
+   "definition_pt": "A tabela com NN% de cada coluna de atributos apagada (20, 40, 60 ou 80), sorteada a partir da `_00nan` completa e alinhada a ela linha a linha. Sob MCAR, round(n × taxa) linhas uniformes por coluna. Off-MCAR, os nomes são `<tabela>_marf_<NN>nan` (MAR) e `<tabela>_probit_<NN>nan` (MNAR).",
+   "source": "datasets/generate_splits.py:26-48; docs/adr/0037-the-bigger-encoder-on-pendigits-and-letter-at-40-60nan.md:41-50"
+  },
+  {
+   "term": "células induzidas (induced)",
+   "definition_pt": "Células NaN na variante e observadas na `_00nan`. O modelo as recebe como [MASK]. São a população principal de todos os resultados, sempre no fold de teste.",
+   "source": "docs/adr/0004-imputation-decoder-task.md:95-102; README.md:345"
+  },
+  {
+   "term": "células auto-mascaradas (masked)",
+   "definition_pt": "Células observadas escondidas por um sorteio fixo por fold (EVAL_MASK_RATE 0.2, passando pelo mascaramento dinâmico). Existem em toda variante, inclusive sem tabela completa, e servem a buscas (ADR 0005/0008) e diagnósticos.",
+   "source": "docs/adr/0004-imputation-decoder-task.md:95-101; src/training/data.py:190-206"
+  },
+  {
+   "term": "impute_score",
+   "definition_pt": "w_num × RMSE_modelo/RMSE_média + w_cat × erro_modelo/erro_moda, com w_* igual à fração de células pontuadas de cada tipo e a média e a moda aprendidas no fold de treino. Menor é melhor; 1,0 equivale ao preenchimento por média/moda. É a única métrica primária.",
+   "source": "docs/adr/0004-imputation-decoder-task.md:106-125; src/training/imputation_metrics.py:31-57"
+  },
+  {
+   "term": "rmse_num_z, mae_num_z, acc_cat, macro_f1_cat",
+   "definition_pt": "Os erros brutos por população: RMSE e MAE agregados no espaço escalado; acurácia categórica agregada; macro-F1 categórico calculado por coluna e depois tirada a média.",
+   "source": "src/training/imputation_metrics.py:73-104"
+  },
+  {
+   "term": "painel secundário (ADR 0025)",
+   "definition_pt": "Calculado offline: razões de RMSE, MAE e normalizada por coluna; razões de erro e de erro balanceado; viés absoluto e com sinal; dispersão (desvio-padrão dos preenchimentos / desvio-padrão das verdades, que denuncia encolhimento para o centro); Wasserstein 1-D (distância entre a distribuição dos preenchimentos e a das verdades, numéricas); variação total das frequências de categoria; impute_score em subconjuntos (twins, outros, linhas com contexto). Uma discordância distribucional é uma ressalva, não uma reversão.",
+   "source": "docs/adr/0025-an-offline-secondary-metric-panel.md:45-69; scripts/experiments/metric_panel.py:16-24"
+  },
+  {
+   "term": "dist_score",
+   "definition_pt": "Score distribucional por coluna: Wasserstein para números e variação total para categorias, cada um como razão contra a distância da média/moda e ponderados como no impute_score (0 é perfeito, 1 é a média/moda). É marginal e lido só ao lado do impute_score. Não faz parte do painel da ADR 0025. Usado como critério de checkpoint no E145 (flag desligada).",
+   "source": "src/training/distribution_metrics.py:1-13"
+  },
+  {
+   "term": "macro-F1 (classificação)",
+   "definition_pt": "A média não ponderada do F1 por classe. Maior é melhor. É a métrica dos estudos de classificação, com SESOI de 0,01, e a busca é ranqueada no macro-F1 de validação (ADR 0029).",
+   "source": "docs/adr/0029-classification-search-ranked-on-validation.md:1; docs/tickets/classification-step-zero/03-tabpfn-classifier.md:43"
+  },
+  {
+   "term": "regra de veredito: better / worse / no difference (none) / equivalent",
+   "definition_pt": "Sobre as diferenças A − B dos 15 pares de fold: better, se o intervalo t de 95% fica abaixo de zero e a média de cada seed também; worse, o simétrico; equivalent, sem veredito e com o intervalo dentro de ±SESOI; caso contrário, none (\"no difference\", sem veredito).",
+   "source": "scripts/experiments/report_common.py:21-23, 236-253"
+  },
+  {
+   "term": "SESOI",
+   "definition_pt": "O menor efeito de interesse: 1% da média do oponente para o impute_score e 0,01 para o macro-F1.",
+   "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:44-46; docs/tickets/classification-step-zero/03-tabpfn-classifier.md:43"
+  },
+  {
+   "term": "leitura entre tabelas (Wilcoxon + Holm)",
+   "definition_pt": "Para alegações de método: a média do gap relativo por tabela, com teste de Wilcoxon bicaudal sobre as 9 tabelas e ajuste de Holm entre os oponentes. As contagens por variante são descritivas.",
+   "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:48-52; scripts/experiments/report_common.py:268-290"
+  },
+  {
+   "term": "a barra (weak tier)",
+   "definition_pt": "O melhor entre mean_mode, knn5, knn10, hgb e lgbm, escolhido uma vez por execução pela média de CV e registrado ao vivo (baseline/best, gap_to_best_baseline).",
+   "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:54, 68-70; README.md:355"
+  },
+  {
+   "term": "tier forte (strong / strong_live)",
+   "definition_pt": "strong_live: o melhor entre missForest, condexp, SoftImpute e ICE, os quatro registrados ao vivo. strong: o mesmo, mais o TabPFN v2 offline onde o estudo o rodou (ADR 0028).",
+   "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:71; docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:31-42"
+  },
+  {
+   "term": "barra ajustada (tuned bar, E42)",
+   "definition_pt": "A melhor família do tier fraco depois de um orçamento declarado de tuning, com seleção nas lacunas de validação, sem refit e com encolhimento a partir de 60% de falta. É calculada offline, nunca ao vivo.",
+   "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:25-33, 49-62"
+  },
+  {
+   "term": "vitória D4",
+   "definition_pt": "Uma vitória de tese só conta se K for better que a barra não ajustada e que a barra ajustada.",
+   "source": "docs/adr/0022-a-validation-only-tuning-budget-for-the-baselines.md:63-64; docs/adr/0020-one-reading-of-imputation-comparisons.md:53-54"
+  },
+  {
+   "term": "per_type bar, best_of_all",
+   "definition_pt": "Oponentes secundários. per_type: o melhor baseline por tipo de célula, recombinado com os pesos do impute_score. best_of_all: o melhor de todos os baselines.",
+   "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:41-43"
+  },
+  {
+   "term": "missForest",
+   "definition_pt": "Uma floresta aleatória por coluna, reajustada rodada após rodada sobre os preenchimentos das outras colunas. Ficava fora da barra como baseline externo (ADR 0017) e hoje faz parte do tier forte (ADR 0021).",
+   "source": "README.md:355; docs/adr/0021-two-tiers-of-baseline-imputers.md:71"
+  },
+  {
+   "term": "TabPFN v2",
+   "definition_pt": "Modelo de fundação tabular pré-treinado. Imputa coluna a coluna, sem tuning (tabpfn==9.2.0, contexto de até 10.000 linhas, 8 estimadores). É membro offline do tier forte.",
+   "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:11-12, 31-37"
+  },
+  {
+   "term": "K",
+   "definition_pt": "O checkpoint do decode cujas lacunas de validação têm o melhor impute_score contra a tabela completa. É o default (ADR 0015) e o número das tabelas de benchmark, mas é um oráculo em dados reais.",
+   "source": "docs/adr/0015-decode-checkpoint-chosen-on-the-validation-gaps.md:40-48; docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:18-21"
+  },
+  {
+   "term": "H",
+   "definition_pt": "O checkpoint de menor perda na máscara fixa de validação. Não precisa da tabela completa e é a leitura implantável das alegações que precisam transferir (ADR 0024, E43).",
+   "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:25-26, 47-52"
+  },
+  {
+   "term": "M (readout)",
+   "definition_pt": "O checkpoint cuja máscara fixa de validação tem o melhor impute_score (--decode_checkpoint masked). Nas tabelas numéricas é igual a H. Não confundir com o braço M do E30.",
+   "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:27-28, 53-54"
+  },
+  {
+   "term": "KC",
+   "definition_pt": "K depois de uma calibração ajustada nas lacunas de validação: α de encolhimento para a média de treino por coluna numérica (prior de 30 células) e limiar de confiança que troca o palpite categórico pela moda. É a saída default a partir de 30% de falta medida (na prática, 40nan ou mais) e também é oráculo.",
+   "source": "docs/adr/0027-calibrated-imputation-output-at-40-percent-missing.md:24-32, 53-69"
+  },
+  {
+   "term": "desenvolvimento / confirmação",
+   "definition_pt": "Desenvolvimento: as 21 variantes com as seeds 42/7/13, 101/202/303 e 404/505/606, onde os defaults foram escolhidos. Confirmação: as 15 variantes do E44 com as seeds 707/808/909, lidas uma única vez.",
+   "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:55-60"
+  },
+  {
+   "term": "seeds da tese",
+   "definition_pt": "101/202/303, o conjunto primário da tabela da tese.",
+   "source": "docs/EXPERIMENTATION_LOG.md:4630; docs/adr/0020-one-reading-of-imputation-comparisons.md:64-65"
+  }
+ ],
+ "missing": [
+  "Número de classes de kr-vs-kp e kc2. Para electricity, só o README fala em 'Electrical Grid Stability: Binary', sem confirmar que é esta tabela.",
+  "Os números do próprio artigo (Tables 3 e 4, hiperparâmetros ajustados por dataset): page.template.html:228 diz que não estão no repositório.",
+  "Um único arquivo com as 45 variantes e a contagem de células induzidas pontuadas por variante e fold.",
+  "A justificativa escrita do valor da SESOI de 1% (a ADR 0020 a chama de D3 do plano de 2026-10-17; o plano não foi lido).",
+  "As dimensões das tabelas MIMIC-IV (mimic-cardio e mimic-sofa com 11.082 estadias; mimic-wide com 65.366 linhas) ficam para a seção MIMIC; só foram vistas de passagem em docs/tickets/mimic/02-tables.md:11 e 14-wide-table.md:30.",
+  "Uma lista canônica de todos os conjuntos de seeds com seus papéis: foi montada a partir de vários arquivos (ADR 0020, entradas E43, E51, E90 e E174)."
+ ],
+ "do_not_claim": [
+  "Que K, KC ou a barra ajustada são números implantáveis: todos são escolhidos na verdade das lacunas de validação, que não existe em dados reais (ADR 0024:18-21; ADR 0022:76-78). Alegações de transferência e MNAR se leem em H.",
+  "\"O TRIDENT bate o tier forte\" sem dizer se o TabPFN está nele: com a ADR 0028, K contra o tier forte passa de 13/7/1 para 5/9/7 no desenvolvimento (ADR 0028:102-105). Contagens antigas de 'strong' são de strong_live.",
+  "Vitórias a 80nan sem as duas ressalvas: só existem sob K, o oráculo (E43), e onde o TabPFN vence a 80nan ele o faz com preenchimentos mais encolhidos (E56, ADR 0025 decisão 4; ADR 0028 decisão 5).",
+  "Que a confirmação usa tabelas novas: são novos sorteios e níveis de 6 das 9 tabelas de desenvolvimento (04-confirmation.md:55-56).",
+  "Que as 36 variantes com lacunas foram usadas no desenvolvimento: foram só 21; as 15 restantes ficaram reservadas para a confirmação.",
+  "Que a barra registrada no store é ajustada: baseline/best e gap_to_best_baseline continuam sendo a barra não ajustada (ADR 0022:74-75).",
+  "Que as células auto-mascaradas são o benchmark, ou que elas são exatamente 20% das células observadas: a população principal são as induzidas, e o mascaramento dinâmico esconde só cerca de 4% de uma linha a 80nan (ADR 0015:21-23).",
+  "Que o dist_score faz parte do painel da ADR 0025 ou é uma métrica primária: é posterior (ticket 51), marginal e lido só ao lado do impute_score; a flag fica desligada.",
+  "Que a máquina não faz diferença: os folds diferem em até 0,164 entre gorgona8 e medusa1 (E86); o que ficou equivalente foi o deslocamento médio (E94 na classificação, E96 na imputação sem kc2), e por isso os pares ficam numa só máquina.",
+  "Que o encoder maior ou o P600 são defaults gerais: valem só para pendigits e letter, nos níveis listados (ADRs 0018, 0036 e 0037); electricity e as tabelas pequenas ficam com o encoder padrão.",
+  "Que a calibração KC vale a 20nan: ela falha lá (spambase_20nan) e só é aplicada a partir de 30% de falta medida (ADR 0027:47, 57-58).",
+  "Médias de impute_score entre tabelas como medida de método: a ADR 0020 aposentou contagens por médias de seed e exige a regra por pares de fold, ou Wilcoxon sobre tabelas."
+ ],
+ "figure_ideas": [
+  "Diagrama do pipeline: tabela com lacunas → TabularEmbedder ([NULL]/[MASK]) → pré-treino (embedding_normalized) → decode por coluna → leituras K/KC (oráculo) e H (implantável), destacando em cor o que o fork acrescentou.",
+  "Grade 9 tabelas × 5 níveis (tabela variant_grid) colorida por papel: completa, desenvolvimento, confirmação.",
+  "Esquema do impute_score: duas barras (erro do modelo e erro da média/moda) por tipo de célula, a razão e a linha de referência em 1,0.",
+  "Diagrama da regra de veredito: intervalo de 95% sobre 15 pares, faixa da SESOI de ±1%, e as quatro saídas better/worse/equivalent/no difference.",
+  "Escada de oponentes: média/moda (1,0) → barra → barra ajustada → strong_live → strong com TabPFN.",
+  "E145: dispersão A → B por variante (tabela e145_dist_score), mostrando o checkpoint do impute_score perto da média/moda a 80nan."
+ ]
+}

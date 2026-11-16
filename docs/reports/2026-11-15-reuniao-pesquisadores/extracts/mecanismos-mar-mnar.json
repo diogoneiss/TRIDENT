@@ -1,0 +1,2047 @@
+{
+ "key": "mecanismos-mar-mnar",
+ "section": "MECANISMOS DE FALTA NA IMPUTAÇÃO: MCAR, MAR e MNAR (geradores, resultados fora do MCAR, o que vale e o que não vale)",
+ "storyline_pt": "Toda variante parte da tabela completa `_00nan` e esconde, em cada coluna de atributos, o mesmo número de células, round(n × taxa); só muda quais células: uniformes no MCAR, com peso Φ(inclinação · z) do próprio valor no MNAR (auto-mascaramento: valores altos somem mais) e com peso sigmoid(1,5 · s) de um escore de colunas motoras sempre observadas no MAR, que é sempre lido contra um controle MCAR com as mesmas colunas e contagens. Sob MNAR (E45, E46), a leitura H do TRIDENT segue melhor que a barra fraca nos 7 pares tabela-nível testados; a vantagem encolhe em spambase_60nan e biodeg_60nan e se perde só na inclinação mais íngreme do biodeg (slope 2,0, H − barra +0,0054, pior). Sob MNAR todo imputador subestima os valores escondidos, mas o viés do TRIDENT é o que menos se move entre 10 métodos em 9 de 10 pares. Com o TabPFN no tier forte (E58), H sob MNAR é melhor que o TabPFN em 6 de 10 pares e pior em nenhum, e o TabPFN não ganha terreno do MCAR para o MNAR (melhor 1, sem diferença 9, pior 0). Sob MAR, um smoke de quatro tabelas (E63) leu 'loses ground' contra o TabPFN, mas a família completa (E64: seis tabelas a 20 e 60nan, sorteio e seeds novos) refutou essa leitura: (H − strong), MAR menos controle, é pior só em biodeg_60nan, 1 de 12. O que o MAR custa aparece contra a barra, a 60nan nas três tabelas numéricas pequenas, e o mesmo vale contra a barra tunada (E68, mixed), sem que o modelo fique atrás dela em nenhuma das 12 combinações. Três tentativas de fazer o TRIDENT explorar o mecanismo não pagaram: máscaras de decode por propensão (E65, refuted), lacunas como `[NULL]` no decode (E67, refuted) e um decoder que distingue lacuna real de máscara, que lê o padrão sob auto-mascaramento moderado mas é menos preciso nas 11 variantes (E81, mixed). Um imputador que modela o mecanismo, o not-MIWAE, encolhe o viés MNAR em relação ao seu gêmeo só onde imputa bem (vehicle e biodeg_probit_60nan), e o TRIDENT continua mais preciso que ele (E72 mixed, E73). O ReMasker não ganha terreno fora do MCAR (E160, refuted), e sorteios MCAR novos não invertem nenhum veredito (E62, holds), embora cada intervalo valha para um sorteio fixo. O híbrido com TabPFN acrescenta pouco fora do MCAR porque a média de H já está abaixo da do TabPFN em 9 de 12 variantes (E93, mixed), e todo híbrido perde para H sob o auto-mascaramento mais íngreme em dois conjuntos de seeds (E170, E172, mixed); por isso a ADR 0031 mantém MAR e MNAR sintéticos fora do escopo do híbrido. Os limites ficam declarados: MNAR só em tabelas numéricas, nenhum resultado fora do MCAR a 80nan e um único mecanismo MAR sintético por tabela-nível.",
+ "findings": [
+  {
+   "experiments": [
+    "E45",
+    "E46",
+    "E62",
+    "E63",
+    "E64"
+   ],
+   "question_pt": "Como cada mecanismo de falta é gerado neste repositório, e que nomes de variante ele produz?",
+   "design_pt": "Toda variante parte da tabela completa `<base>_00nan` e esconde, em cada coluna de atributos, exatamente round(n × taxa) células; o rótulo nunca é tocado, as linhas mantêm a ordem e toda célula observada é igual à da tabela completa, então a verdade das células induzidas é conhecida. MCAR: sorteio uniforme sem reposição (`generate_splits.inject_nans`, seed 42 + pp); os sorteios novos do E62 usam seed 42 + pp + 1000·(d − 1) e se chamam `<base>_d2_<pp>nan` e `<base>_d3_<pp>nan`. MNAR auto-mascarante (`datasets/generate_mnar.py`, seed 1060, um único fluxo aleatório): a mesma contagem, sorteada com peso Φ(inclinação · z − 0), em que z é o próprio valor padronizado na tabela completa, de modo que valores altos somem mais; inclinação padrão 0,5 (`<base>_probit_<pp>nan`) e o dial do biodeg_60nan em 0,25, 1,0 e 2,0 (`biodeg_probit0p25_60nan`, `biodeg_probit1p0_60nan`, `biodeg_probit2p0_60nan`); o gerador recusa tabelas com colunas categóricas. MAR (`datasets/generate_mar.py`, seed 3060, o smoke; `datasets/generate_mar_family.py`, seed 4060, a família): round(0,3 × atributos) colunas motoras sorteadas nunca perdem células; cada outra coluna recebe seu escore s (combinação aleatória das motoras com pesos normais, padronizada) e perde round(n × taxa) células com peso sigmoid(1,5 · s); motoras categóricas entram como indicador da moda. O controle casado (`<base>_marctl_<pp>nan`, `<base>_marfctl_<pp>nan`) esconde as mesmas contagens nas mesmas colunas, uniformemente. A família usa três fluxos aleatórios, então o dial do biodeg_60nan (0,75 e 3,0: `biodeg_marf0p75_60nan`, `biodeg_marf3_60nan`) compartilha o controle e os escores das motoras; taxas 0,2, 0,4 e 0,6. Checagens impostas pelo código: motoras sem lacunas, contagens exatas, células observadas inalteradas, deslocamento médio do escore (escondidas − observadas) ≥ 0,3 no MAR e |deslocamento| < 0,1 no controle.",
+   "result_pt": "As checagens confirmam a manipulação. No MNAR do biodeg_60nan, a média padronizada das células escondidas fica +0,222, +0,358, +0,568 e +0,788 desvios-padrão acima da das observadas nas inclinações 0,25, 0,5, 1,0 e 2,0 (MCAR +0,008). No MAR da família, o escore das motoras das linhas escondidas fica entre +0,363 (spambase 20nan) e +0,922 (credit-g 60nan) acima, e todo controle fica dentro de ±0,044. Num `_marf_60nan` somem 60% de cada coluna não motora, cerca de 42% de todas as células, por isso o MAR é comparado com o seu controle, nunca com o `_60nan` publicado.",
+   "verdict": "descritivo (código e checagens dos geradores)",
+   "key_numbers": [
+    {
+     "label": "MCAR: células escondidas por coluna",
+     "value": "n_inject    = int(round(n_rows * pct))",
+     "source": "datasets/generate_splits.py:35"
+    },
+    {
+     "label": "MCAR: semente do sorteio publicado",
+     "value": "generate_splits.inject_nans on <base>_00nan with seed 42 + pp",
+     "source": "datasets/generate_mcar_draws.py:5-6"
+    },
+    {
+     "label": "MCAR, sorteios novos do E62: semente e nome",
+     "value": "seed 42 + pp + 1000 * (d - 1) as processed_datasets/<base>/<base>_d<d>_<pp>nan.csv",
+     "source": "datasets/generate_mcar_draws.py:8-9"
+    },
+    {
+     "label": "MNAR: peso do sorteio",
+     "value": "weights Phi(SLOPE * z - OFFSET), z being the column standardised on the complete table: large values are hidden more often",
+     "source": "datasets/generate_mnar.py:9-10"
+    },
+    {
+     "label": "MNAR: constantes",
+     "value": "SLOPE = 0.5; OFFSET = 0.0; SEED = 1060",
+     "source": "datasets/generate_mnar.py:34-36"
+    },
+    {
+     "label": "MNAR: deslocamento médio padronizado no biodeg_60nan nas inclinações 0.25, 0.5, 1.0, 2.0",
+     "value": "+0.222, +0.358, +0.568, +0.788 (MCAR +0.008)",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:58-59"
+    },
+    {
+     "label": "MNAR: deslocamento nos pares do E46 a slope 0.5",
+     "value": "spambase_60nan +0.193, biodeg_20nan +0.285, kc2_20nan +0.141, vehicle_20nan +0.381",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:57"
+    },
+    {
+     "label": "MAR smoke: constantes",
+     "value": "SEED = 3060; DRIVER_SHARE = 0.3; SLOPE = 1.5; MIN_SHIFT = 0.3; MAX_CONTROL_SHIFT = 0.1",
+     "source": "datasets/generate_mar.py:51-55"
+    },
+    {
+     "label": "MAR família: constantes",
+     "value": "SEED = 4060; SLOPE = 1.5; RATES = (0.2, 0.4, 0.6); DIAL_BASES, DIAL_RATE, DIAL_SLOPES = (\"biodeg\",), 0.6, (0.75, 3.0)",
+     "source": "datasets/generate_mar_family.py:44-48"
+    },
+    {
+     "label": "MAR família: deslocamento do escore das motoras a slope 1.5",
+     "value": "between +0.363 (spambase 20nan) and +0.922 (credit-g 60nan), above the 0.3 floor; every control within ±0.044",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:35-37"
+    },
+    {
+     "label": "MAR família: dial no biodeg_60nan",
+     "value": "+0.454 at slope 0.75, +0.707 at 1.5 and +1.000 at 3",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:38"
+    },
+    {
+     "label": "MAR: fração de células escondidas",
+     "value": "about 14% of feature cells at 20nan and about 42% at 60nan, in both MAR and control",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:30-32"
+    },
+    {
+     "label": "MAR smoke: deslocamento no MAR e nos controles",
+     "value": "MAR: biodeg +0.665, kc2 +0.421, vehicle +0.971, kr-vs-kp +0.777 (the floor is 0.3); controls: +0.012, −0.042, −0.002, +0.001",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:37-38"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Com contagem fixa, o sorteio ponderado não é exatamente um mecanismo probit nem logístico; os próprios geradores dizem isso (generate_mnar.py:10-11, generate_mar.py:20-21). kc2_probit_20nan é uma inclinação fraca: 3 colunas de cauda pesada (`v(g)`, `e`, `b`) quase não inclinam a 20nan (06-mnar-family.md:47-54). `datasets/mnar_family.py` (fluxo por coluna, SeedSequence([seed, j]), nomes com `_s<seed>`: outcome/F3, noise/F5, sign/F4, mcar e probit) alimenta só o lado de classificação (C15, T48); nenhum resultado de imputação desta seção usa essas variantes."
+  },
+  {
+   "experiments": [
+    "E45",
+    "E46"
+   ],
+   "question_pt": "A vantagem do TRIDENT (leitura H) sobre a barra fraca sobrevive quando a chance de faltar depende do próprio valor (MNAR auto-mascarante)?",
+   "design_pt": "E45 (smoke) e E46 (família completa): braço G (o default, lendo o checkpoint H) em 10 variantes MNAR, cada uma contra seu controle MCAR, seeds 42/7/13, 15 pares de folds por variante, intervalo t de 95%. Tabelas biodeg, kc2 e vehicle a 20 e 60nan, spambase a 60nan, e o dial de inclinação no biodeg_60nan (0,25; 0,5; 1,0; 2,0). Medidas em impute_score (menor é melhor): H − barra e H − missForest em cada mecanismo, e o efeito do mecanismo, (H − barra) MNAR menos MCAR; negativo favorece o TRIDENT, positivo significa que o MNAR custou terreno a ele. Primário do E46: H melhor que a barra em 3 ou mais dos 4 pares novos e pior em nenhum. Integridade: G nos controles MCAR igual ao E35 (diferença máxima 0).",
+   "result_pt": "Sob MNAR, H é melhor que a barra nos 3 pares do E45 (biodeg −0,017, kc2 −0,116, vehicle −0,040) e nos 4 pares novos do E46 (spambase_60nan −0,014, biodeg_20nan −0,035, kc2_20nan −0,094, vehicle_20nan −0,077): 7 de 7 pares tabela-nível. A vantagem encolhe em spambase (efeito do mecanismo +0,026, pior) e em biodeg_60nan (+0,081, pior; de 20 para 60nan o efeito cresce +0,078). No dial do biodeg_60nan o efeito é +0,083, +0,081, +0,096 e +0,103 nas inclinações 0,25 a 2,0: plano e depois subindo, por isso 'dose-response no'. A 1,0 H não difere da barra e a 2,0 fica pior (+0,0054). Contra o missForest o modelo melhora com a inclinação: pior a 0,25 e 0,5 (+0,024 e +0,020), melhor a 1,0 e 2,0 (−0,006 e −0,025), porque o missForest degrada mais que o modelo.",
+   "verdict": "E45: go for the full family (smoke, descritivo); E46: supported (primário, 4 de 4); dial: dose-response no",
+   "key_numbers": [
+    {
+     "label": "E46 primário: H − barra sob MNAR nos 4 pares novos",
+     "value": "better 4, worse 0, other 0 -> supported",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:233"
+    },
+    {
+     "label": "E45 + E46: pares em que a vantagem sobre a barra sobrevive",
+     "value": "7 of 7 table-and-rung pairs (E45 and E46)",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:330-331"
+    },
+    {
+     "label": "E45: MNAR H − barra (biodeg, kc2, vehicle a 60nan)",
+     "value": "-0.0165 / -0.1159 / -0.0403, all better",
+     "source": "docs/tickets/imputation-protocol/05-mnar-smoke.md:125,137,149"
+    },
+    {
+     "label": "Efeito do mecanismo em biodeg_60nan, (H − bar) MNAR minus MCAR",
+     "value": "+0.0809 [+0.0665, +0.0953] -> worse",
+     "source": "docs/tickets/imputation-protocol/05-mnar-smoke.md:131"
+    },
+    {
+     "label": "Efeito do mecanismo em spambase_60nan",
+     "value": "+0.0257 [+0.0166, +0.0348] -> worse",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:191"
+    },
+    {
+     "label": "biodeg: efeito a 60nan menos efeito a 20nan",
+     "value": "+0.0780 [+0.0549, +0.1012] -> worse",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:239-242"
+    },
+    {
+     "label": "Dial: médias do efeito do mecanismo nas inclinações 0.25, 0.5, 1.0, 2.0",
+     "value": "no (means +0.0827, +0.0809, +0.0958, +0.1027; at 2.0 worse)",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:288"
+    },
+    {
+     "label": "Slope 2.0: H − barra",
+     "value": "+0.0054 [+0.0012, +0.0095] -> worse",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:280"
+    },
+    {
+     "label": "Slope 2.0: H − missForest",
+     "value": "-0.0245 [-0.0320, -0.0170] -> better",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:281"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Nesses runs o 'strong' era o missForest sozinho, porque vêm de antes da ADR 0021 (05-mnar-smoke.md:162-164); o TabPFN só entra no E58. Sob MNAR o denominador média/moda do impute_score vem das células observadas do fold de treino, que o mecanismo enviesa, então só contrastes dentro da mesma variante são comparados entre mecanismos (05-mnar-smoke.md:94-95). Só tabelas numéricas e nenhum par a 80nan. Em kc2_20nan (inclinação fraca) o efeito do mecanismo é 'better' (−0,1049), anotado e não explicado no ticket."
+  },
+  {
+   "experiments": [
+    "E45",
+    "E46"
+   ],
+   "question_pt": "Sob MNAR todo imputador que aprende das células observadas fica enviesado; o viés do TRIDENT se move menos que o dos baselines?",
+   "design_pt": "Viés com sinal (preenchimento − verdade, em unidades padronizadas, média das colunas numéricas), Δ = MNAR − MCAR pareado por fold, para o modelo (preenchimentos do checkpoint K do próprio run) e 9 baselines refeitos nos mesmos folds (mean_mode, knn5, knn10, hgb, lgbm, missforest, condexp, softimpute, ice), nos 10 pares de E45/E46. Leitura descritiva feita em 2026-10-19.",
+   "result_pt": "Todo método subestima os valores escondidos sob MNAR: Δ negativo com veredito em todas as 100 leituras (par, método). O deslocamento do modelo é o menor de 10 métodos em 9 de 10 pares (2º, atrás do knn5, na inclinação 0,25). No biodeg_60nan o viés do modelo vai de −0,0396 sob MCAR a −0,3323 sob MNAR na inclinação padrão. O custo cresce com a inclinação: Δ do modelo −0,18, −0,29, −0,54 e −1,37 nas inclinações 0,25 a 2,0, ainda o menor em toda inclinação acima de 0,25; o do mean_mode chega a −1,8382 na inclinação 2,0.",
+   "verdict": "descritivo",
+   "key_numbers": [
+    {
+     "label": "Δ negativo com veredito",
+     "value": "Δ is negative with a verdict in all 100 (pair, method) readings",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:525-527"
+    },
+    {
+     "label": "Pares em que o viés do modelo se move menos",
+     "value": "The model's bias moves least of the 10 methods on 9 of the 10 pairs.",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:528"
+    },
+    {
+     "label": "Δ do modelo no dial do biodeg_60nan (0.25, 0.5, 1.0, 2.0)",
+     "value": "−0.18, −0.29, −0.54 and −1.37",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:533-534"
+    },
+    {
+     "label": "biodeg_probit_60nan: viés do modelo MNAR | MCAR",
+     "value": "-0.3323 | -0.0396",
+     "source": "docs/tickets/imputation-protocol/06-mnar-family.md:356"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Os preenchimentos do modelo nesta leitura são os de K, não os de H. Sem regra pré-registrada; é a medida 5 do E45 e a medida 4 do E46."
+  },
+  {
+   "experiments": [
+    "E58"
+   ],
+   "question_pt": "Com o TabPFN v2 no tier forte, o TRIDENT mantém sua posição sob MNAR, ou o TabPFN ganha terreno quando a falta depende do valor?",
+   "design_pt": "TabPFN v2 offline nos 10 pares MNAR de E45/E46, seeds 42/7/13, leitura H do braço G. Por mecanismo: H − strong_live (o tier forte logado no run; nas variantes MNAR é só o missForest, porque elas não têm os CSVs dos braços lineares do E41), H − strong (com TabPFN) e H − TabPFN; e (H − TabPFN), MNAR menos MCAR, em que positivo significaria que o TabPFN ganhou terreno. Leitura descritiva, sem hipótese.",
+   "result_pt": "Sob MNAR, H − TabPFN é melhor em 6, sem diferença em 4 e pior em 0 (sob MCAR: 5, 5 e 0). (H − TabPFN), MNAR menos MCAR, é melhor em 1 (biodeg_probit_20nan), sem diferença em 9 e pior em 0: o TabPFN não ganha terreno sob falta dependente do valor. Contra o tier forte inteiro, H sob MNAR é melhor em 3, sem diferença em 4, equivalente em 1 e pior em 2; os dois piores são o missForest no biodeg_60nan nas inclinações 0,25 e 0,5 (+0,0237 e +0,0204).",
+   "verdict": "descritivo; leitura do ticket: 'The MNAR statement holds against TabPFN' (TabPFN gains no ground under MNAR)",
+   "key_numbers": [
+    {
+     "label": "MNAR H − tabpfn",
+     "value": "better 6 / no difference 4 / worse 0",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:141"
+    },
+    {
+     "label": "MCAR H − tabpfn (mesmos pares)",
+     "value": "better 5 / no difference 5 / worse 0",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:144"
+    },
+    {
+     "label": "(H − tabpfn), MNAR minus MCAR",
+     "value": "better 1 / no difference 9 / worse 0",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:145"
+    },
+    {
+     "label": "MNAR H − strong (com TabPFN)",
+     "value": "better 3 / no difference 4 / equivalent 1 / worse 2",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:140"
+    },
+    {
+     "label": "Par em que o TabPFN perde terreno",
+     "value": "(H − tabpfn) MNAR minus MCAR -0.0390 better (biodeg_probit_20nan)",
+     "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:133"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Essas tabelas (biodeg, kc2, vehicle e spambase a 20 e 60nan) são as em que K já empatava ou liderava o TabPFN sob MCAR, e nenhum par MNAR está a 80nan, onde o TabPFN lidera sob MCAR (13-tabpfn-seed-sets.md:174-175). O reader foi corrigido antes da leitura completa da seção MNAR (fonte do controle dos pares do dial); o desenho não mudou (13-tabpfn-seed-sets.md:59-66)."
+  },
+  {
+   "experiments": [
+    "E63"
+   ],
+   "question_pt": "Sob MAR (falta que depende de outras colunas, observadas), o TRIDENT perde terreno contra a barra ou o tier forte? (smoke)",
+   "design_pt": "biodeg, kc2, vehicle e kr-vs-kp a 60nan; variante MAR (`<base>_mar_60nan`) contra o controle casado (`<base>_marctl_60nan`); seeds 42/7/13, 24 células do default, TabPFN offline. Primário: (H − barra) e (H − strong), MAR menos controle; positivo = o MAR custou terreno; 'holds' se nenhum pior, 'loses ground' se pior em 2 ou mais, 'mixed' caso contrário.",
+   "result_pt": "(H − strong), MAR menos controle: pior em biodeg (+0,0410) e kr-vs-kp (+0,0103), melhor em kc2 (−0,1124), sem diferença em vehicle; o melhor do tier forte foi o TabPFN em todas. (H − barra), MAR menos controle, nunca pior: melhor em 1 (kc2), sem diferença em 3. (K − H), MAR menos controle: sem diferença nas 4. Daí o veredito 'loses ground'.",
+   "verdict": "loses ground (smoke; não sobreviveu à família do E64)",
+   "key_numbers": [
+    {
+     "label": "biodeg: (H − strong) MAR minus control",
+     "value": "+0.0410 [+0.0069, +0.0751] worse",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:85"
+    },
+    {
+     "label": "kr-vs-kp: (H − strong) MAR minus control",
+     "value": "+0.0103 [+0.0011, +0.0196] worse",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:106"
+    },
+    {
+     "label": "kc2: (H − strong) MAR minus control",
+     "value": "-0.1124 [-0.1591, -0.0657] better",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:92"
+    },
+    {
+     "label": "(H − bar) MAR minus control",
+     "value": "better 1 / no difference 3 / worse 0",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:109"
+    },
+    {
+     "label": "Primário",
+     "value": "-> loses ground",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:113"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Smoke de uma tabela-nível por tabela, um sorteio e um conjunto de seeds. A hipótese que ele levantou (máscaras de decode uniformes não acertam onde ficam as lacunas do MAR) foi testada no E65 e refutada, e a perda de terreno em si foi refutada no E64."
+  },
+  {
+   "experiments": [
+    "E64"
+   ],
+   "question_pt": "Numa família MAR maior, com sorteio e seeds novos, o MAR custa ao TRIDENT terreno contra o tier forte?",
+   "design_pt": "biodeg, kc2, vehicle, kr-vs-kp, spambase e credit-g a 20 e 60nan (12 tabela-níveis), variantes `<base>_marf_<pp>nan` (seed 4060) contra controles `<base>_marfctl_<pp>nan`, seeds 404/505/606, 78 células do default, TabPFN offline; dial no biodeg_60nan nas inclinações 0,75, 1,5 e 3. Primário, sobre as 12: (H − strong), MAR menos controle; supported (o MAR custa terreno) se pior em 4 ou mais e melhor em no máximo 1; refuted se pior em no máximo 1; mixed caso contrário. Positivo = o MAR custou terreno ao TRIDENT.",
+   "result_pt": "(H − strong), MAR menos controle, é pior só em biodeg_60nan (+0,0291) e sem diferença nas outras 11: refuted. biodeg_60nan replica o smoke num sorteio e seeds novos; kr-vs-kp_60nan não replica (+0,0020, sem diferença). Contra a barra o MAR custa algum terreno a 60nan nas três tabelas numéricas pequenas: (H − barra), MAR menos controle, pior em biodeg_60nan (+0,0398), kc2_60nan (+0,0460) e vehicle_60nan (+0,0258), sem diferença nas outras 9. (K − H), MAR menos controle: sem diferença nas 12. O dial do biodeg_60nan não é monótono (+0,0285, +0,0291, +0,0181).",
+   "verdict": "refuted",
+   "key_numbers": [
+    {
+     "label": "Primário",
+     "value": "Primary, (H − strong) MAR minus control: worse on ['biodeg_60nan'], better on none -> refuted",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:183"
+    },
+    {
+     "label": "(H − strong) MAR minus control, contagem",
+     "value": "better 0 / no difference 11 / worse 1",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:180"
+    },
+    {
+     "label": "biodeg_60nan: (H − strong) MAR minus control",
+     "value": "+0.0291 [+0.0081, +0.0500] worse",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:101"
+    },
+    {
+     "label": "(H − bar) MAR minus control, contagem",
+     "value": "better 0 / no difference 9 / worse 3",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:179"
+    },
+    {
+     "label": "(K − H) MAR minus control, contagem",
+     "value": "better 0 / no difference 12 / worse 0",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:181"
+    },
+    {
+     "label": "Dial biodeg_60nan, (H − strong) MAR minus control a 0.75 / 1.5 / 3",
+     "value": "+0.0285 none / +0.0291 worse / +0.0181 none",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:175-177"
+    }
+   ],
+   "importance": "essential",
+   "caveat_pt": "Um único mecanismo MAR sintético (motoras lineares, sigmoid 1,5) por tabela-nível; nada a 80nan; pendigits e letter fora do primário. Os níveis contra o TabPFN seguem os do MCAR por tabela: H é pior que o TabPFN em kr-vs-kp_60nan e credit-g_60nan sob os dois mecanismos. Duas células do controle spambase_marfctl_20nan morreram por falta de memória na GPU e foram refeitas sem mudança antes da leitura (19-mar-family.md:79-86)."
+  },
+  {
+   "experiments": [
+    "E68"
+   ],
+   "question_pt": "Contra a barra tunada (knn, hgb e lgbm ajustados nas lacunas de validação), o MAR custa terreno ao TRIDENT?",
+   "design_pt": "O driver do E42 nas 24 variantes do E64 (404/505/606) e nas 8 do E63 (42/7/13), 96 pares em CPU, offline. Primário, nas 12 tabela-níveis do E64: (H − barra tunada), MAR menos controle; supported se pior em 4 ou mais e melhor em no máximo 1, refuted se pior em no máximo 1, mixed caso contrário.",
+   "result_pt": "(H − barra tunada), MAR menos controle: pior em 3 de 12 (biodeg_60nan +0,0365, kc2_60nan +0,0431, vehicle_60nan +0,0259), melhor em 2 (kc2_20nan, spambase_60nan): mixed. H − barra tunada sob MAR é melhor em 6 de 12 e pior em nenhuma (controle: 5 melhores, nenhuma pior). Frase aceita pelo usuário: sob MAR o modelo fica à frente ou empatado com a barra tunada nas 12 tabela-níveis; a 60nan em biodeg, kc2 e vehicle sua vantagem sobre as duas barras encolhe 0,026–0,043 em relação ao MCAR.",
+   "verdict": "mixed (frase aceita pelo usuário em 2026-10-24)",
+   "key_numbers": [
+    {
+     "label": "(H − tuned bar) MAR minus control",
+     "value": "better 2 / no difference 7 / worse 3",
+     "source": "docs/tickets/imputation-protocol/23-mar-tuned-bar.md:138"
+    },
+    {
+     "label": "H − tuned bar sob MAR",
+     "value": "better on 6 of 12, worse on none (control: 5 better, none worse)",
+     "source": "docs/EXPERIMENTATION_LOG.md:2385"
+    },
+    {
+     "label": "Encolhimento da vantagem a 60nan (biodeg, kc2, vehicle)",
+     "value": "its lead over both bars shrinks by 0.026–0.043 from MCAR",
+     "source": "docs/tickets/imputation-protocol/23-mar-tuned-bar.md:205-207"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Os dois 'better' (kc2_20nan, spambase_60nan) vêm de uma vantagem mais fraca no controle, não de o MAR ajudar o modelo (23-mar-tuned-bar.md:196-198)."
+  },
+  {
+   "experiments": [
+    "E65"
+   ],
+   "question_pt": "Máscaras de decode que seguem a propensão de faltar ajudam o TRIDENT sob MAR?",
+   "design_pt": "Braço P = default + `--decode_mask_weighting propensity`: por coluna, uma regressão logística da chance de a célula faltar sobre as outras colunas da linha; a célula de treino é escondida com a probabilidade uniforme vezes sua propensão sobre a média da coluna. As 26 variantes do E64 × 404/505/606 (78 células) contra o G do E64 nos mesmos folds. Primário: supported se P − G em H sob MAR for melhor em 4 ou mais de 12 e pior em no máximo 1, e pior em no máximo 1 sob o controle; refuted se melhor em no máximo 1 sob MAR.",
+   "result_pt": "P − G em H sob MAR: melhor 0, sem diferença 6, pior 6; sob o controle: melhor 0, sem diferença 7, pior 5; o spambase perde mais (+0,0095 a +0,0391). A interação (P − G em H), MAR menos controle, não difere em 11 e é pior em spambase_60nan, então a hipótese do descasamento das máscaras não encontra apoio. O dial não difere em nenhuma inclinação.",
+   "verdict": "refuted",
+   "key_numbers": [
+    {
+     "label": "P − G on H under MAR",
+     "value": "better 0 / no difference 6 / worse 6",
+     "source": "docs/tickets/imputation-protocol/20-mar-propensity.md:183"
+    },
+    {
+     "label": "P − G on H under the control",
+     "value": "better 0 / no difference 7 / worse 5",
+     "source": "docs/tickets/imputation-protocol/20-mar-propensity.md:184"
+    },
+    {
+     "label": "Perda no spambase",
+     "value": "spambase loses most, +0.0095 to +0.0391.",
+     "source": "docs/tickets/imputation-protocol/20-mar-propensity.md:200"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "A flag fica no código, desligada por padrão, como resultado negativo documentado; a tag `decode_mask_weighting` foi retroaplicada a todos os runs de imputação."
+  },
+  {
+   "experiments": [
+    "E67"
+   ],
+   "question_pt": "Mostrar as lacunas reais como `[NULL]` no decode, em vez de `[MASK]` (o default da ADR 0014), ajuda mais sob MNAR?",
+   "design_pt": "Braço N = default com só `DECODE_GAP_TOKEN null`, nos 8 pares MNAR (o dial do biodeg_60nan e os 4 pares do E46), seeds 42/7/13, 39 células, contra o G de E45/E46 nos mesmos folds. Primário: a interação (N − G em H), MNAR menos MCAR; positivo = `[NULL]` pior. Supported se melhor em 3 ou mais e pior em nenhum; refuted se melhor em no máximo 1.",
+   "result_pt": "A interação em H é melhor em 1 par (inclinação 0,25), sem diferença em 5 e pior em 2 (inclinações 1,0 e 2,0): refuted. N − G em H é pior em 7 de 8 variantes MNAR e em 4 de 5 controles MCAR. No dial do biodeg_60nan o déficit de N cresce com a inclinação: +0,030, +0,066, +0,076 e +0,099, contra +0,058 sob MCAR. Quanto mais íngreme o MNAR, mais custa mostrar a lacuna como `[NULL]`.",
+   "verdict": "refuted",
+   "key_numbers": [
+    {
+     "label": "(N − G on H), MNAR minus MCAR",
+     "value": "better 1 / no difference 5 / worse 2",
+     "source": "docs/tickets/imputation-protocol/22-null-gaps.md:118"
+    },
+    {
+     "label": "Primário",
+     "value": "better on ['biodeg_probit0p25_60nan'], worse on ['biodeg_probit1p0_60nan', 'biodeg_probit2p0_60nan'] -> refuted",
+     "source": "docs/tickets/imputation-protocol/22-null-gaps.md:121"
+    },
+    {
+     "label": "Dial: N − G em H por inclinação",
+     "value": "+0.030 at slope 0.25, +0.066 at 0.5, +0.076 at 1.0 and +0.099 at 2.0, against +0.058 under MCAR",
+     "source": "docs/tickets/imputation-protocol/22-null-gaps.md:133-134"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O ganho do braço Mx de E45/E46 na inclinação 2,0 (−0,0057) veio das suas outras duas mudanças (checkpoint por perda e pontuação por coluna), não do token `[NULL]`. A ADR 0014 continua valendo."
+  },
+  {
+   "experiments": [
+    "E81"
+   ],
+   "question_pt": "Um decoder que distingue a lacuna real da sua própria máscara lê o padrão de lacunas sob MNAR?",
+   "design_pt": "Braços null (`--decode_gap_token null`) e mask (o default); biodeg_60nan em MCAR e nas inclinações 0,25 a 2,0, e vehicle, kc2 e spambase probit_60nan com seus gêmeos MCAR; seeds 101/202/303, 66 células. S = deslocamento assinado do preenchimento quando o `[NULL]` de uma coluna correlacionada (|ρ| ≥ 0,2) é trocado por `[MASK]`, alinhado ao sinal de ρ, no braço null. Supported se S a 2,0 ficar acima de +0,01 (a SESOI) com todos os seeds acima de 0 e S sob MCAR não; refuted se S a 2,0 não ficar acima de 0.",
+   "result_pt": "S a 2,0 é +0,0049 [+0,0015, +0,0083], acima de 0 mas não da SESOI; sob MCAR é −0,0022: mixed. O dial carrega o sinal: −0,002, +0,020, +0,035, +0,070 e +0,005 nas inclinações 0 a 2,0, subindo até 1,0 e desabando a 2,0. Nos pares, S passa da SESOI sob MNAR em vehicle (+0,043) e kc2 (+0,020) e não nos gêmeos MCAR. Mas o braço null é menos preciso que o mask nas 11 variantes (K +0,005 a +0,097), inclusive onde lê o padrão.",
+   "verdict": "mixed",
+   "key_numbers": [
+    {
+     "label": "S a slope 2.0",
+     "value": "+0.0049 [+0.0015, +0.0083]",
+     "source": "docs/tickets/imputation-interpretability/04-gap-reliance.md:94-95"
+    },
+    {
+     "label": "S sob MCAR",
+     "value": "−0.0022 [−0.0031, −0.0012]",
+     "source": "docs/tickets/imputation-interpretability/04-gap-reliance.md:96"
+    },
+    {
+     "label": "Dial de S (slopes 0/0.25/0.5/1/2)",
+     "value": "-0.0022, +0.0201, +0.0351, +0.0704, +0.0049; strictly rising: False",
+     "source": "docs/tickets/imputation-interpretability/04-gap-reliance.md:143"
+    },
+    {
+     "label": "Acurácia null − mask",
+     "value": "the null arm is worse than the mask arm on all 11 variants, under K (+0.005 to +0.097) and under KC",
+     "source": "docs/tickets/imputation-interpretability/04-gap-reliance.md:105-106"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O default não pode ler o padrão de lacunas por construção, porque lacuna e célula escondida são o mesmo token. As explicações do colapso a 2,0 (faixa observada truncada, menos pares correlacionados) são pós-hoc e não testadas."
+  },
+  {
+   "experiments": [
+    "E72",
+    "E73"
+   ],
+   "question_pt": "Um imputador que modela o mecanismo (not-MIWAE) encolhe o viés que o MNAR acrescenta?",
+   "design_pt": "MIWAE e not-MIWAE (mesmo VAE com pesos de importância; o not-MIWAE acrescenta um termo de auto-mascaramento logístico com sinal aprendido), refeitos por fold de treino nas 17 variantes de E45/E46 × 42/7/13 e pontuados nas células induzidas dos ledgers. Primário do E72: (notmiwae − miwae em abs_bias), MNAR menos MCAR, nos 10 pares; supported se melhor em 4 ou mais e pior em no máximo 1. O E73 relê o ajuste do E72 com um preenchimento pela média (notmiwae_mean) em biodeg e spambase, e sinaliza pares em que o not-MIWAE não fica abaixo do preenchimento pela média.",
+   "result_pt": "E72: a interação é melhor em 3 de 10 (vehicle_probit_60nan, vehicle_probit_20nan, biodeg_probit2p0_60nan) e pior em nenhum: mixed. Mas o preenchimento do not-MIWAE falha em biodeg (impute_score 1,7–4,5) e spambase (8,3–9,4), pior que a média; em vehicle ele iguala o modelo (0,608 contra 0,620 sob MNAR a 60nan) e seu viés é o que menos se move entre 12 métodos (−0,066; o modelo −0,133). E73: com o preenchimento pela média o not-MIWAE fica em 0,84–1,03, no nível do MIWAE; a interação é melhor em 3 de 6, mas 2 dos 3 estão sinalizados, então só biodeg_probit_60nan é informativo. O modelo segue o mais preciso: notmiwae − model em impute_score sob MNAR é pior em 9 de 10 (E72).",
+   "verdict": "E72: mixed; E73: supported by the count, with two of three pairs flagged (one informative pair)",
+   "key_numbers": [
+    {
+     "label": "E72 primário",
+     "value": "better on ['vehicle_probit_60nan', 'vehicle_probit_20nan', 'biodeg_probit2p0_60nan'], worse on none -> mixed",
+     "source": "docs/tickets/imputation-protocol/25-not-miwae.md:153"
+    },
+    {
+     "label": "E72: notmiwae − model em impute_score sob MNAR",
+     "value": "better 0 / no difference 1 / worse 9",
+     "source": "docs/tickets/imputation-protocol/25-not-miwae.md:147-151"
+    },
+    {
+     "label": "E72: vehicle, deslocamento do viés",
+     "value": "it moves least of the 12 methods from MCAR to MNAR at 60nan (−0.066; the model −0.133)",
+     "source": "docs/tickets/imputation-protocol/25-not-miwae.md:203"
+    },
+    {
+     "label": "E73: impute_score do notmiwae_mean",
+     "value": "0.84–1.03, level with MIWAE on every variant",
+     "source": "docs/tickets/imputation-protocol/26-notmiwae-fill.md:142"
+    },
+    {
+     "label": "E73: interação no dial do biodeg",
+     "value": "no difference at slope 0.25 to −0.036 at 0.5, −0.095 at 1.0 and −0.160",
+     "source": "docs/tickets/imputation-protocol/26-notmiwae-fill.md:150-151"
+    }
+   ],
+   "importance": "appendix",
+   "caveat_pt": "Nas tabelas largas e assimétricas (biodeg, spambase) os dois VAEs imputam perto da média, então um viés menor diz pouco sobre imputar bem. O apoio a H1d (modelar o mecanismo encolhe o viés) fica restrito a vehicle (E72) e biodeg_probit_60nan (E73). O not-MIWAE é só baseline externo."
+  },
+  {
+   "experiments": [
+    "E62"
+   ],
+   "question_pt": "Um veredito depende de qual sorteio MCAR foi publicado?",
+   "design_pt": "pendigits_20nan, kr-vs-kp_40nan, credit-g_60nan e biodeg_80nan, três sorteios cada: o publicado, reproduzido célula por célula pelo gerador, e dois novos com as mesmas contagens por coluna. Seeds 42/7/13, 36 células do default (leitura K), TabPFN offline. Primário: 'holds' se K − barra e K − strong não se inverterem em nenhuma variante.",
+   "result_pt": "Nenhuma inversão: holds. K − barra é melhor em todos os sorteios de pendigits_20nan, kr-vs-kp_40nan e biodeg_80nan, e deriva em credit-g_60nan (publicado: sem diferença; novos: melhor). K − strong é pior em todos os sorteios das quatro, com o TabPFN como melhor do tier forte a cada vez. O sorteio publicado não é sistematicamente favorável ao modelo. A amplitude das médias entre sorteios é 0,2 a 1,5 vez a meia-largura do intervalo de um sorteio, e 1,5 a 1,9 vez em biodeg_80nan.",
+   "verdict": "holds",
+   "key_numbers": [
+    {
+     "label": "Primário",
+     "value": "Primary: reversals on K − bar and K − strong: none -> holds",
+     "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:135"
+    },
+    {
+     "label": "Quanto o sorteio move um contraste",
+     "value": "the span of the three draws' means is 0.2 to 1.5 times a single draw's interval half-width; On biodeg_80nan it is 1.5 to 1.9 times",
+     "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:161-163"
+    },
+    {
+     "label": "biodeg_80nan, K − strong no sorteio 2",
+     "value": "+0.0645 [+0.0573, +0.0716] worse",
+     "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:128"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Os intervalos por variante valem para um sorteio fixo: o sorteio acrescenta variação da mesma ordem que o intervalo de folds e seeds, cerca do dobro na tabela pequena a 80nan. Lido em K (o default), não em H."
+  },
+  {
+   "experiments": [
+    "E160"
+   ],
+   "question_pt": "O ReMasker (imputador deep por remascaramento, regra do artigo) ganha terreno sobre o TRIDENT fora do MCAR?",
+   "design_pt": "MAR: as variantes marf/marfctl do E64 em biodeg, kc2 e vehicle a 20 e 60nan (404/505/606); MNAR: as probit e seus controles MCAR de E45/E46 (42/7/13); 72 pares em gorgona8. Primário, nas 12 tabela-níveis: (H − ReMasker), mecanismo menos controle; positivo = o ReMasker ganhou terreno; supported se pior em 4 ou mais e melhor em no máximo 1, refuted se pior em no máximo 1.",
+   "result_pt": "(H − ReMasker), mecanismo menos controle, é pior para H em 1 de 12 (biodeg probit 60nan, +0,059) e melhor em 5: refuted. Sob MAR a vantagem do TRIDENT cresce em 4 de 6 tabela-níveis (−0,07 a −0,22), nenhuma pior; sob MNAR fica sem diferença em 4, melhor em 1 (vehicle 60nan) e pior em 1 (biodeg 60nan). H é melhor que o ReMasker em 11 de 12 variantes de mecanismo (kc2_probit_60nan sem diferença), e o ReMasker é pior que o tier forte em 10 de 12.",
+   "verdict": "refuted",
+   "key_numbers": [
+    {
+     "label": "Primário",
+     "value": "Primary, (H − ReMasker) mechanism minus control over 12 table-rates: worse 1, better 5 -> refuted",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:125"
+    },
+    {
+     "label": "biodeg probit 60nan",
+     "value": "+0.0593 [+0.0449, +0.0738] worse",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:102"
+    },
+    {
+     "label": "MAR: (H − remasker), mechanism minus control",
+     "value": "better 4 / no difference 2 / worse 0",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:94"
+    },
+    {
+     "label": "MNAR: (H − remasker), mechanism minus control",
+     "value": "better 1 / no difference 4 / worse 1",
+     "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:123"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Só tabelas numéricas pequenas (biodeg, kc2, vehicle); as duas famílias usam seeds e gerações do default diferentes e são lidas lado a lado, nunca somadas fora da contagem do primário. O teste de folds pré-lançamento foi refeito em rmse_num_z/mae_num_z numa emenda e se manteve."
+  },
+  {
+   "experiments": [
+    "E93"
+   ],
+   "question_pt": "O híbrido implantável `table` (H + TabPFN, ADR 0031 decisão 6) se mantém sob MNAR e MAR?",
+   "design_pt": "As 12 variantes a 60nan do E84 (7 MNAR probit: biodeg nas inclinações 0,25, 0,5, 1,0 e 2,0, vehicle, kc2 e spambase; 5 MAR marf: biodeg, kc2, vehicle, spambase e credit-g) × 4545/5656/6767, 36 células; pesos escolhidos em células observadas de validação escondidas de propósito, TabPFN refeito por fold. Supported se melhor que H em 8 ou mais de 12, pior em nenhuma e pior que o TabPFN em 2 ou menos; refuted se melhor que H em 5 ou menos, pior em 2 ou mais, ou pior que o TabPFN em 5 ou mais.",
+   "result_pt": "`table` é melhor que H em 6 de 12, pior em spambase_probit_60nan (+0,0090) e pior que o TabPFN em credit-g_marf_60nan (+0,0184): mixed. Ele é melhor que o TabPFN em 10 de 12. O motivo do pouco ganho: sob MNAR e MAR a média de H já está abaixo da do TabPFN em 9 das 12 variantes (todas menos as duas de vehicle e credit-g_marf), então o híbrido tem pouco a tirar do TabPFN.",
+   "verdict": "mixed",
+   "key_numbers": [
+    {
+     "label": "Primário `table`",
+     "value": "better than H on 6 of 12, worse on ['spambase_probit_60nan'], worse than TabPFN on 1 (['credit-g_marf_60nan']) -> mixed",
+     "source": "docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:90"
+    },
+    {
+     "label": "H já à frente do TabPFN fora do MCAR",
+     "value": "H's mean is already below TabPFN's on 9 of the 12 variants (all but the two vehicle variants and credit-g_marf)",
+     "source": "docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:101-102"
+    },
+    {
+     "label": "spambase_probit_60nan: table − model",
+     "value": "+0.0090 [+0.0056, +0.0124] worse",
+     "source": "docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:82"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Por isso a decisão 6 da ADR 0031 cobre MCAR e, desde novembro, os padrões reais transplantados e as lacunas naturais da MIMIC-IV, mas deixa MAR e MNAR sintéticos fora (ADR 0031:110-114, 128). Quatro células falharam por queda do servidor MLflow e foram retreinadas uma vez, com as mesmas seeds, antes de qualquer leitura (emenda)."
+  },
+  {
+   "experiments": [
+    "E170",
+    "E172"
+   ],
+   "question_pt": "A escolha de lado por validação cruzada (cross-fit: TabPFN ou missForest por tabela) remove a fraqueza do híbrido fora do MCAR?",
+   "design_pt": "E170: as 6 variantes fora do MCAR do E93 entre os runs do E169 (42/7/13), sem treino novo. E172: as 12 variantes do E93 × 101/202/303, 36 runs de H, TabPFN e missForest refeitos offline. Regra: supported se `crossfit` for pior que H em nenhuma, refuted se em 2 ou mais, mixed se em 1; SESOI 1%.",
+   "result_pt": "E170: `crossfit` é pior que H só em biodeg_probit2p0_60nan (+0,0095), onde o híbrido aceito `table_tabpfn` também perde (+0,0106); é melhor que H nas quatro variantes marf. E172: `crossfit` é pior que H só em biodeg_probit2p0_60nan (+0,0066), onde escolheu o missForest em 0 de 15 folds e onde os dois lados perdem (o híbrido com missForest +0,0011); remove a perda do E93 em spambase_probit_60nan (equivalente a H, +0,0007) e é melhor que H em 7. Sob o auto-mascaramento mais íngreme todo híbrido perde para H, em dois conjuntos de seeds.",
+   "verdict": "mixed (E170 e E172)",
+   "key_numbers": [
+    {
+     "label": "E170: crossfit − H em biodeg_probit2p0_60nan",
+     "value": "+0.0095 [+0.0051, +0.0139]",
+     "source": "docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:51-52"
+    },
+    {
+     "label": "E170: table_tabpfn − H no mesmo variante",
+     "value": "+0.0106",
+     "source": "docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:52"
+    },
+    {
+     "label": "E172: crossfit − H em biodeg_probit2p0_60nan",
+     "value": "+0.0066 [+0.0043, +0.0090] worse",
+     "source": "docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:106"
+    },
+    {
+     "label": "E172: table_missforest − H no mesmo variante",
+     "value": "+0.0011 [+0.0002, +0.0021] worse",
+     "source": "docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:99"
+    },
+    {
+     "label": "E172: table_tabpfn − H em spambase_probit_60nan",
+     "value": "+0.0067 [+0.0032, +0.0101]",
+     "source": "docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:53"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "Nenhuma escolha de lado evita a perda em biodeg_probit2p0_60nan, porque os dois lados perdem para H ali. O escopo só-MCAR da ADR 0031 para MAR e MNAR sintéticos permanece; mudá-lo é decisão do usuário."
+  },
+  {
+   "experiments": [
+    "E45",
+    "E46",
+    "E63",
+    "E64"
+   ],
+   "question_pt": "Que leitura do modelo vale fora do MCAR: K (checkpoint escolhido com a tabela completa) ou H (escolhido pela perda de validação)?",
+   "design_pt": "Pela ADR 0024, K é um limite de oráculo, porque escolhe o checkpoint pontuando as lacunas de validação contra a tabela completa, que não existe em dados reais; H (a época de menor perda na máscara fixa de validação) não precisa dela. Afirmações sobre MNAR e implantação são lidas em H, com K ao lado. Os estudos de mecanismo medem o otimismo do oráculo, (K − H), mecanismo menos controle.",
+   "result_pt": "(K − H), MNAR menos MCAR, não tem veredito em nenhum par nem inclinação de E45/E46, e (K − H), MAR menos controle, não difere nas 12 tabela-níveis do E64 nem nas 4 do E63. O otimismo do oráculo não cresce fora do MCAR, então H continua sendo a leitura certa para as afirmações desta seção.",
+   "verdict": "descritivo (base da decisão 2 da ADR 0024)",
+   "key_numbers": [
+    {
+     "label": "ADR 0024 sobre E45/E46",
+     "value": "K − H does not grow under value-dependent missingness on any pair or slope.",
+     "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:40-41"
+    },
+    {
+     "label": "ADR 0024 decisão 2",
+     "value": "Claims that must transfer are read on H, with K beside it as the oracle bound. They include: ... MNAR.",
+     "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:47-50"
+    },
+    {
+     "label": "E64: (K − H) MAR minus control",
+     "value": "better 0 / no difference 12 / worse 0",
+     "source": "docs/tickets/imputation-protocol/19-mar-family.md:181"
+    },
+    {
+     "label": "E63: (K − H) MAR minus control",
+     "value": "better 0 / no difference 4 / worse 0",
+     "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:111"
+    }
+   ],
+   "importance": "supporting",
+   "caveat_pt": "O E62 (sorteios MCAR) e o viés com sinal de E45/E46 foram lidos em K, não em H."
+  },
+  {
+   "experiments": [
+    "E119",
+    "E121",
+    "E84"
+   ],
+   "question_pt": "Que outras decisões do projeto já valem para os três mecanismos?",
+   "design_pt": "Estudos de outras seções que repetiram o desenho fora do MCAR com as variantes `marf` e `probit` (pendigits e letter, e as 12 variantes a 60nan do E84).",
+   "result_pt": "O encoder maior em pendigits e letter vale sob MAR e MNAR: melhor em 4 de 4 variantes MAR (−3,6% a −5,9%) e 4 de 4 MNAR (−1,8% a −6,9%) a 40–60nan (E119), e 2 de 2 em cada mecanismo a 20nan (E121); as ADRs 0037 (decisão 3) e 0018 (decisão 4) foram estendidas. O spread de remascaramento ainda ordena os erros sob MNAR e MAR em 12 de 12 (E84), enfraquecendo no biodeg conforme a inclinação cresce.",
+   "verdict": "E119: holds (MAR and MNAR); E121: holds (MAR and MNAR); E84: supported (full scope)",
+   "key_numbers": [
+    {
+     "label": "E119",
+     "value": "BIG − M better on 4 of 4 MAR (−3.6% to −5.9%) and 4 of 4 MNAR (−1.8% to −6.9%), worse on none; ADR 0037 extended (decision 3)",
+     "source": "docs/EXPERIMENTATION_LOG.md:158"
+    },
+    {
+     "label": "E121",
+     "value": "BIG − M better on 2 of 2 MAR (−4.6%, −5.8%) and 2 of 2 MNAR (−5.0%, −6.5%), worse on none; ADR 0018 extended (decision 4)",
+     "source": "docs/EXPERIMENTATION_LOG.md:160"
+    },
+    {
+     "label": "E84",
+     "value": "signal on 12 of 12 under K and H, none against (lowest bound +0.084); on biodeg the ranking weakens steadily with the MNAR tilt",
+     "source": "docs/EXPERIMENTATION_LOG.md:123"
+    }
+   ],
+   "importance": "appendix",
+   "caveat_pt": "Esses resultados pertencem às seções de trajetória da imputação e de incerteza; aqui só registram que a decisão foi testada fora do MCAR."
+  }
+ ],
+ "tables": [
+  {
+   "id": "mech_generators",
+   "title_pt": "Como cada mecanismo é gerado: gerador, peso do sorteio e nomes das variantes",
+   "columns": [
+    "mecanismo",
+    "gerador e constantes",
+    "quais células somem (texto do gerador)",
+    "nomes das variantes",
+    "usado em"
+   ],
+   "rows": [
+    [
+     "MCAR (variantes publicadas)",
+     "datasets/generate_splits.py inject_nans; seed 42 + pp",
+     "n_inject    = int(round(n_rows * pct)); to_nan = rng.choice(non_nan_idx, size=n_here, replace=False)",
+     "<base>_<pp>nan",
+     "todos os estudos MCAR; controles MCAR de E45/E46"
+    ],
+    [
+     "MCAR, sorteios novos",
+     "datasets/generate_mcar_draws.py; seed 42 + pp + 1000 * (d - 1)",
+     "every feature column loses exactly round(n * pct) cells, the original's count, drawn without replacement, independently of the original's",
+     "<base>_d<d>_<pp>nan",
+     "E62"
+    ],
+    [
+     "MNAR auto-mascarante (probit)",
+     "datasets/generate_mnar.py; SLOPE = 0.5; OFFSET = 0.0; SEED = 1060",
+     "Every feature column loses exactly round(n * pct) cells ... drawn without replacement with weights Phi(SLOPE * z - OFFSET), z being the column standardised on the complete table: large values are hidden more often.",
+     "<base>_probit_<pp>nan; <base>_probit2p0_<pp>nan for 2.0 (biodeg_probit0p25_60nan, biodeg_probit1p0_60nan, biodeg_probit2p0_60nan)",
+     "E45, E46, E58, E67, E72, E73, E81, E93, E160, E170, E172; E119/E121"
+    ],
+    [
+     "MAR (smoke)",
+     "datasets/generate_mar.py; SEED = 3060; DRIVER_SHARE = 0.3; SLOPE = 1.5",
+     "Drivers: round(0.3 * features) feature columns ... never lose a cell ... MAR: with weights sigmoid(SLOPE * s), where s is the column's own random combination of the drivers (normal weights), standardised.",
+     "<base>_mar_<pp>nan",
+     "E63, E68"
+    ],
+    [
+     "Controle casado do MAR",
+     "o mesmo gerador, sorteio uniforme",
+     "Control: with equal weights.",
+     "<base>_marctl_<pp>nan; <base>_marfctl_<pp>nan",
+     "E63, E64, E65, E68, E160"
+    ],
+    [
+     "MAR (família)",
+     "datasets/generate_mar_family.py; SEED = 4060; SLOPE = 1.5; RATES = (0.2, 0.4, 0.6)",
+     "The mechanism is generate_mar.py's, with a new seed, so drivers and draws are independent of E63's smoke, and with separate random streams",
+     "<base>_marf_<pp>nan; biodeg_marf0p75_60nan, biodeg_marf3_60nan",
+     "E64, E65, E68, E93, E160, E170, E172; E119/E121"
+    ],
+    [
+     "Famílias semeadas por coluna (C15)",
+     "datasets/mnar_family.py; SeedSequence([seed, j])",
+     "outcome: weights odds ** y; noise: the MCAR file plus one N(0, 1) column, c15_noise; sign; mcar; probit: weights Phi(slope * z)",
+     "<base>_outcome<odds>_s<seed>_<pp>nan; <base>_noise<odds>_s<seed>_<pp>nan; <base>_sign<direction>_s<seed>_<pp>nan; <base>_mcar_s<seed>_<pp>nan; <base>_probit<slope>_s<seed>_<pp>nan",
+     "só classificação (C15, T48), nenhum estudo de imputação desta seção"
+    ]
+   ],
+   "source": "datasets/generate_splits.py:26-49; datasets/generate_mcar_draws.py:5-16,57-58,82; datasets/generate_mnar.py:6-10,34-59; datasets/generate_mar.py:8-24,51-55; datasets/generate_mar_family.py:5-15,44-48,132-133; datasets/mnar_family.py:7-27; docs/tickets/c15-mnar-prediction/01-stage0.md:15-21",
+   "note_pt": "A coluna 'usado em' foi compilada das entradas do docs/EXPERIMENTATION_LOG.md e das seções de dados dos tickets. Em todos os mecanismos o rótulo nunca é tocado e cada coluna perde round(n × taxa) células; no MAR as motoras não perdem nenhuma, então um _60nan esconde cerca de 42% das células."
+  },
+  {
+   "id": "mech_e46_mnar_vs_bar",
+   "title_pt": "MNAR auto-mascarante (E45, E46): H contra a barra e o missForest, por variante, e o efeito do mecanismo",
+   "columns": [
+    "variante MNAR",
+    "controle MCAR",
+    "inclinação",
+    "MNAR H − bar",
+    "MNAR H − missForest",
+    "MCAR H − bar",
+    "MCAR H − missForest",
+    "(H − bar), MNAR menos MCAR",
+    "estudo"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "biodeg_60nan",
+     "0.5",
+     "-0.0165 [-0.0232, -0.0097] -> better",
+     "+0.0204 [+0.0111, +0.0296] -> worse",
+     "-0.0973 [-0.1112, -0.0835] -> better",
+     "+0.0059 [-0.0126, +0.0244] -> none",
+     "+0.0809 [+0.0665, +0.0953] -> worse",
+     "E45"
+    ],
+    [
+     "kc2_probit_60nan",
+     "kc2_60nan",
+     "0.5",
+     "-0.1159 [-0.1420, -0.0898] -> better",
+     "-0.0107 [-0.0460, +0.0245] -> none",
+     "-0.0961 [-0.1732, -0.0191] -> better",
+     "-0.0581 [-0.1087, -0.0075] -> better",
+     "-0.0198 [-0.1066, +0.0670] -> none",
+     "E45"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "vehicle_60nan",
+     "0.5",
+     "-0.0403 [-0.0510, -0.0295] -> better",
+     "+0.0040 [-0.0043, +0.0122] -> none",
+     "-0.0542 [-0.0685, -0.0399] -> better",
+     "-0.0008 [-0.0186, +0.0169] -> none",
+     "+0.0140 [-0.0024, +0.0303] -> none",
+     "E45"
+    ],
+    [
+     "spambase_probit_60nan",
+     "spambase_60nan",
+     "0.5",
+     "-0.0138 [-0.0214, -0.0062] -> better",
+     "-0.0011 [-0.0074, +0.0051] -> none",
+     "-0.0395 [-0.0439, -0.0352] -> better",
+     "-0.0357 [-0.0416, -0.0298] -> better",
+     "+0.0257 [+0.0166, +0.0348] -> worse",
+     "E46"
+    ],
+    [
+     "biodeg_probit_20nan",
+     "biodeg_20nan",
+     "0.5",
+     "-0.0350 [-0.0489, -0.0211] -> better",
+     "-0.0260 [-0.0384, -0.0136] -> better",
+     "-0.0379 [-0.0578, -0.0180] -> better",
+     "-0.0229 [-0.0433, -0.0025] -> better",
+     "+0.0029 [-0.0167, +0.0224] -> none",
+     "E46"
+    ],
+    [
+     "kc2_probit_20nan",
+     "kc2_20nan",
+     "0.5",
+     "-0.0940 [-0.1453, -0.0428] -> better",
+     "-0.0856 [-0.1387, -0.0324] -> better",
+     "+0.0109 [-0.0416, +0.0635] -> none",
+     "-0.0279 [-0.0986, +0.0427] -> none",
+     "-0.1049 [-0.1606, -0.0493] -> better",
+     "E46"
+    ],
+    [
+     "vehicle_probit_20nan",
+     "vehicle_20nan",
+     "0.5",
+     "-0.0765 [-0.1135, -0.0395] -> better",
+     "-0.0719 [-0.1236, -0.0201] -> better",
+     "-0.0495 [-0.0644, -0.0346] -> better",
+     "-0.0298 [-0.0516, -0.0081] -> better",
+     "-0.0270 [-0.0669, +0.0129] -> none",
+     "E46"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "biodeg_60nan",
+     "0.25",
+     "-0.0146 [-0.0231, -0.0061] -> better",
+     "+0.0237 [+0.0143, +0.0331] -> worse",
+     "-0.0973 [-0.1112, -0.0835] -> better",
+     "+0.0059 [-0.0126, +0.0244] -> none",
+     "+0.0827 [+0.0684, +0.0970] -> worse",
+     "E46 (dial)"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "biodeg_60nan",
+     "1.0",
+     "-0.0015 [-0.0051, +0.0021] -> none",
+     "-0.0059 [-0.0101, -0.0018] -> better",
+     "-0.0973 [-0.1112, -0.0835] -> better",
+     "+0.0059 [-0.0126, +0.0244] -> none",
+     "+0.0958 [+0.0832, +0.1085] -> worse",
+     "E46 (dial)"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "biodeg_60nan",
+     "2.0",
+     "+0.0054 [+0.0012, +0.0095] -> worse",
+     "-0.0245 [-0.0320, -0.0170] -> better",
+     "-0.0973 [-0.1112, -0.0835] -> better",
+     "+0.0059 [-0.0126, +0.0244] -> none",
+     "+0.1027 [+0.0882, +0.1172] -> worse",
+     "E46 (dial)"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/05-mnar-smoke.md:124-155; docs/tickets/imputation-protocol/06-mnar-family.md:30-38,184-227,258-282",
+   "note_pt": "Cada célula é a diferença média de impute_score induzido (menor é melhor) em 15 pares de folds (seeds 42/7/13), intervalo t de 95% e veredito. Negativo favorece o TRIDENT; no efeito do mecanismo, positivo significa que o MNAR custou terreno. Leitura H do braço G. O 'missForest' é o tier forte desses runs (antes da ADR 0021). As colunas MCAR das três linhas do dial repetem o controle biodeg_60nan do E45 (05-mnar-smoke.md:128-129); a linha da inclinação 0,5 do dial é a primeira linha (E45)."
+  },
+  {
+   "id": "mech_e58_mnar_vs_tabpfn",
+   "title_pt": "MNAR com o TabPFN no tier forte (E58): H contra o tier forte e o TabPFN, e se o TabPFN ganha terreno",
+   "columns": [
+    "variante MNAR",
+    "controle MCAR",
+    "MNAR H − strong_live",
+    "MNAR H − strong (com TabPFN)",
+    "MNAR H − tabpfn",
+    "MCAR H − tabpfn",
+    "(H − tabpfn), MNAR menos MCAR"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "biodeg_60nan",
+     "(missforest) +0.0204 worse",
+     "(missforest) +0.0204 worse",
+     "-0.0116 better",
+     "-0.0189 better",
+     "+0.0073 none"
+    ],
+    [
+     "kc2_probit_60nan",
+     "kc2_60nan",
+     "(missforest) -0.0107 none",
+     "(missforest) -0.0107 none",
+     "-0.0454 better",
+     "+0.0014 none",
+     "-0.0469 none"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "vehicle_60nan",
+     "(missforest) +0.0040 none",
+     "(missforest/tabpfn) +0.0050 none",
+     "+0.0044 none",
+     "+0.0108 none",
+     "-0.0064 none"
+    ],
+    [
+     "spambase_probit_60nan",
+     "spambase_60nan",
+     "(missforest) -0.0011 equivalent",
+     "(missforest) -0.0011 equivalent",
+     "-0.0348 better",
+     "-0.0296 better",
+     "-0.0052 none"
+    ],
+    [
+     "biodeg_probit_20nan",
+     "biodeg_20nan",
+     "(missforest) -0.0260 better",
+     "(missforest) -0.0260 better",
+     "-0.0600 better",
+     "-0.0210 none",
+     "-0.0390 better"
+    ],
+    [
+     "kc2_probit_20nan",
+     "kc2_20nan",
+     "(missforest) -0.0856 better",
+     "(tabpfn) -0.0113 none",
+     "-0.0113 none",
+     "+0.0530 none",
+     "-0.0643 none"
+    ],
+    [
+     "vehicle_probit_20nan",
+     "vehicle_20nan",
+     "(missforest) -0.0719 better",
+     "(tabpfn) -0.0255 none",
+     "-0.0255 none",
+     "+0.0018 none",
+     "-0.0273 none"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "biodeg_60nan",
+     "(missforest) +0.0237 worse",
+     "(missforest) +0.0237 worse",
+     "-0.0066 none",
+     "-0.0189 better",
+     "+0.0123 none"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "biodeg_60nan",
+     "(missforest) -0.0059 better",
+     "(missforest) -0.0059 better",
+     "-0.0100 better",
+     "-0.0189 better",
+     "+0.0089 none"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "biodeg_60nan",
+     "(missforest) -0.0245 better",
+     "(missforest) -0.0245 better",
+     "-0.0276 better",
+     "-0.0189 better",
+     "-0.0087 none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:128-145",
+   "note_pt": "impute_score induzido, menor é melhor; negativo favorece H. Entre parênteses, o membro do tier que foi o melhor. Nas variantes MNAR o strong_live é só o missForest, porque elas não têm os CSVs dos braços lineares (13-tabpfn-seed-sets.md:47-48). Na última coluna, positivo significaria que o TabPFN ganhou terreno sob MNAR. Contagens: MNAR H − tabpfn 6/4/0; (H − tabpfn) MNAR menos MCAR 1/9/0."
+  },
+  {
+   "id": "mech_mnar_signed_bias",
+   "title_pt": "Viés com sinal sob MNAR (E45, E46): quanto o viés do modelo se desloca do MCAR para o MNAR, comparado com o preenchimento pela média",
+   "columns": [
+    "par MNAR contra MCAR",
+    "modelo, viés MNAR",
+    "modelo, viés MCAR",
+    "modelo Δ [95%]",
+    "mean_mode Δ [95%]",
+    "posição do modelo por |Δ| (1 = move menos)"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "-0.3323",
+     "-0.0396",
+     "-0.2926 [-0.3040, -0.2813]",
+     "-0.4526 [-0.4619, -0.4432]",
+     "1 of 10"
+    ],
+    [
+     "kc2_probit_60nan",
+     "-0.2658",
+     "-0.0393",
+     "-0.2265 [-0.3231, -0.1299]",
+     "-0.5082 [-0.6060, -0.4104]",
+     "1 of 10"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "-0.1623",
+     "-0.0297",
+     "-0.1327 [-0.1504, -0.1149]",
+     "-0.5896 [-0.5977, -0.5816]",
+     "1 of 10"
+    ],
+    [
+     "spambase_probit_60nan",
+     "-0.2754",
+     "-0.0308",
+     "-0.2446 [-0.2540, -0.2353]",
+     "-0.2969 [-0.3001, -0.2937]",
+     "1 of 10"
+    ],
+    [
+     "biodeg_probit_20nan",
+     "-0.0762",
+     "-0.0315",
+     "-0.0447 [-0.0553, -0.0341]",
+     "-0.2923 [-0.3073, -0.2773]",
+     "1 of 10"
+    ],
+    [
+     "kc2_probit_20nan",
+     "-0.0497",
+     "-0.0001",
+     "-0.0495 [-0.0673, -0.0318]",
+     "-0.1762 [-0.2004, -0.1520]",
+     "1 of 10"
+    ],
+    [
+     "vehicle_probit_20nan",
+     "-0.0764",
+     "-0.0214",
+     "-0.0550 [-0.0712, -0.0388]",
+     "-0.3591 [-0.3982, -0.3200]",
+     "1 of 10"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "-0.2187",
+     "-0.0396",
+     "-0.1791 [-0.1988, -0.1594]",
+     "-0.2719 [-0.2839, -0.2599]",
+     "2 of 10 (least: knn5)"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "-0.5820",
+     "-0.0396",
+     "-0.5423 [-0.5660, -0.5187]",
+     "-0.8492 [-0.8672, -0.8313]",
+     "1 of 10"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "-1.4051",
+     "-0.0396",
+     "-1.3655 [-1.3939, -1.3371]",
+     "-1.8382 [-1.8606, -1.8158]",
+     "1 of 10"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/06-mnar-family.md:338-520",
+   "note_pt": "Viés = preenchimento − verdade, unidades padronizadas, média das colunas numéricas, média de 15 folds; negativo = subestima. Δ = MNAR − MCAR, pareado por fold. Os preenchimentos do modelo são os de K. As tabelas completas por par trazem os 10 métodos (model, mean_mode, knn5, knn10, hgb, lgbm, missforest, condexp, softimpute, ice)."
+  },
+  {
+   "id": "mech_e63_mar_smoke",
+   "title_pt": "Smoke MAR (E63): MAR menos controle a 60nan, seeds 42/7/13",
+   "columns": [
+    "tabela (60nan)",
+    "(H − bar) MAR menos controle",
+    "(H − strong) MAR menos controle",
+    "(K − H) MAR menos controle"
+   ],
+   "rows": [
+    [
+     "biodeg",
+     "+0.0104 [-0.0128, +0.0336] none",
+     "+0.0410 [+0.0069, +0.0751] worse",
+     "-0.0043 [-0.0237, +0.0150] none"
+    ],
+    [
+     "kc2",
+     "-0.0725 [-0.1371, -0.0079] better",
+     "-0.1124 [-0.1591, -0.0657] better",
+     "+0.0365 [-0.0030, +0.0760] none"
+    ],
+    [
+     "vehicle",
+     "+0.0029 [-0.0129, +0.0186] none",
+     "+0.0057 [-0.0125, +0.0238] none",
+     "+0.0025 [-0.0117, +0.0167] none"
+    ],
+    [
+     "kr-vs-kp",
+     "+0.0098 [-0.0036, +0.0233] none",
+     "+0.0103 [+0.0011, +0.0196] worse",
+     "-0.0018 [-0.0106, +0.0071] none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/18-mar-smoke.md:81-113",
+   "note_pt": "Positivo = o MAR custou terreno ao TRIDENT contra aquele oponente. O melhor do tier forte foi o TabPFN nas quatro. Veredito do smoke: loses ground; refutado pela família (E64)."
+  },
+  {
+   "id": "mech_e64_mar_family",
+   "title_pt": "Família MAR (E64): H contra a barra, o tier forte e o TabPFN sob MAR e sob o controle casado, e as interações",
+   "columns": [
+    "tabela-nível",
+    "MAR: H − bar",
+    "MAR: H − strong",
+    "MAR: H − tabpfn",
+    "controle: H − bar",
+    "controle: H − strong",
+    "controle: H − tabpfn",
+    "(H − bar) MAR menos controle",
+    "(H − strong) MAR menos controle",
+    "(K − H) MAR menos controle"
+   ],
+   "rows": [
+    [
+     "biodeg_20nan",
+     "(hgb/lgbm) -0.0126 none",
+     "(missforest/tabpfn) -0.0221 none",
+     "-0.0384 none",
+     "(hgb/lgbm) -0.0217 none",
+     "(missforest/tabpfn) -0.0210 none",
+     "-0.0247 none",
+     "+0.0091 [-0.0220, +0.0402] none",
+     "-0.0012 [-0.0575, +0.0552] none",
+     "+0.0088 [-0.0211, +0.0387] none"
+    ],
+    [
+     "biodeg_60nan",
+     "(hgb/lgbm) -0.0097 none",
+     "(tabpfn) -0.0042 none",
+     "-0.0042 none",
+     "(hgb/lgbm) -0.0495 better",
+     "(tabpfn) -0.0333 better",
+     "-0.0333 better",
+     "+0.0398 [+0.0186, +0.0610] worse",
+     "+0.0291 [+0.0081, +0.0500] worse",
+     "-0.0080 [-0.0242, +0.0081] none"
+    ],
+    [
+     "kc2_20nan",
+     "(hgb/knn5) -0.1121 better",
+     "(tabpfn) +0.0889 worse",
+     "+0.0889 worse",
+     "(knn5) +0.0118 none",
+     "(ice/tabpfn) +0.1216 worse",
+     "+0.1175 worse",
+     "-0.1239 [-0.2481, +0.0003] none",
+     "-0.0327 [-0.1303, +0.0648] none",
+     "-0.0471 [-0.1223, +0.0281] none"
+    ],
+    [
+     "kc2_60nan",
+     "(hgb/lgbm) -0.0888 better",
+     "(ice) -0.0500 none",
+     "-0.0682 better",
+     "(knn5) -0.1348 better",
+     "(tabpfn) -0.0421 none",
+     "-0.0421 none",
+     "+0.0460 [+0.0058, +0.0862] worse",
+     "-0.0079 [-0.0732, +0.0573] none",
+     "-0.0005 [-0.0532, +0.0521] none"
+    ],
+    [
+     "vehicle_20nan",
+     "(hgb/lgbm) -0.0436 better",
+     "(ice) +0.0080 none",
+     "-0.0061 none",
+     "(lgbm) -0.0517 better",
+     "(tabpfn) +0.0105 none",
+     "+0.0105 none",
+     "+0.0080 [-0.0271, +0.0431] none",
+     "-0.0025 [-0.0433, +0.0382] none",
+     "+0.0037 [-0.0065, +0.0138] none"
+    ],
+    [
+     "vehicle_60nan",
+     "(hgb/lgbm) -0.0295 better",
+     "(tabpfn) +0.0208 none",
+     "+0.0208 none",
+     "(hgb/lgbm) -0.0553 better",
+     "(tabpfn) +0.0234 worse",
+     "+0.0234 worse",
+     "+0.0258 [+0.0084, +0.0432] worse",
+     "-0.0026 [-0.0329, +0.0277] none",
+     "-0.0016 [-0.0177, +0.0145] none"
+    ],
+    [
+     "kr-vs-kp_20nan",
+     "(lgbm) -0.0191 better",
+     "(tabpfn) +0.0037 none",
+     "+0.0037 none",
+     "(hgb/lgbm) -0.0112 none",
+     "(tabpfn) +0.0107 none",
+     "+0.0107 none",
+     "-0.0079 [-0.0335, +0.0176] none",
+     "-0.0070 [-0.0265, +0.0125] none",
+     "-0.0152 [-0.0340, +0.0037] none"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "(hgb/lgbm) -0.0360 better",
+     "(tabpfn) +0.0336 worse",
+     "+0.0336 worse",
+     "(lgbm) -0.0396 better",
+     "(tabpfn) +0.0316 worse",
+     "+0.0316 worse",
+     "+0.0036 [-0.0097, +0.0170] none",
+     "+0.0020 [-0.0091, +0.0131] none",
+     "-0.0021 [-0.0136, +0.0095] none"
+    ],
+    [
+     "spambase_20nan",
+     "(hgb/lgbm) -0.0064 none",
+     "(missforest) -0.0011 equivalent",
+     "-0.0860 better",
+     "(hgb/lgbm) -0.0017 none",
+     "(missforest) -0.0015 none",
+     "-0.0855 better",
+     "-0.0048 [-0.0185, +0.0089] none",
+     "+0.0004 [-0.0099, +0.0107] none",
+     "+0.0062 [-0.0046, +0.0170] none"
+    ],
+    [
+     "spambase_60nan",
+     "(hgb/lgbm) -0.0211 better",
+     "(tabpfn) -0.0373 better",
+     "-0.0373 better",
+     "(hgb/lgbm) -0.0147 better",
+     "(tabpfn) -0.0355 better",
+     "-0.0355 better",
+     "-0.0063 [-0.0166, +0.0039] none",
+     "-0.0018 [-0.0127, +0.0092] none",
+     "+0.0014 [-0.0069, +0.0098] none"
+    ],
+    [
+     "credit-g_20nan",
+     "(hgb/lgbm) -0.0409 better",
+     "(tabpfn) +0.0224 worse",
+     "+0.0224 worse",
+     "(hgb/lgbm) -0.0268 better",
+     "(tabpfn) +0.0064 none",
+     "+0.0064 none",
+     "-0.0142 [-0.0364, +0.0081] none",
+     "+0.0160 [-0.0005, +0.0325] none",
+     "-0.0130 [-0.0375, +0.0114] none"
+    ],
+    [
+     "credit-g_60nan",
+     "(knn10) -0.0190 better",
+     "(tabpfn) +0.0386 worse",
+     "+0.0386 worse",
+     "(knn10) -0.0132 better",
+     "(tabpfn) +0.0349 worse",
+     "+0.0349 worse",
+     "-0.0059 [-0.0275, +0.0157] none",
+     "+0.0036 [-0.0123, +0.0196] none",
+     "-0.0041 [-0.0245, +0.0164] none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/19-mar-family.md:90-183",
+   "note_pt": "MAR = <base>_marf_<pp>nan (seed 4060, slope 1.5); controle = <base>_marfctl_<pp>nan; seeds 404/505/606; 15 pares de folds. impute_score induzido, menor é melhor; negativo favorece H. Entre parênteses, o baseline que foi o melhor da barra ou do tier. Nas três últimas colunas, positivo = o MAR custou terreno. Primário (H − strong) MAR menos controle: pior 1 (biodeg_60nan), sem diferença 11 -> refuted. Dial no biodeg_60nan, (H − strong) MAR menos controle: slope 0p75 +0.0285 none; 1p5 +0.0291 worse; 3 +0.0181 none (19-mar-family.md:175-177)."
+  },
+  {
+   "id": "mech_e68_tuned_bar",
+   "title_pt": "Família MAR contra a barra tunada (E68): H − barra tunada sob MAR e sob o controle",
+   "columns": [
+    "tabela-nível",
+    "MAR: H − tuned bar",
+    "controle: H − tuned bar",
+    "(H − tuned bar) MAR menos controle"
+   ],
+   "rows": [
+    [
+     "biodeg_20nan",
+     "-0.0012 none",
+     "-0.0122 none",
+     "+0.0110 [-0.0228, +0.0448] none"
+    ],
+    [
+     "biodeg_60nan",
+     "-0.0108 none",
+     "-0.0473 better",
+     "+0.0365 [+0.0137, +0.0593] worse"
+    ],
+    [
+     "kc2_20nan",
+     "-0.1118 better",
+     "+0.0150 none",
+     "-0.1268 [-0.2491, -0.0045] better"
+    ],
+    [
+     "kc2_60nan",
+     "-0.0878 better",
+     "-0.1310 better",
+     "+0.0431 [+0.0012, +0.0851] worse"
+    ],
+    [
+     "vehicle_20nan",
+     "-0.0367 better",
+     "-0.0543 better",
+     "+0.0176 [-0.0181, +0.0533] none"
+    ],
+    [
+     "vehicle_60nan",
+     "-0.0288 better",
+     "-0.0547 better",
+     "+0.0259 [+0.0062, +0.0455] worse"
+    ],
+    [
+     "kr-vs-kp_20nan",
+     "-0.0200 better",
+     "-0.0147 none",
+     "-0.0053 [-0.0298, +0.0193] none"
+    ],
+    [
+     "kr-vs-kp_60nan",
+     "+0.0068 none",
+     "-0.0036 none",
+     "+0.0103 [-0.0020, +0.0227] none"
+    ],
+    [
+     "spambase_20nan",
+     "-0.0047 none",
+     "+0.0018 none",
+     "-0.0065 [-0.0191, +0.0061] none"
+    ],
+    [
+     "spambase_60nan",
+     "-0.0058 none",
+     "+0.0044 none",
+     "-0.0101 [-0.0194, -0.0008] better"
+    ],
+    [
+     "credit-g_20nan",
+     "-0.0206 better",
+     "-0.0245 better",
+     "+0.0039 [-0.0225, +0.0303] none"
+    ],
+    [
+     "credit-g_60nan",
+     "-0.0009 none",
+     "+0.0084 none",
+     "-0.0093 [-0.0243, +0.0058] none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/23-mar-tuned-bar.md:60-138",
+   "note_pt": "Barra tunada = knn, hgb e lgbm ajustados nas lacunas de validação (driver do E42). Negativo favorece H; na última coluna, positivo = o MAR custou terreno. Contagem: better 2 / no difference 7 / worse 3 -> mixed. H nunca fica pior que a barra tunada em nenhuma tabela-nível, sob nenhum dos mecanismos."
+  },
+  {
+   "id": "mech_e62_mcar_draws",
+   "title_pt": "Sorteios MCAR novos (E62): K contra a barra e o tier forte em três sorteios de cada variante",
+   "columns": [
+    "variante",
+    "sorteio",
+    "K − bar",
+    "K − strong"
+   ],
+   "rows": [
+    [
+     "pendigits_20nan",
+     "draw 1 (shipped)",
+     "(knn10) -0.0309 [-0.0337, -0.0280] better",
+     "(tabpfn) +0.0112 [+0.0070, +0.0154] worse"
+    ],
+    [
+     "pendigits_20nan",
+     "draw 2 (seed 1062)",
+     "(knn10) -0.0274 [-0.0310, -0.0239] better",
+     "(tabpfn) +0.0158 [+0.0125, +0.0192] worse"
+    ],
+    [
+     "pendigits_20nan",
+     "draw 3 (seed 2062)",
+     "(knn10) -0.0322 [-0.0354, -0.0291] better",
+     "(tabpfn) +0.0118 [+0.0088, +0.0147] worse"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "draw 1 (shipped)",
+     "(lgbm) -0.0392 [-0.0477, -0.0307] better",
+     "(tabpfn) +0.0130 [+0.0060, +0.0200] worse"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "draw 2 (seed 1082)",
+     "(hgb/lgbm) -0.0414 [-0.0517, -0.0311] better",
+     "(tabpfn) +0.0142 [+0.0067, +0.0217] worse"
+    ],
+    [
+     "kr-vs-kp_40nan",
+     "draw 3 (seed 2082)",
+     "(hgb/lgbm) -0.0393 [-0.0494, -0.0292] better",
+     "(tabpfn) +0.0160 [+0.0116, +0.0204] worse"
+    ],
+    [
+     "credit-g_60nan",
+     "draw 1 (shipped)",
+     "(mean_mode) -0.0078 [-0.0162, +0.0006] none",
+     "(tabpfn) +0.0387 [+0.0300, +0.0475] worse"
+    ],
+    [
+     "credit-g_60nan",
+     "draw 2 (seed 1102)",
+     "(mean_mode) -0.0129 [-0.0235, -0.0023] better",
+     "(tabpfn) +0.0322 [+0.0222, +0.0422] worse"
+    ],
+    [
+     "credit-g_60nan",
+     "draw 3 (seed 2102)",
+     "(mean_mode) -0.0115 [-0.0196, -0.0035] better",
+     "(tabpfn) +0.0304 [+0.0227, +0.0382] worse"
+    ],
+    [
+     "biodeg_80nan",
+     "draw 1 (shipped)",
+     "(mean_mode) -0.0298 [-0.0398, -0.0199] better",
+     "(missforest/tabpfn) +0.0515 [+0.0415, +0.0614] worse"
+    ],
+    [
+     "biodeg_80nan",
+     "draw 2 (seed 1122)",
+     "(mean_mode) -0.0197 [-0.0282, -0.0113] better",
+     "(tabpfn) +0.0645 [+0.0573, +0.0716] worse"
+    ],
+    [
+     "biodeg_80nan",
+     "draw 3 (seed 2122)",
+     "(mean_mode) -0.0367 [-0.0453, -0.0282] better",
+     "(tabpfn) +0.0510 [+0.0413, +0.0606] worse"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/17-mcar-draws.md:99-135",
+   "note_pt": "Leitura K (o default), seeds 42/7/13, 15 pares de folds; negativo favorece o TRIDENT. Primário: nenhuma inversão em K − bar e K − strong -> holds; credit-g_60nan deriva em K − bar (none / better / better)."
+  },
+  {
+   "id": "mech_e67_null_gaps",
+   "title_pt": "Lacunas como [NULL] no decode (E67): braço N menos default G, em H, por par MNAR",
+   "columns": [
+    "par MNAR contra controle",
+    "MNAR N − G (H)",
+    "MCAR N − G (H)",
+    "(N − G), MNAR menos MCAR (H)"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p25_60nan vs biodeg_60nan",
+     "+0.0297 [+0.0222, +0.0372] worse",
+     "+0.0583 [+0.0422, +0.0744] worse",
+     "-0.0286 [-0.0442, -0.0130] better"
+    ],
+    [
+     "biodeg_probit_60nan vs biodeg_60nan",
+     "+0.0659 [+0.0485, +0.0833] worse",
+     "+0.0583 [+0.0422, +0.0744] worse",
+     "+0.0076 [-0.0131, +0.0283] none"
+    ],
+    [
+     "biodeg_probit1p0_60nan vs biodeg_60nan",
+     "+0.0757 [+0.0670, +0.0844] worse",
+     "+0.0583 [+0.0422, +0.0744] worse",
+     "+0.0174 [+0.0029, +0.0319] worse"
+    ],
+    [
+     "biodeg_probit2p0_60nan vs biodeg_60nan",
+     "+0.0987 [+0.0912, +0.1061] worse",
+     "+0.0583 [+0.0422, +0.0744] worse",
+     "+0.0404 [+0.0238, +0.0570] worse"
+    ],
+    [
+     "spambase_probit_60nan vs spambase_60nan",
+     "+0.0188 [+0.0101, +0.0275] worse",
+     "+0.0301 [+0.0012, +0.0590] worse",
+     "-0.0113 [-0.0420, +0.0193] none"
+    ],
+    [
+     "biodeg_probit_20nan vs biodeg_20nan",
+     "+0.0305 [+0.0133, +0.0478] worse",
+     "+0.0256 [+0.0090, +0.0422] worse",
+     "+0.0049 [-0.0191, +0.0290] none"
+    ],
+    [
+     "kc2_probit_20nan vs kc2_20nan",
+     "+0.0156 [-0.0100, +0.0412] none",
+     "+0.0069 [-0.0169, +0.0306] none",
+     "+0.0088 [-0.0245, +0.0420] none"
+    ],
+    [
+     "vehicle_probit_20nan vs vehicle_20nan",
+     "+0.0425 [+0.0104, +0.0746] worse",
+     "+0.0167 [+0.0025, +0.0309] worse",
+     "+0.0258 [-0.0076, +0.0593] none"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/22-null-gaps.md:80-121",
+   "note_pt": "Positivo = mostrar as lacunas como [NULL] (braço N) é pior que o default [MASK] (G). Seeds 42/7/13. Primário: better 1 / no difference 5 / worse 2 -> refuted."
+  },
+  {
+   "id": "mech_e81_gap_reliance",
+   "title_pt": "O decoder que distingue lacuna real de máscara lê o padrão de lacunas? (E81) S por variante e custo em acurácia",
+   "columns": [
+    "variante",
+    "S (braço null) [95%]",
+    "S contra a SESOI 0.01",
+    "K null − mask"
+   ],
+   "rows": [
+    [
+     "biodeg_60nan",
+     "-0.0022 [-0.0031, -0.0012]",
+     "not above",
+     "+0.0560 [+0.0461, +0.0659] worse"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "+0.0201 [+0.0188, +0.0215]",
+     "above the SESOI",
+     "+0.0329 [+0.0240, +0.0419] worse"
+    ],
+    [
+     "biodeg_probit_60nan",
+     "+0.0351 [+0.0332, +0.0370]",
+     "above the SESOI",
+     "+0.0509 [+0.0425, +0.0593] worse"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "+0.0704 [+0.0600, +0.0808]",
+     "above the SESOI",
+     "+0.0689 [+0.0609, +0.0768] worse"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "+0.0049 [+0.0015, +0.0083]",
+     "not above",
+     "+0.0843 [+0.0775, +0.0911] worse"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "+0.0430 [+0.0393, +0.0467]",
+     "above the SESOI",
+     "+0.0712 [+0.0581, +0.0842] worse"
+    ],
+    [
+     "vehicle_60nan",
+     "-0.0047 [-0.0069, -0.0025]",
+     "not above",
+     "+0.0231 [+0.0114, +0.0349] worse"
+    ],
+    [
+     "kc2_probit_60nan",
+     "+0.0204 [+0.0163, +0.0245]",
+     "above the SESOI",
+     "+0.0965 [+0.0722, +0.1208] worse"
+    ],
+    [
+     "kc2_60nan",
+     "-0.0040 [-0.0054, -0.0025]",
+     "not above",
+     "+0.0626 [+0.0240, +0.1013] worse"
+    ],
+    [
+     "spambase_probit_60nan",
+     "+0.0081 [+0.0071, +0.0091]",
+     "not above",
+     "+0.0089 [+0.0059, +0.0119] worse"
+    ],
+    [
+     "spambase_60nan",
+     "+0.0007 [+0.0002, +0.0011]",
+     "not above",
+     "+0.0052 [+0.0018, +0.0086] worse"
+    ]
+   ],
+   "source": "docs/tickets/imputation-interpretability/04-gap-reliance.md:130-146",
+   "note_pt": "S = deslocamento assinado do preenchimento quando o [NULL] de uma coluna correlacionada (|ρ| ≥ 0,2) é trocado por [MASK], alinhado ao sinal de ρ; S positivo = o decoder lê a lacuna como 'valor alto'. Seeds 101/202/303. Na última coluna, positivo = o braço null é menos preciso que o default. Primário: mixed."
+  },
+  {
+   "id": "mech_e72_vae_levels",
+   "title_pt": "not-MIWAE, MIWAE e o modelo (E72): impute_score médio por variante MNAR e seu controle MCAR",
+   "columns": [
+    "variante MNAR",
+    "modelo MNAR",
+    "MIWAE MNAR",
+    "not-MIWAE MNAR",
+    "modelo controle MCAR",
+    "MIWAE controle MCAR",
+    "not-MIWAE controle MCAR"
+   ],
+   "rows": [
+    [
+     "biodeg_probit_60nan",
+     "0.912",
+     "0.992",
+     "3.826",
+     "0.761",
+     "0.901",
+     "3.709"
+    ],
+    [
+     "kc2_probit_60nan",
+     "0.691",
+     "0.777",
+     "0.878",
+     "0.572",
+     "0.671",
+     "0.826"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "0.620",
+     "0.620",
+     "0.608",
+     "0.645",
+     "0.634",
+     "0.657"
+    ],
+    [
+     "spambase_probit_60nan",
+     "0.950",
+     "1.023",
+     "8.339",
+     "0.942",
+     "1.026",
+     "9.370"
+    ],
+    [
+     "biodeg_probit_20nan",
+     "0.616",
+     "0.891",
+     "4.484",
+     "0.587",
+     "0.843",
+     "4.120"
+    ],
+    [
+     "kc2_probit_20nan",
+     "0.497",
+     "0.656",
+     "0.824",
+     "0.541",
+     "0.667",
+     "0.906"
+    ],
+    [
+     "vehicle_probit_20nan",
+     "0.427",
+     "0.567",
+     "0.609",
+     "0.418",
+     "0.537",
+     "0.605"
+    ],
+    [
+     "biodeg_probit0p25_60nan",
+     "0.903",
+     "0.971",
+     "1.670",
+     "0.761",
+     "0.901",
+     "3.709"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "0.921",
+     "1.002",
+     "4.533",
+     "0.761",
+     "0.901",
+     "3.709"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "0.915",
+     "1.013",
+     "4.323",
+     "0.761",
+     "0.901",
+     "3.709"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/25-not-miwae.md:157-169",
+   "note_pt": "Média de impute_score em 15 folds; menor é melhor e o mean_mode é 1.000 em todas. 'Modelo' = o checkpoint K do run. O preenchimento do not-MIWAE do E72 falha em biodeg e spambase (acima de 1); o E73 o substitui por um preenchimento pela média (0.84–1.03). Não comparar níveis entre MNAR e MCAR: o denominador média/moda é enviesado sob MNAR."
+  },
+  {
+   "id": "mech_e93_h_vs_tabpfn_offmcar",
+   "title_pt": "Fora do MCAR, H já está à frente do TabPFN na maioria das variantes (E93, seeds 4545/5656/6767)",
+   "columns": [
+    "variante (60nan)",
+    "mecanismo",
+    "H",
+    "TabPFN",
+    "table − model (H)",
+    "table − tabpfn"
+   ],
+   "rows": [
+    [
+     "biodeg_probit0p25_60nan",
+     "MNAR, slope 0.25",
+     "0.9114",
+     "0.9150",
+     "-0.0066 [-0.0111, -0.0021] better",
+     "-0.0102 [-0.0155, -0.0050] better"
+    ],
+    [
+     "biodeg_probit_60nan",
+     "MNAR, slope 0.5",
+     "0.9123",
+     "0.9246",
+     "+0.0017 [-0.0050, +0.0084] equivalent",
+     "-0.0106 [-0.0146, -0.0065] better"
+    ],
+    [
+     "biodeg_probit1p0_60nan",
+     "MNAR, slope 1.0",
+     "0.9306",
+     "0.9379",
+     "-0.0006 [-0.0023, +0.0012] equivalent",
+     "-0.0078 [-0.0101, -0.0056] better"
+    ],
+    [
+     "biodeg_probit2p0_60nan",
+     "MNAR, slope 2.0",
+     "0.9321",
+     "0.9545",
+     "+0.0059 [-0.0003, +0.0121] none",
+     "-0.0165 [-0.0211, -0.0119] better"
+    ],
+    [
+     "vehicle_probit_60nan",
+     "MNAR, slope 0.5",
+     "0.6308",
+     "0.6225",
+     "-0.0169 [-0.0202, -0.0136] better",
+     "-0.0086 [-0.0135, -0.0037] better"
+    ],
+    [
+     "kc2_probit_60nan",
+     "MNAR, slope 0.5",
+     "0.7253",
+     "0.7757",
+     "+0.0063 [-0.0205, +0.0331] none",
+     "-0.0440 [-0.0569, -0.0312] better"
+    ],
+    [
+     "spambase_probit_60nan",
+     "MNAR, slope 0.5",
+     "0.9597",
+     "0.9955",
+     "+0.0090 [+0.0056, +0.0124] worse",
+     "-0.0268 [-0.0310, -0.0226] better"
+    ],
+    [
+     "biodeg_marf_60nan",
+     "MAR",
+     "0.6864",
+     "0.7056",
+     "-0.0221 [-0.0328, -0.0115] better",
+     "-0.0413 [-0.0606, -0.0220] better"
+    ],
+    [
+     "kc2_marf_60nan",
+     "MAR",
+     "0.5987",
+     "0.6701",
+     "+0.0091 [-0.0031, +0.0214] none",
+     "-0.0623 [-0.1058, -0.0188] better"
+    ],
+    [
+     "vehicle_marf_60nan",
+     "MAR",
+     "0.4510",
+     "0.4445",
+     "-0.0154 [-0.0226, -0.0082] better",
+     "-0.0089 [-0.0408, +0.0230] none"
+    ],
+    [
+     "spambase_marf_60nan",
+     "MAR",
+     "0.9058",
+     "0.9354",
+     "-0.0071 [-0.0099, -0.0043] better",
+     "-0.0368 [-0.0429, -0.0306] better"
+    ],
+    [
+     "credit-g_marf_60nan",
+     "MAR",
+     "0.9353",
+     "0.9054",
+     "-0.0116 [-0.0183, -0.0048] better",
+     "+0.0184 [+0.0084, +0.0284] worse"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:76-90",
+   "note_pt": "H e TabPFN: impute_score médio (menor é melhor). Nas contrastes, negativo favorece o híbrido `table`. A tabela do híbrido em si também está no extrato do híbrido (id e93_per_variant); aqui o foco é H contra TabPFN fora do MCAR. Primário `table`: mixed."
+  },
+  {
+   "id": "mech_e160_remasker",
+   "title_pt": "ReMasker fora do MCAR (E160): H − ReMasker sob o mecanismo, sob o controle, e a interação",
+   "columns": [
+    "tabela-nível",
+    "mecanismo",
+    "mecanismo: H − remasker",
+    "controle: H − remasker",
+    "(H − remasker), mecanismo menos controle"
+   ],
+   "rows": [
+    [
+     "biodeg 20nan",
+     "MAR (marf)",
+     "-0.4641 better",
+     "-0.3640 better",
+     "-0.1002 [-0.1602, -0.0401] better"
+    ],
+    [
+     "biodeg 60nan",
+     "MAR (marf)",
+     "-0.4075 better",
+     "-0.1914 better",
+     "-0.2160 [-0.2724, -0.1597] better"
+    ],
+    [
+     "kc2 20nan",
+     "MAR (marf)",
+     "-0.1713 better",
+     "-0.1198 none",
+     "-0.0515 [-0.1515, +0.0485] none"
+    ],
+    [
+     "kc2 60nan",
+     "MAR (marf)",
+     "-0.0662 better",
+     "-0.1192 better",
+     "+0.0530 [-0.0143, +0.1203] none"
+    ],
+    [
+     "vehicle 20nan",
+     "MAR (marf)",
+     "-0.2266 better",
+     "-0.1597 better",
+     "-0.0669 [-0.1039, -0.0298] better"
+    ],
+    [
+     "vehicle 60nan",
+     "MAR (marf)",
+     "-0.2720 better",
+     "-0.0736 better",
+     "-0.1984 [-0.2828, -0.1141] better"
+    ],
+    [
+     "biodeg 20nan",
+     "MNAR (probit)",
+     "-0.2344 better",
+     "-0.2657 better",
+     "+0.0313 [-0.0058, +0.0684] none"
+    ],
+    [
+     "biodeg 60nan",
+     "MNAR (probit)",
+     "-0.0829 better",
+     "-0.1423 better",
+     "+0.0593 [+0.0449, +0.0738] worse"
+    ],
+    [
+     "kc2 20nan",
+     "MNAR (probit)",
+     "-0.1161 better",
+     "-0.1545 better",
+     "+0.0384 [-0.0670, +0.1438] none"
+    ],
+    [
+     "kc2 60nan",
+     "MNAR (probit)",
+     "-0.0006 none",
+     "-0.0560 none",
+     "+0.0554 [-0.0079, +0.1187] none"
+    ],
+    [
+     "vehicle 20nan",
+     "MNAR (probit)",
+     "-0.1584 better",
+     "-0.1297 better",
+     "-0.0287 [-0.0642, +0.0069] none"
+    ],
+    [
+     "vehicle 60nan",
+     "MNAR (probit)",
+     "-0.0704 better",
+     "-0.0353 better",
+     "-0.0352 [-0.0628, -0.0076] better"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/58-remasker-off-mcar.md:67-125",
+   "note_pt": "MAR: células do E64 (404/505/606), controle marfctl; MNAR: células de E45/E46 (42/7/13), controle MCAR. Negativo favorece H; na interação, positivo = o ReMasker ganhou terreno sob o mecanismo. Primário: worse 1, better 5 -> refuted."
+  },
+  {
+   "id": "mech_steepest_selfmasking_hybrid",
+   "title_pt": "O caso em que todo híbrido perde para H: biodeg_probit2p0_60nan em três conjuntos de seeds",
+   "columns": [
+    "estudo",
+    "seeds",
+    "comparação",
+    "valor e veredito"
+   ],
+   "rows": [
+    [
+     "E93",
+     "4545/5656/6767",
+     "table − model",
+     "+0.0059 [-0.0003, +0.0121] none"
+    ],
+    [
+     "E170",
+     "42/7/13",
+     "crossfit − H",
+     "+0.0095 [+0.0051, +0.0139]"
+    ],
+    [
+     "E170",
+     "42/7/13",
+     "table_tabpfn − H",
+     "+0.0106"
+    ],
+    [
+     "E172",
+     "101/202/303",
+     "table_tabpfn − H",
+     "+0.0066 [+0.0043, +0.0090] worse"
+    ],
+    [
+     "E172",
+     "101/202/303",
+     "crossfit − H",
+     "+0.0066 [+0.0043, +0.0090] worse"
+    ],
+    [
+     "E172",
+     "101/202/303",
+     "table_missforest − H",
+     "+0.0011 [+0.0002, +0.0021] worse"
+    ]
+   ],
+   "source": "docs/tickets/imputation-protocol/35-hybrid-mechanisms.md:79; docs/tickets/imputation-protocol/65-crossfit-off-mcar.md:51-53; docs/tickets/imputation-protocol/66-crossfit-off-mcar-seeds.md:98-108",
+   "note_pt": "impute_score; positivo = o híbrido é pior que H. No E170 a linha do crossfit é o 'worse' que torna o primário mixed; o valor do table_tabpfn é citado sem intervalo no ticket. No E172 o crossfit escolheu o missForest em 0 de 15 folds e coincide com table_tabpfn."
+  }
+ ],
+ "definitions": [
+  {
+   "term": "impute_score",
+   "definition_pt": "Erro de imputação nas células induzidas relativo ao preenchimento pela média (colunas numéricas) ou moda (categóricas) da coluna; menor é melhor e 1,0 é, por construção, o próprio preenchimento por média/moda. Sob MNAR esse denominador vem das células observadas, que o mecanismo enviesa, então só contrastes dentro da mesma variante são comparados.",
+   "source": "docs/adr/0007-baseline-imputers-scored-on-the-decoders-cells.md:42,76-77; docs/tickets/imputation-protocol/05-mnar-smoke.md:94-95,119-121"
+  },
+  {
+   "term": "células induzidas",
+   "definition_pt": "As células que faltam numa variante (por exemplo `_60nan`) mas estão observadas na tabela completa `_00nan`, alinhada linha a linha; sua verdade é conhecida, e é nelas que o impute_score é medido.",
+   "source": "datasets/generate_mnar.py:11-14"
+  },
+  {
+   "term": "MCAR",
+   "definition_pt": "Falta completamente ao acaso: em cada coluna de atributos, round(n × taxa) linhas sorteadas uniformemente, sem reposição.",
+   "source": "datasets/generate_splits.py:26-49"
+  },
+  {
+   "term": "MNAR auto-mascarante (probit)",
+   "definition_pt": "Falta que depende do próprio valor: a mesma contagem por coluna, sorteada com peso Φ(inclinação · z), z = valor padronizado na tabela completa; valores altos somem mais. Variantes `<base>_probit_<pp>nan` (inclinação 0,5) e o dial `_probit0p25_`, `_probit1p0_`, `_probit2p0_`.",
+   "source": "datasets/generate_mnar.py:5-10,56-59"
+  },
+  {
+   "term": "MAR com colunas motoras",
+   "definition_pt": "Falta que depende de outras colunas observadas: 30% das colunas (as motoras) nunca perdem células; cada outra coluna perde round(n × taxa) células com peso sigmoid(1,5 · s), em que s é uma combinação aleatória e padronizada das motoras. Variantes `_mar_` (smoke) e `_marf_` (família).",
+   "source": "datasets/generate_mar.py:14-21; datasets/generate_mar_family.py:5-15"
+  },
+  {
+   "term": "controle MCAR casado",
+   "definition_pt": "Para cada variante MAR, a mesma contagem nas mesmas colunas (motoras intactas), sorteada uniformemente (`_marctl_`, `_marfctl_`); para cada variante MNAR, o `_<pp>nan` publicado, com as mesmas contagens por coluna. O efeito do mecanismo é sempre lido como mecanismo menos controle.",
+   "source": "datasets/generate_mar.py:8-10,22-24; docs/tickets/imputation-protocol/06-mnar-family.md:27-38"
+  },
+  {
+   "term": "efeito do mecanismo",
+   "definition_pt": "A diferença de um contraste entre o mecanismo e seu controle, pareada por fold, por exemplo (H − barra), MNAR menos MCAR, ou (H − strong), MAR menos controle; positivo significa que o mecanismo custou terreno ao TRIDENT contra aquele oponente.",
+   "source": "docs/tickets/imputation-protocol/19-mar-family.md:55-62; docs/tickets/imputation-protocol/05-mnar-smoke.md:131"
+  },
+  {
+   "term": "barra (bar)",
+   "definition_pt": "O tier fraco de baselines: o melhor, por variante, entre mean_mode, knn5, knn10, hgb e lgbm.",
+   "source": "docs/adr/0021-two-tiers-of-baseline-imputers.md:54"
+  },
+  {
+   "term": "tier forte (strong, strong_live)",
+   "definition_pt": "missForest, condexp, SoftImpute, ICE e TabPFN v2 (este offline). `strong_live` é o melhor dos quatro logados no run; nas variantes MNAR é só o missForest, porque os braços lineares não foram rodados nelas. `strong` acrescenta o TabPFN onde o estudo tem a passada offline.",
+   "source": "docs/adr/0028-tabpfn-joins-the-strong-tier-as-an-offline-member.md:31-39; docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:47-48"
+  },
+  {
+   "term": "barra tunada",
+   "definition_pt": "knn, hgb e lgbm com hiperparâmetros ajustados nas lacunas de validação (o driver do E42); fica offline, não é um tier.",
+   "source": "docs/EXPERIMENTATION_LOG.md:2369-2376"
+  },
+  {
+   "term": "H e K",
+   "definition_pt": "Dois checkpoints do decoder. K (o default, ADR 0015) é escolhido pontuando as lacunas de validação contra a tabela completa, que só existe no benchmark, por isso é um limite de oráculo. H é a época de menor perda na máscara fixa de validação e não precisa da tabela completa; afirmações sobre MNAR e implantação são lidas em H.",
+   "source": "docs/adr/0024-the-deployable-readout-for-claims-that-must-transfer.md:17-26,47-50"
+  },
+  {
+   "term": "regra de veredito e SESOI",
+   "definition_pt": "Por variante: 15 pares de folds, intervalo t de 95% e seeds concordando no sinal dão better/worse; sem veredito, a chamada é 'equivalent' quando o intervalo cabe em ±1% da média do oponente (a menor diferença de interesse, SESOI); senão 'none' (sem diferença).",
+   "source": "docs/adr/0020-one-reading-of-imputation-comparisons.md:16-17,44-47"
+  },
+  {
+   "term": "[MASK] e [NULL]",
+   "definition_pt": "No default (ADR 0014) uma lacuna real e uma célula escondida pelo próprio treino são o mesmo token `[MASK]`; com `--decode_gap_token null` as lacunas reais aparecem como `[NULL]`, um token separado.",
+   "source": "docs/EXPERIMENTATION_LOG.md:2697-2699"
+  },
+  {
+   "term": "híbrido `table` (ADR 0031 decisão 6)",
+   "definition_pt": "Saída offline que combina H e TabPFN com um peso numérico e uma escolha categórica por tabela, escolhidos em células observadas de validação escondidas de propósito, sem a tabela completa.",
+   "source": "docs/EXPERIMENTATION_LOG.md:3082-3083"
+  },
+  {
+   "term": "not-MIWAE",
+   "definition_pt": "VAE com pesos de importância que multiplica o limite do MIWAE por um modelo do mecanismo, auto-mascaramento logístico P(lacuna em x_j) = sigmoid(w_j (x_j − b_j)) com sinal aprendido; o MIWAE é o mesmo modelo sem esse termo (assume MAR).",
+   "source": "docs/tickets/imputation-protocol/25-not-miwae.md:24-30"
+  }
+ ],
+ "missing": [
+  "Nenhum resultado de imputação fora do MCAR a 80nan: os pares MNAR param em 60nan (docs/tickets/imputation-protocol/13-tabpfn-seed-sets.md:175) e a família MAR só gera 0.2, 0.4 e 0.6 (datasets/generate_mar_family.py:47).",
+  "MNAR em tabelas categóricas ou mistas (kr-vs-kp, credit-g, electricity): o gerador recusa bases com colunas categóricas (datasets/generate_mnar.py:16-17, 69-70); nenhum estudo encontrado.",
+  "MNAR dependente do desfecho (F3, outcome) ou do sinal (F4) aplicado à imputação: as variantes de datasets/mnar_family.py só aparecem nos tickets de classificação C15 (docs/tickets/c15-mnar-prediction/), não em estudos de imputação.",
+  "O tier forte vivo completo (com os braços lineares condexp, SoftImpute, ICE) nas variantes MNAR: sem os CSVs do E41, o strong_live delas é só o missForest (13-tabpfn-seed-sets.md:47-48).",
+  "A família MAR a 40nan nas tabelas pequenas contra a barra, o tier forte ou o TabPFN: o gerador ganhou a taxa 0.4 para o E105 (incerteza), mas não encontrei estudo de acurácia de imputação com ela nesta seção.",
+  "pendigits e letter sob MAR/MNAR contra o tier forte ou o TabPFN: o E119/E121 compara só o encoder maior contra o menor.",
+  "Uma ADR específica de mecanismos de falta: só há extensões de escopo (ADR 0018 decisão 4, ADR 0030 decisão 7, ADR 0037 decisão 3) e a exclusão de MAR/MNAR sintéticos na ADR 0031.",
+  "Uma leitura do E46/E58 com o checkpoint K contra o TabPFN sob MNAR: o E58 lê H sob MNAR; não encontrei a tabela K − TabPFN por par MNAR."
+ ],
+ "do_not_claim": [
+  "'H nunca é pior que o tier forte sob MNAR': o E58 conta MNAR H − strong pior em 2 (missForest no biodeg_60nan nas inclinações 0,25 e 0,5: +0.0237 e +0.0204); a frase que vale é contra o TabPFN, pior 0 (13-tabpfn-seed-sets.md:129,136,140-141).",
+  "'A vantagem sobre a barra sobrevive a qualquer MNAR': ela se perde na inclinação 2,0 (H − bar +0.0054, worse) e some a 1,0 (none) (06-mnar-family.md:273,280).",
+  "'O custo do MNAR cresce de forma dose-dependente com a inclinação': o dial leu 'dose-response no' (plano de 0,25 a 0,5, depois subindo) (06-mnar-family.md:288).",
+  "'O MNAR não custa nada ao TRIDENT': o efeito do mecanismo é pior em biodeg_60nan (+0.0809) e spambase_60nan (+0.0257) (05-mnar-smoke.md:131; 06-mnar-family.md:191).",
+  "'O TabPFN perde terreno sob MNAR': (H − TabPFN), MNAR menos MCAR, é melhor só em 1 de 10 e sem diferença em 9; a leitura correta é que o TabPFN não ganha terreno (13-tabpfn-seed-sets.md:145,173).",
+  "'O TRIDENT perde terreno contra o TabPFN sob MAR': é a leitura do smoke E63, refutada pela família E64, pior só em biodeg_60nan (19-mar-family.md:183).",
+  "'O MAR não custa nada ao TRIDENT': (H − barra) MAR menos controle é pior em biodeg, kc2 e vehicle a 60nan (E64), e o mesmo vale contra a barra tunada (E68, mixed) (19-mar-family.md:179; 23-mar-tuned-bar.md:138).",
+  "'Os resultados valem para tabelas categóricas, para 80nan ou para qualquer MAR': MNAR só em tabelas numéricas, nenhum par fora do MCAR a 80nan, e um único MAR sintético (motoras lineares, sigmoid 1,5) por tabela-nível.",
+  "'O sorteio ponderado é um mecanismo probit (ou logístico) exato': os geradores dizem que, com contagem fixa, não é (generate_mnar.py:10-11; generate_mar.py:20-21).",
+  "Comparar níveis de impute_score entre mecanismos (por exemplo 0.912 sob MNAR contra 0.761 sob MCAR) como 'o modelo piora tanto': o denominador média/moda é enviesado sob MNAR, por isso só contrastes dentro da variante são lidos (05-mnar-smoke.md:94-95).",
+  "'Mostrar as lacunas como [NULL] ajuda sob MNAR' ou 'máscaras por propensão ajudam sob MAR': E67 e E65 foram refuted.",
+  "'O decoder default lê o padrão de lacunas sob MNAR': por construção ele não pode; o braço null que lê é menos preciso nas 11 variantes (E81, mixed).",
+  "'O híbrido com TabPFN vale sob MAR e MNAR sintéticos': E93 mixed, todo híbrido perde para H em biodeg_probit2p0_60nan (E170, E172), e a ADR 0031 mantém esses mecanismos fora do escopo (0031:110-114,128).",
+  "'Modelar o mecanismo (not-MIWAE) resolve o viés do MNAR': o apoio fica em vehicle e biodeg_probit_60nan; nas outras tabelas os VAEs imputam perto da média, e o TRIDENT segue mais preciso (E72 mixed; E73 com um só par informativo).",
+  "'Os intervalos por variante independem do sorteio MCAR': o E62 mostra que são condicionais ao sorteio, com variação da mesma ordem e cerca do dobro em biodeg_80nan (17-mcar-draws.md:161-166).",
+  "'O viés do TRIDENT é o menor em todos os pares MNAR': é o menor em 9 de 10; na inclinação 0,25 o knn5 se move menos (06-mnar-family.md:486,528)."
+ ],
+ "figure_ideas": [
+  "Três mini-gráficos das curvas de peso dos geradores (fórmulas, não dados): Φ(inclinação · z) para 0,25/0,5/1,0/2,0 no MNAR e sigmoid(1,5 · s) no MAR, com a linha plana do MCAR, como no card 'Quanto inclina' da página de outubro.",
+  "Forest plot da tabela mech_e46_mnar_vs_bar: MNAR H − barra por variante (ponto e intervalo), colorido pelo veredito, com o valor MCAR do controle ao lado em cinza; destaque para biodeg_probit2p0_60nan, o único 'worse'.",
+  "Gráfico de linhas do dial do biodeg_60nan (inclinação 0 a 2,0) com três séries: H − barra, H − missForest e H − TabPFN (de mech_e46_mnar_vs_bar e mech_e58_mnar_vs_tabpfn); mostra a barra ganhando e o missForest e o TabPFN perdendo conforme a inclinação cresce.",
+  "Barras horizontais do Δ do viés com sinal (mech_mnar_signed_bias): modelo contra mean_mode por par, ou os 10 métodos no dial do biodeg, TRIDENT em azul e os demais em cinza.",
+  "Forest plot de (H − strong), MAR menos controle, nas 12 tabela-níveis do E64, com a linha do zero e biodeg_60nan destacado; ao lado, os 4 pontos do smoke E63 em cinza para mostrar que o 'loses ground' não se repetiu.",
+  "Dumbbell de H contra TabPFN nas 12 variantes fora do MCAR do E93 (mech_e93_h_vs_tabpfn_offmcar): a média de H abaixo da do TabPFN em 9 de 12 explica por que o híbrido rende pouco ali.",
+  "Matriz-resumo 'o que vale fora do MCAR': linhas com as afirmações (vantagem sobre a barra, posição contra o TabPFN, híbrido, [NULL], propensão, ReMasker, encoder maior), colunas MNAR e MAR, células com o veredito do estudo."
+ ]
+}
