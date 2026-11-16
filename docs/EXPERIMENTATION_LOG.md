@@ -4852,6 +4852,11 @@ fails when an entry has no row or a row no entry.
   S arm, and retraining C and F beside it is my choice, to keep ADR 0035's pairs on one machine while medusa1 has
   no CUDA; E176's and E177's scores were read; S chooses its checkpoint among more epochs; one timing cell at seed
   999, MLflow off, no score read.
+- **Amendment (2026-11-15 21:20 GMT-3):** medusa1, the leader, left the network at about 20:12 GMT-3 on 2026-11-15 and
+  four cells of seed 7 failed on its MLflow server (two after training their five folds, two at the start). Queues
+  stopped at 21:01 with 11 of 27 runs in, nothing read. The four are retrained whole at seed 7 when the leader
+  answers (a detached script relaunches the queues); no change to design, seeds or rule. Promoting gorgona8 by
+  hand or training with MLflow off is the user's call and was not taken.
 - **Measures and decision rule:** `impute_score`, 15 (seed, fold) pairs a variant, fold-pair rule with seed
   agreement, margin 1% of F's mean. C − F is the premise, S − C the steps, S − F the rows. A variant reads "steps"
   (S better than C and not worse than F), "both" (S better than C, worse than F), "rows" (S equivalent to or worse

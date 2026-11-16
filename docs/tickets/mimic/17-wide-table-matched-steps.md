@@ -94,3 +94,41 @@ A variant's reading, the capped arm's loss belongs to:
   `QUEUE_STATE=/scratch/diogoneiss/trident-2026-11-14-mimic-wide-steps TRIDENT_DATASETS_ROOT=/scratch/diogoneiss/trident-data uv run --python 3.11 python -B scripts/experiments/mimic_report.py e180`
 - **What it leads to:** the wording of the thesis sentence on E176 and E177 (what the rows past 10,000 buy, as
   rows or as training length), the user's call. No ADR.
+
+## Amendment (2026-11-15 21:20 GMT-3): the leader left the network, four cells failed, the queues wait for it; nothing read
+
+medusa1, whose MLflow server every run of this study logs to through the tunnel on port 47731, stopped answering
+between 20:12 and 20:22 GMT-3 on 2026-11-15: the follower's last copy of the store is of 20:12:02,
+`sync/leadership.log` records `peer_unreachable` at 20:43 with `answers_ssh: false`, and at 21:00 ssh returns "No
+route to host". It is the machine's fourth absence from the network this month. With the port refused a training can
+neither open nor close its run, and four cells of seed 7 failed (`progress.log`):
+
+| cell | arm | ran (GMT-3, 2026-11-15) | failed |
+|---|---|---|---|
+| `M mimic-wide_natural 7` | F | 11:37 to 20:54 | closing its MLflow run, the five folds trained |
+| `D10k mimic-wide-donor_tmatch_20nan 7` | C | 17:53 to 21:19 | closing its MLflow run, the five folds trained |
+| `D10kS mimic-wide-donor_tmatch_20nan 7` | S | 20:54 to 21:00 | opening its run, nothing trained |
+| `D10k mimic-wide-donor_mcar_20nan 7` | C | 21:00 to 21:04 | opening its run, nothing trained |
+
+None of the four wrote a `cv_summary.json`, so the runner does not count them and the reader cannot see them. I
+stopped both queues with the `STOP` file at 21:01 GMT-3; they ended at 21:04 and 21:19. **11 of 27 runs are in**: the
+nine of seed 42, and `M10k` and `M10kS` on the natural table at seed 7. No score of any cell was read, of the
+finished ones or of the failed ones.
+
+What follows changes nothing in the design, the arms, the seeds or the rule:
+
+- The four cells are retrained whole at seed 7, as new runs, by relaunching the two queues as they were launched
+  (`c15_queue.sh` skips a cell that has a `cv_summary.json`). Two of them repeat a training that ended; their first
+  attempts' files stay in `results/` without a summary and are not read (`mimic_report.py` takes a cell's one run
+  directory with a summary and exits on a cell with two).
+- The failed attempts' runs stay in the leader's store as its server left them; I do not edit them.
+- A detached script in the state directory, `resume_when_leader_answers.sh` (started 21:20 GMT-3), removes `STOP`
+  and relaunches the queues once the server answers three checks a minute apart, and writes a line to
+  `progress.log` when it does.
+- **Not taken, the user's call:** promoting gorgona8 by hand (ADR 0033, the two servers as leader and follower,
+  decision 6), and training with MLflow off. Without either, the same decision 6 has the follower promote itself
+  after 24 hours of silence, at about 20:12 GMT-3 on 2026-11-16, if medusa1 still does not answer ssh; the script
+  above would then relaunch the queues against gorgona8's own server, and the remaining runs would land in the fork
+  that ADR 0033 reconciles afterwards.
+- **Cost:** about 12 h 40 of trainings on the shared card are repeated (9 h 17 and 3 h 26), and the card is idle on
+  this study's side until the leader returns.
