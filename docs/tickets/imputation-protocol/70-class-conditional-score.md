@@ -88,6 +88,10 @@ Induced population, 15 (seed, fold) values a variant, the fold-pair rule with se
   interrupted at 15:27 (`KeyboardInterrupt`, the shutdown) and the queues died with the machine; 3 of 99 runs were in
   (`letter_20nan`, the three seeds). The eight queues were relaunched at 17:02 and retrain the 96 others whole; no
   change to design, seeds or rule, nothing read.
+- **Amendment (2026-11-17 20:00 GMT-3):** between 19:23 and 19:25 GMT-3 every training process of the study was
+  killed (logs cut mid-epoch with no traceback; the machine did not restart; the cause was not found), then the
+  eight queues; 8 of 99 runs were in. Relaunched at 19:57 as twelve queues (eight on GPU 1, four on GPU 0), with
+  `--todo` dealing the shortest cells first; the other 91 retrain whole. No change to design, seeds or rule; nothing read.
 
 ## Outcome
 

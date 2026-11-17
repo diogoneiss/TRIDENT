@@ -9,7 +9,7 @@ fill and the decode checkpoint is chosen by that score (docs/tickets/imputation-
 that score names and logs it for the model and every in-run baseline. ``K`` is the default run, trained only on the
 tables with both kinds of column (``MIXED``): on a table of one kind the two scores differ by a constant factor
 within a fold, so they keep the same epoch. ``--todo`` deals the cells for ``c15_queue.sh`` (``QUEUE_RUNNER``,
-``QUEUE_STATE``), longest first. ``--tally`` refuses a partial read. Run from the checkout root, on medusa1.
+``QUEUE_STATE``), shortest first. ``--tally`` refuses a partial read. Run from the checkout root, on medusa1.
 """
 
 from __future__ import annotations
@@ -68,7 +68,7 @@ def train(arm: str, variant: str, seed: int) -> None:
 def todo(which: int, queues: int) -> None:
     loads = [0.0] * queues
     for cost, variant, seed, arm in sorted(((MINUTES[common.table_of(v)], v, s, a) for a, v, s in cells()),
-                                           key=lambda w: (-w[0], w[1], w[2], w[3])):
+                                           key=lambda w: (w[0], w[1], w[2], w[3])):
         target = loads.index(min(loads))
         loads[target] += cost
         if target == which - 1 and folds(arm, variant, seed) is None:
