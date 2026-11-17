@@ -23,7 +23,17 @@ from .data import evaluation_mask, in_variant_dtypes
 from .baseline_cache import BaselineScorer
 from .calibration import Calibration, apply_calibration, fit_calibration
 from .distribution_metrics import distribution_scores, naive_distances
-from .imputation_metrics import CATEGORICAL, NUMERICAL, _ratio, mean_mode_baselines, score_cells
+from .imputation_metrics import (
+    CATEGORICAL,
+    CLASS_SCORE,
+    NUMERICAL,
+    _ratio,
+    class_conditional_score,
+    class_mean_mode_baselines,
+    class_naive_errors,
+    mean_mode_baselines,
+    score_cells,
+)
 from .schedulers import StageScheduler, batches_per_epoch, training_batch_size, training_rows
 from .types import (
     DEFAULT_DECODE_METRIC,
@@ -70,6 +80,18 @@ def train_and_evaluate_decoder(
     fold_frame = features.iloc[fold.train_indices].reset_index(drop=True)
     train_frame = features.iloc[training_rows(fold.train_indices, hyperparameters.train_rows)].reset_index(drop=True)
     validation_frame = features.iloc[fold.validation_indices].reset_index(drop=True)
+    # ``DECODE_METRIC impute_score_classcond`` (imputation-protocol/70): the naive fill each score
+    # divides by is the mean or mode among the training rows of the scored row's own class.
+    classwise = hyperparameters.decode_metric == CLASS_SCORE
+    classes = dataset.frame[dataset.label_column].astype(str).to_numpy()
+    class_baselines = (
+        class_mean_mode_baselines(
+            fold_frame, classes[fold.train_indices], dataset.numerical_columns, dataset.categorical_columns
+        )
+        if classwise
+        else {}
+    )
+    validation_classes = (classes[fold.validation_indices], class_baselines) if classwise else None
 
     model = TridentDecoder(
         embedder=pretraining.model.embedder,
@@ -135,7 +157,7 @@ def train_and_evaluate_decoder(
         gap_score = _ValidationGapScore(
             model, dataset, validation_frame, complete_sibling, fold.validation_indices,
             mean_mode_baselines(fold_frame, dataset.numerical_columns, dataset.categorical_columns),
-            device, hyperparameters.decode_metric,
+            device, hyperparameters.decode_metric, validation_classes,
         )
     best_gap_score = float("inf")
     gap_state = None
@@ -146,7 +168,7 @@ def train_and_evaluate_decoder(
         mask_score = _ValidationMaskScore(
             model, hidden_validation, clean_validation,
             mean_mode_baselines(fold_frame, dataset.numerical_columns, dataset.categorical_columns),
-            hyperparameters.decode_metric,
+            hyperparameters.decode_metric, validation_classes,
         )
     best_mask_score = float("inf")
     mask_state = None
@@ -268,6 +290,9 @@ def train_and_evaluate_decoder(
         {f"impute/masked/{name}": value for name, value in masked_baselines.metrics.items()}
     )
     baseline_per_column = {"masked": masked_baselines.per_column}
+    test_classes = classes[fold.test_indices]
+    if classwise:
+        metrics.update(_class_conditional_scores("impute/masked", metrics, cells, test_classes, class_baselines, baselines))
     # Nominal is what was asked for; realised is what the masking helper actually hid,
     # which falls as missingness rises because it never hides an already-missing cell.
     eligible = int(hidden_test.masked_positions.numel() - _already_missing(test_frame))
@@ -339,6 +364,10 @@ def train_and_evaluate_decoder(
             {f"impute/induced/{name}": value for name, value in induced_baselines.metrics.items()}
         )
         baseline_per_column["induced"] = induced_baselines.per_column
+        if classwise:
+            metrics.update(
+                _class_conditional_scores("impute/induced", metrics, raw_induced, test_classes, class_baselines, baselines)
+            )
         if score_remask:
             # T36 (E75): the same gaps, filled by re-masking passes at the run's own checkpoint. A
             # diagnostic; under ADR 0027 its calibration is fitted on the validation gaps' passes.
@@ -536,6 +565,13 @@ def train_and_evaluate_decoder(
             validation_metrics.update(
                 {f"validation/impute/masked/{name}": value for name, value in distribution_scores(validation_cells, baselines).items()}
             )
+        if classwise:
+            validation_metrics.update(
+                _class_conditional_scores(
+                    "validation/impute/masked", validation_metrics, validation_cells,
+                    classes[fold.validation_indices], class_baselines, baselines,
+                )
+            )
         if complete_sibling is not None:
             # The validation rows' own gaps, scored against the complete table like the
             # induced test cells, for a search that ranks by the headline population
@@ -554,6 +590,13 @@ def train_and_evaluate_decoder(
                 validation_metrics.update(
                     {f"validation/impute/induced/{name}": value for name, value in distribution_scores(validation_induced, baselines).items()}
                 )
+            if classwise:
+                validation_metrics.update(
+                    _class_conditional_scores(
+                        "validation/impute/induced", validation_metrics, validation_induced,
+                        classes[fold.validation_indices], class_baselines, baselines,
+                    )
+                )
         tracker.log_metrics({name: float(value) for name, value in validation_metrics.items()})
 
     tracker.log_metrics({f"test/{name}": float(value) for name, value in metrics.items()})
@@ -570,6 +613,27 @@ def train_and_evaluate_decoder(
         baseline_per_column=baseline_per_column,
         gap_fills=_fill_gaps(model, features, fold, device) if export_gap_fills else None,
     )
+
+
+def _class_conditional_scores(prefix: str, metrics, cells: pd.DataFrame, classes, class_baselines, baselines) -> dict[str, float]:
+    """``<owner>/impute_score_classcond`` for the model scored under ``prefix`` and every baseline
+    scored there, from the errors ``metrics`` already holds for them on ``cells``' positions. The
+    class-conditional fill's two errors go beside them, so a reader can put any other method scored
+    on the same cells on this scale."""
+    if cells.empty:
+        return {}
+    n_numerical = int((cells["kind"] == NUMERICAL).sum())
+    n_categorical = len(cells) - n_numerical
+    naive = class_naive_errors(cells, classes, class_baselines, baselines)
+    owners = [prefix, *sorted({key.rsplit("/", 1)[0] for key in metrics if key.startswith(f"{prefix}/baseline/")})]
+    scores = {f"{prefix}/classcond_naive_rmse_num_z": naive[0]} if n_numerical else {}
+    if n_categorical:
+        scores[f"{prefix}/classcond_naive_error_cat"] = naive[1]
+    for owner in owners:
+        errors = {name: float(metrics[f"{owner}/{name}"]) for name in ("rmse_num_z", "acc_cat") if f"{owner}/{name}" in metrics}
+        if len(errors) == bool(n_numerical) + bool(n_categorical):
+            scores[f"{owner}/{CLASS_SCORE}"] = class_conditional_score(errors, n_numerical, n_categorical, *naive)
+    return scores
 
 
 # Rows asked in one pass by ``_fill_gaps``: the training split of a large table is several
@@ -800,7 +864,7 @@ class _ValidationGapScore:
     an epoch costs one forward pass and a few reductions.
     """
 
-    def __init__(self, model, dataset, frame, complete_sibling, rows, baselines, device, metric: str = DEFAULT_DECODE_METRIC) -> None:
+    def __init__(self, model, dataset, frame, complete_sibling, rows, baselines, device, metric: str = DEFAULT_DECODE_METRIC, classwise=None) -> None:
         cells = _score_induced_missing(model, dataset, frame, complete_sibling, rows, device)
         embedder = model.embedder
         self._hidden = embedder.encode(frame.mask(frame.isna(), "[MASK]"), device)
@@ -838,6 +902,7 @@ class _ValidationGapScore:
             naive_labels = categorical["column"].map(baselines).to_numpy()
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
         self._prepare_distribution(embedder, cells, baselines, metric)
+        self._condition_on_class(cells, baselines, classwise)
 
     def _prepare_distribution(self, embedder, cells, baselines, metric: str) -> None:
         """What ``dist_score`` needs beside the cells, fixed for the fold: each numerical column's truths
@@ -853,6 +918,14 @@ class _ValidationGapScore:
             size = len(embedder.label_encoders[embedder.categorical_columns[index]].classes_) + 1
             self._truth_frequencies.append(torch.bincount(truth + 1, minlength=size).double() / rows.numel())
         self._naive_wd, self._naive_tv = naive_distances(cells, baselines)
+
+    def _condition_on_class(self, cells, baselines, classwise) -> None:
+        """``impute_score_classcond``: the same errors over the class-conditional fill's, so only the
+        two naive errors move. ``classwise`` is the class of each row of the frame and the fold's
+        class fills, or None for every other metric."""
+        if classwise is not None and len(cells):
+            classes, class_baselines = classwise
+            self._naive_rmse, self._naive_error = class_naive_errors(cells, classes, class_baselines, baselines)
 
     def _distribution_score(self, prediction) -> float:
         total = self._n_numerical + self._n_categorical
@@ -909,7 +982,7 @@ class _ValidationMaskScore(_ValidationGapScore):
     and a few reductions, scored as the gap score is.
     """
 
-    def __init__(self, model, hidden, clean, baselines, metric: str = DEFAULT_DECODE_METRIC) -> None:
+    def __init__(self, model, hidden, clean, baselines, metric: str = DEFAULT_DECODE_METRIC, classwise=None) -> None:
         cells = _score_population(model, hidden, clean, "masked")
         self._hidden = hidden
         embedder = model.embedder
@@ -937,6 +1010,7 @@ class _ValidationMaskScore(_ValidationGapScore):
             naive_labels = categorical["column"].map(baselines).to_numpy()
             self._naive_error = float(np.mean(naive_labels != categorical["actual"].to_numpy()))
         self._prepare_distribution(embedder, cells, baselines, metric)
+        self._condition_on_class(cells, baselines, classwise)
 
 
 def _decode_parameters(model: TridentDecoder, hyperparameters: Hyperparameters):

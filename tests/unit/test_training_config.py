@@ -783,5 +783,7 @@ def test_the_decode_metric_is_impute_score_unless_a_run_asks_for_the_distributio
     assert "decode_metric" in CONFIGURATION_FLAGS
     assert validation_objective_key("induced") == "validation/impute/induced/impute_score"
     assert validation_objective_key("masked", "dist_score") == "validation/impute/masked/dist_score"
+    assert Hyperparameters.from_mapping({"DECODE_METRIC": "impute_score_classcond"}).decode_metric == "impute_score_classcond"
+    assert validation_objective_key("induced", "impute_score_classcond") == "validation/impute/induced/impute_score_classcond"
     with pytest.raises(ValueError, match="decode metric"):
         validation_objective_key("masked", "energy")

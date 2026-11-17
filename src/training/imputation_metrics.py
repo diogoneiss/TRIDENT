@@ -13,6 +13,9 @@ from sklearn.metrics import f1_score
 
 NUMERICAL = "numerical"
 CATEGORICAL = "categorical"
+# ``impute_score`` with the class-conditional mean/mode fill as its denominators
+# (``class_conditional_score``). A run logs it, for itself and its baselines, only when it ranks by it.
+CLASS_SCORE = "impute_score_classcond"
 
 
 @dataclass(frozen=True)
@@ -135,3 +138,80 @@ def mean_mode_baselines(
     for column in categorical_columns:
         baselines[column] = str(training_fold[column].mode().iloc[0])
     return baselines
+
+
+def class_mean_mode_baselines(
+    training_fold: pd.DataFrame,
+    classes: Sequence[str],
+    numerical_columns: Sequence[str],
+    categorical_columns: Sequence[str],
+) -> dict[str, Mapping[str, float | str]]:
+    """``mean_mode_baselines`` once per class, from the training rows of that class alone.
+
+    Class-conditional mean imputation: a cell of a row of class A is filled with the mean or the
+    mode its column shows among the training rows of class A. ``classes`` holds the class of each
+    row of ``training_fold``. A column a class never shows there keeps the whole fold's fill.
+    """
+    whole = mean_mode_baselines(training_fold, numerical_columns, categorical_columns)
+    labels = np.asarray(classes)
+    fills: dict[str, Mapping[str, float | str]] = {}
+    for label in np.unique(labels):
+        rows = training_fold[labels == label]
+        shown = [column for column in rows.columns if bool(rows[column].notna().any())]
+        fills[str(label)] = {
+            **whole,
+            **mean_mode_baselines(
+                rows,
+                [column for column in numerical_columns if column in shown],
+                [column for column in categorical_columns if column in shown],
+            ),
+        }
+    return fills
+
+
+def class_naive_errors(
+    cells: pd.DataFrame,
+    classes: Sequence[str],
+    class_baselines: Mapping[str, Mapping[str, float | str]],
+    baselines: Mapping[str, float | str],
+) -> tuple[float, float]:
+    """The class-conditional fill's own errors on the scored cells: the RMSE of its numbers and
+    the share of its categories that miss.
+
+    ``classes`` holds the class of each row of the frame the cells' ``row`` points into. A class
+    the training fold never shows falls back on the whole fold's fill.
+    """
+    labels = np.asarray(classes)[cells["row"].to_numpy(dtype=int)]
+    naive = np.array(
+        [class_baselines.get(str(label), baselines)[column] for label, column in zip(labels, cells["column"])],
+        dtype=object,
+    )
+    actual = cells["actual"].to_numpy(dtype=object)
+    numerical = (cells["kind"] == NUMERICAL).to_numpy()
+    categorical = (cells["kind"] == CATEGORICAL).to_numpy()
+    rmse = error = 0.0
+    if numerical.any():
+        rmse = float(np.sqrt(np.mean((naive[numerical].astype(float) - actual[numerical].astype(float)) ** 2)))
+    if categorical.any():
+        error = float(np.mean(naive[categorical] != actual[categorical]))
+    return rmse, error
+
+
+def class_conditional_score(
+    errors: Mapping[str, float], n_numerical: int, n_categorical: int, naive_rmse: float, naive_error: float
+) -> float:
+    """``impute_score`` measured against the class-conditional fill (``CLASS_SCORE``).
+
+    A method's own pooled errors (``rmse_num_z``, ``acc_cat``) over that fill's, weighted by the
+    cells of each kind as ``score_cells`` weights them: the class-conditional fill scores 1. Only
+    the denominators differ from ``impute_score``, so any method scored on the same cells can be
+    put on this scale from its errors. The fill reads the row's class, which no model or baseline
+    sees: it is a stricter bar, not a deployable imputer.
+    """
+    total = n_numerical + n_categorical
+    score = 0.0
+    if n_numerical:
+        score += (n_numerical / total) * _ratio(errors["rmse_num_z"], naive_rmse)
+    if n_categorical:
+        score += (n_categorical / total) * _ratio(1.0 - errors["acc_cat"], naive_error)
+    return score

@@ -1067,6 +1067,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E180 pre-registered 2026-11-14 19:39 GMT-3** ([mimic/17](tickets/mimic/17-wide-table-matched-steps.md)), on the user's "Sim, pré registre e vá":
   the capped arm at the full table's optimizer steps, to split E177's loss between rows and steps; the capped and the full arms are
   retrained beside it on gorgona8 (ADR 0035, medusa1 has no CUDA), 27 runs.
+- **T58 · `impute_score` against the class-conditional fill** (the user's proposal, 2026-11-17).
+  `--decode_metric impute_score_classcond` added: the naive fill each score divides by is the mean or mode among the
+  training rows of the row's own class; no default changes.
+  **E181 pre-registered 2026-11-17 14:35 GMT-3** ([imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md)):
+  the default run selected by that score on E174's 26 MCAR variants, seeds 101/202/303, against the class-conditional
+  fill and the in-run baselines; the default K beside it on `credit-g` and `electricity`. medusa1, 99 runs.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

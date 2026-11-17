@@ -528,7 +528,10 @@ def build_training_parser() -> argparse.ArgumentParser:
             "trials by. 'impute_score' (the default, every run before the choice) is the "
             "cell-by-cell error ratio; 'dist_score' is the distributional score, the per-column "
             "Wasserstein distance and category total variation as a ratio to the mean/mode fill "
-            "(imputation-protocol/51), and the run then logs it beside impute_score. Overrides "
+            "(imputation-protocol/51), and the run then logs it beside impute_score; "
+            "'impute_score_classcond' is impute_score measured against the class-conditional "
+            "mean/mode fill, the mean or mode among the training rows of the row's own class "
+            "(imputation-protocol/70), logged beside impute_score for the model and its baselines. Overrides "
             "DECODE_METRIC from the hyperparameter file."
         ),
     )

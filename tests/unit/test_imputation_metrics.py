@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.training.imputation_metrics import mean_mode_baselines, score_cells
+from src.training.imputation_metrics import (
+    class_conditional_score,
+    class_mean_mode_baselines,
+    class_naive_errors,
+    mean_mode_baselines,
+    score_cells,
+)
 
 
 def _cells(rows: list[tuple[str, str, object, object]]) -> pd.DataFrame:
@@ -190,3 +196,43 @@ def test_each_column_reports_its_own_error_beside_the_pooled_one() -> None:
     assert per_column[("amount", "rmse_num_z")] == pytest.approx(5.0)
     assert per_column[("fee", "rmse_num_z")] == pytest.approx(2.0)
     assert per_column[("grade", "acc_cat")] == pytest.approx(0.5)
+
+
+def test_the_class_conditional_fill_is_each_classs_own_mean_or_mode_and_scores_one() -> None:
+    """imputation-protocol/70: a cell of a row of class A is filled from the training rows of class
+    A alone. A column a class never shows, and a class the training fold never shows, keep the
+    whole fold's fill. On this scale the class-conditional fill itself scores 1, and a method's
+    score is its own errors over that fill's."""
+    training_fold = pd.DataFrame(
+        {
+            "amount": [1.0, 3.0, 10.0, 20.0, np.nan],
+            "grade": ["a", "a", "b", np.nan, np.nan],
+            "empty_for_y": [1.0, 2.0, np.nan, np.nan, np.nan],
+        }
+    )
+    classes = ["x", "x", "y", "y", "y"]
+    whole = mean_mode_baselines(training_fold, ["amount", "empty_for_y"], ["grade"])
+
+    fills = class_mean_mode_baselines(training_fold, classes, ["amount", "empty_for_y"], ["grade"])
+
+    assert fills["x"] == {"amount": 2.0, "grade": "a", "empty_for_y": 1.5}
+    assert fills["y"] == {"amount": 15.0, "grade": "b", "empty_for_y": 1.5}
+
+    cells = pd.DataFrame(
+        [
+            (0, "amount", "numerical", 4.0, 2.0),
+            (1, "amount", "numerical", 16.0, 15.0),
+            (2, "amount", "numerical", 8.5, 8.5),  # class z: unseen, the whole fold's 8.5
+            (0, "grade", "categorical", "a", "a"),
+            (1, "grade", "categorical", "a", "b"),
+        ],
+        columns=["row", "column", "kind", "actual", "imputed"],
+    )
+    naive_rmse, naive_error = class_naive_errors(cells, ["x", "y", "z"], fills, whole)
+
+    assert naive_rmse == pytest.approx(np.sqrt((2.0**2 + 1.0**2 + 0.0) / 3))
+    assert naive_error == pytest.approx(0.5)
+    own = score_cells(cells, whole).metrics
+    assert class_conditional_score(own, 3, 2, naive_rmse, naive_error) == pytest.approx(1.0)
+    perfect = score_cells(cells.assign(imputed=cells["actual"]), whole).metrics
+    assert class_conditional_score(perfect, 3, 2, naive_rmse, naive_error) == 0.0

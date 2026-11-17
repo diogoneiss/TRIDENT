@@ -75,8 +75,9 @@ DEFAULT_DECODE_CHECKPOINT = "loss"
 # and ``--decode_metric``: the epoch the ``induced`` and ``masked`` checkpoints keep, and the
 # validation key an imputation search ranks its trials by. ``impute_score`` is every run before the
 # choice and the default (ADR 0025 decision 1); ``dist_score`` is the distributional score of
-# ``src/training/distribution_metrics.py`` (imputation-protocol/51).
-DECODE_METRICS: tuple[str, ...] = ("impute_score", "dist_score")
+# ``src/training/distribution_metrics.py`` (imputation-protocol/51); ``impute_score_classcond`` is
+# ``impute_score`` measured against the class-conditional mean/mode fill (imputation-protocol/70).
+DECODE_METRICS: tuple[str, ...] = ("impute_score", "dist_score", "impute_score_classcond")
 DEFAULT_DECODE_METRIC = "impute_score"
 
 # Whether an imputation run's output is calibrated on the validation rows' own gaps

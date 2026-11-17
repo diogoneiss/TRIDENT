@@ -217,6 +217,7 @@ fails when an entry has no row or a row no entry.
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 – 2026-11-14 | refuted | on mimic-wide the hybrid is equivalent to H on natural gaps and transplanted patterns (+0.0000 on both) and better than TabPFN v2 (−0.099, −0.058): harmless and unneeded, decision 6's scope not extended; under MCAR a small gain over H (−0.0024) |
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
+| E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 | in progress | |
 
 ## Entries
 
@@ -4866,3 +4867,24 @@ fails when an entry has no row or a row no entry.
 - **Results:** pending.
 - **Conclusion:** pending.
 - **Sources:** [mimic/17](tickets/mimic/17-wide-table-matched-steps.md); `mimic_wide_steps_run.py`, `mimic_report.py e180`.
+
+### E181 · Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? (pre-registered 2026-11-17 14:35 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-17 14:35 GMT-3 on the user's proposal of the same day. T58.
+- **Hypothesis:** measured against the mean or mode among the training rows of the row's own class
+  (`impute_score_classcond`), with the decode checkpoint chosen by that score, the decoder is still better than the
+  naive fill on most variants.
+- **Scenarios:** Kc, the default run with `--decode_metric impute_score_classcond`, on E174's 26 MCAR variants at seeds
+  101/202/303 (78 runs); K, the default run, on `credit-g` and `electricity` only (21 runs), the two tables where the
+  kept epoch can differ. All on medusa1, eight queues. By construction, on a table of one kind of column the two scores
+  keep the same epoch and the same order within a fold. Disclosed: the arm, variants, seeds and thresholds are my
+  choices; one smoke at seed 999 was seen; TabPFN is not in the study (its files are on gorgona8).
+- **Measures and decision rule:** induced population, 15 (seed, fold) values a variant, fold-pair rule with seed
+  agreement. Primary: Kc's score − 1 (the class-conditional fill), margin 0.01. Supported if better on 18 or more of
+  26 and worse on at most 2; refuted if worse on 6 or more; mixed otherwise. Secondary, no rule: Kc against the bar and
+  the best strong-tier baseline on both scales and the calls that differ; Kc − K on the mixed tables; the whole-fold
+  fill's score on the new scale. Read once with the 99 runs in.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md); `classcond_run.py`;
+  MLflow `experiment = classcond-score-2026-11-17`.

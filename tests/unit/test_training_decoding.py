@@ -1053,3 +1053,36 @@ def test_a_training_row_cap_shrinks_what_the_model_trains_on_and_not_what_the_ba
     _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=1))
     assert masked == [10, 18]
     assert fitted == [18, 18]
+
+
+@pytest.mark.parametrize(("checkpoint", "population", "series_key"), [("induced", "induced", "decode/val_induced_score"), ("masked", "masked", "decode/val_masked_score")])
+def test_a_run_that_ranks_by_the_class_conditional_score_keeps_the_epoch_it_names(checkpoint: str, population: str, series_key: str) -> None:
+    """``DECODE_METRIC impute_score_classcond`` (imputation-protocol/70): the per-epoch score the
+    checkpoint watches divides by the class-conditional fill's errors, equal at the kept epoch to
+    what the pandas path computes on the same cells, and the run logs it beside ``impute_score`` for
+    the model and for every baseline. A run that does not ask carries no such key."""
+    dataset = _dataset()
+    np.random.seed(0)
+    asked, tracker = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT=checkpoint, DECODE_METRIC="impute_score_classcond"),
+    )
+    np.random.seed(0)
+    plain, _ = _run(
+        dataset=dataset, sibling=_complete_frame(), score_search_objective=True,
+        hyperparameters=_hyperparameters(EPOCHS_DECODE=6, DECODE_CHECKPOINT=checkpoint),
+    )
+
+    metrics = asked.result.metrics
+    series = {event.step: event.value for event in tracker.metric_events if event.key == series_key}
+    kept = min(series, key=lambda epoch: (series[epoch], epoch))
+    assert series[kept] == pytest.approx(metrics[f"validation/impute/{population}/impute_score_classcond"], abs=1e-9)
+    for prefix in ("impute/masked", "impute/induced", "validation/impute/masked", "validation/impute/induced"):
+        assert f"{prefix}/impute_score_classcond" in metrics and f"{prefix}/impute_score" in metrics
+    for prefix in ("impute/masked", "impute/induced"):
+        plain_bar = {key for key in metrics if key.startswith(f"{prefix}/baseline/") and key.endswith("/impute_score")}
+        assert plain_bar and all(f"{key}_classcond" in metrics for key in plain_bar)
+        assert f"{prefix}/classcond_naive_rmse_num_z" in metrics and f"{prefix}/classcond_naive_error_cat" in metrics
+    # The same trajectory and the same errors: only the kept epoch and the new keys may differ.
+    assert asked.train_losses == plain.train_losses
+    assert not any("classcond" in key for key in plain.result.metrics)
