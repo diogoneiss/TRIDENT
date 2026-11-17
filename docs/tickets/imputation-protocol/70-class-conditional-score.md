@@ -92,6 +92,21 @@ Induced population, 15 (seed, fold) values a variant, the fold-pair rule with se
   killed (logs cut mid-epoch with no traceback; the machine did not restart; the cause was not found), then the
   eight queues; 8 of 99 runs were in. Relaunched at 19:57 as twelve queues (eight on GPU 1, four on GPU 0), with
   `--todo` dealing the shortest cells first; the other 91 retrain whole. No change to design, seeds or rule; nothing read.
+- **Amendment (2026-11-17 20:50 GMT-3), partial look at the user's request, not the read:** with 20 of 99 cells holding
+  fold metrics (18 Kc, 2 K; eight of them were killed at about 20:07 during the final MLflow logging, after writing
+  the five folds, and count as in), Kc's fold-mean score on the class scale is below 1 in all 18 Kc cells (0.43 to 0.74).
+  Fold means over the seeds in, impute_score / impute_score_classcond, Kc; best weak; best strong; TabPFN v2 (E175's
+  cells at the same seeds, same scored cells, rescaled by the fold's constant; none local for `letter`, `electricity`):
+  `letter_20nan` (3 seeds) 0.421/0.513; knn10 0.472/0.577; missforest 0.463/0.565.
+  `pendigits_20nan` (2) 0.302/0.431; knn10 0.351/0.501; missforest 0.334/0.477; TabPFN 0.307/0.439.
+  `vehicle_20nan` (2) 0.416/0.446; lgbm 0.466/0.499; missforest 0.449/0.481; TabPFN 0.420/0.450.
+  `kc2_40nan` (3) 0.484/0.524; knn5 0.590/0.640; softimpute 0.550/0.597; TabPFN 0.488/0.529.
+  `kc2_80nan` (3) 0.673/0.711; knn5 0.837/0.886; missforest 0.737/0.779; TabPFN 0.721/0.762.
+  `kc2_20nan` (3) 0.544/0.586; knn5 0.522/0.557; softimpute 0.538/0.577; TabPFN 0.493/0.528.
+  `electricity_20nan` (2) 0.618/0.634; hgb 0.602/0.618; missforest 0.619/0.635.
+  No call is made from these, no Kc − K pair is in yet, and design, seeds and rule stand; the read stays the one with
+  the 99 runs in. Ten more cells failed between 20:06 and 20:09 (eight killed without a traceback, one on a CUDA
+  "device busy" error, one not inspected), cause not found; the two without fold metrics are retrained by a last pass of the queues.
 
 ## Outcome
 
