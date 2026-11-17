@@ -4884,6 +4884,8 @@ fails when an entry has no row or a row no entry.
   26 and worse on at most 2; refuted if worse on 6 or more; mixed otherwise. Secondary, no rule: Kc against the bar and
   the best strong-tier baseline on both scales and the calls that differ; Kc − K on the mixed tables; the whole-fold
   fill's score on the new scale. Read once with the 99 runs in.
+- **Amendment (2026-11-17 17:05 GMT-3):** medusa1 was restarted at about 15:38 GMT-3 with 3 of 99 runs in; the eight
+  queues were relaunched at 17:02 and retrain the other 96 whole. No change to design, seeds or rule; nothing read.
 - **Results:** pending.
 - **Conclusion:** pending.
 - **Sources:** [imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md); `classcond_run.py`;

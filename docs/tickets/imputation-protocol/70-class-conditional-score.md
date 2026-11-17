@@ -82,6 +82,13 @@ Induced population, 15 (seed, fold) values a variant, the fold-pair rule with se
 - **What it leads to:** a sentence for the thesis on whether the lead over the naive fill survives a class-aware one.
   No default changes. Whether the score joins the protocol (an ADR) is the user's call after the reading.
 
+## Amendments
+
+- **Amendment (2026-11-17 17:05 GMT-3):** medusa1 was restarted at about 15:38 GMT-3. Eight cells in flight were
+  interrupted at 15:27 (`KeyboardInterrupt`, the shutdown) and the queues died with the machine; 3 of 99 runs were in
+  (`letter_20nan`, the three seeds). The eight queues were relaunched at 17:02 and retrain the 96 others whole; no
+  change to design, seeds or rule, nothing read.
+
 ## Outcome
 
 (open)
