@@ -4312,7 +4312,7 @@
       "file_type": "code",
       "norm_label": "jobs()",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L187"
+      "source_location": "L192"
     },
     {
       "id": "scripts_experiments_sliced_run_ledger",
@@ -4336,7 +4336,7 @@
       "file_type": "code",
       "norm_label": "main()",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L248"
+      "source_location": "L253"
     },
     {
       "id": "scripts_experiments_sliced_run_run",
@@ -4384,7 +4384,7 @@
       "file_type": "code",
       "norm_label": "tally()",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L197"
+      "source_location": "L202"
     },
     {
       "id": "scripts_experiments_warm_baseline_cache_main",
@@ -45992,7 +45992,7 @@
       "node_kind": "heading",
       "norm_label": "outcome",
       "source_file": "docs/tickets/imputation-protocol/71-sliced-wasserstein.md",
-      "source_location": "L66"
+      "source_location": "L71"
     },
     {
       "id": "docs_tickets_imputation_protocol_71_sliced_wasserstein_trident_against_its_baselines_on_a_distributional_score_that_is_not_marginal_the_sliced_wasserstein_distance_between_filled_and_true_rows_e182_t59_pre_registered_2026_11_18_13_00_gmt_3",
@@ -112888,7 +112888,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L192",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -112900,7 +112900,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L250",
+      "source_location": "L255",
       "weight": 1.0
     },
     {
@@ -112912,7 +112912,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L252",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -112924,7 +112924,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L254",
+      "source_location": "L259",
       "weight": 1.0
     },
     {
@@ -112960,31 +112960,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L124",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_experiments_sliced_run_run",
-      "target": "src_training_data_build_folds",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L127",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_experiments_sliced_run_run",
-      "target": "src_training_imputation_metrics_mean_mode_baselines",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L131",
+      "source_location": "L111",
       "weight": 1.0
     },
     {
@@ -112996,7 +112972,31 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
+      "source_location": "L112",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_experiments_sliced_run_run",
+      "target": "src_training_data_build_folds",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/experiments/sliced_run.py",
       "source_location": "L132",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_experiments_sliced_run_run",
+      "target": "src_training_imputation_metrics_mean_mode_baselines",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "scripts/experiments/sliced_run.py",
+      "source_location": "L136",
       "weight": 1.0
     },
     {
@@ -113008,7 +113008,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L140",
+      "source_location": "L145",
       "weight": 1.0
     },
     {
@@ -113020,7 +113020,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L154",
+      "source_location": "L159",
       "weight": 1.0
     },
     {
@@ -113032,7 +113032,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L170",
+      "source_location": "L175",
       "weight": 1.0
     },
     {
@@ -113044,7 +113044,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L172",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
@@ -113056,7 +113056,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L176",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -113068,7 +113068,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L181",
+      "source_location": "L186",
       "weight": 1.0
     },
     {
@@ -113080,7 +113080,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L239",
+      "source_location": "L244",
       "weight": 1.0
     },
     {
@@ -204138,7 +204138,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/tickets/imputation-protocol/71-sliced-wasserstein.md",
-      "source_location": "L66",
+      "source_location": "L71",
       "weight": 1.0
     },
     {
@@ -219164,7 +219164,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L187",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -219175,7 +219175,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L197",
+      "source_location": "L202",
       "weight": 1.0
     },
     {
@@ -219186,7 +219186,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/sliced_run.py",
-      "source_location": "L248",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -254584,7 +254584,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/EXPERIMENTATION_LOG.md",
-      "source_location": "L4968",
+      "source_location": "L4972",
       "weight": 1.0
     },
     {
@@ -265696,5 +265696,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "1ef8e2a011ff73a37194ea15c19a9ae0b5ff527b"
+  "built_at_commit": "35d0f01a8e519362336e3261b3ba4c6e422f4755"
 }

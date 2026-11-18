@@ -4963,6 +4963,10 @@ fails when an entry has no row or a row no entry.
   otherwise, inconclusive if the control passes on fewer than 13. Secondary, no rule: against the bar; both
   comparisons on `dist_score` and `impute_score` from the same refits and the calls that differ; the control's and the
   class-conditional fill's levels. Read once with the 390 files in.
+- **Amendment (2026-11-18 13:10 GMT-3):** six jobs of `kr-vs-kp_40nan` stopped because a hidden truth was a category
+  the variant never shows observed; the one-hot now also spans the hidden truths' categories, identically for every
+  imputer (numbers unchanged where no such category exists). The failed jobs are rerun; no change to design or rule;
+  nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md); `sliced_run.py`.

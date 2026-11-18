@@ -108,7 +108,13 @@ def run(variant: str, seed: int, group: str) -> None:
     classes = dataset.frame[dataset.label_column].astype(str).to_numpy()
     numerical, categorical = list(dataset.numerical_columns), list(dataset.categorical_columns)
     is_number = np.array([column in numerical for column in features.columns])
-    levels = {j: sorted(set(features.iloc[:, j].dropna().astype(str))) for j in np.flatnonzero(~is_number)}
+    run_dir = _run_dir(variant, seed)
+    ledgers = {k: _ledger(run_dir, k) for k in range(1, 6)}
+    hidden_truths = pd.concat(list(ledgers.values()))
+    # the table's categories: those it shows and those only its hidden cells hold (a rare one can be wholly hidden at 80nan)
+    levels = {j: sorted(set(features.iloc[:, j].dropna().astype(str))
+                        | set(hidden_truths.loc[hidden_truths["column"] == features.columns[j], "actual"].astype(str)))
+              for j in np.flatnonzero(~is_number)}
     width = int(is_number.sum()) + sum(len(v) for v in levels.values())
 
     def encode(block: NDArray[np.object_]) -> NDArray[np.float64]:
@@ -121,7 +127,6 @@ def run(variant: str, seed: int, group: str) -> None:
             parts.append(np.eye(len(names))[codes] / np.sqrt(2.0))
         return np.asarray(np.hstack(parts), dtype=np.float64)
 
-    run_dir = _run_dir(variant, seed)
     logged = pd.read_csv(run_dir / "metrics" / "raw_fold_metrics.csv").sort_values("fold").reset_index(drop=True)
     out: list[dict[str, object]] = []
     for ordinal, fold in enumerate(build_folds(dataset.frame, dataset.label_column, 5, seed), start=1):
@@ -129,7 +134,7 @@ def run(variant: str, seed: int, group: str) -> None:
         train = features.iloc[train_index].reset_index(drop=True)
         test = features.iloc[test_index].reset_index(drop=True)
         naive = mean_mode_baselines(train, numerical, categorical)
-        cells = _ledger(run_dir, ordinal)
+        cells = ledgers[ordinal]
         local = cells["row"].to_numpy(dtype=int)
         position = np.asarray(features.columns.get_indexer(pd.Index(cells["column"])))
         assert test.isna().to_numpy().sum() == len(cells) and test.isna().to_numpy()[local, position].all(), "the ledger does not cover the fold's gaps"

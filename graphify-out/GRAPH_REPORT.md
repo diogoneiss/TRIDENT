@@ -1,7 +1,7 @@
 # Graph Report - TRIDENT  (2026-11-18)
 
 ## Corpus Check
-- 769 files · ~1,626,971 words
+- 769 files · ~1,627,157 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `1ef8e2a0`
+- Built from commit: `35d0f01a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -489,12 +489,12 @@
 10. `PreparedDataset` - 60 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `TRIDENT README` --conceptually_related_to--> `src/training Package`  [AMBIGUOUS]
+  README.md → AGENTS.md
 - `compute_cv_summary()` --semantically_similar_to--> `CrossValidationSummary`  [INFERRED] [semantically similar]
   README.md → docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md
 - `TRIDENT README` --conceptually_related_to--> `kr-vs-kp Categorical Columns`  [AMBIGUOUS]
   README.md → datasets/categorical_columns/kr-vs-kp.txt
-- `TRIDENT README` --conceptually_related_to--> `src/training Package`  [AMBIGUOUS]
-  README.md → AGENTS.md
 - `hourly()` --calls--> `events()`  [INFERRED]
   datasets/build_mimic.py → tests/unit/test_leadership.py
 - `make()` --uses--> `GradientBoostingImputer`  [INFERRED]
@@ -2183,9 +2183,9 @@ Cohesion: 0.50
 Nodes (4): 07. Task: repair the imputation Optuna path and prove it with a two-trial study, Answer, Comments, Question
 
 ## Ambiguous Edges - Review These
-- `kr-vs-kp Categorical Columns` → `TRIDENT README`  [AMBIGUOUS]
+- `src/training Package` → `TRIDENT README`  [AMBIGUOUS]
   README.md · relation: conceptually_related_to
-- `TRIDENT README` → `src/training Package`  [AMBIGUOUS]
+- `kr-vs-kp Categorical Columns` → `TRIDENT README`  [AMBIGUOUS]
   README.md · relation: conceptually_related_to
 
 ## Knowledge Gaps
@@ -2196,9 +2196,9 @@ Nodes (4): 07. Task: repair the imputation Optuna path and prove it with a two-t
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `kr-vs-kp Categorical Columns` and `TRIDENT README`?**
+- **What is the exact relationship between `src/training Package` and `TRIDENT README`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **What is the exact relationship between `TRIDENT README` and `src/training Package`?**
+- **What is the exact relationship between `kr-vs-kp Categorical Columns` and `TRIDENT README`?**
   _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
 - **Why does `SyncError` connect `StoreError` to `test_sync_remote.py`, `test_leadership.py`, `leadership.py`, `RsyncTransport`, `sync_remote.py`, `deployable_hybrid.py`?**
   _High betweenness centrality (0.030) - this node is a cross-community bridge._
