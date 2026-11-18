@@ -158,3 +158,27 @@ this study runs now.
 `mcar`, `D10k` and `D` on `mcar`) and all nine of seed 13. No score read. On the user's instruction of 2026-11-18
 ("nao relance coisas na medusa1") nothing is relaunched; since every run of this study logs to medusa1's server,
 the study stays paused until the user says how it continues. Design, seeds and rule unchanged.
+
+## Amendment (2026-11-18 19:38 GMT-3): gorgona8 leads, on the user's call; the third amendment's cause corrected; 13 cells relaunched
+
+**Correction to the third amendment.** medusa1 did not fall at 14:31: it was up from 11:26 GMT-3 on, and its MLflow
+server ran from 11:28. What broke was gorgona8's side. The tick of `scripts/leadership.py` started at 15:01 GMT-3
+took the fork-base backup of ADR 0033 (decision 6), and its `quick_check` of the 25 GB copy on the hard disk was still
+reading at about 0.4 MB/s four hours later, in uninterruptible disk wait. While it held the tick lock no tick ran, so
+the ssh tunnel to medusa1's server on port 47731 was not reopened, and the thirteen cells failed against a closed
+port. Why the tunnel and the 14:31 copy dropped first is not checked.
+
+**The user's go:** "promova a gorgona8 a lider! apenas lembre de fazer backup do mlflow em caso de algo dar errado"
+(2026-11-18), then "o relancar era para coisas na gpu, comandos e etcs voce pode fazer sim" for commands run on medusa1.
+
+- **Backup first:** on medusa1, `leadership.py backup --kind pre-switchover` at 19:17 GMT-3:
+  `/scratch/diogoneiss/TRIDENT/sync/backups/2026-11-18T2217-pre-switchover.db`, 25,374,081,024 bytes, 34,214 runs,
+  `quick_check` ok. The stuck tick (pid 394683) was then killed by the user; its unverified copy of the 14:30 store
+  stays at `sync/backups/2026-11-18T1801-fork-base.db.staged` on gorgona8.
+- **Switchover, not promotion:** medusa1 answered, so `promote` would have refused. `leadership.py switchover` at
+  19:34 GMT-3 had medusa1 yield, pulled its last pages and made gorgona8 the leader at epoch 3, with no fork. Checked
+  from the files: both `role.json` at epoch 3 (gorgona8 `leader`, medusa1 `follower`, its store mode 444, no server
+  there), gorgona8's server answering `/health`, and 34,214 runs in gorgona8's store, as in the backup.
+- **Relaunch:** the two queues at 19:35 GMT-3 as launched before, writing to gorgona8's store; the thirteen cells
+  of the third amendment are retrained whole. Runs from here carry the store's epoch-3 history; nothing in the design,
+  seeds, rule or reader changes, and nothing has been read.

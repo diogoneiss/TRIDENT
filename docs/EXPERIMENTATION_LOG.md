@@ -4866,6 +4866,10 @@ fails when an entry has no row or a row no entry.
 - **Amendment (2026-11-18 18:47 GMT-3):** relaunched 11:31 GMT-3 on 2026-11-18; three cells of seed 7 finished before
   medusa1 fell again at about 14:31, and the next thirteen failed on its MLflow server. 14 of 27 in, nothing read;
   paused on the user's instruction not to relaunch on medusa1.
+- **Amendment (2026-11-18 19:38 GMT-3):** correction, medusa1 did not fall: a stuck leadership tick on gorgona8 (fork-base
+  backup check on the hard disk) held the lock and the tunnel stayed closed. On the user's go medusa1's store was backed
+  up (34,214 runs, check ok) and gorgona8 took the lead by switchover at 19:34 GMT-3 (epoch 3, no fork); the thirteen
+  cells left were relaunched on gorgona8. Nothing read.
 - **Measures and decision rule:** `impute_score`, 15 (seed, fold) pairs a variant, fold-pair rule with seed
   agreement, margin 1% of F's mean. C − F is the premise, S − C the steps, S − F the rows. A variant reads "steps"
   (S better than C and not worse than F), "both" (S better than C, worse than F), "rows" (S equivalent to or worse
