@@ -4870,7 +4870,7 @@ fails when an entry has no row or a row no entry.
 
 ### E181 · Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? (pre-registered 2026-11-17 14:35 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-17 14:35 GMT-3 on the user's proposal of the same day. T58.
+- **Status:** done 2026-11-18 08:38 GMT-3 (supported); pre-registered 2026-11-17 14:35 GMT-3 on the user's proposal of the same day. T58.
 - **Hypothesis:** measured against the mean or mode among the training rows of the row's own class
   (`impute_score_classcond`), with the decode checkpoint chosen by that score, the decoder is still better than the
   naive fill on most variants.
