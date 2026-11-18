@@ -5017,6 +5017,10 @@ fails when an entry has no row or a row no entry.
 - **Amendment (2026-11-18 18:25 GMT-3):** paused on the user's order (another user needs medusa1): `STOP` file at
   17:23 GMT-3, `electricity_40nan` seed 101 killed by hand at 17:36 (its `FAILED` line is that kill), last queue out
   at 18:19. 69 of 78 runs in; 9 left (`electricity_40nan`, `_80nan`, `letter_20nan`). Not relaunched; nothing read.
+- **Amendment (2026-11-18 19:53 GMT-3):** on the user's "rode as coisas pendentes do e181 aqu", the 9 runs left move to
+  gorgona8 with their `Kc` control retrained there (18 runs, my choice, so pairs stay on one GPU model); K's
+  `reference` files for those three variants are re-scored from gorgona8's ledgers and govern the read; baselines stay
+  medusa1's; a pairing check is redone here. State copied from medusa1. No change to the rule; nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;

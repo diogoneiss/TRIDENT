@@ -68,6 +68,36 @@ on the default run and its baselines, had its 390 files in and had not been read
   seeds. To resume: remove `STOP` and relaunch the queues, on the user's order only. No change to design, seeds or
   rule; nothing read.
 
+- **Amendment (2026-11-18 19:53 GMT-3), written in another session before any cell below trained:** the last three variants
+  move whole to gorgona8, with their control retrained there. This departs from "medusa1 only" in the Scenarios.
+  - **The user's words:** "rode as coisas pendentes do e181 aqu" (2026-11-18, in the session on gorgona8, which leads
+    the store since 19:34 GMT-3, epoch 3). E181 has no cell left (99 of 99, read), so I read it as this study's nine
+    runs, whose control is E181's `Kc`. E181's one undone item, TabPFN v2 on the class scale, is not run.
+  - **What moves:** `letter_20nan`, `electricity_40nan` and `electricity_80nan` at seeds 101/202/303. Both arms are
+    trained on gorgona8's RTX 3090 Ti: S (`--decode_metric sw_score`) and its control `Kc` (E181's arm,
+    `--decode_metric impute_score_classcond`, which kept the default's epoch on every mixed variant). That makes 18 runs
+    for the 9 the ticket left, so each (variant, seed) pair stays on one GPU model, as the Scenarios require. Retraining
+    the control is my choice, as in E180. Both are tagged `experiment = sliced-checkpoint-2026-11-18` (arm `S` or
+    `Kc`), not E181's name. Runner: `scripts/experiments/sliced_select_g8_run.py`, two queues, one per arm, a pair's
+    arms side by side.
+  - **State:** the three state directories were copied from medusa1 to the same paths on gorgona8 at 19:50 GMT-3.
+    Left out of the copy: `STOP`, every run directory of the three variants (E181's nine `Kc` and `K`; E183's killed
+    `electricity_40nan` seed 101), and E182's nine `reference` files for them. Copied: 69 S summaries, 69 `Kc`, 381 of
+    E182's 390 files. gorgona8's copy of E181's directory now mixes machines: 23 variants are medusa1's and the three
+    above are gorgona8's.
+  - **The read changes in one place:** for the three variants, K's `reference` files are re-scored by E182's code
+    from gorgona8's `Kc` ledgers (`SLICED_LEDGERS` on gorgona8's copy). K's levels there, and possibly whether
+    E182's shuffled control passes (which sets the primary's denominator), can differ from ticket 71's printout. The
+    re-scored files govern this study's read, and any control status that flips against ticket 71 is reported in the
+    Outcome. The strong-tier baselines stay medusa1's fits (E182's files), which touches only the secondary lines.
+    The read runs on gorgona8 with `sliced_select_run.py --tally`, unchanged.
+  - **Pairing check, redone here:** the smoke ran on medusa1, so on each finished pair `sliced_select_g8_run.py
+    --pairing` compares the loss criterion's epoch per fold, the scored cell counts and hgb's score between the arms.
+    No TRIDENT score is read. A pair that differs is reported, not dropped.
+  - **Already read before this amendment:** E181's Outcome (ticket 70) and E182's Index headline. No score of this
+    study's runs.
+  - No change to the rule, seeds, thresholds or what the read prints.
+
 ## Outcome
 
 Not read yet.
