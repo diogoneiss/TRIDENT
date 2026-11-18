@@ -218,6 +218,7 @@ fails when an entry has no row or a row no entry.
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
+| E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | in progress | |
 
 ## Entries
 
@@ -4942,3 +4943,26 @@ fails when an entry has no row or a row no entry.
   class explains the columns.
 - **Sources:** [imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md); `classcond_run.py`;
   MLflow `experiment = classcond-score-2026-11-17`.
+
+### E182 · Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? (pre-registered 2026-11-18 13:00 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-18 13:00 GMT-3 on the user's request of the same day. T59.
+- **Hypothesis:** on `sw_score`, the sliced Wasserstein distance between the filled rows and the true rows as a ratio
+  to the mean/mode fill's, TRIDENT is not behind the best strong-tier baseline on most variants.
+- **Scenarios:** E181's 26 MCAR variants × seeds 101/202/303 × 5 folds, induced population; no training, no MLflow.
+  TRIDENT's fills from E181's `Kc` fold ledgers; knn5, knn10, hgb, lgbm, missForest, condexp, softimpute and ice
+  refitted on each fold and asked for the ledger's cells; the mean/mode fill, the class-conditional fill and the truth
+  as references; a control, each column's truths shuffled among its scored cells (`dist_score` 0, rows wrong). 2048
+  shared directions a fold. gorgona8 takes `vehicle`, `kr-vs-kp`, `pendigits`; medusa1 the other six tables; 390 jobs.
+  Disclosed: the score's construction, the thresholds and the rule are my choices; one smoke (`kc2_20nan`, seed 101)
+  was seen for the gate, the control, timings and stability only; TabPFN is not in the study.
+- **Measures and decision rule:** gates first: a refit is read only if its `impute_score` is within 0.005 of what
+  E181's run logged; a variant is read only if the control's mean `sw_score` is at least 0.10. Fold-pair rule with seed
+  agreement, margin 0.01 of the opponent's mean. Primary, over the variants the control passes: TRIDENT − the best
+  strong-tier baseline on `sw_score`; supported if worse on at most a quarter, refuted if worse on half or more, mixed
+  otherwise, inconclusive if the control passes on fewer than 13. Secondary, no rule: against the bar; both
+  comparisons on `dist_score` and `impute_score` from the same refits and the calls that differ; the control's and the
+  class-conditional fill's levels. Read once with the 390 files in.
+- **Results:** not read yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md); `sliced_run.py`.

@@ -1075,6 +1075,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   fill and the in-run baselines; the default K beside it on `credit-g` and `electricity`. medusa1, 99 runs.
   **Read 2026-11-18, supported:** better than the class-conditional fill on 23 of 26 (worse on `pendigits_80nan`), the
   calls against the baselines equal to `impute_score`'s, and the new score keeps the default's epoch; a reporting scale, no default change.
+- **T59 · A distributional score that sees the rows: sliced Wasserstein** (the user's request, 2026-11-18).
+  **E182 pre-registered 2026-11-18 13:00 GMT-3** ([imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md)):
+  `sw_score` for TRIDENT (E181's fold ledgers) and eight refitted baselines on the 26 MCAR variants, seeds 101/202/303,
+  with a shuffled-truths control; CPU only, split between medusa1 and gorgona8. Not read yet.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
