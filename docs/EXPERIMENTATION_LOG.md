@@ -218,7 +218,7 @@ fails when an entry has no row or a row no entry.
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
-| E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | in progress | |
+| E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 | in progress | |
 
 ## Entries
@@ -4947,7 +4947,7 @@ fails when an entry has no row or a row no entry.
 
 ### E182 · Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? (pre-registered 2026-11-18 13:00 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-18 13:00 GMT-3 on the user's request of the same day. T59.
+- **Status:** done 2026-11-18 13:36 GMT-3 (mixed); pre-registered 2026-11-18 13:00 GMT-3 on the user's request of the same day. T59.
 - **Hypothesis:** on `sw_score`, the sliced Wasserstein distance between the filled rows and the true rows as a ratio
   to the mean/mode fill's, TRIDENT is not behind the best strong-tier baseline on most variants.
 - **Scenarios:** E181's 26 MCAR variants × seeds 101/202/303 × 5 folds, induced population; no training, no MLflow.
@@ -4968,8 +4968,21 @@ fails when an entry has no row or a row no entry.
   the variant never shows observed; the one-hot now also spans the hidden truths' categories, identically for every
   imputer (numbers unchanged where no such category exists). The failed jobs are rerun; no change to design or rule;
   nothing read.
-- **Results:** not read yet.
-- **Conclusion:** none yet.
+- **Results:** 390 of 390 files (225 medusa1, 165 gorgona8). Gates: truth 0 and mean/mode 1 in every fold; refits
+  reproduce E181's `impute_score` to 3e-6 except knn5, knn10 and ice on `kr-vs-kp` (refitted on gorgona8, gaps up to
+  0.039), not read there. Control: at least 0.10 on all 26 variants (0.16 to 1.25) with `dist_score` 0.0000. Primary,
+  TRIDENT − the best strong-tier baseline on `sw_score`: better 9, no difference 6, worse 11 → mixed. Worse on
+  `credit-g` at all four levels (to ice, +0.070 to +0.350), `biodeg_80nan` (+0.181), `pendigits_80nan` (+0.097),
+  `kr-vs-kp_40nan`, `_80nan`, `vehicle_80nan`, `spambase_20nan`, `electricity_80nan`; better on `letter_20nan`
+  (−0.157), `pendigits` 20 to 60, `biodeg` 20 and 40, `electricity_20nan`, `kc2_80nan`, `vehicle_20nan`. Secondary
+  (better / no difference / worse): bar `sw_score` 7/7/12, `dist_score` 7/4/15, `impute_score` 20/5/1; strong
+  `sw_score` 9/6/11, `dist_score` 7/6/13, `impute_score` 18/6/2. On 11 variants the shuffled truths score lower than
+  TRIDENT. From 40% missing the ledgers hold the calibrated output (ADR 0027).
+- **Conclusion:** TRIDENT leads its baselines on point error and does not on the distributional scores: behind the
+  best strong baseline on 11 of 26 variants on `sw_score` and 13 on `dist_score`, mostly at 80% missing and on
+  `credit-g`. The two distributional scores mostly agree (5 calls differ), so `sw_score` mostly charges what
+  `dist_score` charges, fills shrunk to the centre; the rows' structure adds little here. No default changes; E183
+  asks whether choosing the checkpoint by `sw_score` recovers it.
 - **Sources:** [imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md); `sliced_run.py`.
 
 ### E183 · Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? (pre-registered 2026-11-18 13:35 GMT-3)

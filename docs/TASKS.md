@@ -1078,7 +1078,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 - **T59 · A distributional score that sees the rows: sliced Wasserstein** (the user's request, 2026-11-18).
   **E182 pre-registered 2026-11-18 13:00 GMT-3** ([imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md)):
   `sw_score` for TRIDENT (E181's fold ledgers) and eight refitted baselines on the 26 MCAR variants, seeds 101/202/303,
-  with a shuffled-truths control; CPU only, split between medusa1 and gorgona8. Not read yet.
+  with a shuffled-truths control; CPU only, split between medusa1 and gorgona8.
+  **Read 2026-11-18, mixed:** against the best strong baseline better 9, no difference 6, worse 11 of 26 on `sw_score`
+  (`dist_score` 7/6/13, `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g`.
 - **T60 · The decode checkpoint chosen by `sw_score`** (the user's go, 2026-11-18).
   `--decode_metric sw_score` added: the kept epoch is the one with the lowest sliced Wasserstein score on the
   validation rows; no default changes, the loss is untouched.

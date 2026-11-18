@@ -68,6 +68,44 @@ not TRIDENT against any baseline.
   and group; on a variant without such a category the numbers are identical (`kc2_20nan` seed 101: 0.0). The failed
   jobs wrote no file and are rerun. No change to design, seeds or rule; nothing read.
 
-## Outcome
+## Outcome (2026-11-18 13:36 GMT-3; 390 of 390 files, 225 on medusa1 and 165 on gorgona8)
 
-Not read yet.
+Read once with `sliced_run.py --tally`; the unedited tally is `/scratch/diogoneiss/trident-2026-11-18-sliced/tally.txt`
+on medusa1. **Mixed.**
+
+- **Gates.** The truth scores 0 and the mean/mode fill 1 in every fold. Every refit reproduces E181's logged
+  `impute_score` to 3e-6 or better except three on `kr-vs-kp`, refitted on gorgona8 against scores logged on medusa1:
+  knn5 (largest gap 0.039), knn10 (0.034) and ice (0.019). By the rule they are not read there: knn5, knn10 and ice
+  on `kr-vs-kp_20nan`, `_40nan` and `_60nan`, ice on `_80nan`.
+- **Control.** The shuffled truths score at least 0.10 on all 26 variants (0.16 on `kr-vs-kp_80nan` to 1.25 on
+  `kc2_40nan`), with `dist_score` 0.0000 everywhere: the score sees the rows on every variant.
+- **Primary, TRIDENT − the best strong-tier baseline on `sw_score`, 26 variants:** better 9, no difference 6, worse 11.
+  Worse on a quarter or fewer was needed for supported and on half or more for refuted.
+  - Better: `letter_20nan` (−0.157), `pendigits_20nan` (−0.055), `_40nan` (−0.096), `_60nan` (−0.053),
+    `biodeg_20nan` (−0.051), `_40nan` (−0.052), `electricity_20nan` (−0.023), `kc2_80nan` (−0.035),
+    `vehicle_20nan` (−0.009).
+  - Worse: `credit-g_20nan` (+0.070), `_40nan` (+0.220), `_60nan` (+0.347), `_80nan` (+0.350), all to ice;
+    `biodeg_80nan` (+0.181, softimpute); `pendigits_80nan` (+0.097), `kr-vs-kp_40nan` (+0.047), `_80nan` (+0.036),
+    `vehicle_80nan` (+0.045), `spambase_20nan` (+0.026), `electricity_80nan` (+0.026), all to missForest.
+- **Secondary, the same refits on the three scores (better / no difference / worse):**
+
+  | opponent | `sw_score` | `dist_score` | `impute_score` |
+  |---|---|---|---|
+  | bar (knn5, knn10, hgb, lgbm) | 7 / 7 / 12 | 7 / 4 / 15 | 20 / 5 / 1 |
+  | best strong-tier baseline | 9 / 6 / 11 | 7 / 6 / 13 | 18 / 6 / 2 |
+
+  The `impute_score` row repeats E181's calls. Against the strong tier the call on `sw_score` differs from
+  `impute_score`'s on 15 variants and from `dist_score`'s on 5.
+- **Levels.** TRIDENT's `sw_score` runs from 0.129 (`pendigits_20nan`) to 0.925 (`credit-g_80nan`); the
+  class-conditional fill's from 0.41 to 0.96. On 11 variants the control scores lower than TRIDENT (for instance
+  `electricity_80nan` 0.246 against 0.635, `biodeg_80nan` 0.418 against 0.747): there, fills with exact marginals and
+  wrong rows are closer to the true rows than TRIDENT's.
+- **What the fills are.** From 40% missing the ledgers hold the default output, the kept checkpoint's fills after
+  ADR 0027's calibration, fitted for point error. TabPFN is not in the study.
+
+**Reading.** On point error TRIDENT leads its baselines; on the two distributional scores it does not: it is behind
+the best strong baseline on 11 of 26 variants on `sw_score` and on 13 on `dist_score`, mostly at 80% missing and on
+`credit-g` at every level, and ahead at 20 to 60% on `pendigits`, `letter`, `biodeg` and `electricity`. The two
+distributional scores mostly agree, so most of what `sw_score` charges here is what `dist_score` already charges:
+fills shrunk to the centre. Where the control beats TRIDENT, the marginals weigh more in the score than the rows'
+structure. No default changes. E183 (ticket 72) asks whether choosing the checkpoint by `sw_score` recovers it.
