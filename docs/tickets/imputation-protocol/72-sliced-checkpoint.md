@@ -57,6 +57,9 @@ on the default run and its baselines, had its 390 files in and had not been read
   aqui, rodaremos apenas na gorgona por enquanto"). The 21 runs left (`pendigits` 60 and 80, `spambase_20nan`,
   `letter_20nan`, `electricity`) cannot move to gorgona8 as designed: its GPU is another model (RTX 3090 Ti), so they
   would not pair with E181's runs. No change to design, seeds or rule; nothing read.
+- **Amendment (2026-11-18 16:15 GMT-3):** relaunched at 16:11 GMT-3 on the user's order, with lingering now on for
+  the account: the 21 runs left, as four queues on GPU 0 only (GPU 1 is another user's), shortest first. The 57
+  finished runs are kept. No change to design, seeds or rule; nothing read.
 
 ## Outcome
 

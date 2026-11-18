@@ -5005,6 +5005,8 @@ fails when an entry has no row or a row no entry.
   in: the user's last SSH session on medusa1 closed, lingering is off, and systemd's user manager exited and stopped
   the tmux scopes the queues ran under. Not relaunched, on the user's order; the 21 runs left cannot move to gorgona8
   as designed (another GPU model, no pairing with E181's runs). No change to design or rule; nothing read.
+- **Amendment (2026-11-18 16:15 GMT-3):** relaunched at 16:11 GMT-3 on the user's order, lingering now on: the 21
+  runs left as four queues on GPU 0 only. No change to design or rule; nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;
