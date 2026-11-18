@@ -107,6 +107,12 @@ Induced population, 15 (seed, fold) values a variant, the fold-pair rule with se
   No call is made from these, no Kc − K pair is in yet, and design, seeds and rule stand; the read stays the one with
   the 99 runs in. Ten more cells failed between 20:06 and 20:09 (eight killed without a traceback, one on a CUDA
   "device busy" error, one not inspected), cause not found; the two without fold metrics are retrained by a last pass of the queues.
+- **Amendment (2026-11-18 00:45 GMT-3):** GPU 0 of medusa1 failed (`nvidia-smi` reports `ERR!`), CUDA then listed
+  one device, and the twelve cells started between 23:02 and 23:45 GMT-3 on 2026-11-17 with `CUDA_VISIBLE_DEVICES=1`
+  found none and trained on the CPU (`Using device: cpu`). None had finished; they were stopped at 00:36 and their logs
+  and partial output moved to `quarantine-cpu/` in the state directory. Every cell holding fold metrics (71 of 99) ran
+  on CUDA. `train` now exits when no CUDA device is visible. Relaunched at 00:37 as six queues on the remaining GPU
+  (device 0 as CUDA now lists it); the 28 others retrain whole. No change to design, seeds or rule.
 
 ## Outcome
 

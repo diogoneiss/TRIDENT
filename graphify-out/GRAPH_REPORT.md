@@ -1,7 +1,7 @@
-# Graph Report - TRIDENT  (2026-11-17)
+# Graph Report - TRIDENT  (2026-11-18)
 
 ## Corpus Check
-- 767 files · ~1,622,249 words
+- 767 files · ~1,622,961 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a49c4ad1`
+- Built from commit: `20e61bfd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -527,12 +527,12 @@
 10. `PreparedDataset` - 60 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `compute_cv_summary()` --semantically_similar_to--> `CrossValidationSummary`  [INFERRED] [semantically similar]
+  README.md → docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md
 - `TRIDENT README` --conceptually_related_to--> `kr-vs-kp Categorical Columns`  [AMBIGUOUS]
   README.md → datasets/categorical_columns/kr-vs-kp.txt
 - `TRIDENT README` --conceptually_related_to--> `src/training Package`  [AMBIGUOUS]
   README.md → AGENTS.md
-- `compute_cv_summary()` --semantically_similar_to--> `CrossValidationSummary`  [INFERRED] [semantically similar]
-  README.md → docs/superpowers/plans/2026-08-03-curated-mlflow-cross-validation.md
 - `hourly()` --calls--> `events()`  [INFERRED]
   datasets/build_mimic.py → tests/unit/test_leadership.py
 - `make()` --uses--> `GradientBoostingImputer`  [INFERRED]

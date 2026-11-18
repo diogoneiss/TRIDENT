@@ -16600,7 +16600,7 @@
       "file_type": "code",
       "norm_label": "_best()",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L90"
+      "source_location": "L94"
     },
     {
       "id": "scripts_experiments_classcond_run_cell_dir",
@@ -16648,7 +16648,7 @@
       "file_type": "code",
       "norm_label": "on_class_scale()",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L78"
+      "source_location": "L82"
     },
     {
       "id": "scripts_experiments_classcond_run_tally",
@@ -16660,7 +16660,7 @@
       "file_type": "code",
       "norm_label": "tally()",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L99"
+      "source_location": "L103"
     },
     {
       "id": "scripts_experiments_classcond_run_todo",
@@ -16672,7 +16672,7 @@
       "file_type": "code",
       "norm_label": "todo()",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L68"
+      "source_location": "L72"
     },
     {
       "id": "scripts_experiments_classcond_run_train",
@@ -60149,7 +60149,7 @@
       "source_location": "L52"
     },
     {
-      "id": "scripts_experiments_classcond_run_rationale_79",
+      "id": "scripts_experiments_classcond_run_rationale_83",
       "label": "A run's induced score per fold on the class-conditional scale, from its own\u2026",
       "_origin": "ast",
       "community": 251,
@@ -60157,10 +60157,10 @@
       "file_type": "rationale",
       "norm_label": "a run's induced score per fold on the class-conditional scale, from its own...",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L79"
+      "source_location": "L83"
     },
     {
-      "id": "scripts_experiments_classcond_run_rationale_91",
+      "id": "scripts_experiments_classcond_run_rationale_95",
       "label": "Among ``names``, the baseline with the lowest mean ``metric`` over the\u2026",
       "_origin": "ast",
       "community": 251,
@@ -60168,7 +60168,7 @@
       "file_type": "rationale",
       "norm_label": "among ``names``, the baseline with the lowest mean ``metric`` over the...",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L91"
+      "source_location": "L95"
     },
     {
       "id": "scripts_experiments_report_common_rationale_272",
@@ -78286,7 +78286,7 @@
       "node_kind": "heading",
       "norm_label": "outcome",
       "source_file": "docs/tickets/imputation-protocol/70-class-conditional-score.md",
-      "source_location": "L96"
+      "source_location": "L117"
     },
     {
       "id": "docs_tickets_imputation_protocol_70_class_conditional_score_trident_against_its_baselines_on_impute_score_classcond_the_score_measured_against_the_class_conditional_fill_e181_t58_pre_registered_2026_11_17_14_35_gmt_3",
@@ -100152,7 +100152,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L85",
+      "source_location": "L89",
       "weight": 1.0
     },
     {
@@ -100164,7 +100164,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L100",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -100176,7 +100176,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L100",
+      "source_location": "L104",
       "weight": 1.0
     },
     {
@@ -100188,7 +100188,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L110",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -100200,7 +100200,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L120",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -100212,7 +100212,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L127",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -100224,7 +100224,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L143",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
@@ -100236,7 +100236,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L70",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -100248,7 +100248,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L70",
+      "source_location": "L74",
       "weight": 1.0
     },
     {
@@ -100260,7 +100260,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L74",
+      "source_location": "L78",
       "weight": 1.0
     },
     {
@@ -100272,7 +100272,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L60",
+      "source_location": "L64",
       "weight": 1.0
     },
     {
@@ -100284,7 +100284,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L64",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -143400,7 +143400,7 @@
       "confidence_score": 1.0,
       "context": "generic_arg",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L90",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -143412,7 +143412,7 @@
       "confidence_score": 1.0,
       "context": "generic_arg",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L90",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -149736,7 +149736,7 @@
       "confidence_score": 1.0,
       "context": "import",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0
     },
     {
@@ -166080,7 +166080,7 @@
       "confidence_score": 1.0,
       "context": "parameter_type",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L78",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -175320,7 +175320,7 @@
       "confidence_score": 1.0,
       "context": "return_type",
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L78",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -203246,6 +203246,17 @@
     },
     {
       "source": "docs_tickets_imputation_protocol_70_class_conditional_score_trident_against_its_baselines_on_impute_score_classcond_the_score_measured_against_the_class_conditional_fill_e181_t58_pre_registered_2026_11_17_14_35_gmt_3",
+      "target": "docs_tickets_imputation_protocol_70_class_conditional_score_outcome",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/tickets/imputation-protocol/70-class-conditional-score.md",
+      "source_location": "L117",
+      "weight": 1.0
+    },
+    {
+      "source": "docs_tickets_imputation_protocol_70_class_conditional_score_trident_against_its_baselines_on_impute_score_classcond_the_score_measured_against_the_class_conditional_fill_e181_t58_pre_registered_2026_11_17_14_35_gmt_3",
       "target": "docs_tickets_imputation_protocol_70_class_conditional_score_design",
       "relation": "contains",
       "_origin": "ast",
@@ -203275,17 +203286,6 @@
       "confidence_score": 1.0,
       "source_file": "docs/tickets/imputation-protocol/70-class-conditional-score.md",
       "source_location": "L85",
-      "weight": 1.0
-    },
-    {
-      "source": "docs_tickets_imputation_protocol_70_class_conditional_score_trident_against_its_baselines_on_impute_score_classcond_the_score_measured_against_the_class_conditional_fill_e181_t58_pre_registered_2026_11_17_14_35_gmt_3",
-      "target": "docs_tickets_imputation_protocol_70_class_conditional_score_outcome",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "docs/tickets/imputation-protocol/70-class-conditional-score.md",
-      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -210495,6 +210495,17 @@
     },
     {
       "source": "scripts_experiments_classcond_run",
+      "target": "scripts_experiments_classcond_run_tally",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "scripts/experiments/classcond_run.py",
+      "source_location": "L103",
+      "weight": 1.0
+    },
+    {
+      "source": "scripts_experiments_classcond_run",
       "target": "scripts_experiments_classcond_run_cells",
       "relation": "contains",
       "_origin": "ast",
@@ -210545,7 +210556,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L68",
+      "source_location": "L72",
       "weight": 1.0
     },
     {
@@ -210556,7 +210567,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L78",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -210567,18 +210578,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L90",
-      "weight": 1.0
-    },
-    {
-      "source": "scripts_experiments_classcond_run",
-      "target": "scripts_experiments_classcond_run_tally",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L99",
+      "source_location": "L94",
       "weight": 1.0
     },
     {
@@ -239996,25 +239996,25 @@
       "weight": 1.0
     },
     {
-      "source": "scripts_experiments_classcond_run_rationale_79",
+      "source": "scripts_experiments_classcond_run_rationale_83",
       "target": "scripts_experiments_classcond_run_on_class_scale",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L79",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
-      "source": "scripts_experiments_classcond_run_rationale_91",
+      "source": "scripts_experiments_classcond_run_rationale_95",
       "target": "scripts_experiments_classcond_run_best",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "scripts/experiments/classcond_run.py",
-      "source_location": "L91",
+      "source_location": "L95",
       "weight": 1.0
     },
     {
@@ -253577,7 +253577,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/EXPERIMENTATION_LOG.md",
-      "source_location": "L4895",
+      "source_location": "L4916",
       "weight": 1.0
     },
     {
@@ -264607,5 +264607,5 @@
       "source_file": "README.md"
     }
   ],
-  "built_at_commit": "a49c4ad152c7972e750ca1ffa91302706b82c331"
+  "built_at_commit": "20e61bfdeee80b39796e3ec3759cb33b06ac0548"
 }

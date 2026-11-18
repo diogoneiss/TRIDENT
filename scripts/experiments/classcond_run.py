@@ -55,8 +55,12 @@ def folds(arm: str, variant: str, seed: int) -> pd.DataFrame | None:
 
 
 def train(arm: str, variant: str, seed: int) -> None:
+    import torch
+
     from train import main as train_main
 
+    if not torch.cuda.is_available():  # a lost GPU would otherwise train the cell on the CPU, silently
+        sys.exit("no CUDA device: the cell is not run")
     out = cell_dir(arm, variant, seed)
     args = Namespace(dataset_name=variant, label_column="class", output_dir=str(out), metrics_dir=str(out / "metrics"),
                      disable_mlflow=False, plot_losses=False, save_model=False, seed=seed, cv_folds=5, task="imputation",
