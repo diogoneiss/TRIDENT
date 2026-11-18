@@ -1073,6 +1073,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E181 pre-registered 2026-11-17 14:35 GMT-3** ([imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md)):
   the default run selected by that score on E174's 26 MCAR variants, seeds 101/202/303, against the class-conditional
   fill and the in-run baselines; the default K beside it on `credit-g` and `electricity`. medusa1, 99 runs.
+  **Read 2026-11-18, supported:** better than the class-conditional fill on 23 of 26 (worse on `pendigits_80nan`), the
+  calls against the baselines equal to `impute_score`'s, and the new score keeps the default's epoch; a reporting scale, no default change.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

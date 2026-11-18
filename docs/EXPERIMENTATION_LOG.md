@@ -217,7 +217,7 @@ fails when an entry has no row or a row no entry.
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 – 2026-11-14 | refuted | on mimic-wide the hybrid is equivalent to H on natural gaps and transplanted patterns (+0.0000 on both) and better than TabPFN v2 (−0.099, −0.058): harmless and unneeded, decision 6's scope not extended; under MCAR a small gain over H (−0.0024) |
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
-| E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 | in progress | |
+| E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
 
 ## Entries
 
@@ -4911,7 +4911,31 @@ fails when an entry has no row or a row no entry.
   and partial output moved to `quarantine-cpu/` in the state directory. Every cell holding fold metrics (71 of 99) ran
   on CUDA. `train` now exits when no CUDA device is visible. Relaunched at 00:37 as six queues on the remaining GPU
   (device 0 as CUDA now lists it); the 28 others retrain whole. No change to design, seeds or rule.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** Read on 2026-11-18 08:38 GMT-3 with the 99 runs in (`classcond_run.py --tally`), every one trained on CUDA, medusa1.
+  
+  - **Primary, supported:** Kc is better than the class-conditional fill (score below 1, SESOI 0.01) on 23 of the 26
+    variants and worse on 1. Worse: `pendigits_80nan`, 1.1720 on the class scale (+0.1720 [+0.1667, +0.1773]), where
+    the fill by the class's mean beats Kc and every in-run baseline (the whole-fold fill scores 1.4192 there). No
+    difference: `credit-g_60nan` 0.9921 and `credit-g_80nan` 1.0069. The 23 run from 0.4311 (`pendigits_20nan`) to
+    0.9836 (`kr-vs-kp_80nan`).
+  - **Against the baselines, class scale:** against the bar (best weak baseline) better on 20, no difference on 5
+    (`spambase_20nan`, `electricity_40nan`, `electricity_80nan`, `kr-vs-kp_20nan`, `kc2_20nan`), worse on 1
+    (`electricity_20nan`, hgb, +0.0133 [+0.0013, +0.0254]). Against the best strong-tier baseline better on 18, no
+    difference on 6 (`credit-g` at the four rates, `electricity_20nan`, `kc2_20nan`), worse on 2 (`biodeg_80nan`
+    +0.0206 and `vehicle_80nan` +0.0174, both missForest). No call differs from `impute_score`'s on any variant.
+  - **Selection by the new score, Kc − K on the seven mixed variants:** equivalent on all seven on `impute_score`
+    (difference 0.0000 on six, +0.0012 [-0.0014, +0.0038] on `credit-g_20nan`); on the class scale equivalent on six,
+    and the "better" on `credit-g_60nan` is a difference of -0.0000, the rescaling's rounding. The new score kept the
+    epoch the default keeps.
+  - **The scale:** the whole-fold mean/mode fill scores 1.0022 (`credit-g_80nan`) to 1.4289 (`pendigits_20nan`) on the
+    class scale: the class explains little of the columns except on `pendigits` (about 1.42) and `letter` (1.22).
+  - TabPFN v2 was not read on the class scale beyond the partial look of 2026-11-17 (its cells at these seeds are local
+    only for `kc2`, `pendigits` and `vehicle`).
+- **Conclusion:** supported. TRIDENT stays competitive when the reference is the class-conditional fill: it beats that fill on 23 of 26
+  variants, and its standing against the in-run baselines is the one `impute_score` gives, call for call. Selecting the
+  decode checkpoint by the new score changes nothing measurable, so it is a second reporting scale, not a better
+  selection rule; no default changes. The one loss is informative: at 80% missing on `pendigits` the class's mean is a
+  better fill than TRIDENT and than every baseline, so a fill that uses the label is a baseline worth reporting where the
+  class explains the columns.
 - **Sources:** [imputation-protocol/70](tickets/imputation-protocol/70-class-conditional-score.md); `classcond_run.py`;
   MLflow `experiment = classcond-score-2026-11-17`.

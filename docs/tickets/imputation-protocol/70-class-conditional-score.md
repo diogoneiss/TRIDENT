@@ -116,4 +116,30 @@ Induced population, 15 (seed, fold) values a variant, the fold-pair rule with se
 
 ## Outcome
 
-(open)
+**Supported** (primary rule). Read on 2026-11-18 08:38 GMT-3 with the 99 runs in (`classcond_run.py --tally`), every one trained on CUDA, medusa1.
+
+- **Primary, supported:** Kc is better than the class-conditional fill (score below 1, SESOI 0.01) on 23 of the 26
+  variants and worse on 1. Worse: `pendigits_80nan`, 1.1720 on the class scale (+0.1720 [+0.1667, +0.1773]), where
+  the fill by the class's mean beats Kc and every in-run baseline (the whole-fold fill scores 1.4192 there). No
+  difference: `credit-g_60nan` 0.9921 and `credit-g_80nan` 1.0069. The 23 run from 0.4311 (`pendigits_20nan`) to
+  0.9836 (`kr-vs-kp_80nan`).
+- **Against the baselines, class scale:** against the bar (best weak baseline) better on 20, no difference on 5
+  (`spambase_20nan`, `electricity_40nan`, `electricity_80nan`, `kr-vs-kp_20nan`, `kc2_20nan`), worse on 1
+  (`electricity_20nan`, hgb, +0.0133 [+0.0013, +0.0254]). Against the best strong-tier baseline better on 18, no
+  difference on 6 (`credit-g` at the four rates, `electricity_20nan`, `kc2_20nan`), worse on 2 (`biodeg_80nan`
+  +0.0206 and `vehicle_80nan` +0.0174, both missForest). No call differs from `impute_score`'s on any variant.
+- **Selection by the new score, Kc − K on the seven mixed variants:** equivalent on all seven on `impute_score`
+  (difference 0.0000 on six, +0.0012 [-0.0014, +0.0038] on `credit-g_20nan`); on the class scale equivalent on six,
+  and the "better" on `credit-g_60nan` is a difference of -0.0000, the rescaling's rounding. The new score kept the
+  epoch the default keeps.
+- **The scale:** the whole-fold mean/mode fill scores 1.0022 (`credit-g_80nan`) to 1.4289 (`pendigits_20nan`) on the
+  class scale: the class explains little of the columns except on `pendigits` (about 1.42) and `letter` (1.22).
+- TabPFN v2 was not read on the class scale beyond the partial look of 2026-11-17 (its cells at these seeds are local
+  only for `kc2`, `pendigits` and `vehicle`).
+
+TRIDENT stays competitive when the reference is the class-conditional fill: it beats that fill on 23 of 26
+variants, and its standing against the in-run baselines is the one `impute_score` gives, call for call. Selecting the
+decode checkpoint by the new score changes nothing measurable, so it is a second reporting scale, not a better
+selection rule; no default changes. The one loss is informative: at 80% missing on `pendigits` the class's mean is a
+better fill than TRIDENT and than every baseline, so a fill that uses the label is a baseline worth reporting where the
+class explains the columns.
