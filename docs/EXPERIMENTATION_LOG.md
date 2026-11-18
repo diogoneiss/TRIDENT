@@ -4863,6 +4863,9 @@ fails when an entry has no row or a row no entry.
 - **Amendment (2026-11-18 11:27 GMT-3):** gorgona8's reboot of 2026-11-16 18:37 GMT-3 killed the resume script, so the
   queues were not relaunched when medusa1 returned on 2026-11-17; medusa1 is off again since about 11:22 on 2026-11-18.
   Still 11 of 27, nothing read; the script was restarted unchanged at 11:27 GMT-3.
+- **Amendment (2026-11-18 18:47 GMT-3):** relaunched 11:31 GMT-3 on 2026-11-18; three cells of seed 7 finished before
+  medusa1 fell again at about 14:31, and the next thirteen failed on its MLflow server. 14 of 27 in, nothing read;
+  paused on the user's instruction not to relaunch on medusa1.
 - **Measures and decision rule:** `impute_score`, 15 (seed, fold) pairs a variant, fold-pair rule with seed
   agreement, margin 1% of F's mean. C − F is the premise, S − C the steps, S − F the rows. A variant reads "steps"
   (S better than C and not worse than F), "both" (S better than C, worse than F), "rows" (S equivalent to or worse

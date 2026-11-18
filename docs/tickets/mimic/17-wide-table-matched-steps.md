@@ -144,3 +144,17 @@ fork exists. medusa1 stopped answering again before 11:26 GMT-3 on 2026-11-18 (l
 The study is where the first amendment left it: 11 of 27 runs, `STOP` in place, the four failed cells of seed 7 to
 retrain whole. I restarted the script at 11:27 GMT-3 on 2026-11-18, unchanged; a reboot kills it again, so it is
 checked after each one. Design, seeds and rule unchanged; promoting gorgona8 by hand stays the user's call.
+
+## Amendment (2026-11-18 18:47 GMT-3): medusa1 fell again after three cells; 14 of 27, queues ended, nothing relaunched
+
+The script relaunched both queues at 11:31 GMT-3 on 2026-11-18. Three cells finished at seed 7 (`D10k` and `D` on
+`tmatch`, `M` on the natural table). medusa1 stopped answering at about 14:31 GMT-3 (last copy of the store 14:30;
+`peer_unreachable` at 15:01). `D10kS` on `mcar` at seed 7 trained from 14:33 to 16:40 and failed closing its run;
+the other twelve cells the queues reached failed opening theirs (`ConnectionRefusedError` on port 47731), and both
+queues ran out of cells at 15:03 and 17:01. The resume script had already exited after its relaunch, so nothing of
+this study runs now.
+
+**14 of 27 runs are in**, all of seed 42 and five of seed 7; to train are four of seed 7 (`D10kS` on `tmatch` and
+`mcar`, `D10k` and `D` on `mcar`) and all nine of seed 13. No score read. On the user's instruction of 2026-11-18
+("nao relance coisas na medusa1") nothing is relaunched; since every run of this study logs to medusa1's server,
+the study stays paused until the user says how it continues. Design, seeds and rule unchanged.
