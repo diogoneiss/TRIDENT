@@ -219,6 +219,7 @@ fails when an entry has no row or a row no entry.
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | in progress | |
+| E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 | in progress | |
 
 ## Entries
 
@@ -4963,10 +4964,31 @@ fails when an entry has no row or a row no entry.
   otherwise, inconclusive if the control passes on fewer than 13. Secondary, no rule: against the bar; both
   comparisons on `dist_score` and `impute_score` from the same refits and the calls that differ; the control's and the
   class-conditional fill's levels. Read once with the 390 files in.
-- **Amendment (2026-11-18 13:10 GMT-3):** six jobs of `kr-vs-kp_40nan` stopped because a hidden truth was a category
+- **Amendment (2026-11-18 13:03 GMT-3):** six jobs of `kr-vs-kp_40nan` stopped because a hidden truth was a category
   the variant never shows observed; the one-hot now also spans the hidden truths' categories, identically for every
   imputer (numbers unchanged where no such category exists). The failed jobs are rerun; no change to design or rule;
   nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md); `sliced_run.py`.
+
+### E183 · Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? (pre-registered 2026-11-18 13:35 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-18 13:35 GMT-3 on the user's go of the same day, before E182 was read. T60.
+- **Hypothesis:** choosing the decode checkpoint by `sw_score` on the validation rows lowers the output's `sw_score`.
+- **Scenarios:** S, the default run with `--decode_metric sw_score` (new, no default changes), on E181's 26 MCAR
+  variants at seeds 101/202/303 (78 runs), medusa1 only; control, E181's `Kc` run of the same variant and seed (the
+  default's epoch), no new control arm. The arms pair on the same GPU model: in the smoke (`kc2_20nan`, seed 101) the
+  loss criterion's epoch equals E181's in all five folds and only the kept epoch moves. Calibration stays the default
+  (ADR 0027), so the deployable output is measured and the calibration can mute the selection. Disclosed: the
+  selector (512 fixed directions, the embedder's categories), the variants, seeds and thresholds are my choices; the
+  loss is not changed.
+- **Measures and decision rule:** both arms' test-fold ledgers scored by E182's offline code; fold-pair rule with seed
+  agreement, margin 0.01 of the control's mean. Primary, over the variants E182's control passes: S − K on `sw_score`;
+  supported if better on half or more and worse on at most 2, refuted if better on a sixth or fewer, mixed otherwise.
+  Secondary, no rule: S − K on `impute_score` and `dist_score`; S and K against E182's best strong-tier baseline on
+  `sw_score` and `impute_score`; the kept epoch. Read once with the 78 runs and E182's 390 files in.
+- **Results:** not read yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;
+  MLflow `experiment = sliced-checkpoint-2026-11-18`.

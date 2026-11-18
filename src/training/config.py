@@ -531,7 +531,10 @@ def build_training_parser() -> argparse.ArgumentParser:
             "(imputation-protocol/51), and the run then logs it beside impute_score; "
             "'impute_score_classcond' is impute_score measured against the class-conditional "
             "mean/mode fill, the mean or mode among the training rows of the row's own class "
-            "(imputation-protocol/70), logged beside impute_score for the model and its baselines. Overrides "
+            "(imputation-protocol/70), logged beside impute_score for the model and its baselines; "
+            "'sw_score' is the sliced Wasserstein distance between the validation rows as filled and as "
+            "they truly are, over the mean/mode fill's (imputation-protocol/72): it ranks checkpoints "
+            "only, is not logged, and a search cannot rank by it. Overrides "
             "DECODE_METRIC from the hyperparameter file."
         ),
     )

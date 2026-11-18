@@ -77,7 +77,10 @@ DEFAULT_DECODE_CHECKPOINT = "loss"
 # choice and the default (ADR 0025 decision 1); ``dist_score`` is the distributional score of
 # ``src/training/distribution_metrics.py`` (imputation-protocol/51); ``impute_score_classcond`` is
 # ``impute_score`` measured against the class-conditional mean/mode fill (imputation-protocol/70).
-DECODE_METRICS: tuple[str, ...] = ("impute_score", "dist_score", "impute_score_classcond")
+# ``sw_score`` (imputation-protocol/72) is the sliced Wasserstein distance between the validation rows
+# as filled and as they truly are, over the mean/mode fill's: it ranks checkpoints only.
+DECODE_METRICS: tuple[str, ...] = ("impute_score", "dist_score", "impute_score_classcond", "sw_score")
+CHECKPOINT_ONLY_METRICS: tuple[str, ...] = ("sw_score",)
 DEFAULT_DECODE_METRIC = "impute_score"
 
 # Whether an imputation run's output is calibrated on the validation rows' own gaps
@@ -140,6 +143,8 @@ def validation_objective_key(population: str, metric: str = DEFAULT_DECODE_METRI
         )
     if metric not in DECODE_METRICS:
         raise ValueError(f"Unknown decode metric {metric!r}; expected one of {DECODE_METRICS}.")
+    if metric in CHECKPOINT_ONLY_METRICS:
+        raise ValueError(f"The decode metric {metric!r} ranks checkpoints only; a run does not log it for a search to rank by.")
     return f"validation/impute/{population}/{metric}"
 
 

@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "src/training/config.py": {
-    "mtime": 1794934909.7640712,
-    "seen": 1794937356.4029083,
-    "ast_hash": "239face3abcc42d0a30afea03b434fd9",
+    "mtime": 1795018318.4905043,
+    "seen": 1795019696.4495854,
+    "ast_hash": "f8eaa6673b87a33e9d03547305886bd8",
     "semantic_hash": ""
   },
   "src/training/data.py": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/training/types.py": {
-    "mtime": 1794934909.7640712,
-    "seen": 1794937356.4029243,
-    "ast_hash": "0e79cf01db231f657906de3116c9ce6a",
+    "mtime": 1795018318.4905043,
+    "seen": 1795019696.449602,
+    "ast_hash": "b22e28b5160cba36590a9dea1a807e6b",
     "semantic_hash": ""
   },
   "src/transformer.py": {
@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "src/training/decoding.py": {
-    "mtime": 1794935964.1131864,
-    "seen": 1794937356.4029098,
-    "ast_hash": "92d5832b29596f4176b2f07259fa5874",
+    "mtime": 1795018318.4895043,
+    "seen": 1795019696.4495869,
+    "ast_hash": "5c1e786426b5740fd6c456fe00998365",
     "semantic_hash": ""
   },
   "src/training/imputation_metrics.py": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "docs/EXPERIMENTATION_LOG.md": {
-    "mtime": 1795017829.1012197,
-    "seen": 1795017841.3431375,
-    "ast_hash": "a0a479c219f880f39901894b2a3c0743",
+    "mtime": 1795019686.1631525,
+    "seen": 1795019696.4496722,
+    "ast_hash": "411070744ca18d696342dc567f740141",
     "semantic_hash": ""
   },
   "docs/adr/0010-server-store-on-ssd-with-hdd-replica.md": {
@@ -1338,9 +1338,9 @@
     "semantic_hash": ""
   },
   "docs/TASKS.md": {
-    "mtime": 1795017477.8388057,
-    "seen": 1795017489.6987298,
-    "ast_hash": "206a1e768828545e4673f9a2c83946d1",
+    "mtime": 1795019686.2001529,
+    "seen": 1795019696.449673,
+    "ast_hash": "a4114f2c5d5e29b87d3e716b7c820a95",
     "semantic_hash": ""
   },
   "tests/unit/test_epoch_masker.py": {
@@ -5022,9 +5022,27 @@
     "semantic_hash": ""
   },
   "docs/tickets/imputation-protocol/71-sliced-wasserstein.md": {
-    "mtime": 1795017829.0992196,
-    "seen": 1795017841.343568,
-    "ast_hash": "a23ce0df5a07967aae4544550fb3b25b",
+    "mtime": 1795018555.1791751,
+    "seen": 1795019696.4498768,
+    "ast_hash": "10ec1013cb1f28e1e4c5bb284f4e6457",
+    "semantic_hash": ""
+  },
+  "scripts/experiments/sliced_select_run.py": {
+    "mtime": 1795018430.1680338,
+    "seen": 1795019696.4495587,
+    "ast_hash": "9448eae79d330638b247434d9a2a6828",
+    "semantic_hash": ""
+  },
+  "tests/unit/test_sliced_checkpoint_score.py": {
+    "mtime": 1795018339.9446452,
+    "seen": 1795019696.4496453,
+    "ast_hash": "95a8c82927b838e20c25ff54d4067495",
+    "semantic_hash": ""
+  },
+  "docs/tickets/imputation-protocol/72-sliced-checkpoint.md": {
+    "mtime": 1795019686.3171542,
+    "seen": 1795019696.4498775,
+    "ast_hash": "690f90bc8278c6cfb02077e6da8f3897",
     "semantic_hash": ""
   }
 }

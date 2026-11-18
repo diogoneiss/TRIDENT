@@ -6,6 +6,7 @@ and selects its checkpoint on a validation mask that never changes so that the l
 only when the model does. See ADR 0004.
 """
 
+import math
 from pathlib import Path
 
 import numpy as np
@@ -855,6 +856,22 @@ def _within_vocabulary(frame: pd.DataFrame, embedder) -> tuple[pd.DataFrame, dic
     return frame, unseen
 
 
+_SLICED_DIRECTIONS = 512
+
+
+def _sliced_rows(numbers: torch.Tensor, categories: torch.Tensor, sizes, rows: torch.Tensor) -> torch.Tensor:
+    """The rows ``sw_score`` compares, one vector each: the numbers as they are (feature-major in,
+    scaled space) and each categorical column one-hot over its ``sizes`` ids plus one slot for an id
+    outside them (a truth the variant never shows, a placeholder), divided by sqrt(2) so that a
+    wrong category is as far as one scaled unit."""
+    parts = [numbers[:, rows].T.double()]
+    for index, size in enumerate(sizes):
+        ids = categories[index, rows]
+        ids = torch.where((ids >= 0) & (ids < size), ids + 1, torch.zeros_like(ids))
+        parts.append(torch.nn.functional.one_hot(ids, size + 1).double() / math.sqrt(2.0))
+    return torch.cat(parts, dim=1)
+
+
 class _ValidationGapScore:
     """The validation rows' induced ``impute_score`` of the model's current weights, every epoch.
 
@@ -910,6 +927,8 @@ class _ValidationGapScore:
         sorted truths), each categorical column's truth frequencies over its ids, one more for a truth
         the variant never shows, and the naive fill's own distances."""
         self._metric = metric
+        if metric == "sw_score":
+            self._prepare_sliced(embedder, baselines)
         if metric != "dist_score":
             return
         self._sorted_truths = [torch.sort(truth).values for _, _, truth in self._numerical]
@@ -918,6 +937,52 @@ class _ValidationGapScore:
             size = len(embedder.label_encoders[embedder.categorical_columns[index]].classes_) + 1
             self._truth_frequencies.append(torch.bincount(truth + 1, minlength=size).double() / rows.numel())
         self._naive_wd, self._naive_tv = naive_distances(cells, baselines)
+
+    def _prepare_sliced(self, embedder, baselines) -> None:
+        """What ``sw_score`` needs, fixed for the fold (imputation-protocol/72): the rows holding a
+        scored cell as they truly are, projected on fixed unit directions and sorted, and the
+        mean/mode fill's own distance. The observed cells, and any gap that is not scored, are the
+        same on both sides."""
+        touched = [rows for _, rows, _ in (*self._numerical, *self._categorical)]
+        if not touched:
+            return
+        n_rows = self._hidden.masked_positions.shape[0]
+        self._sw_rows = torch.unique(torch.cat(touched))
+        self._sw_sizes = [len(embedder.label_encoders[column].classes_) for column in embedder.categorical_columns]
+        numbers = torch.nan_to_num(self._hidden.num_values.reshape(-1, n_rows).double())
+        categories = self._hidden.cat_indices.reshape(-1, n_rows).clone()
+        naive_numbers, naive_categories = numbers.clone(), categories.clone()
+        for index, rows, truth in self._numerical:
+            numbers[index, rows] = truth
+            naive_numbers[index, rows] = float(baselines[embedder.numerical_columns[index]])
+        for index, rows, truth in self._categorical:
+            column = embedder.categorical_columns[index]
+            classes = {str(name): position for position, name in enumerate(embedder.label_encoders[column].classes_)}
+            categories[index, rows] = truth
+            naive_categories[index, rows] = classes.get(str(baselines[column]), -1)
+        width = numbers.shape[0] + sum(size + 1 for size in self._sw_sizes)
+        drawn = np.random.default_rng(0).normal(size=(_SLICED_DIRECTIONS, width))
+        self._sw_along = torch.tensor(drawn / np.linalg.norm(drawn, axis=1, keepdims=True), dtype=torch.float64, device=numbers.device).T
+        self._sw_numbers, self._sw_categories = numbers, categories
+        self._sw_truth = torch.sort(self._sliced_projection(numbers, categories), dim=0).values
+        self._sw_naive = self._sliced_distance(naive_numbers, naive_categories)
+
+    def _sliced_projection(self, numbers, categories) -> torch.Tensor:
+        projected = _sliced_rows(numbers, categories, self._sw_sizes, self._sw_rows) @ self._sw_along
+        # a NaN score never beats the best one, so the run would keep a wrong epoch in silence
+        assert bool(torch.isfinite(projected).all()), "sw_score: a projected row is not finite"
+        return projected
+
+    def _sliced_distance(self, numbers, categories) -> float:
+        return float((torch.sort(self._sliced_projection(numbers, categories), dim=0).values - self._sw_truth).abs().mean().item())
+
+    def _sliced_score(self, prediction) -> float:
+        numbers, categories = self._sw_numbers.clone(), self._sw_categories.clone()
+        for index, rows, _ in self._numerical:
+            numbers[index, rows] = prediction.numerical_values[index][rows].double()
+        for index, rows, _ in self._categorical:
+            categories[index, rows] = prediction.categorical_ids[index][rows]
+        return _ratio(self._sliced_distance(numbers, categories), self._sw_naive)
 
     def _condition_on_class(self, cells, baselines, classwise) -> None:
         """``impute_score_classcond``: the same errors over the class-conditional fill's, so only the
@@ -955,6 +1020,8 @@ class _ValidationGapScore:
             return 0.0
         if self._metric == "dist_score":
             return self._distribution_score(prediction)
+        if self._metric == "sw_score":
+            return self._sliced_score(prediction)
         score = 0.0
         if self._n_numerical:
             squared = sum(

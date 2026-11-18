@@ -62,7 +62,7 @@ not TRIDENT against any baseline.
   - TRIDENT's checkpoints were chosen by a point-error score. TabPFN is not in the study.
   - A post-hoc look of the same day, outside any registration, put `dist_score` on the class-conditional scale for
     TRIDENT alone (below 1 on 24 of 26 variants); it is not part of this study.
-- **Amendment (2026-11-18 13:10 GMT-3):** six jobs of `kr-vs-kp_40nan` on gorgona8 stopped on the encoder's own
+- **Amendment (2026-11-18 13:03 GMT-3):** six jobs of `kr-vs-kp_40nan` on gorgona8 stopped on the encoder's own
   check: a true hidden value was a category the variant never shows among its observed cells. The one-hot now spans the
   categories the variant shows and those its hidden truths hold (all five folds' ledgers), the same for every imputer
   and group; on a variant without such a category the numbers are identical (`kc2_20nan` seed 101: 0.0). The failed

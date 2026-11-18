@@ -1079,6 +1079,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E182 pre-registered 2026-11-18 13:00 GMT-3** ([imputation-protocol/71](tickets/imputation-protocol/71-sliced-wasserstein.md)):
   `sw_score` for TRIDENT (E181's fold ledgers) and eight refitted baselines on the 26 MCAR variants, seeds 101/202/303,
   with a shuffled-truths control; CPU only, split between medusa1 and gorgona8. Not read yet.
+- **T60 · The decode checkpoint chosen by `sw_score`** (the user's go, 2026-11-18).
+  `--decode_metric sw_score` added: the kept epoch is the one with the lowest sliced Wasserstein score on the
+  validation rows; no default changes, the loss is untouched.
+  **E183 pre-registered 2026-11-18 13:35 GMT-3** ([imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md)):
+  78 runs on medusa1 against E181's default-epoch runs, scored offline by E182's code. Not read yet.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
