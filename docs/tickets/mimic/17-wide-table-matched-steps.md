@@ -132,3 +132,15 @@ What follows changes nothing in the design, the arms, the seeds or the rule:
   that ADR 0033 reconciles afterwards.
 - **Cost:** about 12 h 40 of trainings on the shared card are repeated (9 h 17 and 3 h 26), and the card is idle on
   this study's side until the leader returns.
+
+## Amendment (2026-11-18 11:27 GMT-3): the resume script died with gorgona8's reboots; restarted, still 11 of 27, nothing read
+
+gorgona8 rebooted at 18:37 GMT-3 on 2026-11-16, at 13:55 on 2026-11-17 and at 10:15 on 2026-11-18 (`last -x reboot`).
+The first reboot killed `resume_when_leader_answers.sh`, so when medusa1 answered again (contact regained 13:58 GMT-3
+on 2026-11-17, `sync/leadership.log`) the queues were not relaunched; the leader's GPUs went to E181 meanwhile. The
+follower did not promote itself in the 42 hours of silence (no `promoted` line; why is not checked here), so no
+fork exists. medusa1 stopped answering again before 11:26 GMT-3 on 2026-11-18 (last copy of the store 11:22).
+
+The study is where the first amendment left it: 11 of 27 runs, `STOP` in place, the four failed cells of seed 7 to
+retrain whole. I restarted the script at 11:27 GMT-3 on 2026-11-18, unchanged; a reboot kills it again, so it is
+checked after each one. Design, seeds and rule unchanged; promoting gorgona8 by hand stays the user's call.

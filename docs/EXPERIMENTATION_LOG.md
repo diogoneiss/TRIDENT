@@ -4858,6 +4858,9 @@ fails when an entry has no row or a row no entry.
   stopped at 21:01 with 11 of 27 runs in, nothing read. The four are retrained whole at seed 7 when the leader
   answers (a detached script relaunches the queues); no change to design, seeds or rule. Promoting gorgona8 by
   hand or training with MLflow off is the user's call and was not taken.
+- **Amendment (2026-11-18 11:27 GMT-3):** gorgona8's reboot of 2026-11-16 18:37 GMT-3 killed the resume script, so the
+  queues were not relaunched when medusa1 returned on 2026-11-17; medusa1 is off again since about 11:22 on 2026-11-18.
+  Still 11 of 27, nothing read; the script was restarted unchanged at 11:27 GMT-3.
 - **Measures and decision rule:** `impute_score`, 15 (seed, fold) pairs a variant, fold-pair rule with seed
   agreement, margin 1% of F's mean. C − F is the premise, S − C the steps, S − F the rows. A variant reads "steps"
   (S better than C and not worse than F), "both" (S better than C, worse than F), "rows" (S equivalent to or worse
