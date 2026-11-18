@@ -60,6 +60,13 @@ on the default run and its baselines, had its 390 files in and had not been read
 - **Amendment (2026-11-18 16:15 GMT-3):** relaunched at 16:11 GMT-3 on the user's order, with lingering now on for
   the account: the 21 runs left, as four queues on GPU 0 only (GPU 1 is another user's), shortest first. The 57
   finished runs are kept. No change to design, seeds or rule; nothing read.
+- **Amendment (2026-11-18 18:25 GMT-3):** paused on the user's order, because another user needs medusa1 ("consegue
+  parar as execucoes na medusa1 assim que a celula atual parar?"). The `STOP` file was created at 17:23 GMT-3, so each
+  queue ended after its running cell; on a second order ("interrompa electricity_40nan s101") that cell was killed by
+  hand at 17:36, and its `FAILED` line in `progress.log` is that kill, not an error. The last queue left at 18:19.
+  69 of 78 runs are in; the 9 left are `electricity_40nan`, `electricity_80nan` and `letter_20nan` at the three
+  seeds. To resume: remove `STOP` and relaunch the queues, on the user's order only. No change to design, seeds or
+  rule; nothing read.
 
 ## Outcome
 

@@ -5007,6 +5007,9 @@ fails when an entry has no row or a row no entry.
   as designed (another GPU model, no pairing with E181's runs). No change to design or rule; nothing read.
 - **Amendment (2026-11-18 16:15 GMT-3):** relaunched at 16:11 GMT-3 on the user's order, lingering now on: the 21
   runs left as four queues on GPU 0 only. No change to design or rule; nothing read.
+- **Amendment (2026-11-18 18:25 GMT-3):** paused on the user's order (another user needs medusa1): `STOP` file at
+  17:23 GMT-3, `electricity_40nan` seed 101 killed by hand at 17:36 (its `FAILED` line is that kill), last queue out
+  at 18:19. 69 of 78 runs in; 9 left (`electricity_40nan`, `_80nan`, `letter_20nan`). Not relaunched; nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;
