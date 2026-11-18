@@ -5001,6 +5001,10 @@ fails when an entry has no row or a row no entry.
   supported if better on half or more and worse on at most 2, refuted if better on a sixth or fewer, mixed otherwise.
   Secondary, no rule: S − K on `impute_score` and `dist_score`; S and K against E182's best strong-tier baseline on
   `sw_score` and `impute_score`; the kept epoch. Read once with the 78 runs and E182's 390 files in.
+- **Amendment (2026-11-18 16:10 GMT-3):** every process of the study was stopped at 14:34:29 GMT-3 with 57 of 78 runs
+  in: the user's last SSH session on medusa1 closed, lingering is off, and systemd's user manager exited and stopped
+  the tmux scopes the queues ran under. Not relaunched, on the user's order; the 21 runs left cannot move to gorgona8
+  as designed (another GPU model, no pairing with E181's runs). No change to design or rule; nothing read.
 - **Results:** not read yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;

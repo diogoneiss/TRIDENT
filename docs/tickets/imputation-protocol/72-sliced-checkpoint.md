@@ -49,6 +49,14 @@ on the default run and its baselines, had its 390 files in and had not been read
   error for a numerical one, averaged over the masked cells (`src/models.py`). For point error the sum over a row's
   cells already is the row's error; what the loss lacks is a term on the joint distribution of a row's fills. Adding
   one changes the training algorithm and needs the user's explicit go.
+- **Amendment (2026-11-18 16:10 GMT-3):** at 14:34:29 GMT-3 every process of the study was stopped with 57 of 78
+  runs in (all of `kc2`, `vehicle`, `credit-g`, `biodeg`, `kr-vs-kp`, and `pendigits` at 20 and 40). Cause, from the
+  user's journal: the user's last SSH session on medusa1 closed at 14:34:01, lingering is off for the account, and
+  systemd's user manager exited 28 s later, stopping the tmux scopes the queues ran under (`setsid nohup` does not
+  leave that scope). The machine did not restart. Not relaunched, on the user's order ("nao reinicie as filas mortas
+  aqui, rodaremos apenas na gorgona por enquanto"). The 21 runs left (`pendigits` 60 and 80, `spambase_20nan`,
+  `letter_20nan`, `electricity`) cannot move to gorgona8 as designed: its GPU is another model (RTX 3090 Ti), so they
+  would not pair with E181's runs. No change to design, seeds or rule; nothing read.
 
 ## Outcome
 
