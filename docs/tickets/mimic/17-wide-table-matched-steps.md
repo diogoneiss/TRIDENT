@@ -182,3 +182,43 @@ port. Why the tunnel and the 14:31 copy dropped first is not checked.
 - **Relaunch:** the two queues at 19:35 GMT-3 as launched before, writing to gorgona8's store; the thirteen cells
   of the third amendment are retrained whole. Runs from here carry the store's epoch-3 history; nothing in the design,
   seeds, rule or reader changes, and nothing has been read.
+
+## Outcome (2026-11-19 14:43 GMT-3): refuted, the loss is rows
+
+The 13 cells left after the fourth amendment finished on gorgona8 as leader between 19:35 GMT-3 on 2026-11-18 and
+13:55 GMT-3 on 2026-11-19, none failed; 27 of 27 runs hold their five folds, all trained on gorgona8. Read once, on
+gorgona8. The printout, unedited below its first two lines (the commit and the clock, added here):
+
+```
+f746ab6
+read 2026-11-19 14:42 GMT-3
+mimic-wide_natural (masked cells): full F 0.6651, capped C 0.6812, capped at the full table's steps S 0.6836
+  C - F (E177's contrast): +0.0161 [+0.0154, +0.0169], by seed +0.0160, +0.0156, +0.0169 -> worse
+  S - C (steps, rows fixed): +0.0023 [+0.0013, +0.0034], by seed +0.0019, +0.0031, +0.0020 -> worse
+  S - F (rows, steps fixed): +0.0185 [+0.0176, +0.0194], by seed +0.0180, +0.0186, +0.0189 -> worse
+  share of C - F the steps recover: -15% -> the loss belongs to: rows
+mimic-wide-donor_tmatch_20nan (induced cells): full F 0.9080, capped C 0.9187, capped at the full table's steps S 0.9208
+  C - F (E177's contrast): +0.0108 [+0.0100, +0.0116], by seed +0.0111, +0.0101, +0.0111 -> worse
+  S - C (steps, rows fixed): +0.0021 [+0.0011, +0.0031], by seed +0.0032, +0.0018, +0.0012 -> worse
+  S - F (rows, steps fixed): +0.0128 [+0.0116, +0.0141], by seed +0.0143, +0.0119, +0.0123 -> worse
+  share of C - F the steps recover: -19% -> the loss belongs to: rows
+mimic-wide-donor_mcar_20nan (induced cells): full F 0.7176, capped C 0.7297, capped at the full table's steps S 0.7320
+  C - F (E177's contrast): +0.0121 [+0.0106, +0.0137], by seed +0.0130, +0.0119, +0.0116 -> worse
+  S - C (steps, rows fixed): +0.0023 [+0.0014, +0.0031], by seed +0.0023, +0.0017, +0.0027 -> worse
+  S - F (rows, steps fixed): +0.0144 [+0.0130, +0.0158], by seed +0.0153, +0.0136, +0.0143 -> worse
+  share of C - F the steps recover: -19% -> the loss belongs to: rows
+PRIMARIES (natural, tmatch): ['rows', 'rows'] -> rows (fold-pair t, seed agreement, margin 1% of the full arm's mean)
+```
+
+- **Primaries:** both read "rows". The premise holds on this machine: the capped arm is worse than the full one by
+  +0.0161 (natural) and +0.0108 (`tmatch`), as in E177 (+0.0158, +0.0103). Giving the capped arm the full table's
+  optimizer steps does not recover any of it: S is worse than C, by +0.0023 and +0.0021, every seed agreeing, so it
+  is further from F (+0.0185, +0.0128). Refuted: the loss of the 10,000-row decoder is the rows, not the steps.
+- **Secondary:** `mcar` reads "rows" too (C − F +0.0121, S − C +0.0023, S − F +0.0144). The share of C − F the steps
+  recover is −15%, −19% and −19%: the longer run costs a little instead of gaining. What makes it cost is not
+  separated here: each row is seen 3.2 to 4.5 times more often, and the checkpoint is chosen among more epochs.
+- **Against TabPFN v2, on the means only** (E178's TabPFN means on gorgona8, 0.7644, 0.9662, 0.7216; not fold-paired):
+  S − TabPFN is −0.0808 on the natural table and −0.0454 on `tmatch` (81% and 78% of F's −0.0993 and −0.0582), and
+  +0.0104 under MCAR, where F is −0.0040.
+- **What it leads to:** the thesis sentence on E176 and E177 can say the rows past 10,000 buy accuracy as rows: a
+  10,000-row decoder trained as long as the full one is not closer to it. Its wording is the user's call. No ADR.

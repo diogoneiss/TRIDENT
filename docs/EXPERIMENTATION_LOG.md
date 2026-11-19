@@ -216,7 +216,7 @@ fails when an entry has no row or a row no entry.
 | E177 | TRIDENT on 10,000 rows of mimic-wide: does the lead over TabPFN v2 need the other rows? | 2026-11-13 | supported | trained on 10,000 rows a fold the decoder is still better than TabPFN v2 on natural gaps (−0.083) and transplanted patterns (−0.047), 84% and 82% of E176's lead; under MCAR it falls behind TabPFN (+0.009) |
 | E178 | The deployable hybrid on mimic-wide: safe and still a gain where TabPFN alone is weak? | 2026-11-13 – 2026-11-14 | refuted | on mimic-wide the hybrid is equivalent to H on natural gaps and transplanted patterns (+0.0000 on both) and better than TabPFN v2 (−0.099, −0.058): harmless and unneeded, decision 6's scope not extended; under MCAR a small gain over H (−0.0024) |
 | E179 | Multiple imputation with draws joint across a row's gaps: do they cover where per-cell draws fail? | 2026-11-13 – 2026-11-14 | MI-R refuted, MI-J mixed | neither joint arm is proper: jointly drawn residuals are better than per-cell draws on 0 of five 80% variants (worse on 2), chained model draws on 2 (worse on credit-g_80nan); mean coverage at least 0.90 on 2 and 7 of 15 (12 required); the gain over E175's draws comes from drawing from the model, not from the chain |
-| E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 | in progress | |
+| E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 – 2026-11-19 | refuted (rows) | the capped arm's loss is rows: at the full table's steps the 10,000-row decoder is slightly worse than at 450 epochs (S − C +0.002 on all three variants), so further from the full one (S − F +0.019 natural, +0.013 tmatch, +0.014 mcar) |
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 | in progress | |
@@ -4844,7 +4844,7 @@ fails when an entry has no row or a row no entry.
 
 ### E180 · TRIDENT on 10,000 rows of `mimic-wide` at the full table's optimizer steps: is the capped arm's loss rows or steps? (pre-registered 2026-11-14 19:39 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-14 19:39 GMT-3 on the user's go ("Sim, pré registre e vá", 2026-11-14). T57.
+- **Status:** done 2026-11-19 14:43 GMT-3 (refuted: rows); pre-registered 2026-11-14 19:39 GMT-3 on the user's go ("Sim, pré registre e vá", 2026-11-14). T57.
 - **Hypothesis:** part of the loss E177's capped arm showed against the full-table decoder is optimizer steps:
   trained on 10,000 rows for the full table's steps, the decoder is better than the capped arm on both primaries.
 - **Scenarios:** E176's three variants (`mimic-wide_natural`, `mimic-wide-donor_tmatch_20nan`,
@@ -4876,8 +4876,18 @@ fails when an entry has no row or a row no entry.
   than C, worse than F), "no loss to split" or "unclear". Primaries: the natural table and `tmatch`. Supported if
   both read "steps" or "both"; refuted if both read "rows"; mixed otherwise. Secondary, no rule: `mcar`, the share
   of C − F recovered, S's lead over E178's TabPFN means. Read once with the 27 runs in.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** read 2026-11-19 14:43 GMT-3 on gorgona8 with the 27 runs in, none failed after the switchover (`mimic_report.py e180`).
+  - `mimic-wide_natural`: F 0.6651, C 0.6812, S 0.6836. C − F +0.0161 [+0.0154, +0.0169] worse; S − C +0.0023
+    [+0.0013, +0.0034] worse; S − F +0.0185 [+0.0176, +0.0194] worse. Rows.
+  - `mimic-wide-donor_tmatch_20nan`: F 0.9080, C 0.9187, S 0.9208. C − F +0.0108 [+0.0100, +0.0116] worse; S − C
+    +0.0021 [+0.0011, +0.0031] worse; S − F +0.0128 [+0.0116, +0.0141] worse. Rows.
+  - `mimic-wide-donor_mcar_20nan` (secondary): F 0.7176, C 0.7297, S 0.7320; C − F +0.0121, S − C +0.0023, S − F
+    +0.0144, all worse. Rows.
+  - Share of C − F the steps recover: −15%, −19%, −19%. S − TabPFN v2 on the means: −0.0808, −0.0454, +0.0104.
+- **Conclusion:** refuted. Both primaries read "rows": at 10,000 rows the full table's optimizer steps do not bring
+  the decoder closer to the full-table one; they cost about +0.002 on every variant, every seed agreeing. E177's loss
+  is the rows. Whether the extra cost is from repeating rows or from choosing among more epochs is not separated. The
+  thesis sentence's wording is the user's call; no ADR.
 - **Sources:** [mimic/17](tickets/mimic/17-wide-table-matched-steps.md); `mimic_wide_steps_run.py`, `mimic_report.py e180`.
 
 ### E181 · Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? (pre-registered 2026-11-17 14:35 GMT-3)

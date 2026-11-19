@@ -1067,6 +1067,8 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E180 pre-registered 2026-11-14 19:39 GMT-3** ([mimic/17](tickets/mimic/17-wide-table-matched-steps.md)), on the user's "Sim, pré registre e vá":
   the capped arm at the full table's optimizer steps, to split E177's loss between rows and steps; the capped and the full arms are
   retrained beside it on gorgona8 (ADR 0035, medusa1 has no CUDA), 27 runs.
+  **E180 done 2026-11-19 14:43 GMT-3, refuted (rows):** at 10,000 rows the full table's optimizer steps recover none of the loss; they cost
+  +0.002 on all three variants (S − F +0.0185 natural, +0.0128 `tmatch`). E177's loss is the rows. The thesis sentence is the user's call.
 - **T58 · `impute_score` against the class-conditional fill** (the user's proposal, 2026-11-17).
   `--decode_metric impute_score_classcond` added: the naive fill each score divides by is the mean or mode among the
   training rows of the row's own class; no default changes.
