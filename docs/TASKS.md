@@ -1087,7 +1087,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   `--decode_metric sw_score` added: the kept epoch is the one with the lowest sliced Wasserstein score on the
   validation rows; no default changes, the loss is untouched.
   **E183 pre-registered 2026-11-18 13:35 GMT-3** ([imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md)):
-  78 runs on medusa1 against E181's default-epoch runs, scored offline by E182's code. Not read yet.
+  78 runs on medusa1 against E181's default-epoch runs, scored offline by E182's code; the last three variants moved whole to
+  gorgona8 on 2026-11-18 19:53 with their control retrained there.
+  **E183 done 2026-11-19 15:14 GMT-3, supported:** `sw_score` lower on 15 of 26, higher on none, most at 60–80nan where the default keeps an
+  early epoch; `impute_score` worse on 6 (up to +0.042 on `credit-g_80nan`). No default change; offering the selector or a loss term is the user's call.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

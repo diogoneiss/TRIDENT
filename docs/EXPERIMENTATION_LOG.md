@@ -219,7 +219,7 @@ fails when an entry has no row or a row no entry.
 | E180 | TRIDENT on 10,000 rows of mimic-wide at the full table's optimizer steps: is the capped arm's loss rows or steps? | 2026-11-14 – 2026-11-19 | refuted (rows) | the capped arm's loss is rows: at the full table's steps the 10,000-row decoder is slightly worse than at 450 epochs (S − C +0.002 on all three variants), so further from the full one (S − F +0.019 natural, +0.013 tmatch, +0.014 mcar) |
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
-| E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 | in progress | |
+| E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
 
 ## Entries
 
@@ -5004,7 +5004,7 @@ fails when an entry has no row or a row no entry.
 
 ### E183 · Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? (pre-registered 2026-11-18 13:35 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-18 13:35 GMT-3 on the user's go of the same day, before E182 was read. T60.
+- **Status:** done 2026-11-19 15:14 GMT-3 (supported); pre-registered 2026-11-18 13:35 GMT-3 on the user's go of the same day, before E182 was read. T60.
 - **Hypothesis:** choosing the decode checkpoint by `sw_score` on the validation rows lowers the output's `sw_score`.
 - **Scenarios:** S, the default run with `--decode_metric sw_score` (new, no default changes), on E181's 26 MCAR
   variants at seeds 101/202/303 (78 runs), medusa1 only; control, E181's `Kc` run of the same variant and seed (the
@@ -5031,7 +5031,18 @@ fails when an entry has no row or a row no entry.
   gorgona8 with their `Kc` control retrained there (18 runs, my choice, so pairs stay on one GPU model); K's
   `reference` files for those three variants are re-scored from gorgona8's ledgers and govern the read; baselines stay
   medusa1's; a pairing check is redone here. State copied from medusa1. No change to the rule; nothing read.
-- **Results:** not read yet.
-- **Conclusion:** none yet.
+- **Results:** read 2026-11-19 15:14 GMT-3 on gorgona8 with the 78 runs in (`sliced_select_run.py --tally`); pairing on the nine
+  gorgona8 pairs the same in every check; K's reference files for the three moved variants re-scored from gorgona8's ledgers.
+  - **Primary:** the shuffled control passes on all 26 (no flips against ticket 71). S − K on `sw_score`: better on 15,
+    worse on 0, equivalent 1, no difference 10. Largest: `credit-g_80nan` −0.2740, `kr-vs-kp_80nan` −0.2255,
+    `credit-g_60nan` −0.1461, where the default keeps epochs 14, 19 and 42 and S 281, 262 and 274.
+  - **Cost:** S − K on `impute_score` worse on 6 (`credit-g_40/60/80nan` +0.013/+0.013/+0.042, `kr-vs-kp_80nan` +0.029,
+    `pendigits_80nan` +0.006, `letter_20nan` +0.002), better on 1 (`biodeg_80nan`). `dist_score` better on 13, worse on 0.
+  - **Against the best strong baseline:** `sw_score` S 13 / 6 / 7 against K 10 / 5 / 11; `impute_score` S 17 / 6 / 2
+    (1 equivalent) against K 18 / 6 / 2. K's 10 against ticket 71's 9: `electricity_40nan` reads better with gorgona8's `Kc`.
+- **Conclusion:** supported. Choosing the decode checkpoint by `sw_score` gives fills with better row distributions on
+  15 of 26 variants and worse on none, mostly at 60–80nan where the default stops early; it costs point error on 6,
+  most on `credit-g` (+0.04 at 80nan). A reporting option, not a default; no default changes. Offering it, or a loss
+  term on the rows' joint distribution, is the user's call.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;
   MLflow `experiment = sliced-checkpoint-2026-11-18`.
