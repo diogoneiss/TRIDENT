@@ -1091,6 +1091,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   gorgona8 on 2026-11-18 19:53 with their control retrained there.
   **E183 done 2026-11-19 15:14 GMT-3, supported:** `sw_score` lower on 15 of 26, higher on none, most at 60–80nan where the default keeps an
   early epoch; `impute_score` worse on 6 (up to +0.042 on `credit-g_80nan`). No default change; offering the selector or a loss term is the user's call.
+  The selector is offered as a reporting option (README's `--decode_metric` entry, 2026-11-19, on the user's "quero fazer o 1 e 2"); off by default, no ADR.
+- **T61 · A sliced Wasserstein term in the decode loss** (the user's go, 2026-11-19).
+  `--decode_sw_weight` added, default 0 (nothing runs at 0).
+  **E184 pre-registered 2026-11-19 18:18 GMT-3** ([imputation-protocol/73](tickets/imputation-protocol/73-sliced-loss-term.md)):
+  S against S + the term (w = 0.8), then K against K + the term, on 18 MCAR variants, seeds 101/202/303, gorgona8, 216 runs.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

@@ -99,6 +99,7 @@ def train_and_evaluate_decoder(
         transformer=pretraining.model.transformer,
         batched_heads=hyperparameters.decoder_heads == "batched",
         lambda_num=hyperparameters.lambda_num,
+        sw_weight=hyperparameters.decode_sw_weight,
     ).to(device)
     optimizer = optim.AdamW(
         _decode_parameters(model, hyperparameters),
@@ -193,17 +194,22 @@ def train_and_evaluate_decoder(
         model.train()
         order = torch.randperm(len(train_frame)).to(device)
         running = torch.zeros((), dtype=torch.float64, device=device)
+        running_sliced = torch.zeros((), dtype=torch.float64, device=device) if hyperparameters.decode_sw_weight > 0 else None
         steps = 0
         for start in range(0, len(train_frame), train_batch):
             batch = order[start : start + train_batch]
             optimizer.zero_grad()
-            loss, _ = model(hidden_train[batch], clean_train[batch])
+            loss, parts = model(hidden_train[batch], clean_train[batch])
             loss.backward()
             optimizer.step()
             scheduler.after_batch()
             running += loss.detach().double()
+            if running_sliced is not None and "sliced" in parts:
+                running_sliced += parts["sliced"].double()
             steps += 1
         train_losses.append(float((running / max(steps, 1)).item()))
+        # ``--decode_sw_weight`` (imputation-protocol/73): the term's own mean, inside the train loss above
+        sliced = {} if running_sliced is None else {"decode/train_sliced": float((running_sliced / max(steps, 1)).item())}
 
         model.eval()
         with torch.no_grad():
@@ -214,6 +220,7 @@ def train_and_evaluate_decoder(
                 "decode/train_loss": train_losses[-1],
                 "decode/val_loss": validation_losses[-1],
                 "decode/learning_rate": scheduler.learning_rate,
+                **sliced,
             },
             step=epoch,
         )

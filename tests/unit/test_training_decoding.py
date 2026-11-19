@@ -128,6 +128,16 @@ def test_the_decode_stage_reports_a_loss_for_every_epoch_it_trained() -> None:
     assert {"decode/train_loss", "decode/val_loss", "decode/learning_rate"} <= logged
 
 
+def test_the_sliced_term_is_logged_only_when_it_is_trained() -> None:
+    """imputation-protocol/73: ``decode/train_sliced`` is the term's mean over an epoch's batches, logged beside the
+    train loss that includes it only when ``DECODE_SW_WEIGHT`` is above 0."""
+    for weight in (0.0, 0.5):
+        _, tracker = _run(hyperparameters=_hyperparameters(EPOCHS_DECODE=2, DECODE_SW_WEIGHT=weight))
+        sliced = [event.value for event in tracker.metric_events if event.key == "decode/train_sliced"]
+        assert len(sliced) == (2 if weight else 0)
+        assert all(value > 0 for value in sliced)
+
+
 def test_the_gap_fill_export_covers_every_gap_of_the_table_and_names_its_split() -> None:
     """A table whose gaps have no truth is judged by what a later reader does with the fills
     (tickets/mimic/05), so the export must hold every gap exactly once, training rows included,

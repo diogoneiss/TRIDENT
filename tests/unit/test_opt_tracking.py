@@ -452,6 +452,7 @@ def test_promotion_writes_a_complete_imputation_configuration_where_the_task_wil
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_METRIC", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
         "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH", "TRAIN_ROWS",
+        "DECODE_SW_WEIGHT",
     }
     assert promoted["DECODE_PATIENCE"] == 0
     assert promoted["DECODE_CALIBRATION"] == "auto"

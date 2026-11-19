@@ -289,6 +289,7 @@ def test_a_run_records_the_parameters_it_used_and_no_others() -> None:
         "DECODE_PATIENCE", "DECODER_HEADS", "PRETRAIN_OBJECTIVE", "DECODE_GAP_TOKEN",
         "DECODE_CHECKPOINT", "DECODE_METRIC", "DECODE_CALIBRATION", "PRETRAIN_GAP_TOKEN", "ENCODER_FINAL_NORM",
         "DECODE_FREEZE_EPOCHS", "DECODE_ENCODER_LR_SCALE", "DECODE_MASK_WEIGHTING", "EMBEDDING_LOOKUP", "MIN_STEPS_PER_EPOCH", "TRAIN_ROWS",
+        "DECODE_SW_WEIGHT",
     }
 
 
@@ -649,6 +650,21 @@ def test_the_decode_encoder_levers_are_imputation_flags_off_by_default() -> None
         Hyperparameters.from_mapping({"DECODE_FREEZE_EPOCHS": -1})
     with pytest.raises(ValueError, match="scale"):
         Hyperparameters.from_mapping({"DECODE_ENCODER_LR_SCALE": 0})
+
+
+def test_the_sliced_wasserstein_weight_is_an_imputation_flag_off_by_default() -> None:
+    """imputation-protocol/73: ``--decode_sw_weight`` defaults to 0.0 (no term), reaches the run when given, applies
+    to imputation only, and refuses a negative or non-finite weight."""
+    parser = build_training_parser()
+    imputation = ["--dataset_name", "credit-g_20nan", "--task", "imputation"]
+    assert resolve_training_request(parser.parse_args(imputation)).hyperparameters.decode_sw_weight == 0.0
+    assert resolve_training_request(parser.parse_args([*imputation, "--decode_sw_weight", "0.3"])).hyperparameters.decode_sw_weight == 0.3
+    assert Hyperparameters.from_mapping({"DECODE_SW_WEIGHT": 2}).decode_sw_weight == 2.0
+    with pytest.raises(SystemExit, match="decode_sw_weight"):
+        validate_parsed_args(parser.parse_args(["--dataset_name", "vehicle_00nan", "--decode_sw_weight", "0.3"]))
+    for bad in (-0.1, float("nan"), float("inf")):
+        with pytest.raises(ValueError, match="sliced Wasserstein weight"):
+            Hyperparameters.from_mapping({"DECODE_SW_WEIGHT": bad})
 
 
 def test_pretraining_shows_gaps_as_null_unless_a_run_asks_for_mask() -> None:

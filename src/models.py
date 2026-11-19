@@ -1,7 +1,9 @@
 import copy
+import math
 from dataclasses import dataclass
 from typing import cast
 
+import numpy as np
 import torch
 import torch.nn as nn
 
@@ -12,6 +14,8 @@ from .transformer import TabularTransformerEncoder
 # plus the placeholder a missing cell stringifies to. ``as_category_strings`` in
 # embedder.py collapses every pandas missing sentinel to "nan", so naming one is enough.
 NON_CATEGORY_TOKENS = ("[MASK]", "[NULL]", "nan")
+# The directions ``--decode_sw_weight``'s term projects the rows on, as many as ``sw_score`` uses.
+SLICED_DIRECTIONS = 512
 
 
 def _stack(columns: list, rows: int, dtype: torch.dtype, device) -> torch.Tensor:
@@ -196,6 +200,9 @@ class TridentDecoder(nn.Module):
     _class_valid: torch.Tensor
     _vocabulary_start: torch.Tensor
     _local_of_all: torch.Tensor
+    # Registered only when ``sw_weight > 0``.
+    _sw_along: torch.Tensor
+    _sw_slot: torch.Tensor
 
     def __init__(
         self,
@@ -203,11 +210,15 @@ class TridentDecoder(nn.Module):
         transformer: TabularTransformerEncoder,
         lambda_num: float = 1.0,
         batched_heads: bool = False,
+        sw_weight: float = 0.0,
     ):
         super().__init__()
         self.embedder = embedder
         self.transformer = transformer
         self.lambda_num = lambda_num
+        # ``--decode_sw_weight`` (imputation-protocol/73): the weight on a sliced Wasserstein term between the
+        # batch's rows as filled and as true, in training only; 0, every run before it, adds nothing at all.
+        self.sw_weight = sw_weight
         # Apply the per-column heads as a few batched operations instead of one small
         # kernel per column (``--decoder_heads batched``). The same parameters and the same
         # arithmetic, regrouped, so it differs from the per-column path in rounding only.
@@ -261,6 +272,8 @@ class TridentDecoder(nn.Module):
             else torch.zeros(0, dtype=torch.long),
             persistent=False,
         )
+        if sw_weight > 0:
+            self._register_sliced(embedder, class_index.shape[1])
 
         # The embedder's input MLP in reverse, one per column, so no two columns share
         # parameters. Output is a scalar in the same scaled space the embedder consumed.
@@ -274,6 +287,65 @@ class TridentDecoder(nn.Module):
                 for key in embedder.numerical_keys
             }
         )
+
+    def _register_sliced(self, embedder: TabularEmbedder, widest: int) -> None:
+        """What the sliced term needs, fixed for the run and never saved: ``sw_score``'s row layout (decoding.py's
+        ``_sliced_rows``: the numbers, then per categorical column one slot per vocabulary id, shifted by one past a
+        slot for an id outside it), the layout slot of each head's class k, and 512 unit directions drawn from
+        their own stream, seed 1 so a run selecting by ``sw_score`` (seed 0) is not read along its training's."""
+        self._sw_sizes = [len(embedder.label_encoders[column].classes_) for column in embedder.categorical_columns]
+        start = len(embedder.numerical_columns)
+        slots = torch.zeros((len(self._sw_sizes), widest), dtype=torch.long)
+        self._sw_block_start = []
+        for column, (key, size) in enumerate(zip(embedder.categorical_keys, self._sw_sizes)):
+            valid_ids = getattr(self, f"valid_ids_{key}")
+            slots[column, : len(valid_ids)] = start + valid_ids + 1
+            self._sw_block_start.append(start)
+            start += size + 1
+        self._sw_width = start
+        drawn = np.random.default_rng(1).normal(size=(SLICED_DIRECTIONS, start))
+        along = torch.tensor((drawn / np.linalg.norm(drawn, axis=1, keepdims=True)).T, dtype=torch.float32)
+        self.register_buffer("_sw_along", along, persistent=False)
+        self.register_buffer("_sw_slot", slots, persistent=False)
+
+    def _sliced_term(self, targets, numerical, categorical) -> torch.Tensor:
+        """sqrt(width) times the sliced 1-Wasserstein distance between the rows holding a hidden cell as the model
+        fills them and as they truly are. ``numerical`` is (rows, column, predicted value) and ``categorical`` (rows,
+        column, probabilities over the head's classes, zero past them) of every hidden cell. A real gap holds the
+        same value on both sides. Every write lands on its own position, so the term is deterministic on CUDA."""
+        num_rows, num_columns, num_values = numerical
+        cat_rows, cat_columns, probabilities = categorical
+        touched = torch.unique(torch.cat([num_rows, cat_rows]))
+        parts = [torch.nan_to_num(targets.num_values[:, touched].T.float())]
+        for column, size in enumerate(self._sw_sizes):
+            ids = targets.cat_indices[column, touched]
+            ids = torch.where((ids >= 0) & (ids < size), ids + 1, torch.zeros_like(ids))
+            parts.append(nn.functional.one_hot(ids, size + 1).float() / math.sqrt(2.0))
+        true = torch.cat(parts, dim=1)
+        at_num, at_cat = torch.searchsorted(touched, num_rows), torch.searchsorted(touched, cat_rows)
+        # each hidden category's one-hot cleared, then its probabilities written at its classes' slots
+        ids = targets.cat_indices[cat_columns, cat_rows]
+        block = torch.tensor(self._sw_block_start, dtype=torch.long, device=true.device)[cat_columns]
+        sizes = torch.tensor(self._sw_sizes, dtype=torch.long, device=true.device)[cat_columns]
+        true_slot = block + torch.where((ids >= 0) & (ids < sizes), ids + 1, torch.zeros_like(ids))
+        filled = true.index_put((at_cat, true_slot), torch.zeros_like(true_slot, dtype=true.dtype))
+        valid = self._class_valid[cat_columns]
+        cell_rows = at_cat.unsqueeze(1).expand_as(valid)[valid]
+        filled = filled.index_put(
+            (torch.cat([at_num, cell_rows]), torch.cat([num_columns, self._sw_slot[cat_columns][valid]])),
+            torch.cat([num_values.float(), probabilities[valid].float() / math.sqrt(2.0)]),
+        )
+        gaps = torch.sort(filled @ self._sw_along, dim=0).values - torch.sort(true @ self._sw_along, dim=0).values
+        return math.sqrt(self._sw_width) * gaps.abs().mean()
+
+    def _with_sliced(self, loss, metrics, targets, numerical, categorical) -> tuple[torch.Tensor, dict]:
+        """The loss with the sliced term added; a kind with no hidden cell is passed as None."""
+        none = targets.cat_indices.new_zeros(0)
+        numerical = numerical or (none, none, targets.num_values.new_zeros(0))
+        categorical = categorical or (none, none, targets.num_values.new_zeros((0, self._class_valid.shape[1])))
+        term = self._sliced_term(targets, numerical, categorical)
+        metrics["sliced"] = term.detach()
+        return loss + self.sw_weight * term, metrics
 
     def _encode(self, data) -> torch.Tensor:
         """Contextual output for every column token, dropping the [CLS] position."""
@@ -303,6 +375,10 @@ class TridentDecoder(nn.Module):
             # out (a short last batch, usually) takes the per-column path below.
             return self._batched_loss(context, mask, targets, device)
         rows_by_column = torch.split(rows[torch.argsort(columns, stable=True)], hidden_per_column)
+        sliced = self.sw_weight > 0 and self.training
+        filled: dict[str, list[torch.Tensor]] = (
+            {name: [] for name in ("num_rows", "num_columns", "num_values", "cat_rows", "cat_columns", "probabilities")} if sliced else {}
+        )
 
         categorical_loss = torch.zeros((), device=device)
         categorical_cells = 0
@@ -317,6 +393,11 @@ class TridentDecoder(nn.Module):
                 logits, expected, reduction="sum"
             )
             categorical_cells += hidden_per_column[index]
+            if sliced:
+                filled["cat_rows"].append(hidden_rows)
+                filled["cat_columns"].append(torch.full_like(hidden_rows, index))
+                widest = self._class_valid.shape[1]
+                filled["probabilities"].append(nn.functional.pad(logits.softmax(-1), (0, widest - logits.shape[1])))
 
         numerical_loss = torch.zeros((), device=device)
         numerical_cells = 0
@@ -331,6 +412,10 @@ class TridentDecoder(nn.Module):
                 predicted, expected, reduction="sum"
             )
             numerical_cells += hidden_per_column[offset + index]
+            if sliced:
+                filled["num_rows"].append(hidden_rows)
+                filled["num_columns"].append(torch.full_like(hidden_rows, index))
+                filled["num_values"].append(predicted)
 
         if categorical_cells == 0 and numerical_cells == 0:
             return torch.zeros((), device=device, requires_grad=True), {}
@@ -347,6 +432,13 @@ class TridentDecoder(nn.Module):
             numerical_mean = numerical_loss / numerical_cells
             loss = loss + self.lambda_num * numerical_mean
             metrics["mse"] = numerical_mean.detach()
+        if sliced:
+            flat = {name: torch.cat(parts) if parts else None for name, parts in filled.items()}
+            return self._with_sliced(
+                loss, metrics, targets,
+                (flat["num_rows"], flat["num_columns"], flat["num_values"]) if numerical_cells else None,
+                (flat["cat_rows"], flat["cat_columns"], flat["probabilities"]) if categorical_cells else None,
+            )
         return loss, metrics
 
     def _batched_loss(self, context, mask, targets, device) -> tuple[torch.Tensor, dict]:
@@ -361,6 +453,9 @@ class TridentDecoder(nn.Module):
         categorical_loss = torch.zeros((), device=device)
         numerical_loss = torch.zeros((), device=device)
         rows, columns = mask[:, :n_categorical].nonzero(as_tuple=True)
+        # what the sliced term reads, only when it is on; None for a kind with no column
+        sliced = self.sw_weight > 0 and self.training
+        categorical = numerical = None
         categorical_cells = int(rows.numel())
         if categorical_cells:
             heads = [cast(nn.Linear, self.categorical_heads[key]) for key in self.embedder.categorical_keys]
@@ -372,6 +467,8 @@ class TridentDecoder(nn.Module):
             vocabulary_ids = torch.stack(list(targets.cat_indices))[columns, rows]
             expected = self._local_of_all[self._vocabulary_start[columns] + vocabulary_ids]
             categorical_loss = nn.functional.cross_entropy(logits, expected, reduction="sum")
+            if sliced:
+                categorical = (rows, columns, logits.softmax(-1))  # a padded slot's -inf gives exactly 0
         rows, columns = mask[:, n_categorical:].nonzero(as_tuple=True)
         numerical_cells = int(rows.numel())
         if numerical_cells:
@@ -389,6 +486,8 @@ class TridentDecoder(nn.Module):
             predicted = (hidden_units * second_weight[columns]).sum(-1) + second_bias[columns]
             expected_values = torch.stack(list(targets.num_values))[columns, rows]
             numerical_loss = nn.functional.mse_loss(predicted, expected_values, reduction="sum")
+            if sliced:
+                numerical = (rows, columns, predicted)
 
         if categorical_cells == 0 and numerical_cells == 0:
             return torch.zeros((), device=device, requires_grad=True), {}
@@ -402,6 +501,8 @@ class TridentDecoder(nn.Module):
             numerical_mean = numerical_loss / numerical_cells
             loss = loss + self.lambda_num * numerical_mean
             metrics["mse"] = numerical_mean.detach()
+        if sliced:
+            return self._with_sliced(loss, metrics, targets, numerical, categorical)
         return loss, metrics
 
     def _as_encoded(self, data, device) -> EncodedTable:

@@ -220,6 +220,7 @@ fails when an entry has no row or a row no entry.
 | E181 | Does TRIDENT stay competitive when `impute_score` is measured against the class-conditional fill and selected by it? | 2026-11-17 – 2026-11-18 | supported | Kc better than the class-conditional fill on 23 of 26 MCAR variants, worse on `pendigits_80nan` (1.172); against the bar better 20 / worse 1, against the strong tier better 18 / worse 2, no call differing from `impute_score`'s; selecting by the new score keeps the default's epoch (Kc − K equivalent on the 7 mixed variants) |
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
+| E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 | in progress | |
 
 ## Entries
 
@@ -5046,3 +5047,23 @@ fails when an entry has no row or a row no entry.
   term on the rows' joint distribution, is the user's call.
 - **Sources:** [imputation-protocol/72](tickets/imputation-protocol/72-sliced-checkpoint.md); `sliced_select_run.py`;
   MLflow `experiment = sliced-checkpoint-2026-11-18`.
+
+### E184 · A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? (pre-registered 2026-11-19 18:18 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-19 18:18 GMT-3 on the user's "quero fazer o 1 e 2" (2026-11-19). T61.
+- **Hypothesis:** adding w × T, a sliced Wasserstein distance between a training batch's filled and true rows, to the
+  decode loss lowers the output's `sw_score`.
+- **Scenarios:** 18 MCAR variants (`kc2`, `vehicle`, `biodeg`, `credit-g`, `kr-vs-kp`, `spambase_20nan`) × seeds
+  101/202/303; core S (`--decode_metric sw_score`) and LS (S + `--decode_sw_weight 0.8`), then K (default) and L (K +
+  the term); 216 runs on gorgona8, two queues. w from a rule fixed before a seed-999 smoke (magnitudes and clock
+  only). Disclosed: E183 read before the design; variants chosen by cost knowing it; the vehicle fixture fails on this
+  CPU on HEAD too (CUDA-recorded), passes on the GPU.
+- **Measures and decision rule:** E182's scorer on each arm's test-fold ledgers; fold-pair rule with seed agreement,
+  margin 0.01 of the control's mean. Primary LS − S on `sw_score` over variants passing the shuffled control:
+  supported if better on half or more and worse on at most 2, refuted if better on a sixth or fewer, mixed otherwise;
+  same rule printed for L − K. Secondary: `impute_score`, `dist_score`, kept epochs, against the strong tier. Read once
+  per batch. No default change.
+- **Results:** not read yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/73](tickets/imputation-protocol/73-sliced-loss-term.md); `sliced_loss_run.py`.
+

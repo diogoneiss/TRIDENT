@@ -39,7 +39,7 @@ CONFIGURATION_FLAGS: tuple[str, ...] = (
     "lr_scheduler", "decode_patience", "decoder_heads", "pretrain_objective", "decode_epochs",
     "decode_gap_token", "decode_checkpoint", "decode_metric", "pretrain_gap_token", "encoder_final_norm",
     "decode_calibration", "decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting",
-    "embedding_lookup", "min_steps_per_epoch", "train_rows",
+    "embedding_lookup", "min_steps_per_epoch", "train_rows", "decode_sw_weight",
 )
 
 
@@ -96,8 +96,8 @@ def load_hyperparameters(args: argparse.Namespace) -> tuple[Hyperparameters, str
     if decode_calibration is not None:
         hyperparameters = dataclasses.replace(hyperparameters, decode_calibration=decode_calibration)
     # ``--decode_freeze_epochs`` and ``--decode_encoder_lr_scale`` win the same way (E50), and so
-    # does ``--decode_mask_weighting`` (E65).
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows"):
+    # do ``--decode_mask_weighting`` (E65) and ``--decode_sw_weight`` (imputation-protocol/73).
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows", "decode_sw_weight"):
         value = getattr(args, flag, None)
         if value is not None:
             hyperparameters = dataclasses.replace(hyperparameters, **{flag: value})
@@ -185,6 +185,7 @@ def complete_configuration(values: Hyperparameters, task: str) -> dict[str, obje
             "DECODE_PATIENCE": values.decode_patience,
             "DECODE_FREEZE_EPOCHS": values.decode_freeze_epochs,
             "DECODE_ENCODER_LR_SCALE": values.decode_encoder_lr_scale,
+            "DECODE_SW_WEIGHT": values.decode_sw_weight,
             "DECODE_MASK_WEIGHTING": values.decode_mask_weighting,
             "EMBEDDING_LOOKUP": values.embedding_lookup,
             "MIN_STEPS_PER_EPOCH": values.min_steps_per_epoch,
@@ -298,7 +299,7 @@ def validate_parsed_args(args: argparse.Namespace) -> argparse.Namespace:
         and getattr(args, "task", DEFAULT_TASK) != "imputation"
     ):
         raise SystemExit("error: --decode_patience requires --task imputation")
-    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows"):
+    for flag in ("decode_freeze_epochs", "decode_encoder_lr_scale", "decode_mask_weighting", "embedding_lookup", "min_steps_per_epoch", "train_rows", "decode_sw_weight"):
         if getattr(args, flag, None) is not None and getattr(args, "task", DEFAULT_TASK) != "imputation":
             raise SystemExit(f"error: --{flag} requires --task imputation")
 
@@ -437,6 +438,17 @@ def build_training_parser() -> argparse.ArgumentParser:
             "Imputation only: the embedder's and transformer's learning rate in the decode stage "
             "as a fraction of the heads' (E50). Overrides DECODE_ENCODER_LR_SCALE. Default: 1.0, "
             "one learning rate for every parameter."
+        ),
+    )
+    parser.add_argument(
+        "--decode_sw_weight",
+        type=float,
+        default=None,
+        help=(
+            "Imputation only: the weight on a sliced Wasserstein term added to the decode stage's training loss, "
+            "between the batch's rows holding a hidden cell as the model fills them (softmax probabilities for a "
+            "category) and as they truly are, in sw_score's row layout (ticket imputation-protocol/73). The "
+            "validation loss stays the reconstruction loss. Overrides DECODE_SW_WEIGHT. Default: 0.0, no term."
         ),
     )
     parser.add_argument(

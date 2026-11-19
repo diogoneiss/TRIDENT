@@ -1,5 +1,6 @@
 """Immutable values exchanged between the training workflow stages."""
 
+import math
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -276,6 +277,9 @@ class Hyperparameters:
     # 0 and 1.0 are every run before them.
     decode_freeze_epochs: int = 0
     decode_encoder_lr_scale: float = 1.0
+    # imputation-protocol/73: the weight on a sliced Wasserstein term in the decode stage's training loss, between the
+    # batch's rows as filled and as true (``TridentDecoder.sw_weight``). 0.0, every run before it, adds nothing.
+    decode_sw_weight: float = 0.0
     decoder_heads: str = DEFAULT_DECODER_HEADS
     decode_gap_token: str = DEFAULT_DECODE_GAP_TOKEN
     decode_checkpoint: str = DEFAULT_DECODE_CHECKPOINT
@@ -399,6 +403,8 @@ class Hyperparameters:
             raise ValueError(f"The decode freeze counts epochs, so it cannot be {self.decode_freeze_epochs}")
         if not self.decode_encoder_lr_scale > 0:
             raise ValueError(f"The encoder's learning-rate scale must be positive, not {self.decode_encoder_lr_scale}")
+        if not (math.isfinite(self.decode_sw_weight) and self.decode_sw_weight >= 0):
+            raise ValueError(f"The sliced Wasserstein weight must be finite and at least 0, not {self.decode_sw_weight}")
         if self.pretraining_objective not in PRETRAINING_OBJECTIVES:
             raise ValueError(
                 f"Unknown pre-training objective {self.pretraining_objective!r}; "
@@ -451,6 +457,7 @@ class Hyperparameters:
             decode_patience=int(values.get("DECODE_PATIENCE", values.get("decode_patience", 0))),
             decode_freeze_epochs=int(values.get("DECODE_FREEZE_EPOCHS", values.get("decode_freeze_epochs", 0))),
             decode_encoder_lr_scale=float(values.get("DECODE_ENCODER_LR_SCALE", values.get("decode_encoder_lr_scale", 1.0))),
+            decode_sw_weight=float(values.get("DECODE_SW_WEIGHT", values.get("decode_sw_weight", 0.0))),
             decode_mask_weighting=str(
                 values.get("DECODE_MASK_WEIGHTING", values.get("decode_mask_weighting", DEFAULT_DECODE_MASK_WEIGHTING))
             ),

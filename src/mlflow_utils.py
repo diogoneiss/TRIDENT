@@ -89,6 +89,11 @@ DECODE_PATIENCE_BACKFILLED_TAG = "decode_patience_backfilled"
 DECODE_FREEZE_EPOCHS_TAG = "decode_freeze_epochs"
 DECODE_ENCODER_LR_SCALE_TAG = "decode_encoder_lr_scale"
 DECODE_ENCODER_BACKFILLED_TAG = "decode_encoder_backfilled"
+# The weight on the decode loss's sliced Wasserstein term (imputation-protocol/73), "0.0" when it is off. On every
+# imputation parent and trial; runs recorded before it are stamped "0.0" by
+# ``scripts/backfill_decode_sw_weight_tag.py`` and marked DECODE_SW_WEIGHT_BACKFILLED_TAG.
+DECODE_SW_WEIGHT_TAG = "decode_sw_weight"
+DECODE_SW_WEIGHT_BACKFILLED_TAG = "decode_sw_weight_backfilled"
 # How the decode stage picked the training cells it hid (E65): "uniform" or "propensity". On every
 # imputation parent and trial; runs recorded before it are stamped "uniform" by a backfill and
 # marked DECODE_MASK_WEIGHTING_BACKFILLED_TAG.
