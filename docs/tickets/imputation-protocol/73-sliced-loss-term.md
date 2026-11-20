@@ -72,4 +72,178 @@ This ticket was written and committed before the study's first cell.
 
 ## Outcome
 
-Not read yet.
+### Core read, S against LS (2026-11-20 05:36 GMT-3): mixed
+
+The 108 core runs were in at 2026-11-20 05:30 GMT-3, none failed. `--gate`: 108 finished runs checked, 0 failed.
+`--pairing`: scored cell counts and hgb's score the same on all 54 (variant, seed) pairs. Then `--tally core`, once.
+
+- **Primary, LS − S on `sw_score`, mixed.** The control passes on all 18 variants. The term is better on 5
+  (`kc2_40nan` −0.010, `vehicle_40nan` −0.009, `biodeg_40nan` −0.021, `credit-g_20nan` −0.014, `spambase_20nan`
+  −0.228), worse on 2 (`biodeg_20nan` +0.011, `credit-g_80nan` +0.015), no difference on 11. Supported needed 9,
+  refuted 3 or fewer.
+- **One large gain.** On `spambase_20nan` the term takes the output's `sw_score` from 0.713 to 0.485; S tied
+  missforest there, LS beats it by 0.229. Elsewhere the moves are 0.02 or smaller.
+- **Cost on `impute_score`:** worse on 5 (`vehicle_20nan` +0.007, `vehicle_80nan` +0.004, `biodeg_20nan` +0.016,
+  `credit-g_20nan` +0.021, `spambase_20nan` +0.038), better on 1 (`kc2_40nan` −0.011), equivalent on 6, no
+  difference on 6. `dist_score`: better 6, worse 3.
+- **Against the best strong baseline on `sw_score`:** S better 8 / no difference 4 / worse 6; LS 10 / 3 / 5.
+- **Kept epoch:** about the same in both arms (within 52 epochs on every variant).
+- The second batch (K against L, the default selector) started 05:30 GMT-3 and runs on; its read gives the study's
+  final line. No default changes.
+
+Printout (684 lines of scorer chatter omitted: 108 `DONE ... reference.csv` lines, the label-mapping blocks and
+the categorical-columns loader lines; everything else unedited):
+
+```
+# 40a90d8 / read 2026-11-20 05:31 GMT-3
+- `kc2_20nan` (seen): mean kept epoch S 289, LS 290
+  - LS − S on sw_score +0.0020 [-0.0057, +0.0096] none (S 0.3956, LS 0.3976)
+  - LS − S on dist_score +0.0022 [-0.0057, +0.0101] none (S 0.2524, LS 0.2546)
+  - LS − S on impute_score +0.0044 [-0.0071, +0.0160] none (S 0.5352, LS 0.5396)
+  - S − strong (missforest) on sw_score -0.0014 [-0.0501, +0.0473] none
+  - LS − strong (missforest) on sw_score +0.0006 [-0.0440, +0.0451] none
+  - S − strong (softimpute) on impute_score -0.0025 [-0.1034, +0.0984] none
+  - LS − strong (softimpute) on impute_score +0.0019 [-0.0905, +0.0943] none
+- `kc2_40nan` (seen): mean kept epoch S 264, LS 316
+  - LS − S on sw_score -0.0101 [-0.0155, -0.0047] better (S 0.3670, LS 0.3569)
+  - LS − S on dist_score -0.0080 [-0.0117, -0.0043] better (S 0.2348, LS 0.2268)
+  - LS − S on impute_score -0.0113 [-0.0225, -0.0001] better (S 0.4935, LS 0.4823)
+  - S − strong (missforest) on sw_score -0.0078 [-0.0412, +0.0256] none
+  - LS − strong (missforest) on sw_score -0.0179 [-0.0498, +0.0140] none
+  - S − strong (softimpute) on impute_score -0.0560 [-0.1088, -0.0033] better
+  - LS − strong (softimpute) on impute_score -0.0673 [-0.1129, -0.0217] better
+- `kc2_80nan` (seen): mean kept epoch S 224, LS 252
+  - LS − S on sw_score -0.0073 [-0.0163, +0.0017] none (S 0.4200, LS 0.4128)
+  - LS − S on dist_score -0.0099 [-0.0173, -0.0025] better (S 0.3131, LS 0.3032)
+  - LS − S on impute_score +0.0004 [-0.0062, +0.0069] none (S 0.6669, LS 0.6672)
+  - S − strong (missforest) on sw_score -0.0496 [-0.0747, -0.0245] better
+  - LS − strong (missforest) on sw_score -0.0569 [-0.0806, -0.0331] better
+  - S − strong (missforest) on impute_score -0.0703 [-0.0912, -0.0494] better
+  - LS − strong (missforest) on impute_score -0.0699 [-0.0957, -0.0442] better
+- `vehicle_20nan` (seen): mean kept epoch S 285, LS 309
+  - LS − S on sw_score -0.0041 [-0.0121, +0.0039] none (S 0.3594, LS 0.3553)
+  - LS − S on dist_score -0.0114 [-0.0192, -0.0035] better (S 0.1985, LS 0.1872)
+  - LS − S on impute_score +0.0074 [+0.0020, +0.0128] worse (S 0.4145, LS 0.4220)
+  - S − strong (ice) on sw_score -0.0121 [-0.0228, -0.0014] better
+  - LS − strong (ice) on sw_score -0.0162 [-0.0245, -0.0080] better
+  - S − strong (missforest) on impute_score -0.0316 [-0.0555, -0.0076] better
+  - LS − strong (missforest) on impute_score -0.0241 [-0.0496, +0.0014] none
+- `vehicle_40nan` (seen): mean kept epoch S 297, LS 303
+  - LS − S on sw_score -0.0093 [-0.0157, -0.0028] better (S 0.3431, LS 0.3338)
+  - LS − S on dist_score -0.0062 [-0.0108, -0.0016] better (S 0.2136, LS 0.2074)
+  - LS − S on impute_score +0.0107 [-0.0004, +0.0218] none (S 0.4812, LS 0.4919)
+  - S − strong (softimpute) on sw_score -0.0093 [-0.0225, +0.0039] none
+  - LS − strong (softimpute) on sw_score -0.0186 [-0.0324, -0.0047] better
+  - S − strong (missforest) on impute_score -0.0379 [-0.0663, -0.0095] better
+  - LS − strong (missforest) on impute_score -0.0272 [-0.0535, -0.0010] better
+- `vehicle_80nan` (seen): mean kept epoch S 253, LS 228
+  - LS − S on sw_score -0.0070 [-0.0142, +0.0003] none (S 0.4390, LS 0.4321)
+  - LS − S on dist_score -0.0039 [-0.0099, +0.0020] none (S 0.3424, LS 0.3385)
+  - LS − S on impute_score +0.0038 [+0.0009, +0.0067] worse (S 0.7841, LS 0.7879)
+  - S − strong (missforest) on sw_score -0.0230 [-0.0387, -0.0073] better
+  - LS − strong (missforest) on sw_score -0.0299 [-0.0475, -0.0124] better
+  - S − strong (missforest) on impute_score +0.0136 [+0.0010, +0.0261] worse
+  - LS − strong (missforest) on impute_score +0.0174 [+0.0051, +0.0297] worse
+- `biodeg_20nan` (seen): mean kept epoch S 322, LS 345
+  - LS − S on sw_score +0.0105 [+0.0047, +0.0163] worse (S 0.4806, LS 0.4911)
+  - LS − S on dist_score +0.0328 [+0.0271, +0.0385] worse (S 0.2648, LS 0.2976)
+  - LS − S on impute_score +0.0164 [+0.0081, +0.0247] worse (S 0.5906, LS 0.6070)
+  - S − strong (missforest) on sw_score -0.0593 [-0.0690, -0.0497] better
+  - LS − strong (missforest) on sw_score -0.0488 [-0.0611, -0.0365] better
+  - S − strong (missforest) on impute_score -0.0363 [-0.0567, -0.0159] better
+  - LS − strong (missforest) on impute_score -0.0199 [-0.0386, -0.0013] better
+- `biodeg_40nan` (seen): mean kept epoch S 309, LS 313
+  - LS − S on sw_score -0.0210 [-0.0306, -0.0114] better (S 0.4562, LS 0.4351)
+  - LS − S on dist_score -0.0051 [-0.0138, +0.0036] none (S 0.2941, LS 0.2890)
+  - LS − S on impute_score -0.0000 [-0.0071, +0.0071] none (S 0.6590, LS 0.6590)
+  - S − strong (missforest) on sw_score -0.0529 [-0.0665, -0.0393] better
+  - LS − strong (missforest) on sw_score -0.0739 [-0.0867, -0.0611] better
+  - S − strong (missforest) on impute_score -0.0358 [-0.0540, -0.0176] better
+  - LS − strong (missforest) on impute_score -0.0358 [-0.0497, -0.0219] better
+- `biodeg_80nan` (seen): mean kept epoch S 253, LS 241
+  - LS − S on sw_score -0.0047 [-0.0110, +0.0017] none (S 0.7144, LS 0.7097)
+  - LS − S on dist_score -0.0073 [-0.0151, +0.0004] none (S 0.5786, LS 0.5712)
+  - LS − S on impute_score +0.0017 [-0.0017, +0.0051] equivalent (S 0.9384, LS 0.9401)
+  - S − strong (softimpute) on sw_score +0.1491 [+0.1331, +0.1651] worse
+  - LS − strong (softimpute) on sw_score +0.1444 [+0.1281, +0.1607] worse
+  - S − strong (missforest) on impute_score +0.0129 [+0.0049, +0.0209] worse
+  - LS − strong (missforest) on impute_score +0.0146 [+0.0068, +0.0224] worse
+- `credit-g_20nan` (seen): mean kept epoch S 177, LS 175
+  - LS − S on sw_score -0.0141 [-0.0228, -0.0053] better (S 0.6716, LS 0.6575)
+  - LS − S on dist_score -0.0218 [-0.0343, -0.0093] better (S 0.4396, LS 0.4178)
+  - LS − S on impute_score +0.0214 [+0.0096, +0.0331] worse (S 0.8803, LS 0.9016)
+  - S − strong (ice) on sw_score +0.0118 [+0.0034, +0.0202] worse
+  - LS − strong (ice) on sw_score -0.0023 [-0.0123, +0.0078] none
+  - S − strong (missforest) on impute_score -0.0105 [-0.0308, +0.0099] none
+  - LS − strong (missforest) on impute_score +0.0109 [-0.0088, +0.0306] none
+- `credit-g_40nan` (seen): mean kept epoch S 260, LS 272
+  - LS − S on sw_score -0.0073 [-0.0215, +0.0069] none (S 0.6609, LS 0.6537)
+  - LS − S on dist_score -0.0027 [-0.0238, +0.0185] none (S 0.5317, LS 0.5291)
+  - LS − S on impute_score +0.0050 [-0.0022, +0.0123] none (S 0.9294, LS 0.9344)
+  - S − strong (ice) on sw_score +0.1745 [+0.1575, +0.1915] worse
+  - LS − strong (ice) on sw_score +0.1672 [+0.1473, +0.1871] worse
+  - S − strong (missforest) on impute_score -0.0019 [-0.0121, +0.0084] none
+  - LS − strong (missforest) on impute_score +0.0032 [-0.0080, +0.0143] none
+- `credit-g_60nan` (seen): mean kept epoch S 278, LS 296
+  - LS − S on sw_score -0.0044 [-0.0225, +0.0138] none (S 0.6573, LS 0.6529)
+  - LS − S on dist_score -0.0132 [-0.0373, +0.0108] none (S 0.5646, LS 0.5514)
+  - LS − S on impute_score -0.0015 [-0.0075, +0.0045] equivalent (S 0.9930, LS 0.9915)
+  - S − strong (ice) on sw_score +0.2071 [+0.1846, +0.2295] worse
+  - LS − strong (ice) on sw_score +0.2027 [+0.1874, +0.2180] worse
+  - S − strong (condexp) on impute_score +0.0047 [-0.0045, +0.0138] none
+  - LS − strong (condexp) on impute_score +0.0032 [-0.0055, +0.0119] none
+- `credit-g_80nan` (seen): mean kept epoch S 237, LS 220
+  - LS − S on sw_score +0.0147 [+0.0010, +0.0283] worse (S 0.6389, LS 0.6535)
+  - LS − S on dist_score +0.0187 [+0.0029, +0.0344] worse (S 0.5987, LS 0.6174)
+  - LS − S on impute_score -0.0015 [-0.0074, +0.0044] equivalent (S 1.0458, LS 1.0443)
+  - S − strong (ice) on sw_score +0.0633 [+0.0469, +0.0796] worse
+  - LS − strong (ice) on sw_score +0.0779 [+0.0614, +0.0944] worse
+  - S − strong (condexp) on impute_score +0.0477 [+0.0401, +0.0553] worse
+  - LS − strong (condexp) on impute_score +0.0462 [+0.0390, +0.0535] worse
+- `kr-vs-kp_20nan` (seen): mean kept epoch S 294, LS 306
+  - LS − S on sw_score -0.0035 [-0.0128, +0.0057] none (S 0.2989, LS 0.2954)
+  - LS − S on dist_score -0.0058 [-0.0198, +0.0082] none (S 0.1786, LS 0.1728)
+  - LS − S on impute_score +0.0030 [-0.0058, +0.0118] none (S 0.5874, LS 0.5904)
+  - S − strong (missforest) on sw_score -0.0228 [-0.0325, -0.0131] better
+  - LS − strong (missforest) on sw_score -0.0263 [-0.0381, -0.0145] better
+  - S − strong (missforest) on impute_score -0.0778 [-0.0885, -0.0671] better
+  - LS − strong (missforest) on impute_score -0.0748 [-0.0837, -0.0658] better
+- `kr-vs-kp_40nan` (seen): mean kept epoch S 275, LS 263
+  - LS − S on sw_score -0.0186 [-0.0412, +0.0039] none (S 0.4336, LS 0.4150)
+  - LS − S on dist_score -0.0114 [-0.0329, +0.0101] none (S 0.3820, LS 0.3707)
+  - LS − S on impute_score +0.0009 [-0.0046, +0.0064] equivalent (S 0.7255, LS 0.7264)
+  - S − strong (missforest) on sw_score +0.0480 [+0.0248, +0.0712] worse
+  - LS − strong (missforest) on sw_score +0.0294 [+0.0152, +0.0436] worse
+  - S − strong (missforest) on impute_score -0.0780 [-0.0873, -0.0687] better
+  - LS − strong (missforest) on impute_score -0.0771 [-0.0880, -0.0662] better
+- `kr-vs-kp_60nan` (seen): mean kept epoch S 292, LS 285
+  - LS − S on sw_score +0.0246 [-0.0025, +0.0517] none (S 0.4723, LS 0.4969)
+  - LS − S on dist_score +0.0321 [+0.0049, +0.0594] worse (S 0.4612, LS 0.4934)
+  - LS − S on impute_score -0.0001 [-0.0079, +0.0078] equivalent (S 0.8629, LS 0.8628)
+  - S − strong (missforest) on sw_score -0.0891 [-0.1139, -0.0642] better
+  - LS − strong (missforest) on sw_score -0.0645 [-0.0883, -0.0406] better
+  - S − strong (missforest) on impute_score -0.0767 [-0.0873, -0.0660] better
+  - LS − strong (missforest) on impute_score -0.0767 [-0.0882, -0.0653] better
+- `kr-vs-kp_80nan` (seen): mean kept epoch S 281, LS 277
+  - LS − S on sw_score -0.0088 [-0.0312, +0.0136] none (S 0.5793, LS 0.5705)
+  - LS − S on dist_score -0.0138 [-0.0395, +0.0120] none (S 0.6457, LS 0.6320)
+  - LS − S on impute_score -0.0017 [-0.0050, +0.0016] equivalent (S 1.0057, LS 1.0040)
+  - S − strong (missforest) on sw_score -0.1931 [-0.2124, -0.1739] better
+  - LS − strong (missforest) on sw_score -0.2019 [-0.2223, -0.1816] better
+  - S − strong (condexp) on impute_score +0.0057 [-0.0022, +0.0135] none
+  - LS − strong (condexp) on impute_score +0.0040 [-0.0019, +0.0099] equivalent
+- `spambase_20nan` (seen): mean kept epoch S 293, LS 296
+  - LS − S on sw_score -0.2283 [-0.2395, -0.2171] better (S 0.7128, LS 0.4845)
+  - LS − S on dist_score -0.0540 [-0.0677, -0.0403] better (S 0.5006, LS 0.4467)
+  - LS − S on impute_score +0.0378 [+0.0236, +0.0520] worse (S 0.8520, LS 0.8898)
+  - S − strong (missforest) on sw_score -0.0010 [-0.0127, +0.0107] none
+  - LS − strong (missforest) on sw_score -0.2293 [-0.2425, -0.2160] better
+  - S − strong (missforest) on impute_score -0.0062 [-0.0141, +0.0018] none
+  - LS − strong (missforest) on impute_score +0.0317 [+0.0192, +0.0441] worse
+
+Primary, LS − S on sw_score over the 18 variants the control passes: better on 5, worse on 2 ['biodeg_20nan', 'credit-g_80nan'] -> mixed
+Secondary, LS − S on dist_score, all variants: better 6 / no difference 9 / worse 3 (fold-pair t, seed agreement)
+Secondary, LS − S on impute_score, all variants: better 1 / no difference 6 / equivalent 6 / worse 5 (fold-pair t, seed agreement)
+Secondary, against the best strong baseline on sw_score: S better 8 / no difference 4 / worse 6 (fold-pair t, seed agreement); LS better 10 / no difference 3 / worse 5 (fold-pair t, seed agreement)
+Secondary, against the best strong baseline on impute_score: S better 9 / no difference 6 / worse 3 (fold-pair t, seed agreement); LS better 8 / no difference 5 / equivalent 1 / worse 4 (fold-pair t, seed agreement)
+```

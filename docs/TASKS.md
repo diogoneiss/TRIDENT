@@ -1096,6 +1096,7 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   `--decode_sw_weight` added, default 0 (nothing runs at 0).
   **E184 pre-registered 2026-11-19 18:18 GMT-3** ([imputation-protocol/73](tickets/imputation-protocol/73-sliced-loss-term.md)):
   S against S + the term (w = 0.8), then K against K + the term, on 18 MCAR variants, seeds 101/202/303, gorgona8, 216 runs.
+  Core read 2026-11-20 05:36 GMT-3: mixed (better on 5 of 18, worse on 2; `spambase_20nan` −0.228); K/L batch running.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
