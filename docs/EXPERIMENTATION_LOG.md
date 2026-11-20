@@ -221,6 +221,7 @@ fails when an entry has no row or a row no entry.
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
+| E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 | in progress | |
 
 ## Entries
 
@@ -5077,3 +5078,18 @@ fails when an entry has no row or a row no entry.
   the strong tier more than the term. No default change, no ADR; `--decode_sw_weight` stays at 0.
 - **Sources:** [imputation-protocol/73](tickets/imputation-protocol/73-sliced-loss-term.md); `sliced_loss_run.py`.
 
+
+### E185 · Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? (pre-registered 2026-11-20 19:10 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-20 19:10 GMT-3 on the user's "teste em mais tabelas!" (2026-11-20). T62.
+- **Hypothesis:** on the eight larger MCAR variants E184 left out, `--decode_sw_weight 0.8` lowers the output's
+  `sw_score`.
+- **Scenarios:** `pendigits_20/40/60/80nan`, `electricity_20/40/80nan`, `letter_20nan` × seeds 101/202/303; core S
+  and LS, then K and L (E184's arms); 96 runs on gorgona8, four queues. Disclosed: E184 read before the design
+  (its one large gain, `spambase_20nan`, motivates it); variants are all of E183's set E184 did not run.
+- **Measures and decision rule:** E184's. Primary LS − S on `sw_score` over variants passing the shuffled control:
+  supported if better on half or more and worse on at most 1, refuted if better on a sixth or fewer, mixed otherwise;
+  same rule printed for L − K. Read once per batch. No default change.
+- **Results:** not read yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/74](tickets/imputation-protocol/74-sliced-loss-larger-tables.md); `sliced_loss_large_run.py`.
