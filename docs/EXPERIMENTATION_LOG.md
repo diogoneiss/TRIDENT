@@ -5156,6 +5156,9 @@ fails when an entry has no row or a row no entry.
   opposite call, not replicated if fewer than 7 repeat or two or more are opposite, partly otherwise. Secondary
   manipulation check: S − K on `sw_score` by E183's rule (E182's scorer on the ledgers). Read once, after `--gate`
   and `--pairing`; no interim read; no default change.
+- **Amendment 2026-11-22 17:47 GMT-3:** the reads' script `sliced_fresh_read.py` committed before any ledger of this study is
+  scored; on E186's seeds (already read) it reproduces E186's primary line and calls; `sliced_utility.py` parameterised
+  with E186's printout unchanged.
 - **Results:** none yet.
 - **Conclusion:** none yet.
 - **Sources:** [imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md); `sliced_fresh_run.py`.

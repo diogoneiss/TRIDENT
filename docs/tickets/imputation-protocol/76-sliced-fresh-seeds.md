@@ -70,6 +70,23 @@ This ticket was written and committed before the study's first cell.
 - **Not in this study:** the loss term (L, LS); ADR 0024's H; MAR and MNAR; why filling hurts on `kr-vs-kp` and
   `credit-g`; tuned classifiers.
 
+## Amendment (2026-11-22 17:47 GMT-3): the reads' script, before any of this study's ledgers is scored
+
+- **Script:** [scripts/experiments/sliced_fresh_read.py](../../../scripts/experiments/sliced_fresh_read.py), which the
+  queues never import: `utility` (E186's downstream cell), `score` (E182's `reference` scorer on a run's ledgers),
+  `--jobs`, and `--tally`, which refuses a partial set and prints E186's tally, the count against E186's 14 calls
+  with the rule above, the two S − K carriers, the six-seed pooled line and the manipulation check.
+- **`sliced_utility.py` (E186's) is parameterised, behaviour unchanged:** the header takes the study, variants and
+  seeds from its globals and the loss-term pairs have a name. E186's `--tally` was rerun after the edit and its 160
+  lines are identical to ticket 75's printout (`diff`, no output).
+- **Self-check on seeds already read (101/202/303), not a read of this study:** with `FRESH_SELFCHECK` the same code
+  recomputed the 78 downstream files from E184's and E185's K and S runs and reproduced E186: primary +0.0035
+  [+0.0009, +0.0061], K − missing calls K 9 / missing 5, 14 of 14 repeat (trivially), the two carriers S. Its
+  manipulation check, on those seeds with E184/E185's own K runs as control: S better on `sw_score` on 14 of 26,
+  worse on none (E183, with E181's control runs: 15 and 0); `impute_score` worse on 5.
+- **Mechanics so far:** the first 8 runs (`kc2_20nan`, `kc2_40nan` starting) passed `--gate` (8 checked, 0 failed)
+  and `--pairing` (cells and hgb the same). No score of this study has been computed or read.
+
 ## Outcome
 
 None yet.

@@ -51,12 +51,14 @@ E185 = ("pendigits_20nan", "pendigits_40nan", "pendigits_60nan", "pendigits_80na
 STATES: dict[Path, tuple[str, ...]] = {e184.STATE: e184.VARIANTS, Path("/scratch/diogoneiss/trident-2026-11-20-sliced-loss-large"): E185}
 VARIANTS = tuple(v for variants in STATES.values() for v in variants)
 assert len(VARIANTS) == len(set(VARIANTS)) == 26 and str(e184.STATE).endswith("trident-2026-11-19-sliced-loss")
-SEEDS = (101, 202, 303)
-ARMS = ("K", "S", "L", "LS")
-FILLS = ("missing", "naive", *ARMS, "truth")
+STUDY = "E186"  # sliced_fresh_read.py (E187) runs these functions with its own study, states, seeds and arms
+SEEDS: tuple[int, ...] = (101, 202, 303)
+ARMS: tuple[str, ...] = ("K", "S", "L", "LS")
+FILLS: tuple[str, ...] = ("missing", "naive", *ARMS, "truth")
 LEARNERS = ("forest", "logistic")
 PRIMARY = (("S", "K"), ("K", "missing"), ("S", "missing"))  # the first is the primary line, the other two the three-way
-BESIDE = (("LS", "S"), ("L", "K"), ("naive", "missing"), ("truth", "missing"))
+TERM: tuple[tuple[str, str], ...] = (("LS", "S"), ("L", "K"))  # the loss-term arms against their controls
+BESIDE: tuple[tuple[str, str], ...] = (*TERM, ("naive", "missing"), ("truth", "missing"))
 KEY = ["variant", "seed", "fold"]
 
 
@@ -165,8 +167,9 @@ def tally() -> int:
         return 1
     data = pd.concat([pd.read_csv(f) for f in files], ignore_index=True)
     assert set(data["variant"]) == set(VARIANTS) and len(data) == expected * 5 * len(LEARNERS) * 2 * len(FILLS)
-    print("## Downstream utility of the sliced selector (E186): macro-F1 on the test folds of 26 MCAR variants, seeds 101/202/303; "
-          "a difference is pooled over the variants per (seed, fold) replicate, 15 replicates, plain 95% t interval (NB: corrected)")
+    print(f"## Downstream utility of the sliced selector ({STUDY}): macro-F1 on the test folds of {len(VARIANTS)} MCAR variants, "
+          f"seeds {'/'.join(map(str, SEEDS))}; a difference is pooled over the variants per (seed, fold) replicate, "
+          f"{5 * len(SEEDS)} replicates, plain 95% t interval (NB: corrected)")
 
     def wide(protocol: str, learner: str) -> pd.DataFrame:
         part = data[(data["protocol"] == protocol) & (data["learner"] == learner)]
@@ -200,7 +203,7 @@ def tally() -> int:
                                      ("logistic regression fitted on the complete rows", "complete", "logistic")):
         frame = wide(protocol, learner)
         print(f"\n### Beside: {title}")
-        for first, second in (*PRIMARY, *BESIDE[:2]):
+        for first, second in (*PRIMARY, *TERM):
             print(_line(f"- F1({first}) − F1({second})", pooled(frame, first, second), first, second))
         print(f"- Levels: {levels(frame)}")
 
