@@ -1112,6 +1112,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E186 done 2026-11-22 14:54 GMT-3:** S − K +0.0035 (S by the rule, fragile; two variants carry it); filling against missing
   K +0.003, S +0.007, split by table (corrected 2026-11-22 14:56 GMT-3: helps on the numerical tables, hurts on `kr-vs-kp`
   40–80nan and `credit-g` 60–80nan); the loss term adds nothing. No default change. T63 closed.
+- **T64 · Does E186's downstream reading repeat on fresh seeds?** (the user's go of 2026-11-22).
+  **E187 pre-registered 2026-11-22 17:27 GMT-3** ([imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md)):
+  K and S retrained on the 26 MCAR variants, seeds 1717/8484/9595 (156 runs, gorgona8, about 28 h), then E186's
+  three-way classification on the fresh fills; by-table predictions and E183's manipulation check written before
+  the first cell. Running.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

@@ -43,7 +43,7 @@ EXPERIMENT = "sliced-loss-2026-11-19"
 STATE = Path("/scratch/diogoneiss/trident-2026-11-19-sliced-loss")
 WEIGHT: float | None = 0.8  # set by the weight smoke of 2026-11-19 18:15 GMT-3 (ticket 73), before any cell
 ARMS: dict[str, dict[str, object]] = {"S": {"decode_metric": "sw_score"}, "LS": {"decode_metric": "sw_score"}, "K": {}, "L": {}}
-PAIRS = (("S", "LS"), ("K", "L"))  # (control, with the term): the core, then the second batch
+PAIRS: tuple[tuple[str, str], ...] = (("S", "LS"), ("K", "L"))  # (control, with the term): the core, then the second batch
 TERM = ("LS", "L")  # the arms that add the term, at WEIGHT read when called (never captured at import)
 VARIANTS: tuple[str, ...] = (
     "kc2_20nan", "kc2_40nan", "kc2_80nan", "vehicle_20nan", "vehicle_40nan", "vehicle_80nan",

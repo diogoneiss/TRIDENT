@@ -223,6 +223,7 @@ fails when an entry has no row or a row no entry.
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
+| E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 | in progress | |
 
 ## Entries
 
@@ -5137,3 +5138,24 @@ fails when an entry has no row or a row no entry.
   missingness, cause not tested (many categorical columns; calibration from 40nan). The loss term adds nothing.
   No default change. One seed set, MCAR only.
 - **Sources:** [imputation-protocol/75](tickets/imputation-protocol/75-sliced-utility.md); `sliced_utility.py`.
+
+### E187 · On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? (pre-registered 2026-11-22 17:27 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-22 17:27 GMT-3 on the user's go of 2026-11-22 ("repita k e s em sementes novas"). T64.
+- **Hypothesis:** E186's readings repeat on seeds never used to read `sw_score`: the fill chosen by `sw_score` (S)
+  gives a forest a slightly higher macro-F1 than the default's (K), and K's fill is better than the gaps left missing
+  on E186's 9 variants (numerical tables) and worse on its 5 (`kr-vs-kp` 40–80nan, `credit-g` 60–80nan).
+- **Scenarios:** arms K (default run) and S (`--decode_metric sw_score`) on the 26 MCAR variants of E184/E185 ×
+  fresh seeds 1717/8484/9595 × five folds, 156 runs on gorgona8, four queues, about 28 h. Then E186's downstream
+  read (tables `missing`, `K`, `S`, beside `naive` and `truth`; random forest primary, logistic regression beside;
+  `own` primary, `complete` beside). Three seeds fixed, no extension.
+- **Measures and decision rule:** macro-F1 on the test folds, differences pooled over the variants per (seed, fold)
+  replicate (15), plain 95% t interval, corrected interval beside. Primary F1(S) − F1(K), forest, `own`: replicated
+  if above 0, not replicated if it includes 0, reversed if below. Three-way K and S against missing, same rule.
+  By-table split (K − missing per variant, E186's 14 calls): replicated if at least 10 repeat and none takes the
+  opposite call, not replicated if fewer than 7 repeat or two or more are opposite, partly otherwise. Secondary
+  manipulation check: S − K on `sw_score` by E183's rule (E182's scorer on the ledgers). Read once, after `--gate`
+  and `--pairing`; no interim read; no default change.
+- **Results:** none yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md); `sliced_fresh_run.py`.
