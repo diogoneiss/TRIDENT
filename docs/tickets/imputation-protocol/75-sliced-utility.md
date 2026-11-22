@@ -59,7 +59,27 @@ This ticket was written and committed before the study's first cell.
 - **Limits stated now:** MCAR only; one seed set, already used to read `sw_score`; two untuned learners; a forest
   splits on gaps well, so `missing` is a strong arm under MCAR; macro-F1 only. A claim beyond this needs fresh seeds.
 
-## Outcome (2026-11-22 14:54 GMT-3): S by the rule, small and fragile; imputing helps a forest at 20–40nan and not above
+## Outcome (2026-11-22 14:54 GMT-3): S by the rule, small and fragile; whether filling helps a forest depends on the table
+
+**Correction (2026-11-22 14:56 GMT-3), same printout, no new read.** The first text of this Outcome (commit b0afa6d) headed
+it "imputing helps a forest at 20–40nan and not above" and read the split by missingness level. The printout does not
+support that: the levels hold different tables (the 60nan group is three variants, two of them `credit-g` and
+`kr-vs-kp`), `pendigits_60nan` gains +0.057 from K's fill, and `kr-vs-kp_40nan` already loses at 40nan. The split is
+by table:
+
+- **Filling helps** (K − missing above 0) on `pendigits` 20/40/60nan, `letter_20nan`, `vehicle` 20/40nan,
+  `electricity` 20/40nan and `biodeg_40nan`: 9 variants, all numerical tables but `electricity` (7 numerical, 1
+  categorical column).
+- **Filling hurts** on `kr-vs-kp` 40/60/80nan (36 categorical columns, no numerical) and `credit-g` 60/80nan (13
+  categorical, 7 numerical): 5 variants. S is worse than missing on 4 of them (not `credit-g_60nan`).
+- **Not explained here.** The two losing tables are the ones with many categorical columns, and the calibrated
+  output (ADR 0027) also starts at 40nan, where `kr-vs-kp` turns negative. This study cannot separate the two, and
+  neither was tested.
+- **Fragile by level.** Under the corrected interval K − missing holds only at 20nan; at 40, 60 and 80nan it
+  includes 0. The two bullets below that state the 60–80nan losses and the last bullet's "about 0.01 at 20–40nan and
+  nothing above" are to be read with this.
+- **S − K "at 60nan and above"** rests on two variants (`credit-g_60nan`, `pendigits_80nan`); the other eight at
+  those levels show no difference.
 
 The 78 files were in at 2026-11-22 14:53 GMT-3 (15 minutes on gorgona8's CPUs), none failed; every run passed its
 asserts (same cells and truths in the four arms, every gap with one ledger cell, gaps reaching the forest). Then

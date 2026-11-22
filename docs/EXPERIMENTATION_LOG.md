@@ -222,7 +222,7 @@ fails when an entry has no row or a row no entry.
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
-| E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), gain only at 60–80nan; filling against gaps left missing: K +0.003, S +0.007, helps at 20–40nan, K worse than missing at 60–80nan; complete table 0.135 above; no default change |
+| E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 
 ## Entries
 
@@ -5120,13 +5120,20 @@ fails when an entry has no row or a row no entry.
   the fold. Primary F1(S) − F1(K), then K and S against missing, each pooled over the variants per (seed, fold)
   replicate (15), plain 95% t interval: above 0 the first, below 0 the second, otherwise no difference. Read once.
   No default change.
+- **Correction 2026-11-22 14:56 GMT-3:** the first Results and Conclusion (b0afa6d) read the three-way by missingness level
+  ("helps at 20–40nan, not above"); the levels hold different tables and the printout supports a split by table
+  instead. Both are reworded below; same read, no new numbers.
 - **Results:** read 2026-11-22 14:54 GMT-3, forest on each table's own rows: F1(S) − F1(K) **+0.0035 [+0.0009, +0.0061]**, S by
   the rule, fragile (corrected interval [−0.0024, +0.0095]); the gain is at 60–80nan (+0.0125, +0.0068), none at
-  20–40nan; per variant S better on 2, K on none. Against the gaps left missing: K +0.0033, S +0.0068, both fragile;
-  filling helps at 20–40nan (+0.011 to +0.014) and K's fill is worse than missing at 60–80nan (−0.009, −0.012).
+  20–40nan; per variant S better on 2 (`credit-g_60nan`, `pendigits_80nan`), K on none. Against the gaps left missing: K +0.0033, S +0.0068, both fragile;
+  by table, K's fill is better than missing on 9 variants (`pendigits` 20–60nan up to +0.057, `letter_20nan`,
+  `vehicle` 20/40nan, `electricity` 20/40nan, `biodeg_40nan`) and worse on 5 (`kr-vs-kp` 40–80nan, `credit-g`
+  60–80nan); S better on 12, worse on 4.
   Levels: missing 0.714, mean/mode 0.703, K 0.717, S 0.721, complete table 0.852. Loss term (L, LS): no difference.
   Fitted on complete rows, S − K is +0.0085 [+0.0067, +0.0103] and holds corrected. 78 files, asserts clean.
-- **Conclusion:** the `sw_score` checkpoint does not hurt downstream use and helps a little at 60nan and above, by a
-  few thousandths of macro-F1 against 0.135 left to the complete table. With a forest, filling is worth about 0.01
-  at 20–40nan and nothing above; the loss term adds nothing. No default change. One seed set, MCAR only.
+- **Conclusion:** the `sw_score` checkpoint does not hurt downstream use and helps by a few thousandths of macro-F1
+  (two variants carry it), against 0.135 left to the complete table. Whether filling beats leaving the gaps to a
+  forest depends on the table: it helps on the numerical tables and hurts on `kr-vs-kp` and `credit-g` at higher
+  missingness, cause not tested (many categorical columns; calibration from 40nan). The loss term adds nothing.
+  No default change. One seed set, MCAR only.
 - **Sources:** [imputation-protocol/75](tickets/imputation-protocol/75-sliced-utility.md); `sliced_utility.py`.
