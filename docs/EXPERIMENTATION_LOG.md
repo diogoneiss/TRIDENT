@@ -221,7 +221,7 @@ fails when an entry has no row or a row no entry.
 | E182 | Does TRIDENT hold against its baselines on a distributional score that sees the rows (sliced Wasserstein)? | 2026-11-18 | mixed | against the best strong baseline on `sw_score`: better 9, no difference 6, worse 11 of 26 (on `dist_score` 7/6/13, on `impute_score` 18/6/2); behind mostly at 80nan and on `credit-g` |
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
-| E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 | in progress | core mixed (4 better, 2 worse of 8; helps electricity, hurts pendigits/letter 20nan); K/L batch running |
+| E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 
 ## Entries
 
@@ -5081,7 +5081,7 @@ fails when an entry has no row or a row no entry.
 
 ### E185 · Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? (pre-registered 2026-11-20 19:10 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-20 19:10 GMT-3 on the user's "teste em mais tabelas!" (2026-11-20). T62.
+- **Status:** done 2026-11-22 08:48 GMT-3 (mixed); pre-registered 2026-11-20 19:10 GMT-3 on the user's "teste em mais tabelas!" (2026-11-20). T62.
 - **Hypothesis:** on the eight larger MCAR variants E184 left out, `--decode_sw_weight 0.8` lowers the output's
   `sw_score`.
 - **Scenarios:** `pendigits_20/40/60/80nan`, `electricity_20/40/80nan`, `letter_20nan` × seeds 101/202/303; core S
@@ -5093,6 +5093,13 @@ fails when an entry has no row or a row no entry.
 - **Results:** core read 2026-11-21 18:22 GMT-3, **mixed**: LS − S on `sw_score` better on 4 of 8 (all three
   `electricity`, −0.074 at 20nan; `pendigits_80nan`), worse on 2 (`pendigits_20nan` +0.084, `letter_20nan` +0.127,
   the bigger-encoder 20nan variants; `letter_20nan`'s kept epoch falls from 513 to 154). `impute_score` worse on 6,
-  better on none. Gate and pairing clean. The K against L batch runs on.
-- **Conclusion:** none yet.
+  better on none. Gate and pairing clean.
+  Final read 2026-11-22 08:48 GMT-3, second batch L − K on `sw_score` **mixed**: better on 3 (`pendigits_40nan`, `pendigits_60nan`,
+  `electricity_20nan` −0.075), worse on 2 (`pendigits_20nan` +0.087, `letter_20nan` +0.153, with the kept epoch barely
+  moving: 544 to 491); `impute_score` worse on 6, better on none. Against the strong tier on `sw_score`: S 5/1, LS 5/2,
+  K 6/2, L 4/3 (better/worse). 96 runs, gate and pairing clean.
+- **Conclusion:** mixed under both selectors, as in E184. The term lowers `sw_score` by much only on
+  `electricity_20nan`, raises it by much on the two bigger-encoder 20nan variants (`pendigits_20nan`, `letter_20nan`,
+  the loss present under the default selector too, so the term's and not the checkpoint's), and costs `impute_score`
+  on 6 of 8. Larger tables do not make it pay. No default change, no ADR; `--decode_sw_weight` stays at 0.
 - **Sources:** [imputation-protocol/74](tickets/imputation-protocol/74-sliced-loss-larger-tables.md); `sliced_loss_large_run.py`.

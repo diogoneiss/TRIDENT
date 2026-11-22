@@ -1102,7 +1102,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
 - **T62 · E184's loss term on the larger tables** (the user's "teste em mais tabelas!", 2026-11-20).
   **E185 pre-registered 2026-11-20 19:10 GMT-3** ([imputation-protocol/74](tickets/imputation-protocol/74-sliced-loss-larger-tables.md)):
   S/LS then K/L on `pendigits` 20–80nan, `electricity` 20/40/80nan, `letter_20nan`, seeds 101/202/303, gorgona8, 96 runs.
-  Core read 2026-11-21 18:22 GMT-3: mixed (better on 4 of 8, all `electricity`; worse on `pendigits_20nan`, `letter_20nan`); K/L running.
+  Core read 2026-11-21 18:22 GMT-3: mixed (better on 4 of 8, all `electricity`; worse on `pendigits_20nan`, `letter_20nan`); K/L done.
+  **E185 done 2026-11-22 08:48 GMT-3, mixed:** L − K better on 3, worse on the same 2; large gain only on `electricity_20nan`,
+  `impute_score` cost on 6. Flag stays off. T62 closed.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
