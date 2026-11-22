@@ -222,6 +222,7 @@ fails when an entry has no row or a row no entry.
 | E183 | Does choosing the decode checkpoint by the sliced Wasserstein score lower it in the output, and at what cost in `impute_score`? | 2026-11-18 – 2026-11-19 | supported | choosing the checkpoint by `sw_score` lowers it on 15 of 26 MCAR variants, worse on none (−0.27 on credit-g_80nan, where the default keeps epoch 14); costs `impute_score` on 6 (most credit-g, +0.042 at 80nan); against the strong tier on `sw_score` 13 better / 7 worse against the default's 10 / 11 |
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
+| E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | in progress | |
 
 ## Entries
 
@@ -5103,3 +5104,22 @@ fails when an entry has no row or a row no entry.
   the loss present under the default selector too, so the term's and not the checkpoint's), and costs `impute_score`
   on 6 of 8. Larger tables do not make it pay. No default change, no ADR; `--decode_sw_weight` stays at 0.
 - **Sources:** [imputation-protocol/74](tickets/imputation-protocol/74-sliced-loss-larger-tables.md); `sliced_loss_large_run.py`.
+
+### E186 · Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? (pre-registered 2026-11-22 14:38 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-22 14:38 GMT-3 on the user's request of 2026-11-22 (a three-way classification). T63.
+- **Hypothesis:** a question, not a claim: on a table filled by the checkpoint chosen by `sw_score` (S), does a simple
+  classifier score higher than on the default fill (K), and does either beat leaving the gaps missing? E146 found no
+  difference between selectors when the classifier is fitted on the filled rows, so a null is the expected shape.
+- **Scenarios:** no training, no GPU: the fold ledgers of E184 and E185 (26 MCAR variants × seeds 101/202/303 × five
+  folds), arms K and S, beside L and LS, the mean/mode fill and the truth. Tables: gaps left missing, or filled per
+  arm. Learners, untuned: a random forest of 500 trees (takes gaps as they are; primary) and logistic regression
+  (a gap is the mean with an indicator; beside). Disclosed: the user's "H" is read as the decoder's default output,
+  not ADR 0024's H; E183 to E185 and E146 were read before the design.
+- **Measures and decision rule:** macro-F1 on the test folds, the classifier fitted on each table's own rows outside
+  the fold. Primary F1(S) − F1(K), then K and S against missing, each pooled over the variants per (seed, fold)
+  replicate (15), plain 95% t interval: above 0 the first, below 0 the second, otherwise no difference. Read once.
+  No default change.
+- **Results:** not read yet.
+- **Conclusion:** none yet.
+- **Sources:** [imputation-protocol/75](tickets/imputation-protocol/75-sliced-utility.md); `sliced_utility.py`.

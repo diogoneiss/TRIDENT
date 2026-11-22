@@ -1105,6 +1105,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   Core read 2026-11-21 18:22 GMT-3: mixed (better on 4 of 8, all `electricity`; worse on `pendigits_20nan`, `letter_20nan`); K/L done.
   **E185 done 2026-11-22 08:48 GMT-3, mixed:** L − K better on 3, worse on the same 2; large gain only on `electricity_20nan`,
   `impute_score` cost on 6. Flag stays off. T62 closed.
+- **T63 · Is the `sw_score` optimisation useful downstream?** (the user's three-way classification, 2026-11-22).
+  **E186 pre-registered 2026-11-22 14:38 GMT-3** ([imputation-protocol/75](tickets/imputation-protocol/75-sliced-utility.md)):
+  gaps left missing against K's and S's fills (E184/E185's ledgers, 26 MCAR variants, seeds 101/202/303), a random
+  forest fitted on each table's own rows; CPU only, nothing trained.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
