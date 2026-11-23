@@ -223,7 +223,7 @@ fails when an entry has no row or a row no entry.
 | E184 | A sliced Wasserstein term in the decode loss: do fills trained on the rows' joint distribution score better on it? | 2026-11-19 – 2026-11-20 | mixed | the term lowers `sw_score` on 5 of 18 MCAR variants with the `sw_score` selector and 4 with the default, worse on 2 in each; large only on spambase_20nan (−0.23 / −0.20); costs `impute_score` on 5–6; no default change |
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
-| E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 | in progress | |
+| E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
 
 ## Entries
 
@@ -5141,7 +5141,7 @@ fails when an entry has no row or a row no entry.
 
 ### E187 · On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? (pre-registered 2026-11-22 17:27 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-22 17:27 GMT-3 on the user's go of 2026-11-22 ("repita k e s em sementes novas"). T64.
+- **Status:** done 2026-11-23 19:13 GMT-3 (primary not replicated; by-table split replicated); pre-registered 2026-11-22 17:27 GMT-3 on the user's go of 2026-11-22 ("repita k e s em sementes novas"). T64.
 - **Hypothesis:** E186's readings repeat on seeds never used to read `sw_score`: the fill chosen by `sw_score` (S)
   gives a forest a slightly higher macro-F1 than the default's (K), and K's fill is better than the gaps left missing
   on E186's 9 variants (numerical tables) and worse on its 5 (`kr-vs-kp` 40–80nan, `credit-g` 60–80nan).
@@ -5159,6 +5159,18 @@ fails when an entry has no row or a row no entry.
 - **Amendment 2026-11-22 17:47 GMT-3:** the reads' script `sliced_fresh_read.py` committed before any ledger of this study is
   scored; on E186's seeds (already read) it reproduces E186's primary line and calls; `sliced_utility.py` parameterised
   with E186's printout unchanged.
-- **Results:** none yet.
-- **Conclusion:** none yet.
+- **Results:** read 2026-11-23 19:13 GMT-3, 156 runs in at 2026-11-23 18:45 GMT-3, gate and pairing clean. Forest on each table's own
+  rows: F1(S) − F1(K) **+0.0018 [−0.0013, +0.0049]**, not replicated (E186 +0.0035); per variant S on 2
+  (`pendigits_80nan` again, `electricity_80nan`), K on 1 (`kr-vs-kp_80nan`); six seeds pooled, not fresh, +0.0027
+  [+0.0007, +0.0046], fragile. K − missing +0.0036 [−0.0005, +0.0077] (not replicated), S − missing +0.0054
+  [+0.0010, +0.0098] (replicated, fragile). By-table split **replicated**: 12 of E186's 14 calls repeat, none
+  opposite (`electricity_40nan` and `credit-g_60nan` fall to no difference). Levels: missing 0.714, mean/mode 0.705,
+  K 0.718, S 0.720, complete table 0.852. Fitted on complete rows S − K is +0.0062 (forest) and +0.0075 (logistic),
+  holding corrected. Manipulation check supported: S better on `sw_score` on 16 of 26, worse on none;
+  `impute_score` worse on 5, better on 4.
+- **Conclusion:** E183's selector result replicates on fresh seeds, and its change in the fills does not reach a
+  classifier fitted on the filled table: S − K is not distinguishable from 0 on the fresh seeds, near +0.003 over
+  six. It helps a classifier fitted on complete rows by +0.006 to +0.008 in both seed sets. Whether filling beats
+  leaving the gaps to a forest depends on the table, and that split held (numerical tables gain, `kr-vs-kp`
+  40–80nan and `credit-g_80nan` lose; cause not tested). No default change, no ADR. MCAR only.
 - **Sources:** [imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md); `sliced_fresh_run.py`.

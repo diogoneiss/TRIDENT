@@ -1116,7 +1116,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E187 pre-registered 2026-11-22 17:27 GMT-3** ([imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md)):
   K and S retrained on the 26 MCAR variants, seeds 1717/8484/9595 (156 runs, gorgona8, about 28 h), then E186's
   three-way classification on the fresh fills; by-table predictions and E183's manipulation check written before
-  the first cell. Running.
+  the first cell.
+  **E187 done 2026-11-23 19:13 GMT-3:** S − K +0.0018 [−0.0013, +0.0049], not replicated (six seeds pooled +0.0027, fragile); the
+  by-table split replicated (12 of 14 calls, none opposite); E183's `sw_score` gain replicated (16 better, 0 worse);
+  fitted on complete rows S − K +0.006 holds. No default change. T64 closed.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
