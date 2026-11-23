@@ -5168,9 +5168,12 @@ fails when an entry has no row or a row no entry.
   K 0.718, S 0.720, complete table 0.852. Fitted on complete rows S − K is +0.0062 (forest) and +0.0075 (logistic),
   holding corrected. Manipulation check supported: S better on `sw_score` on 16 of 26, worse on none;
   `impute_score` worse on 5, better on 4.
-- **Conclusion:** E183's selector result replicates on fresh seeds, and its change in the fills does not reach a
-  classifier fitted on the filled table: S − K is not distinguishable from 0 on the fresh seeds, near +0.003 over
-  six. It helps a classifier fitted on complete rows by +0.006 to +0.008 in both seed sets. Whether filling beats
+- **Correction 2026-11-23 19:15 GMT-3:** the first Conclusion (90a5dd2) said the change "does not reach" a classifier fitted on the
+  filled table; no equivalence margin was pre-registered and the fresh interval contains E186's estimate, so a null
+  is not claimed. Reworded below; same read.
+- **Conclusion:** E183's selector result replicates on fresh seeds. For a classifier fitted on the filled table
+  E186's gain is not confirmed and not shown absent: at most about +0.005 on the fresh seeds, near +0.003 over six.
+  Beside, a classifier fitted on complete rows gains +0.006 to +0.008 in both seed sets. Whether filling beats
   leaving the gaps to a forest depends on the table, and that split held (numerical tables gain, `kr-vs-kp`
   40–80nan and `credit-g_80nan` lose; cause not tested). No default change, no ADR. MCAR only.
 - **Sources:** [imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md); `sliced_fresh_run.py`.

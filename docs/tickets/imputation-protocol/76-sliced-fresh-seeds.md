@@ -93,6 +93,12 @@ All 156 runs were in at 2026-11-23 18:45 GMT-3, none failed. `--gate`: 156 finis
 `--pairing`: cells and hgb's score the same on all 78 pairs. The 78 downstream cells and 156 ledger scores were then
 computed (no error), and `--tally` was run once, at 2026-11-23 19:12 GMT-3.
 
+**Correction (2026-11-23 19:15 GMT-3), same printout, no new read.** The first Reading (commit 90a5dd2) said the selector's
+change "does not reach" a classifier fitted on the filled table. The printout does not support a null: the fresh
+interval [−0.0013, +0.0049] contains E186's +0.0035, the six-seed line is S by the plain rule, and no equivalence
+margin was pre-registered for macro-F1. The verdict stays "not replicated"; the Reading below is reworded to "not
+confirmed, at most about +0.005".
+
 - **Primary, not replicated:** F1(S) − F1(K), forest on each table's own rows, **+0.0018 [−0.0013, +0.0049]** (E186:
   +0.0035 [+0.0009, +0.0061]). Per variant S on 2 (`pendigits_80nan` +0.0142, holding corrected; `electricity_80nan`
   +0.0053, fragile), K on 1 (`kr-vs-kp_80nan` −0.0165, fragile), no difference on 23. Of E186's two carriers,
@@ -122,10 +128,12 @@ computed (no error), and `--tally` was run once, at 2026-11-23 19:12 GMT-3.
   `kr-vs-kp_80nan`, `pendigits_80nan`, `letter_20nan`). E183's selector result replicates on fresh seeds, so the
   downstream null is not a selector that did nothing: on `credit-g_80nan` `sw_score` falls from 0.944 to 0.650 and
   macro-F1 moves by +0.004.
-- **Reading:** choosing the checkpoint by `sw_score` changes the fills' distribution as designed, and that does not
-  reach a classifier fitted on the filled table: the fresh-seed difference is not distinguishable from 0, and six
-  seeds put it near +0.003. It does help a classifier fitted on complete rows (+0.006 to +0.008 in both seed sets).
-  Whether to fill at all for a forest depends on the table, and that split held on fresh seeds.
+- **Reading (reworded 2026-11-23 19:15 GMT-3, see the correction below):** choosing the checkpoint by `sw_score` changes
+  the fills' distribution as designed. For a classifier fitted on the filled table the gain of E186 is not confirmed
+  on fresh seeds; it is not shown to be absent either: if there is a gain it is at most about +0.005 (the fresh
+  interval's upper end), and six seeds put it near +0.003. Beside, a classifier fitted on complete rows gains +0.006
+  to +0.008 in both seed sets. Whether to fill at all for a forest depends on the table, and that split held on
+  fresh seeds (same gap pattern per variant: the seeds change folds, initialisation and the forest, not the gaps).
 - No default and no ADR changes. Limits: MCAR only; two untuned learners; why filling hurts on `kr-vs-kp` and
   `credit-g` is still not tested.
 
