@@ -224,7 +224,7 @@ fails when an entry has no row or a row no entry.
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
-| E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | |
+| E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | core read: calibration ruled out as the main cause on the core (change −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); second batch pending |
 
 ## Entries
 
@@ -5201,6 +5201,17 @@ fails when an entry has no row or a row no entry.
   the loss) or "inconclusive". Secondary: the same per table and per variant; the share of gap cells the calibration
   changes; the second batch's N − K. Two reads, each once (`--tally core`, `--tally rest`), after the gate; no
   default change.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** core read 2026-11-23 23:47 GMT-3 (first of two; 18 runs, none failed; gate 36 runs, 0 failed). Core pooled, fresh
+  seeds: loss F1(missing) − F1(K) +0.0229 (lower end +0.0150); change F1(N) − F1(K) −0.0003 [−0.0047, +0.0041]
+  (corrected [−0.0104, +0.0099]), upper end 18% of the loss: **not shown, ruled out as the main cause**, also under
+  the corrected interval. `kr-vs-kp` pooled the same (+0.0006 [−0.0031, +0.0044], loss +0.0242). `credit-g` pooled:
+  ruled out by the plain rule (−0.0011 [−0.0092, +0.0069], loss +0.0216), no robust read (the loss is not above 0
+  under the corrected interval). Per variant the change differs from 0 on none of six. E76's runs, not fresh: the
+  same verdict on the core (−0.0046 [−0.0100, +0.0008], loss +0.0310); their "calibration helps" on `kr-vs-kp`
+  (fragile) is not repeated on fresh seeds. The calibration changes 1.4 to 4.8% of categorical gap cells and moves
+  `credit-g`'s numbers by 0.05 to 0.10 z. Beside, no rule: fitted on the complete rows the uncalibrated fill scores
+  higher on both seed sets (forest +0.0064 and +0.0041, corrected intervals include 0). Second batch: pending.
+- **Conclusion:** pending the second read. From the core: the calibration of the default output (ADR 0027) is not
+  the main cause of the downstream loss on `kr-vs-kp` and on the core pooled; `credit-g` alone gives no robust
+  read. The cause of the loss is not tested here. No default and no ADR change.
 - **Sources:** [imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md); `uncalibrated_utility_run.py`, `uncalibrated_utility_read.py`.

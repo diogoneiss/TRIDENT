@@ -1126,6 +1126,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   the default run with `--score_remask` on fresh seeds 2718/6464/7272, so one ledger holds the calibrated fill (K)
   and the same model's uncalibrated one (N); core `credit-g` and `kr-vs-kp` at 40–80nan (18 runs), then the other
   11 variants at 40nan and above (33 runs); E186's downstream read with a margin for the null (half the loss).
+  **Core read 2026-11-23 23:47 GMT-3:** calibration ruled out as the main cause on the core pooled and on `kr-vs-kp` (change
+  −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); `credit-g` alone no robust read. Second batch training,
+  `--tally rest` pending.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
