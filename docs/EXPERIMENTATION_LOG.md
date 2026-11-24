@@ -5220,8 +5220,9 @@ fails when an entry has no row or a row no entry.
   no difference on these variants (+0.0007 [−0.0014, +0.0028]); logistic regression +0.0035, fragile.
 - **Conclusion:** the calibration of the default output (ADR 0027) is not the main cause of the downstream loss on
   `kr-vs-kp` and on the core pooled; `credit-g` alone gives no robust read. On the other 11 variants, where the
-  fill does not lose to the gaps, undoing it makes no difference to the forest within ±0.005 at most (no margin
-  was pre-registered there, so this is a bound, not an equivalence verdict). The core's observation under the
+  fill does not lose to the gaps, undoing it reads no difference, +0.0006 [−0.0015, +0.0027], corrected [−0.0042,
+  +0.0054] (no margin was pre-registered there, so the interval is a bound, not an equivalence verdict; wording
+  corrected 2026-11-24 06:23 GMT-3, the first version said "within ±0.005"). The core's observation under the
   `complete` protocol does not repeat for the forest on those variants. The cause of the loss is not tested here
   (E189 tested gap flags). MCAR, one forest, three seeds. No default and no ADR change.
 - **Sources:** [imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md); `uncalibrated_utility_run.py`, `uncalibrated_utility_read.py`.

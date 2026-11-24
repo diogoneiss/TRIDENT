@@ -362,10 +362,11 @@ lose to the gaps on these variants), so its verdicts are "N", "K" or "no differe
 - **Beside, logistic regression on each table's own rows:** −0.0002 [−0.0020, +0.0016], no difference.
 - **Against what was stated before the first cell:** nothing was stated for the second batch beyond its question.
 
-**Reading, both reads.** Undoing the calibration of the default output (ADR 0027) on the same model does not change
-what a forest fitted on the filled table scores, on either set of variants: on the core it is ruled out as the main
-cause of the loss to the gaps left missing (first read; `credit-g` alone no robust read), and on the other 11
-variants, where the fill does not lose, the change is no difference within ±0.005 at most. The study does not say
+**Reading, both reads** (reworded 2026-11-24, see the correction at the end)**.** Two verdicts, one per read. On
+the core, the calibration of the default output (ADR 0027) is ruled out as the main cause of the loss to the gaps
+left missing (first read; `credit-g` alone no robust read). On the other 11 variants, where the fill does not
+lose, undoing it on the same model reads no difference, with the interval as the bound: +0.0006 [−0.0015, +0.0027],
+corrected [−0.0042, +0.0054]. Neither is a verdict that the calibration has no downstream effect. The study does not say
 what causes the loss (E189, ticket 78, tested the gap-flag alternative), and it covers MCAR, one forest and three
 seeds. No default and no ADR change; ADR 0027 stays the user's decision.
 
@@ -483,3 +484,14 @@ Variants, F1(N) − F1(missing): N 6, no difference 5, missing 0
 - electricity_40nan: categories changed 1533 of 54375 (2.8%); numbers moved 235482 of 380625 (61.9%, mean shift 0.0131 z); n_thresholded_columns 0.33, mean_alpha 0.96, acc_cat K 0.2550, N 0.2547, rmse_num_z K 0.7705, N 0.7707, impute_score K 0.7621, N 0.7623
 - electricity_80nan: categories changed 12682 of 108750 (11.7%); numbers moved 572887 of 761250 (75.3%, mean shift 0.0175 z); n_thresholded_columns 0.60, mean_alpha 0.90, acc_cat K 0.1736, N 0.1738, rmse_num_z K 0.8567, N 0.8597, impute_score K 0.8968, N 0.8995
 ```
+
+## Correction (2026-11-24 06:23 GMT-3; same read, no new fit)
+
+- **The Reading of the second read overstated it.** It opened with "does not change what a forest fitted on the
+  filled table scores, on either set of variants". Neither read licenses a flat null: the core's verdict is "ruled
+  out as the main cause", the second read's is "no difference, with the interval as the bound". The Reading above is
+  reworded to those two verdicts.
+- **"within ±0.005 at most" was too tight:** the corrected interval's upper end is +0.0054. The Reading, the log's
+  Conclusion and T65 now quote the interval.
+- The `rmse_num_z` figure "at most 0.026" was read off the printout when written; taken by script afterwards it is
+  0.0261 (`biodeg_80nan`).
