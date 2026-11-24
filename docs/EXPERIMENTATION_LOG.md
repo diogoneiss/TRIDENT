@@ -224,6 +224,7 @@ fails when an entry has no row or a row no entry.
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
+| E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | |
 
 ## Entries
 
@@ -5177,3 +5178,29 @@ fails when an entry has no row or a row no entry.
   leaving the gaps to a forest depends on the table, and that split held (numerical tables gain, `kr-vs-kp`
   40–80nan and `credit-g_80nan` lose; cause not tested). No default change, no ADR. MCAR only.
 - **Sources:** [imputation-protocol/76](tickets/imputation-protocol/76-sliced-fresh-seeds.md); `sliced_fresh_run.py`.
+
+### E188 · Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? (pre-registered 2026-11-23 22:05 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-23 22:05 GMT-3 on the user's go of 2026-11-23 ("vamos na sua sugestão"). T65.
+- **Hypothesis:** the calibration of the default output (ADR 0027, applied from 40nan up) is why K's fill serves a
+  forest worse than the gaps left missing on `kr-vs-kp` 40–80nan and `credit-g` 60–80nan (E186, E187). Stated before
+  the first cell: I expect no effect on `kr-vs-kp` and a small one of either sign on `credit-g`, since the mean/mode
+  fill, which the calibration never touches, loses there too.
+- **Scenarios:** the default run with `--score_remask` (arm KR) on fresh seeds 2718/6464/7272 × five folds on
+  gorgona8: the core (`credit-g` and `kr-vs-kp` at 40/60/80nan, 18 runs, about 1.5 h), then a second batch (the
+  other 11 variants at 40nan and above, 33 runs, about 6.5 h). One run gives both fills: K = the ledger's calibrated
+  rows, N = the same model's uncalibrated rows, so no retraining noise enters (same-seed retrainings differ by 0.01
+  to 0.03 in `impute_score`, the calibration moves it by under 0.01). Beside, not fresh: E76's runs of the core
+  variants (seeds 101/202/303), which hold both outputs.
+- **Measures and decision rule:** E186's downstream read (macro-F1 on the test folds; forest primary, logistic
+  regression beside; `own` primary, `complete` beside), differences pooled over the variants per (seed, fold)
+  replicate (15), plain 95% t interval, corrected interval beside. Primary on the core: with the loss F1(missing) −
+  F1(K) above 0 (else no read), the change F1(N) − F1(K) is read as "calibration helps, not a cause" (below 0), "a
+  cause" (above 0 and reaching half the loss; explains the loss if F1(N) − F1(missing) is not below 0), "a minor
+  cause" (above 0, under half the loss), "not shown, ruled out as the main cause" (includes 0, upper end under half
+  the loss) or "inconclusive". Secondary: the same per table and per variant; the share of gap cells the calibration
+  changes; the second batch's N − K. Two reads, each once (`--tally core`, `--tally rest`), after the gate; no
+  default change.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md); `uncalibrated_utility_run.py`, `uncalibrated_utility_read.py`.

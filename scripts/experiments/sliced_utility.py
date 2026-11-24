@@ -73,6 +73,13 @@ def _learner(name: str, seed: int, categorical: list[str], numerical: list[str])
     return make_pipeline(encode, LogisticRegression(max_iter=5000))
 
 
+def _fill(state: Path, arm: str, variant: str, seed: int, fold: int) -> pd.DataFrame:
+    """The arm's ledger of one fold. uncalibrated_utility_read.py (E188) replaces it to take two fills from one run."""
+    run = e183._run(state, arm, variant, seed)
+    assert run is not None, f"no finished {arm} run of {variant} seed {seed} under {state}"
+    return e182._ledger(run, fold)
+
+
 def _tables(variant: str, seed: int) -> tuple[dict[str, pd.DataFrame], pd.Series, list[Any], list[str], list[str]]:
     """The variant's features under each fill, its labels, its folds and its column kinds."""
     state = next(s for s, variants in STATES.items() if variant in variants)
@@ -88,11 +95,7 @@ def _tables(variant: str, seed: int) -> tuple[dict[str, pd.DataFrame], pd.Series
     for ordinal, fold in enumerate(folds, start=1):
         test = np.asarray(fold.test_indices)
         naive = mean_mode_baselines(features.iloc[np.asarray(fold.train_indices)].reset_index(drop=True), numerical, categorical)
-        ledgers: dict[str, pd.DataFrame] = {}
-        for arm in ARMS:
-            run = e183._run(state, arm, variant, seed)
-            assert run is not None, f"no finished {arm} run of {variant} seed {seed} under {state}"
-            ledgers[arm] = e182._ledger(run, ordinal)
+        ledgers = {arm: _fill(state, arm, variant, seed, ordinal) for arm in ARMS}
         first = ledgers[ARMS[0]]
         for arm in ARMS[1:]:
             assert first[["row", "column"]].equals(ledgers[arm][["row", "column"]]), f"{arm}: other cells, fold {ordinal}"

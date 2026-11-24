@@ -1120,6 +1120,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **E187 done 2026-11-23 19:13 GMT-3:** S − K +0.0018 [−0.0013, +0.0049], not replicated (six seeds pooled +0.0027, fragile); the
   by-table split replicated (12 of 14 calls, none opposite); E183's `sw_score` gain replicated (16 better, 0 worse);
   fitted on complete rows S − K +0.006 holds. No default change. T64 closed.
+- **T65 · Is calibration why filling loses to the gaps left missing on `kr-vs-kp` and `credit-g`?** (the user's go of
+  2026-11-23).
+  **E188 pre-registered 2026-11-23 22:05 GMT-3** ([imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md)):
+  the default run with `--score_remask` on fresh seeds 2718/6464/7272, so one ledger holds the calibrated fill (K)
+  and the same model's uncalibrated one (N); core `credit-g` and `kr-vs-kp` at 40–80nan (18 runs), then the other
+  11 variants at 40nan and above (33 runs); E186's downstream read with a margin for the null (half the loss).
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
