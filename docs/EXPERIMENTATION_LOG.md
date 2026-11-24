@@ -225,7 +225,7 @@ fails when an entry has no row or a row no entry.
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
 | E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | core read: calibration ruled out as the main cause on the core (change −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); second batch pending |
-| E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | in progress | |
+| E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | no read on the primary | the control fails on the core pooled; on `kr-vs-kp` flag columns recover the whole loss to the gaps left missing (+0.0281 of 0.0269, for the decoder's fill and the mode alike); on `credit-g` flags cost the forest as much as the loss, cause open; not a recipe across 26 variants (better 5, worse 10) |
 
 ## Entries
 
@@ -5219,7 +5219,7 @@ fails when an entry has no row or a row no entry.
 
 ### E189 · Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? (pre-registered 2026-11-24 02:03 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-24 02:03 GMT-3 on the user's go of 2026-11-24 ("dou o ok"). T66. CPU only.
+- **Status:** done 2026-11-24 02:38 GMT-3; pre-registered 2026-11-24 02:03 GMT-3 on the user's go of 2026-11-24 ("dou o ok"). T66. CPU only.
 - **Hypothesis:** on `kr-vs-kp` 40–80nan and `credit-g` 60–80nan the forest fitted on K's fill scores below the one
   fitted on the table with gaps (E186, E187, E188) because it takes filled values for observed ones; given one flag
   column per feature ("this cell was a gap") it recovers the loss. Not a claim that the gap pattern predicts the
@@ -5239,6 +5239,18 @@ fails when an entry has no row or a row no entry.
   L/2) or "inconclusive". Beside: F1(K+ind) − F1(naive+ind), F1(truth+ind) − F1(truth). Secondary: per table, per
   variant, per seed set; per-variant calls on the 26 variants. A gate on the code: the inherited fills must
   reproduce the stored F1 within 1e-12. One read, `--tally`, refusing a partial set; no default change.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** one read, 2026-11-24 02:38 GMT-3 (114 cells, none failed; the inherited fills reproduce the stored F1 exactly).
+  Primary, the core pooled: **no read**, the control fails (mean/mode with flags −0.0190 [−0.0218, −0.0163]
+  against the gaps, margin −0.0131; loss +0.0263); the pooled change +0.0016 averages two opposite tables.
+  `kr-vs-kp` pooled, holding corrected: control passes (−0.0031), F1(K+ind) − F1(K) **+0.0281 [+0.0252, +0.0309]**,
+  104% of the loss +0.0269; K with flags against the gaps +0.0012 [−0.0017, +0.0041]: **flags account for the
+  loss**, and mean/mode with flags is level with the gaps too. `credit-g`: no read; flags cost the forest −0.0424
+  on the complete table, as much as the loss (+0.0257). Truth with flags is below truth everywhere (core −0.0311,
+  26 variants −0.0118). The 26 variants, F1(K+ind) − F1(K): better 5, no difference 11, worse 10 (three and one
+  holding corrected), pooled +0.0006. Logistic regression's mean/mode with flags equals its `missing` table
+  (−0.0005), as constructed.
+- **Conclusion:** no read on the core as pooled. On `kr-vs-kp`, under MCAR and with this forest, a fill without
+  flags loses to the gaps left missing and the same fill with flags does not, for the decoder's values and for the
+  mode alike. On `credit-g` the design cannot test the hypothesis (the flag columns cost as much as the loss); the
+  cause there is open. Flags are not a recipe across tables. No default and no ADR change. T66 closed.
 - **Sources:** [imputation-protocol/78](tickets/imputation-protocol/78-indicator-utility.md); `indicator_utility.py`.

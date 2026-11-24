@@ -1135,6 +1135,9 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   CPU only, on the ledgers of E184/E185, E187 and E188's core; each fill again with one flag column per feature;
   the core on nine seeds (54 cells) and the 26 MCAR variants on E187's seeds (78 cells); E188's half-the-loss rule,
   gated by mean/mode with flags against the gaps left missing.
+  **Done 2026-11-24 02:38 GMT-3:** no read on the core pooled (the control fails); on `kr-vs-kp` flags account for the loss
+  (+0.0281 of 0.0269, holding corrected, for K's fill and the mode alike); on `credit-g` flags cost the forest as
+  much as the loss, cause open; over 26 variants flags are worse than the fill alone on 10, better on 5. Closed.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
