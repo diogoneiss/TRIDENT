@@ -1129,6 +1129,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **Core read 2026-11-23 23:47 GMT-3:** calibration ruled out as the main cause on the core pooled and on `kr-vs-kp` (change
   −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); `credit-g` alone no robust read. Second batch training,
   `--tally rest` pending.
+- **T66 · Does the forest lose on a filled table because it cannot tell a filled cell from an observed one?** (the
+  user's go of 2026-11-24).
+  **E189 pre-registered 2026-11-24 02:03 GMT-3** ([imputation-protocol/78](tickets/imputation-protocol/78-indicator-utility.md)):
+  CPU only, on the ledgers of E184/E185, E187 and E188's core; each fill again with one flag column per feature;
+  the core on nine seeds (54 cells) and the 26 MCAR variants on E187's seeds (78 cells); E188's half-the-loss rule,
+  gated by mean/mode with flags against the gaps left missing.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

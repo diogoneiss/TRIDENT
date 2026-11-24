@@ -225,6 +225,7 @@ fails when an entry has no row or a row no entry.
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
 | E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | core read: calibration ruled out as the main cause on the core (change −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); second batch pending |
+| E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | in progress | |
 
 ## Entries
 
@@ -5215,3 +5216,29 @@ fails when an entry has no row or a row no entry.
   the main cause of the downstream loss on `kr-vs-kp` and on the core pooled; `credit-g` alone gives no robust
   read. The cause of the loss is not tested here. No default and no ADR change.
 - **Sources:** [imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md); `uncalibrated_utility_run.py`, `uncalibrated_utility_read.py`.
+
+### E189 · Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? (pre-registered 2026-11-24 02:03 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-24 02:03 GMT-3 on the user's go of 2026-11-24 ("dou o ok"). T66. CPU only.
+- **Hypothesis:** on `kr-vs-kp` 40–80nan and `credit-g` 60–80nan the forest fitted on K's fill scores below the one
+  fitted on the table with gaps (E186, E187, E188) because it takes filled values for observed ones; given one flag
+  column per feature ("this cell was a gap") it recovers the loss. Not a claim that the gap pattern predicts the
+  label (the variants are MCAR). Stated before the first cell: I expect the control to pass, K with flags to recover
+  part of the loss on `kr-vs-kp`, and K with flags to be about level with mean/mode with flags; unsure of the second.
+- **Scenarios:** no training. K's fill from the ledgers of E184/E185 (seeds 101/202/303), E187 (1717/8484/9595) and
+  E188's core runs (2718/6464/7272). Seven tables a cell: `missing`, `naive`, `K`, `truth`, and `naive+ind`, `K+ind`,
+  `truth+ind` (the fill plus a 0/1 flag per feature). The core, `credit-g` and `kr-vs-kp` at 40/60/80nan on the nine
+  seeds (54 cells); the 26 MCAR variants on E187's seeds (78 cells, 18 shared). E186's forest on each table's own
+  rows; logistic regression beside.
+- **Measures and decision rule:** macro-F1 on the test folds, differences pooled over the variants per (seed, fold)
+  replicate (45 on the core), plain 95% t interval for the verdict, corrected and nine-seed-means intervals beside.
+  With the loss L = F1(missing) − F1(K) above 0 and the control passed (lower end of F1(naive+ind) − F1(missing)
+  above −L/2; else no read), the change F1(K+ind) − F1(K) is read as "flags make K's fill worse" (below 0), "a minor
+  part" (above 0, under L/2), "accounts for the loss" or "for part of it" (above 0 and reaching L/2, by whether
+  F1(K+ind) − F1(missing) is still below 0), "not shown, ruled out as the main cause" (includes 0, upper end under
+  L/2) or "inconclusive". Beside: F1(K+ind) − F1(naive+ind), F1(truth+ind) − F1(truth). Secondary: per table, per
+  variant, per seed set; per-variant calls on the 26 variants. A gate on the code: the inherited fills must
+  reproduce the stored F1 within 1e-12. One read, `--tally`, refusing a partial set; no default change.
+- **Results:** pending.
+- **Conclusion:** pending.
+- **Sources:** [imputation-protocol/78](tickets/imputation-protocol/78-indicator-utility.md); `indicator_utility.py`.
