@@ -329,3 +329,157 @@ Variants, F1(N) − F1(missing): N 0, no difference 1, missing 5
 - kr-vs-kp_60nan: categories changed 4711 of 207144 (2.3%); numbers moved 0 of 0; n_thresholded_columns 11.93, acc_cat K 0.8380, N 0.8361, impute_score K 0.8609, N 0.8711
 - kr-vs-kp_80nan: categories changed 3700 of 276156 (1.3%); numbers moved 0 of 0; n_thresholded_columns 7.40, acc_cat K 0.8179, N 0.8163, impute_score K 0.9733, N 0.9815
 ```
+
+## Second read (2026-11-24 06:20 GMT-3; last of two reads): on the other 11 variants undoing the calibration makes no difference to the forest, bounded by the interval
+
+The 33 runs of the second batch were in at 2026-11-24 05:47 GMT-3, none failed (51 of 51 with the core). Their 33
+downstream cells were computed without error by 06:15 GMT-3 and `--tally rest` was run once, at 2026-11-24 06:16 GMT-3. Its gate:
+33 finished runs checked, 0 failed. This read has no cause rule and no margin for a null (pre-registered: K does not
+lose to the gaps on these variants), so its verdicts are "N", "K" or "no difference, with the interval as the bound".
+
+- **F1(N) − F1(K), the 11 variants pooled, forest, `own`: no difference, +0.0006 [−0.0015, +0.0027]**, corrected
+  [−0.0042, +0.0054]. Whatever undoing the calibration does to the forest's macro-F1 here is within about 0.003 by
+  the plain interval and 0.005 by the corrected one. By level: 40nan +0.0003, 60nan −0.0008, 80nan +0.0011, each
+  no difference.
+- **Per variant: not findings.** N on 1 (`kc2_80nan`, +0.0171 [+0.0036, +0.0307]), no difference on 10, K on 0. One
+  call of 11 at 95% is what chance gives; it does not hold under the corrected interval (none of the 11 does), it is
+  on the smallest table, and `biodeg_80nan` leans the other way (−0.0093).
+- **What the calibration changes here (a manipulation read, no rule):** 54 to 100% of the numerical gap cells move,
+  by a mean of 0.013 to 0.122 z (`mean_alpha` 0.66 to 0.96); on `electricity`, the only table here with categories,
+  2.8% (40nan) and 11.7% (80nan) of the categorical gap cells take another category. K's `rmse_num_z` and
+  `impute_score` are lower (better) than N's on all 11 variants, by at most 0.026 and 0.025 (`biodeg_80nan`). So on
+  these variants the calibration moves most numbers, improves the score it was set on a little, and the forest's
+  macro-F1 does not differ. No mechanism is claimed.
+- **Beside, K against the gaps left missing on a third seed set:** pooled +0.0151 [+0.0105, +0.0197], corrected
+  [+0.0045, +0.0257]: K, also corrected. Per variant K on 6, no difference on 5, missing on 0; three of the six hold
+  under the corrected interval (`biodeg_40nan`, `pendigits_40nan`, `pendigits_60nan`). At 80nan pooled: no difference
+  (+0.0056 [−0.0008, +0.0121]). The mean/mode fill is below the gaps (−0.0099 [−0.0153, −0.0045], fragile).
+- **Beside, the classifier fitted on the complete rows:** the core read's observation (the uncalibrated fill scoring
+  higher there, forest +0.0064 fresh) does not repeat for the forest on these variants: +0.0007 [−0.0014, +0.0028],
+  no difference. Logistic regression points the same way as on the core, +0.0035 [+0.0007, +0.0062], fragile
+  (corrected [−0.0028, +0.0098]). Neither a replication nor a refutation; no rule was set on it, and nothing about
+  ADR 0027 follows from it here.
+- **Beside, logistic regression on each table's own rows:** −0.0002 [−0.0020, +0.0016], no difference.
+- **Against what was stated before the first cell:** nothing was stated for the second batch beyond its question.
+
+**Reading, both reads.** Undoing the calibration of the default output (ADR 0027) on the same model does not change
+what a forest fitted on the filled table scores, on either set of variants: on the core it is ruled out as the main
+cause of the loss to the gaps left missing (first read; `credit-g` alone no robust read), and on the other 11
+variants, where the fill does not lose, the change is no difference within ±0.005 at most. The study does not say
+what causes the loss (E189, ticket 78, tested the gap-flag alternative), and it covers MCAR, one forest and three
+seeds. No default and no ADR change; ADR 0027 stays the user's decision.
+
+**Disclosed, printout unedited:**
+- Its title says "sliced selector": the read reuses E186's printer.
+- A standalone `--gate` run just before the tally counted 69 finished runs: the 33 above, the 18 core runs and E76's
+  18. The tally's own gate covers the 33.
+- Before the tally I listed the state directory and counted its downstream files (69) and the progress log's lines
+  ("cell done" 51, FAILED 0): no F1 seen. The first read's gate had already read nine of these runs' logged scores
+  and ledger cell errors (disclosed there).
+- After the read, the counts above (calls holding under the corrected interval, the ranges of the calibration's
+  changes) were taken by script from this printout, with no new fit.
+
+```
+gate: 33 finished runs checked, 0 failed (flags; both outputs on the same cells; each reproduces the run's own acc_cat and rmse_num_z)
+## Downstream utility of the sliced selector (E188, rest, fresh seeds): macro-F1 on the test folds of 11 MCAR variants, seeds 2718/6464/7272; a difference is pooled over the variants per (seed, fold) replicate, 15 replicates, plain 95% t interval (NB: corrected)
+Primary, forest fitted on each table's own rows, F1(N) − F1(K): +0.0006 [-0.0015, +0.0027] (NB [-0.0042, +0.0054]) -> no difference
+Three-way, same, F1(K) − F1(missing): +0.0151 [+0.0105, +0.0197] (NB [+0.0045, +0.0257]) -> K
+Three-way, same, F1(N) − F1(missing): +0.0157 [+0.0107, +0.0207] (NB [+0.0041, +0.0272]) -> N
+  beside, F1(naive) − F1(missing): -0.0099 [-0.0153, -0.0045] (NB [-0.0224, +0.0025]) -> missing
+  beside, F1(truth) − F1(missing): +0.1724 [+0.1690, +0.1758] (NB [+0.1645, +0.1803]) -> truth
+Levels (forest, own): missing 0.6841, naive 0.6742, K 0.6992, N 0.6998, truth 0.8565
+
+### By missingness level (forest, own)
+- 40nan (5 variants): missing 0.7672, naive 0.7573, K 0.7835, N 0.7838, truth 0.8425
+  - F1(N) − F1(K): +0.0003 [-0.0032, +0.0038] (NB [-0.0077, +0.0084]) -> no difference
+  - F1(K) − F1(missing): +0.0163 [+0.0094, +0.0231] (NB [+0.0004, +0.0321]) -> K
+  - F1(N) − F1(missing): +0.0166 [+0.0097, +0.0234] (NB [+0.0008, +0.0324]) -> N
+- 60nan (1 variants): missing 0.7851, naive 0.7512, K 0.8417, N 0.8409, truth 0.9918
+  - F1(N) − F1(K): -0.0008 [-0.0024, +0.0008] (NB [-0.0045, +0.0029]) -> no difference
+  - F1(K) − F1(missing): +0.0566 [+0.0523, +0.0610] (NB [+0.0466, +0.0667]) -> K
+  - F1(N) − F1(missing): +0.0558 [+0.0512, +0.0605] (NB [+0.0452, +0.0665]) -> N
+- 80nan (5 variants): missing 0.5809, naive 0.5757, K 0.5865, N 0.5876, truth 0.8435
+  - F1(N) − F1(K): +0.0011 [-0.0036, +0.0059] (NB [-0.0099, +0.0122]) -> no difference
+  - F1(K) − F1(missing): +0.0056 [-0.0008, +0.0121] (NB [-0.0092, +0.0204]) -> no difference
+  - F1(N) − F1(missing): +0.0068 [-0.0017, +0.0152] (NB [-0.0127, +0.0262]) -> no difference
+
+### Beside: logistic regression, own (a gap is the mean with an indicator, or its own category)
+- F1(N) − F1(K): -0.0002 [-0.0020, +0.0016] (NB [-0.0044, +0.0040]) -> no difference
+- F1(K) − F1(missing): +0.0584 [+0.0541, +0.0628] (NB [+0.0484, +0.0684]) -> K
+- F1(N) − F1(missing): +0.0582 [+0.0531, +0.0633] (NB [+0.0465, +0.0699]) -> N
+- Levels: missing 0.6243, naive 0.6075, K 0.6827, N 0.6825, truth 0.8235
+
+### Beside: forest fitted on the complete rows, scored on each table's test fold
+- F1(N) − F1(K): +0.0007 [-0.0014, +0.0028] (NB [-0.0041, +0.0055]) -> no difference
+- F1(K) − F1(missing): +0.0993 [+0.0928, +0.1058] (NB [+0.0844, +0.1142]) -> K
+- F1(N) − F1(missing): +0.1000 [+0.0949, +0.1051] (NB [+0.0882, +0.1118]) -> N
+- Levels: missing 0.5954, naive 0.5037, K 0.6947, N 0.6954, truth 0.8565
+
+### Beside: logistic regression fitted on the complete rows
+- F1(N) − F1(K): +0.0035 [+0.0007, +0.0062] (NB [-0.0028, +0.0098]) -> N
+- F1(K) − F1(missing): +0.1872 [+0.1815, +0.1929] (NB [+0.1741, +0.2003]) -> K
+- F1(N) − F1(missing): +0.1907 [+0.1853, +0.1960] (NB [+0.1784, +0.2030]) -> N
+- Levels: missing 0.4808, naive 0.4802, K 0.6680, N 0.6715, truth 0.8235
+
+### Per variant (forest, own), 15 fold values a variant
+- kc2_40nan: missing 0.7262, naive 0.7279, K 0.7034, N 0.7056, truth 0.7159
+  - F1(N) − F1(K): +0.0023 [-0.0081, +0.0127] (NB [-0.0217, +0.0262]) -> no difference
+  - F1(K) − F1(missing): -0.0228 [-0.0511, +0.0055] (NB [-0.0878, +0.0422]) -> no difference
+  - F1(N) − F1(missing): -0.0205 [-0.0483, +0.0072] (NB [-0.0843, +0.0432]) -> no difference
+- kc2_80nan: missing 0.7061, naive 0.6925, K 0.6934, N 0.7105, truth 0.7191
+  - F1(N) − F1(K): +0.0171 [+0.0036, +0.0307] (NB [-0.0141, +0.0484]) -> N
+  - F1(K) − F1(missing): -0.0127 [-0.0412, +0.0158] (NB [-0.0782, +0.0528]) -> no difference
+  - F1(N) − F1(missing): +0.0045 [-0.0255, +0.0344] (NB [-0.0644, +0.0733]) -> no difference
+- vehicle_40nan: missing 0.6542, naive 0.6371, K 0.6780, N 0.6796, truth 0.7446
+  - F1(N) − F1(K): +0.0016 [-0.0096, +0.0128] (NB [-0.0241, +0.0273]) -> no difference
+  - F1(K) − F1(missing): +0.0238 [+0.0061, +0.0414] (NB [-0.0169, +0.0644]) -> K
+  - F1(N) − F1(missing): +0.0254 [+0.0068, +0.0439] (NB [-0.0174, +0.0681]) -> N
+- vehicle_80nan: missing 0.4247, naive 0.4372, K 0.4552, N 0.4513, truth 0.7464
+  - F1(N) − F1(K): -0.0039 [-0.0162, +0.0084] (NB [-0.0322, +0.0244]) -> no difference
+  - F1(K) − F1(missing): +0.0306 [+0.0119, +0.0493] (NB [-0.0124, +0.0735]) -> K
+  - F1(N) − F1(missing): +0.0267 [+0.0004, +0.0530] (NB [-0.0338, +0.0872]) -> N
+- biodeg_40nan: missing 0.7919, naive 0.7866, K 0.8260, N 0.8253, truth 0.8533
+  - F1(N) − F1(K): -0.0008 [-0.0072, +0.0056] (NB [-0.0155, +0.0140]) -> no difference
+  - F1(K) − F1(missing): +0.0342 [+0.0233, +0.0451] (NB [+0.0091, +0.0592]) -> K
+  - F1(N) − F1(missing): +0.0334 [+0.0227, +0.0441] (NB [+0.0087, +0.0580]) -> N
+- biodeg_80nan: missing 0.6780, naive 0.6692, K 0.6859, N 0.6766, truth 0.8533
+  - F1(N) − F1(K): -0.0093 [-0.0210, +0.0025] (NB [-0.0364, +0.0178]) -> no difference
+  - F1(K) − F1(missing): +0.0078 [-0.0132, +0.0288] (NB [-0.0404, +0.0561]) -> no difference
+  - F1(N) − F1(missing): -0.0014 [-0.0273, +0.0245] (NB [-0.0609, +0.0581]) -> no difference
+- pendigits_40nan: missing 0.9098, naive 0.8878, K 0.9521, N 0.9519, truth 0.9918
+  - F1(N) − F1(K): -0.0002 [-0.0012, +0.0008] (NB [-0.0024, +0.0020]) -> no difference
+  - F1(K) − F1(missing): +0.0422 [+0.0394, +0.0451] (NB [+0.0358, +0.0487]) -> K
+  - F1(N) − F1(missing): +0.0420 [+0.0391, +0.0450] (NB [+0.0353, +0.0488]) -> N
+- pendigits_60nan: missing 0.7851, naive 0.7512, K 0.8417, N 0.8409, truth 0.9918
+  - F1(N) − F1(K): -0.0008 [-0.0024, +0.0008] (NB [-0.0045, +0.0029]) -> no difference
+  - F1(K) − F1(missing): +0.0566 [+0.0523, +0.0610] (NB [+0.0466, +0.0667]) -> K
+  - F1(N) − F1(missing): +0.0558 [+0.0512, +0.0605] (NB [+0.0452, +0.0665]) -> N
+- pendigits_80nan: missing 0.5017, naive 0.4829, K 0.5035, N 0.5036, truth 0.9920
+  - F1(N) − F1(K): +0.0000 [-0.0040, +0.0041] (NB [-0.0094, +0.0094]) -> no difference
+  - F1(K) − F1(missing): +0.0018 [-0.0027, +0.0063] (NB [-0.0086, +0.0122]) -> no difference
+  - F1(N) − F1(missing): +0.0019 [-0.0037, +0.0074] (NB [-0.0108, +0.0145]) -> no difference
+- electricity_40nan: missing 0.7539, naive 0.7470, K 0.7579, N 0.7566, truth 0.9067
+  - F1(N) − F1(K): -0.0013 [-0.0028, +0.0001] (NB [-0.0047, +0.0020]) -> no difference
+  - F1(K) − F1(missing): +0.0040 [+0.0014, +0.0065] (NB [-0.0020, +0.0099]) -> K
+  - F1(N) − F1(missing): +0.0026 [+0.0003, +0.0050] (NB [-0.0027, +0.0080]) -> N
+- electricity_80nan: missing 0.5939, naive 0.5969, K 0.5945, N 0.5962, truth 0.9068
+  - F1(N) − F1(K): +0.0017 [-0.0015, +0.0049] (NB [-0.0056, +0.0090]) -> no difference
+  - F1(K) − F1(missing): +0.0006 [-0.0033, +0.0044] (NB [-0.0083, +0.0094]) -> no difference
+  - F1(N) − F1(missing): +0.0023 [-0.0020, +0.0065] (NB [-0.0075, +0.0121]) -> no difference
+Variants, F1(N) − F1(K): N 1, no difference 10, K 0
+Variants, F1(K) − F1(missing): K 6, no difference 5, missing 0
+Variants, F1(N) − F1(missing): N 6, no difference 5, missing 0
+
+### What the calibration changes (E188, rest, fresh seeds): gap cells of the test folds where the two outputs differ
+- kc2_40nan: categories changed 0 of 0; numbers moved 7208 of 13167 (54.7%, mean shift 0.0154 z); n_thresholded_columns 0.00, mean_alpha 0.96, rmse_num_z K 0.6024, N 0.6038, impute_score K 0.5054, N 0.5083
+- kc2_80nan: categories changed 0 of 0; numbers moved 16302 of 26334 (61.9%, mean shift 0.0412 z); n_thresholded_columns 0.00, mean_alpha 0.91, rmse_num_z K 0.8977, N 0.9017, impute_score K 0.6790, N 0.6901
+- vehicle_40nan: categories changed 0 of 0; numbers moved 9837 of 18252 (53.9%, mean shift 0.0192 z); n_thresholded_columns 0.00, mean_alpha 0.96, rmse_num_z K 0.4928, N 0.4953, impute_score K 0.4794, N 0.4818
+- vehicle_80nan: categories changed 0 of 0; numbers moved 30867 of 36558 (84.4%, mean shift 0.0822 z); n_thresholded_columns 0.00, mean_alpha 0.83, rmse_num_z K 0.7996, N 0.8191, impute_score K 0.7882, N 0.8074
+- biodeg_40nan: categories changed 0 of 0; numbers moved 34830 of 51906 (67.1%, mean shift 0.0372 z); n_thresholded_columns 0.00, mean_alpha 0.91, rmse_num_z K 0.8166, N 0.8226, impute_score K 0.6485, N 0.6552
+- biodeg_80nan: categories changed 0 of 0; numbers moved 92850 of 103812 (89.4%, mean shift 0.1224 z); n_thresholded_columns 0.00, mean_alpha 0.66, rmse_num_z K 0.9839, N 1.0100, impute_score K 0.9448, N 0.9701
+- pendigits_40nan: categories changed 0 of 0; numbers moved 211056 of 211056 (100.0%, mean shift 0.0617 z); n_thresholded_columns 0.00, mean_alpha 0.93, rmse_num_z K 0.3825, N 0.3906, impute_score K 0.3818, N 0.3899
+- pendigits_60nan: categories changed 0 of 0; numbers moved 316560 of 316560 (100.0%, mean shift 0.0916 z); n_thresholded_columns 0.00, mean_alpha 0.88, rmse_num_z K 0.5529, N 0.5653, impute_score K 0.5543, N 0.5667
+- pendigits_80nan: categories changed 0 of 0; numbers moved 378155 of 422112 (89.6%, mean shift 0.0526 z); n_thresholded_columns 0.00, mean_alpha 0.89, rmse_num_z K 0.8216, N 0.8255, impute_score K 0.8256, N 0.8295
+- electricity_40nan: categories changed 1533 of 54375 (2.8%); numbers moved 235482 of 380625 (61.9%, mean shift 0.0131 z); n_thresholded_columns 0.33, mean_alpha 0.96, acc_cat K 0.2550, N 0.2547, rmse_num_z K 0.7705, N 0.7707, impute_score K 0.7621, N 0.7623
+- electricity_80nan: categories changed 12682 of 108750 (11.7%); numbers moved 572887 of 761250 (75.3%, mean shift 0.0175 z); n_thresholded_columns 0.60, mean_alpha 0.90, acc_cat K 0.1736, N 0.1738, rmse_num_z K 0.8567, N 0.8597, impute_score K 0.8968, N 0.8995
+```

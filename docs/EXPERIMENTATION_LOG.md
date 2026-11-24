@@ -224,7 +224,7 @@ fails when an entry has no row or a row no entry.
 | E185 | Does E184's sliced Wasserstein loss term lower the output's sliced score on the larger tables? | 2026-11-20 – 2026-11-22 | mixed | better on 4 (S selector) and 3 (default) of 8, worse on pendigits_20nan and letter_20nan in both (up to +0.153); large gain only on electricity_20nan (−0.075); `impute_score` worse on 6; no default change |
 | E186 | Is the decoder's fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and than leaving the gaps? | 2026-11-22 | S, small and fragile | forest on each table's own rows: F1(S) − F1(K) +0.0035 [+0.0009, +0.0061] (corrected interval includes 0), carried by two variants; filling against gaps left missing: K +0.003, S +0.007, by table (K better on 9, numerical tables; worse on 5, kr-vs-kp 40–80nan and credit-g 60–80nan); complete table 0.135 above; no default change |
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
-| E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 | in progress | core read: calibration ruled out as the main cause on the core (change −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); second batch pending |
+| E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 to 2026-11-24 | calibration ruled out as the main cause on the core | undoing the calibration on the same model changes the forest's macro-F1 by −0.0003 [−0.0047, +0.0041] on the core (loss 0.0229) and by +0.0006 [−0.0015, +0.0027] on the other 11 variants, where the fill does not lose; `credit-g` alone no robust read |
 | E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | no read on the primary | the control fails on the core pooled; on `kr-vs-kp` flag columns recover the whole loss to the gaps left missing (+0.0281 of 0.0269, for the decoder's fill and the mode alike); on `credit-g` flags cost the forest as much as the loss, cause open; not a recipe across 26 variants (better 5, worse 10) |
 
 ## Entries
@@ -5182,7 +5182,7 @@ fails when an entry has no row or a row no entry.
 
 ### E188 · Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? (pre-registered 2026-11-23 22:05 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-23 22:05 GMT-3 on the user's go of 2026-11-23 ("vamos na sua sugestão"). T65.
+- **Status:** done 2026-11-24 06:20 GMT-3 (two reads, each once); pre-registered 2026-11-23 22:05 GMT-3 on the user's go of 2026-11-23 ("vamos na sua sugestão"). T65.
 - **Hypothesis:** the calibration of the default output (ADR 0027, applied from 40nan up) is why K's fill serves a
   forest worse than the gaps left missing on `kr-vs-kp` 40–80nan and `credit-g` 60–80nan (E186, E187). Stated before
   the first cell: I expect no effect on `kr-vs-kp` and a small one of either sign on `credit-g`, since the mean/mode
@@ -5211,10 +5211,19 @@ fails when an entry has no row or a row no entry.
   same verdict on the core (−0.0046 [−0.0100, +0.0008], loss +0.0310); their "calibration helps" on `kr-vs-kp`
   (fragile) is not repeated on fresh seeds. The calibration changes 1.4 to 4.8% of categorical gap cells and moves
   `credit-g`'s numbers by 0.05 to 0.10 z. Beside, no rule: fitted on the complete rows the uncalibrated fill scores
-  higher on both seed sets (forest +0.0064 and +0.0041, corrected intervals include 0). Second batch: pending.
-- **Conclusion:** pending the second read. From the core: the calibration of the default output (ADR 0027) is not
-  the main cause of the downstream loss on `kr-vs-kp` and on the core pooled; `credit-g` alone gives no robust
-  read. The cause of the loss is not tested here. No default and no ADR change.
+  higher on both seed sets (forest +0.0064 and +0.0041, corrected intervals include 0). Second read 2026-11-24
+  06:16 GMT-3 (33 runs, none failed; gate 0 failed; no cause rule, no margin): F1(N) − F1(K) over the other 11
+  variants **no difference, +0.0006 [−0.0015, +0.0027]** (corrected [−0.0042, +0.0054]); per variant N 1
+  (`kc2_80nan`, not under the corrected interval), no difference 10, K 0. There the calibration moves 54 to 100% of
+  the numbers (0.013 to 0.122 z) and K's `impute_score` is lower on all 11 (by at most 0.025). K against the gaps
+  left missing +0.0151 [+0.0105, +0.0197], K on 6 of 11, missing on 0. Fitted on the complete rows the forest shows
+  no difference on these variants (+0.0007 [−0.0014, +0.0028]); logistic regression +0.0035, fragile.
+- **Conclusion:** the calibration of the default output (ADR 0027) is not the main cause of the downstream loss on
+  `kr-vs-kp` and on the core pooled; `credit-g` alone gives no robust read. On the other 11 variants, where the
+  fill does not lose to the gaps, undoing it makes no difference to the forest within ±0.005 at most (no margin
+  was pre-registered there, so this is a bound, not an equivalence verdict). The core's observation under the
+  `complete` protocol does not repeat for the forest on those variants. The cause of the loss is not tested here
+  (E189 tested gap flags). MCAR, one forest, three seeds. No default and no ADR change.
 - **Sources:** [imputation-protocol/77](tickets/imputation-protocol/77-uncalibrated-utility.md); `uncalibrated_utility_run.py`, `uncalibrated_utility_read.py`.
 
 ### E189 · Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? (pre-registered 2026-11-24 02:03 GMT-3)

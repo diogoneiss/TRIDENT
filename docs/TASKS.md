@@ -1127,8 +1127,10 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   and the same model's uncalibrated one (N); core `credit-g` and `kr-vs-kp` at 40–80nan (18 runs), then the other
   11 variants at 40nan and above (33 runs); E186's downstream read with a margin for the null (half the loss).
   **Core read 2026-11-23 23:47 GMT-3:** calibration ruled out as the main cause on the core pooled and on `kr-vs-kp` (change
-  −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); `credit-g` alone no robust read. Second batch training,
-  `--tally rest` pending.
+  −0.0003 [−0.0047, +0.0041] against a loss of 0.0229); `credit-g` alone no robust read.
+  **Done 2026-11-24 06:20 GMT-3:** second read, the other 11 variants: undoing the calibration makes no difference to the
+  forest (+0.0006 [−0.0015, +0.0027], corrected [−0.0042, +0.0054]; no margin there, a bound only); K's
+  `impute_score` is lower on all 11. No default and no ADR change; ADR 0027 stays the user's decision. Closed.
 - **T66 · Does the forest lose on a filled table because it cannot tell a filled cell from an observed one?** (the
   user's go of 2026-11-24).
   **E189 pre-registered 2026-11-24 02:03 GMT-3** ([imputation-protocol/78](tickets/imputation-protocol/78-indicator-utility.md)):
