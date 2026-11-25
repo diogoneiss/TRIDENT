@@ -5285,5 +5285,8 @@ fails when an entry has no row or a row no entry.
   0.203, missForest 0.169). Read once, with all 12 runs done. No default change and no ADR either way.
 - **Amendment 2026-11-25 13:37 GMT-3:** the report script `wide_table_report.py` was committed after the launch (13:36 GMT-3)
   with no cell finished, tested only on the seed-3131 verification cell; design and rule unchanged.
+- **Amendment 2026-11-25 14:28 GMT-3:** three cells do not fit the 24 GB card: `gas-drift_20nan` seed 7 failed with CUDA out of
+  memory at 14:26 GMT-3 (first fold). Queue 2 was stopped; seed 7's four cells run from the start once one of the
+  other two queues ends, at most two cells at a time. No cell finished, nothing read; design and rule unchanged.
 - **Results:** pending.
 - **Conclusion:** pending.

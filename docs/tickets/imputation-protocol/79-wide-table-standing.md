@@ -82,3 +82,16 @@ on `gas-drift` at 20, 40, 60 and 80% gaps, 3 seeds, 12 cells).
 The report script `scripts/experiments/wide_table_report.py` is committed now, with no study cell finished. It was
 run only with `--check` on the verification cell of the Prior looks (seed 3131), where it prints the numbers
 already disclosed there (decoder 0.1592, kNN-5 0.2025, missForest 0.1693). Nothing in the design or the rule changes.
+
+## Amendment (2026-11-25 14:28 GMT-3; no cell finished, nothing read): three cells do not fit the GPU
+
+- **The failure:** `gas-drift_20nan` on seed 7 failed at 14:26 GMT-3 with CUDA out of memory, in the decode stage of
+  its first fold, while the seed-42 cell held 10.8 GB (its first fold's scoring stage) and the seed-13 cell 5.3 GB of
+  the card's 24 GB. Its run is `FAILED` in the store.
+- **What I did:** stopped queue 2 (seed 7) at 14:27 GMT-3 and interrupted the cell it had started a minute before
+  (`gas-drift_40nan` seed 7, also `FAILED` in the store, nothing trained). Queues 1 and 3 (seeds 42 and 13) were not
+  touched and go on, two cells at a time.
+- **Seed 7** runs its four cells from the start, as queue 2 relaunched by a waiting process when the first of the
+  other two queues ends, so at most two cells share the GPU. This replaces "rerun alone" for the failed cell; if a
+  cell fails for memory again with two on the card, it is rerun alone.
+- Cost only: the design, the rule and the cells are unchanged, and each cell is read from its one finished run.
