@@ -74,3 +74,11 @@ on `gas-drift` at 20, 40, 60 and 80% gaps, 3 seeds, 12 cells).
   level, so the wall time is unknown until the first cells close. The GPU memory of the scoring stage was never
   measured on this table; **a cell that fails for memory is rerun alone on the same seed**, and the failure is
   recorded here.
+- **Started 2026-11-25 13:36 GMT-3** (queue 1; queues 2 and 3 a few minutes apart), after the pre-registration
+  commit `29aaff1`.
+
+## Amendment (2026-11-25 13:37 GMT-3; no cell finished)
+
+The report script `scripts/experiments/wide_table_report.py` is committed now, with no study cell finished. It was
+run only with `--check` on the verification cell of the Prior looks (seed 3131), where it prints the numbers
+already disclosed there (decoder 0.1592, kNN-5 0.2025, missForest 0.1693). Nothing in the design or the rule changes.

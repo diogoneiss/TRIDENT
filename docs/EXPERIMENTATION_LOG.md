@@ -5283,5 +5283,7 @@ fails when an entry has no row or a row no entry.
   SoftImpute). Prior looks, all on seed 3131 at 40nan and disclosed in the ticket: one cell on the uncleaned table
   (after which 15 extreme rows were dropped by a declared rule) and one on the cleaned table (decoder 0.159, kNN-5
   0.203, missForest 0.169). Read once, with all 12 runs done. No default change and no ADR either way.
+- **Amendment 2026-11-25 13:37 GMT-3:** the report script `wide_table_report.py` was committed after the launch (13:36 GMT-3)
+  with no cell finished, tested only on the seed-3131 verification cell; design and rule unchanged.
 - **Results:** pending.
 - **Conclusion:** pending.
