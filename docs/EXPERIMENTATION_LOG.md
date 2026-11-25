@@ -226,6 +226,7 @@ fails when an entry has no row or a row no entry.
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
 | E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 to 2026-11-24 | calibration ruled out as the main cause on the core | undoing the calibration on the same model changes the forest's macro-F1 by −0.0003 [−0.0047, +0.0041] on the core (loss 0.0229) and by +0.0006 [−0.0015, +0.0027] on the other 11 variants, where the fill does not lose; `credit-g` alone no robust read |
 | E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | no read on the primary | the control fails on the core pooled; on `kr-vs-kp` flag columns recover the whole loss to the gaps left missing (+0.0281 of 0.0269, for the decoder's fill and the mode alike); on `credit-g` flags cost the forest as much as the loss, cause open; not a recipe across 26 variants (better 5, worse 10) |
+| E190 | Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? | 2026-11-25 | in progress | |
 
 ## Entries
 
@@ -5264,3 +5265,23 @@ fails when an entry has no row or a row no entry.
   mode alike. On `credit-g` the design cannot test the hypothesis (the flag columns cost as much as the loss); the
   cause there is open. Flags are not a recipe across tables. No default and no ADR change. T66 closed.
 - **Sources:** [imputation-protocol/78](tickets/imputation-protocol/78-indicator-utility.md); `indicator_utility.py`.
+
+### E190 · Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? (pre-registered 2026-11-25 13:35 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-25 13:35 GMT-3 on the user's go of 2026-11-25 ("vamos no 1"). T67.
+  Ticket [imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md).
+- **Hypothesis:** on `gas-drift`, the development table of the two wide tables a reviewer asked for, the default
+  decoder's fills are better than the bar's best baseline at every level of gaps.
+- **Scenarios:** arm `K` (the imputation defaults, no other flag) on `gas-drift_20nan`, `_40nan`, `_60nan` and
+  `_80nan` (MCAR), seeds 42/7/13, five folds: 12 runs, tag `experiment = wide-table-standing-2026-11-25`. Three
+  queues on gorgona8, one seed each. TabPFN v2 is not in the study (the table is over its row limit).
+- **Measures and decision rule:** induced cells, the default's output (`KC`). Per variant, `impute_score` minus the
+  bar's best baseline's on the same cells, 15 fold pairs, by `report_common.verdict` (plain 95% t interval excluding
+  zero with every seed agreeing in sign; equivalence margin 1% of the opponent's mean). Supported with "better" on
+  all four variants, refuted with "better" on none, mixed otherwise. Beside it, by the same rule and without a
+  study-level call, the decoder against the strong tier the runs log (missForest, ICE, conditional expectation,
+  SoftImpute). Prior looks, all on seed 3131 at 40nan and disclosed in the ticket: one cell on the uncleaned table
+  (after which 15 extreme rows were dropped by a declared rule) and one on the cleaned table (decoder 0.159, kNN-5
+  0.203, missForest 0.169). Read once, with all 12 runs done. No default change and no ADR either way.
+- **Results:** pending.
+- **Conclusion:** pending.

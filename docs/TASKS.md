@@ -1140,6 +1140,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   **Done 2026-11-24 02:38 GMT-3:** no read on the core pooled (the control fails); on `kr-vs-kp` flags account for the loss
   (+0.0281 of 0.0269, holding corrected, for K's fill and the mode alike); on `credit-g` flags cost the forest as
   much as the loss, cause open; over 26 variants flags are worse than the fill alone on 10, better on 5. Closed.
+- **T67 · Where does the default stand on a wide table?** (a reviewer's request for a table over 100 columns and
+  10,000 rows; the user's decisions of 2026-11-25: `gas-drift` for development, `nomao` for confirmation, 15 extreme
+  rows of `gas-drift` dropped, both tables versioned in the repository).
+  **E190 pre-registered 2026-11-25 13:35 GMT-3** ([imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md)):
+  the default on `gas-drift` at 20 to 80nan, seeds 42/7/13 (12 runs), against the bar's best baseline by the
+  project's rule, the logged strong tier beside it; TabPFN v2 not in it. In progress.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
