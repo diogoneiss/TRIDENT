@@ -95,3 +95,13 @@ already disclosed there (decoder 0.1592, kNN-5 0.2025, missForest 0.1693). Nothi
   other two queues ends, so at most two cells share the GPU. This replaces "rerun alone" for the failed cell; if a
   cell fails for memory again with two on the card, it is rerun alone.
 - Cost only: the design, the rule and the cells are unchanged, and each cell is read from its one finished run.
+
+## Amendment (2026-11-25 15:47 GMT-3; no cell finished, nothing read): seed 7 in two queues
+
+- **Two cells fit:** with the seed-42 and seed-13 cells of `gas-drift_20nan` both in their third fold, the card's
+  peak was 22,097 MiB of 24,564 (11,040 and 11,042 MiB per process), measured every 30 s from 14:28 to 15:46 GMT-3.
+- **Scheduling of seed 7:** the two other queues end minutes apart, so one queue for seed 7 would run its four cells
+  alone. The waiting process of the previous amendment was replaced at 15:47 GMT-3 by two: when queue 1 (seed 42)
+  ends, `c15_queue.sh 2 6` runs seed 7's 20nan and 60nan; when queue 3 (seed 13) ends, `c15_queue.sh 5 6` runs its
+  40nan and 80nan. Still at most two cells on the GPU, and a cell that fails for memory is rerun alone.
+- Cost only: the design, the rule and the cells are unchanged.

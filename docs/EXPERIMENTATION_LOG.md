@@ -5288,5 +5288,9 @@ fails when an entry has no row or a row no entry.
 - **Amendment 2026-11-25 14:28 GMT-3:** three cells do not fit the 24 GB card: `gas-drift_20nan` seed 7 failed with CUDA out of
   memory at 14:26 GMT-3 (first fold). Queue 2 was stopped; seed 7's four cells run from the start once one of the
   other two queues ends, at most two cells at a time. No cell finished, nothing read; design and rule unchanged.
+- **Amendment 2026-11-25 15:47 GMT-3:** two cells fit (peak 22,097 MiB of 24,564 with both in their third fold). Seed 7's
+  four cells will run as two queues instead of one, each starting when one of the other queues ends (20nan and 60nan
+  after seed 42's, 40nan and 80nan after seed 13's), still at most two cells at a time. No cell finished, nothing
+  read; design and rule unchanged.
 - **Results:** pending.
 - **Conclusion:** pending.
