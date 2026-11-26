@@ -105,3 +105,15 @@ already disclosed there (decoder 0.1592, kNN-5 0.2025, missForest 0.1693). Nothi
   ends, `c15_queue.sh 2 6` runs seed 7's 20nan and 60nan; when queue 3 (seed 13) ends, `c15_queue.sh 5 6` runs its
   40nan and 80nan. Still at most two cells on the GPU, and a cell that fails for memory is rerun alone.
 - Cost only: the design, the rule and the cells are unchanged.
+
+## Amendment (2026-11-26 16:34 GMT-3; 12 runs done, no score read): the report's readout at 20nan
+
+- **What happened:** all 12 runs finished (the last at 16:27 GMT-3 on 2026-11-26). The report, run at 16:29 GMT-3, stopped
+  before printing anything: `KeyError: a 'induced' run carries no KC readout`. The default calibrates its output
+  from 40nan up (ADR 0027), so the three `gas-drift_20nan` runs carry no calibrated column, and the script asked for
+  `KC` on every variant. It had only been tested on the 40nan verification cell.
+- **The fix:** the script reads `KC` where the run is calibrated and `K` where it is not, which in both cases is
+  the run's headline `impute/induced/impute_score`, the quantity this ticket registered ("the default's output").
+  An assert checks that equality on every run. The wall-time line's label was also corrected (two cells at a time,
+  not three). Column names were listed to find the cause; no score was printed or opened.
+- Design, rule and margin unchanged.

@@ -41,7 +41,10 @@ def fold_table(directory: Path) -> pd.DataFrame:
 def block(variant: str, frames: list[pd.DataFrame]) -> str:
     """Print a variant's reading from its seeds' fold tables; return its call against the bar."""
     source = report_common.Run(variant, 0, "", POPULATION)
-    own = [report_common.model(frame, source, "KC", POPULATION) for frame in frames]
+    # the run's headline: calibrated from 40nan up (ADR 0027), the uncalibrated output at 20nan
+    own = [report_common.model(frame, source, "KC" if f"impute/{POPULATION}/uncalibrated/impute_score" in frame else "K", POPULATION)
+           for frame in frames]
+    assert all((o == frame[f"impute/{POPULATION}/impute_score"].to_numpy()).all() for o, frame in zip(own, frames))
     print(f"{variant}: decoder {np.concatenate(own).mean():.4f} over {sum(len(o) for o in own)} folds")
     calls = {}
     for which in ("bar", "strong_live"):
@@ -67,7 +70,7 @@ def wall_times() -> None:
         if m := re.match(r"(\S+ \S+) \S+ queue \d+: cell (start|done) (\S+)", line):
             stamps.setdefault(m.group(3), {})[m.group(2)] = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
     hours = {cell: (s["done"] - s["start"]).total_seconds() / 3600 for cell, s in stamps.items() if len(s) == 2}
-    print("wall time per cell, hours (three queues sharing the GPU): " + ", ".join(f"{c} {h:.2f}" for c, h in hours.items()))
+    print("wall time per cell, hours (two cells sharing the GPU; three until 14:27 GMT-3 on the first day): " + ", ".join(f"{c} {h:.2f}" for c, h in hours.items()))
 
 
 def main() -> None:

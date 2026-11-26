@@ -5292,5 +5292,8 @@ fails when an entry has no row or a row no entry.
   four cells will run as two queues instead of one, each starting when one of the other queues ends (20nan and 60nan
   after seed 42's, 40nan and 80nan after seed 13's), still at most two cells at a time. No cell finished, nothing
   read; design and rule unchanged.
+- **Amendment 2026-11-26 16:34 GMT-3:** with the 12 runs done, the report stopped before printing anything: it asked for the
+  calibrated readout on every variant, and the default does not calibrate at 20nan (ADR 0027). Fixed to read the run's
+  headline `impute/induced/impute_score` on every variant, as registered; no score read before the fix.
 - **Results:** pending.
 - **Conclusion:** pending.
