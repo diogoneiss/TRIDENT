@@ -226,7 +226,7 @@ fails when an entry has no row or a row no entry.
 | E187 | On fresh seeds, is the fill chosen by the sliced Wasserstein score more useful to a downstream classifier than the default, and does the by-table split against leaving the gaps repeat? | 2026-11-22 – 2026-11-23 | S − K not replicated; by-table split replicated | fresh seeds 1717/8484/9595: forest on each table's own rows F1(S) − F1(K) +0.0018 [−0.0013, +0.0049] (six seeds pooled +0.0027, fragile); K − missing split by table repeats on 12 of E186's 14 calls, none opposite; S better on `sw_score` on 16 of 26, worse on none (E183 replicates); fitted on complete rows S − K +0.006 holds; no default change |
 | E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 to 2026-11-24 | calibration ruled out as the main cause on the core | undoing the calibration on the same model changes the forest's macro-F1 by −0.0003 [−0.0047, +0.0041] on the core (loss 0.0229) and by +0.0006 [−0.0015, +0.0027] on the other 11 variants, where the fill does not lose; `credit-g` alone no robust read |
 | E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | no read on the primary | the control fails on the core pooled; on `kr-vs-kp` flag columns recover the whole loss to the gaps left missing (+0.0281 of 0.0269, for the decoder's fill and the mode alike); on `credit-g` flags cost the forest as much as the loss, cause open; not a recipe across 26 variants (better 5, worse 10) |
-| E190 | Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? | 2026-11-25 | in progress | |
+| E190 | Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? | 2026-11-25 – 2026-11-26 | supported | the default's output is better than the bar's best baseline on 4 of 4 levels of `gas-drift`, by more as the gaps grow (−0.024 at 20nan, −0.050, −0.081, −0.189 at 80nan; induced `impute_score`); against the logged strong tier no difference at 20nan, better from 40nan (thin at 40nan); by absolute error missForest is ahead at 20–60nan; TabPFN v2 not in it; one table, MCAR |
 
 ## Entries
 
@@ -5268,7 +5268,7 @@ fails when an entry has no row or a row no entry.
 
 ### E190 · Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? (pre-registered 2026-11-25 13:35 GMT-3)
 
-- **Status:** in progress; pre-registered 2026-11-25 13:35 GMT-3 on the user's go of 2026-11-25 ("vamos no 1"). T67.
+- **Status:** done 2026-11-26 16:37 GMT-3 (supported); pre-registered 2026-11-25 13:35 GMT-3 on the user's go of 2026-11-25 ("vamos no 1"). T67.
   Ticket [imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md).
 - **Hypothesis:** on `gas-drift`, the development table of the two wide tables a reviewer asked for, the default
   decoder's fills are better than the bar's best baseline at every level of gaps.
@@ -5295,5 +5295,20 @@ fails when an entry has no row or a row no entry.
 - **Amendment 2026-11-26 16:34 GMT-3:** with the 12 runs done, the report stopped before printing anything: it asked for the
   calibrated readout on every variant, and the default does not calibrate at 20nan (ADR 0027). Fixed to read the run's
   headline `impute/induced/impute_score` on every variant, as registered; no score read before the fix.
-- **Results:** pending.
-- **Conclusion:** pending.
+- **Results:** read once 2026-11-26 16:35 GMT-3, 12 `FINISHED` runs (2 `FAILED` beside: the memory failure and the cell
+  interrupted with it). Decoder − bar's best, induced `impute_score`, 15 fold pairs: 20nan **−0.0242 [−0.0313,
+  −0.0170]** (0.1403 against 0.1645), 40nan **−0.0501 [−0.0595, −0.0407]** (0.1593 against 0.2094), 60nan **−0.0808
+  [−0.0884, −0.0732]** (0.1643 against 0.2451), 80nan **−0.1890 [−0.1936, −0.1843]** (0.2461 against 0.4351); better
+  on 4 of 4, every seed agreeing. Beside, against the logged strong tier: 20nan −0.0073 [−0.0155, +0.0010], no
+  difference called and not equivalent; 40nan −0.0106 [−0.0198, −0.0013], better but thin and the level of the prior
+  look; 60nan −0.0358 and 80nan −0.1519, better. Descriptive: by `mae_num_z` missForest is ahead of the decoder at
+  20 to 60nan (0.0337 against 0.0492, 0.0409 against 0.0581, 0.0664 against 0.0713), the decoder ahead at 80nan
+  (0.1104 against 0.1995). Mean fill's `rmse_num_z` 0.944 to 1.031 per fold. The 20nan readout is the uncalibrated
+  output (ADR 0027 calibrates from 40nan). Wall time 3.48 to 5.22 h per cell, two at a time.
+- **Conclusion:** supported: on `gas-drift` the default is better than the bar's best baseline at every level, by
+  more as the gaps grow. Against the strong tier the runs log it is level at 20nan and ahead from 40nan up on the
+  squared-error score, while missForest has the lower absolute error up to 60nan. TabPFN v2 is not in the study.
+  One table, MCAR, one seed set, row rule chosen after a prior look: a first reading of the development table, not a
+  claim about wide tables, which needs `nomao` under its own pre-registration. No default change, no ADR.
+- **Sources:** [imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md); `wide_table_run.py`,
+  `wide_table_report.py`.

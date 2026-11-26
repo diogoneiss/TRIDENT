@@ -117,3 +117,87 @@ already disclosed there (decoder 0.1592, kNN-5 0.2025, missForest 0.1693). Nothi
   An assert checks that equality on every run. The wall-time line's label was also corrected (two cells at a time,
   not three). Column names were listed to find the cause; no score was printed or opened.
 - Design, rule and margin unchanged.
+
+## Outcome (read once 2026-11-26 16:35 GMT-3; written 2026-11-26 16:37 GMT-3)
+
+**Supported.** By the registered rule the default's output is better than the bar's best baseline on all four
+variants, and the difference grows with the gaps.
+
+| variant | decoder | bar's best | decoder − bar [95%] | by seed (42, 7, 13) | call |
+|---|---|---|---|---|---|
+| `gas-drift_20nan` | 0.1403 | 0.1645 | −0.0242 [−0.0313, −0.0170] | −0.0241, −0.0273, −0.0211 | better |
+| `gas-drift_40nan` | 0.1593 | 0.2094 | −0.0501 [−0.0595, −0.0407] | −0.0467, −0.0552, −0.0484 | better |
+| `gas-drift_60nan` | 0.1643 | 0.2451 | −0.0808 [−0.0884, −0.0732] | −0.0773, −0.0863, −0.0789 | better |
+| `gas-drift_80nan` | 0.2461 | 0.4351 | −0.1890 [−0.1936, −0.1843] | −0.1894, −0.1890, −0.1885 | better |
+
+Induced `impute_score`, lower is better, 15 fold pairs per variant. The bar's best is chosen per run, so it is not
+one method: LightGBM at 20nan, kNN-5 or LightGBM at 40nan, kNN-5 at 60nan, HGB or LightGBM at 80nan.
+
+- **The readout at 20nan is the uncalibrated output:** ADR 0027 calibrates from 40nan up, so the default's output at
+  20nan is the run's own checkpoint without calibration. On every variant the number read is the run's headline
+  `impute/induced/impute_score` (amendment of 16:34 GMT-3).
+- **Beside it, the strong tier the runs log (no study-level call):**
+  - 20nan: −0.0073 [−0.0155, +0.0010] against 0.1476 (ICE or missForest by run). No difference called, and not
+    equivalent: the interval reaches past the margin of 1% of the opponent's mean (0.0015).
+  - 40nan: −0.0106 [−0.0198, −0.0013] against missForest's 0.1699, "better", but thin: the upper end is −0.0013,
+    nothing here is corrected for the four variants, and 40nan is the one level seen in the prior look.
+  - 60nan: −0.0358 [−0.0410, −0.0306] against missForest's 0.2001, better.
+  - 80nan: −0.1519 [−0.1554, −0.1484] against the conditional expectation's 0.3980, better.
+- **Absolute error reads the other way at 20 to 60nan** (descriptive means, no interval, no call): missForest's
+  `mae_num_z` is below the decoder's at 20nan (0.0337 against 0.0492), 40nan (0.0409 against 0.0581) and 60nan
+  (0.0664 against 0.0713); at 80nan the decoder's is the lowest (0.1104 against missForest's 0.1995). Against the
+  bar's members the decoder's `mae_num_z` is the lowest at every level.
+- **The table's scale check:** the mean fill's `rmse_num_z` is 0.944 to 1.031 over the 60 folds, so no fold's scale
+  is carried by a few rows, as it was before the 15 rows were dropped.
+- **Runs:** 12 `FINISHED` parent runs in the store under `experiment = wide-table-standing-2026-11-25` (and their 12
+  mirrors), plus the 2 `FAILED` runs of the memory failure (seed 7 at 20nan, and the 40nan cell interrupted a
+  minute after it started). All on gorgona8. Wall time 3.48 to 5.22 h per cell; first cell started 2026-11-25 13:36
+  GMT-3, last ended 2026-11-26 16:27 GMT-3.
+- **Deviations, all in the amendments above:** three cells at a time did not fit the GPU, so the study ran two at a
+  time and seed 7's cells ran after the other two seeds'; the report script was committed after the launch and
+  fixed, before any score was read, to take the headline at 20nan. Its first invocation (16:29 GMT-3) printed only
+  a traceback. Design, rule and margin as registered.
+
+**What this does not say.**
+- TabPFN v2 is not in it, so "the strong tier" is only missForest, ICE, the conditional expectation and SoftImpute.
+- The lead over missForest is on a squared-error score, and by absolute error missForest is ahead at 20 to 60nan.
+  The table still holds 14 rows beyond 20 standard deviations after the one pass of the row rule; whether the
+  squared-error lead depends on such rows was not tested.
+- One table, MCAR only, one seed set, and the row rule was chosen after a prior look at this table. A claim about
+  wide tables needs `nomao` under its own pre-registration; nothing was read or chosen on `nomao`.
+- No default change and no ADR.
+
+**The printout, unedited** (`wide_table_report.py`, stdout and stderr, exit 0; nothing omitted):
+
+```
+gas-drift_20nan: decoder 0.1403 over 15 folds
+  decoder - bar (0.1645, best by run: ['lgbm']): -0.0242 [-0.0313, -0.0170], by seed -0.0241, -0.0273, -0.0211 -> better
+  decoder - strong_live (0.1476, best by run: ['ice', 'missforest']): -0.0073 [-0.0155, +0.0010], by seed -0.0041, -0.0093, -0.0084 -> none
+  mean impute_score: decoder 0.1403, missforest 0.1487, ice 0.1500, lgbm 0.1645, hgb 0.1671, knn5 0.1879, condexp 0.1882, knn10 0.2092, softimpute 0.3118, mean_mode 1.0000
+  mean rmse_num_z: decoder 0.1408, missforest 0.1494, ice 0.1504, lgbm 0.1651, hgb 0.1677, knn5 0.1886, condexp 0.1887, knn10 0.2100, softimpute 0.3126, mean_mode 1.0022
+  mean mae_num_z: missforest 0.0337, decoder 0.0492, ice 0.0493, knn5 0.0521, lgbm 0.0544, hgb 0.0550, knn10 0.0601, condexp 0.0851, softimpute 0.1681, mean_mode 0.7095
+  mean fill's rmse_num_z per fold: 0.9444 to 1.0305
+gas-drift_40nan: decoder 0.1593 over 15 folds
+  decoder - bar (0.2094, best by run: ['knn5', 'lgbm']): -0.0501 [-0.0595, -0.0407], by seed -0.0467, -0.0552, -0.0484 -> better
+  decoder - strong_live (0.1699, best by run: ['missforest']): -0.0106 [-0.0198, -0.0013], by seed -0.0076, -0.0175, -0.0066 -> better
+  mean impute_score: decoder 0.1593, missforest 0.1699, ice 0.1906, lgbm 0.2119, knn5 0.2122, hgb 0.2135, knn10 0.2390, softimpute 0.2705, condexp 0.3042, mean_mode 1.0000
+  mean rmse_num_z: decoder 0.1597, missforest 0.1705, ice 0.1912, lgbm 0.2127, knn5 0.2131, hgb 0.2143, knn10 0.2400, softimpute 0.2714, condexp 0.3051, mean_mode 1.0033
+  mean mae_num_z: missforest 0.0409, decoder 0.0581, knn5 0.0591, knn10 0.0690, ice 0.0723, lgbm 0.0790, hgb 0.0797, softimpute 0.1423, condexp 0.1616, mean_mode 0.7111
+  mean fill's rmse_num_z per fold: 0.9504 to 1.0270
+gas-drift_60nan: decoder 0.1643 over 15 folds
+  decoder - bar (0.2451, best by run: ['knn5']): -0.0808 [-0.0884, -0.0732], by seed -0.0773, -0.0863, -0.0789 -> better
+  decoder - strong_live (0.2001, best by run: ['missforest']): -0.0358 [-0.0410, -0.0306], by seed -0.0340, -0.0396, -0.0337 -> better
+  mean impute_score: decoder 0.1643, missforest 0.2001, softimpute 0.2387, knn5 0.2451, ice 0.2665, hgb 0.2715, knn10 0.2721, lgbm 0.2722, condexp 0.3352, mean_mode 1.0000
+  mean rmse_num_z: decoder 0.1645, missforest 0.2003, softimpute 0.2389, knn5 0.2454, ice 0.2668, hgb 0.2718, knn10 0.2725, lgbm 0.2726, condexp 0.3355, mean_mode 1.0009
+  mean mae_num_z: missforest 0.0664, decoder 0.0713, knn5 0.0741, knn10 0.0872, softimpute 0.1192, hgb 0.1216, lgbm 0.1216, ice 0.1296, condexp 0.1868, mean_mode 0.7106
+  mean fill's rmse_num_z per fold: 0.9495 to 1.0246
+gas-drift_80nan: decoder 0.2461 over 15 folds
+  decoder - bar (0.4351, best by run: ['hgb', 'lgbm']): -0.1890 [-0.1936, -0.1843], by seed -0.1894, -0.1890, -0.1885 -> better
+  decoder - strong_live (0.3980, best by run: ['condexp']): -0.1519 [-0.1554, -0.1484], by seed -0.1516, -0.1523, -0.1518 -> better
+  mean impute_score: decoder 0.2461, condexp 0.3980, missforest 0.4055, hgb 0.4351, lgbm 0.4353, softimpute 0.5033, knn10 0.5874, knn5 0.6296, ice 0.8016, mean_mode 1.0000
+  mean rmse_num_z: decoder 0.2461, condexp 0.3979, missforest 0.4053, hgb 0.4350, lgbm 0.4352, softimpute 0.5031, knn10 0.5872, knn5 0.6294, ice 0.8009, mean_mode 0.9995
+  mean mae_num_z: decoder 0.1104, missforest 0.1995, lgbm 0.2225, hgb 0.2227, condexp 0.2253, softimpute 0.2876, knn10 0.3063, knn5 0.3372, ice 0.5107, mean_mode 0.7105
+  mean fill's rmse_num_z per fold: 0.9497 to 1.0187
+AGAINST THE BAR over 4 variants: better 4 / no difference 0 / worse 0 (fold-pair t, seed agreement) -> supported
+wall time per cell, hours (two cells sharing the GPU; three until 14:27 GMT-3 on the first day): K_gas-drift_20nan_s42 5.22, K_gas-drift_20nan_s7 4.92, K_gas-drift_20nan_s13 5.03, K_gas-drift_40nan_s7 4.74, K_gas-drift_40nan_s13 4.37, K_gas-drift_40nan_s42 4.48, K_gas-drift_60nan_s13 4.31, K_gas-drift_60nan_s42 4.16, K_gas-drift_80nan_s13 4.36, K_gas-drift_80nan_s42 4.36, K_gas-drift_80nan_s7 3.48, K_gas-drift_60nan_s7 3.70
+```

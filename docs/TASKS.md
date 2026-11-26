@@ -1145,7 +1145,11 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   rows of `gas-drift` dropped, both tables versioned in the repository).
   **E190 pre-registered 2026-11-25 13:35 GMT-3** ([imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md)):
   the default on `gas-drift` at 20 to 80nan, seeds 42/7/13 (12 runs), against the bar's best baseline by the
-  project's rule, the logged strong tier beside it; TabPFN v2 not in it. In progress.
+  project's rule, the logged strong tier beside it; TabPFN v2 not in it.
+  **Done 2026-11-26 16:37 GMT-3:** supported, better than the bar's best on 4 of 4 levels (−0.024 at 20nan to −0.189 at
+  80nan); against the logged strong tier no difference at 20nan, better from 40nan up; by absolute error missForest
+  is ahead at 20 to 60nan. One table, MCAR, one seed set. Open, the user's call: TabPFN v2 on a capped table, the
+  confirmation on `nomao`, and what to develop on `gas-drift`.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught
