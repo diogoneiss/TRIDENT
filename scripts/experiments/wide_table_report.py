@@ -1,4 +1,6 @@
-"""E190's one read (docs/tickets/imputation-protocol/79-wide-table-standing.md), from the study's state directory.
+"""E190's one read (docs/tickets/imputation-protocol/79-wide-table-standing.md), from the study's state directory;
+with ``WIDE_TABLE=nomao``, E191's (docs/tickets/imputation-protocol/80-wide-table-nomao.md), which adds the decoder's
+``mae_num_z`` against missForest's by the same rule and the categorical columns' means.
 
     QUEUE_STATE=<state directory> uv run --python 3.11 python -B scripts/experiments/wide_table_report.py
     QUEUE_STATE=<any> uv run --python 3.11 python -B scripts/experiments/wide_table_report.py --check <variant> <run directory>
@@ -55,8 +57,17 @@ def block(variant: str, frames: list[pd.DataFrame]) -> str:
         print(f"  decoder - {which} ({mean:.4f}, best by run: {sorted({name for name, _ in theirs})}): {v.mean:+.4f} "
               f"[{v.low:+.4f}, {v.high:+.4f}], by seed " + ", ".join(f"{s:+.4f}" for s in v.seeds) + f" -> {v.call}")
     pooled = pd.concat(frames)
-    for metric in ("impute_score", "rmse_num_z", "mae_num_z"):
+    if run.TABLE == "nomao":  # E191's secondary: E190's descriptive inversion against missForest, by the same rule
+        mine = [report_common.model(frame, source, "KC" if f"impute/{POPULATION}/uncalibrated/mae_num_z" in frame else "K",
+                                    POPULATION, "mae_num_z") for frame in frames]
+        forest = [frame[f"impute/{POPULATION}/baseline/missforest/mae_num_z"].to_numpy(dtype=float) for frame in frames]
+        v = report_common.verdict([a - b for a, b in zip(mine, forest)], 0.01 * float(np.concatenate(forest).mean()))
+        print(f"  mae_num_z, decoder - missforest: {v.mean:+.4f} [{v.low:+.4f}, {v.high:+.4f}], by seed "
+              + ", ".join(f"{s:+.4f}" for s in v.seeds) + f" -> {v.call}")
+    for metric in ("impute_score", "rmse_num_z", "mae_num_z", "acc_cat", "macro_f1_cat"):
         every = pooled.filter(regex=rf"^impute/{POPULATION}/(baseline/[^/]+/)?{metric}$").mean()
+        if every.empty:  # a table with no categorical column
+            continue
         every.index = pd.Index([name.split("/")[-2].replace(POPULATION, "decoder") for name in every.index])
         print(f"  mean {metric}: " + ", ".join(f"{name} {value:.4f}" for name, value in every.sort_values().items()))
     naive = pooled[f"impute/{POPULATION}/baseline/mean_mode/rmse_num_z"]
@@ -70,7 +81,7 @@ def wall_times() -> None:
         if m := re.match(r"(\S+ \S+) \S+ queue \d+: cell (start|done) (\S+)", line):
             stamps.setdefault(m.group(3), {})[m.group(2)] = datetime.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")
     hours = {cell: (s["done"] - s["start"]).total_seconds() / 3600 for cell, s in stamps.items() if len(s) == 2}
-    print("wall time per cell, hours (two cells sharing the GPU; three until 14:27 GMT-3 on the first day): " + ", ".join(f"{c} {h:.2f}" for c, h in hours.items()))
+    print("wall time per cell, hours (from progress.log): " + ", ".join(f"{c} {h:.2f}" for c, h in hours.items()))
 
 
 def main() -> None:

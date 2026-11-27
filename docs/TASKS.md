@@ -1150,6 +1150,12 @@ unchanged. Its tag was backfilled on 2026-10-18 (2,680 runs stamped `none`).
   80nan); against the logged strong tier no difference at 20nan, better from 40nan up; by absolute error missForest
   is ahead at 20 to 60nan. One table, MCAR, one seed set. Open, the user's call: TabPFN v2 on a capped table, the
   confirmation on `nomao`, and what to develop on `gas-drift`.
+- **T68 · Does the default's standing on a wide table repeat on `nomao`?** (the confirmation table of the two wide
+  tables; the user's go of 2026-11-26).
+  **E191 pre-registered 2026-11-27 00:25 GMT-3** ([imputation-protocol/80](tickets/imputation-protocol/80-wide-table-nomao.md)):
+  E190's design on `nomao` at 20 to 80nan, seeds 42/7/13 (12 runs, about 55 h), with the decoder's absolute error
+  against missForest's as a secondary; gorgona8 one cell at a time, medusa1 one cell at a time until 2026-11-27
+  10:00 GMT-3. In progress.
 - **T16 · One configuration-driven study report** instead of a copied report script per study.
   T21's shared helper is the first step.
 - **T17 · An end-to-end test with a scratch MLflow store for every new flag**; it would have caught

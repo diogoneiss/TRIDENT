@@ -1,5 +1,6 @@
 """E190's cells: the imputation default on the wide development table, ``gas-drift``, at 20 to 80nan
-(docs/tickets/imputation-protocol/79-wide-table-standing.md).
+(docs/tickets/imputation-protocol/79-wide-table-standing.md). With ``WIDE_TABLE=nomao``, E191's: the same on the
+confirmation table (docs/tickets/imputation-protocol/80-wide-table-nomao.md).
 
     uv run --python 3.11 python -B scripts/experiments/wide_table_run.py train <arm> <variant> <seed>
     uv run --python 3.11 python -B scripts/experiments/wide_table_run.py --todo <queue> <queues>
@@ -26,8 +27,9 @@ if not os.environ.get("QUEUE_STATE"):
     sys.exit("set QUEUE_STATE (the study's state directory)")
 
 STATE = Path(os.environ["QUEUE_STATE"])
-EXPERIMENT = "wide-table-standing-2026-11-25"
-VARIANTS: tuple[str, ...] = ("gas-drift_20nan", "gas-drift_40nan", "gas-drift_60nan", "gas-drift_80nan")
+TABLE = os.environ.get("WIDE_TABLE", "gas-drift")  # E191 sets nomao
+EXPERIMENT = {"gas-drift": "wide-table-standing-2026-11-25", "nomao": "wide-table-nomao-2026-11-27"}[TABLE]
+VARIANTS: tuple[str, ...] = tuple(f"{TABLE}_{level}nan" for level in (20, 40, 60, 80))
 SEEDS = (42, 7, 13)
 ARM = "K"
 

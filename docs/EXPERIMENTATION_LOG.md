@@ -227,6 +227,7 @@ fails when an entry has no row or a row no entry.
 | E188 | Is the calibration of the default output why the decoder's fill serves a downstream forest worse than the gaps left missing on `kr-vs-kp` and `credit-g`? | 2026-11-23 to 2026-11-24 | calibration ruled out as the main cause on the core | undoing the calibration on the same model changes the forest's macro-F1 by −0.0003 [−0.0047, +0.0041] on the core (loss 0.0229) and by +0.0006 [−0.0015, +0.0027] on the other 11 variants, where the fill does not lose; `credit-g` alone no robust read |
 | E189 | Does a forest lose on the decoder's fill to the gaps left missing because it cannot tell a filled cell from an observed one? | 2026-11-24 | no read on the primary | the control fails on the core pooled; on `kr-vs-kp` flag columns recover the whole loss to the gaps left missing (+0.0281 of 0.0269, for the decoder's fill and the mode alike); on `credit-g` flags cost the forest as much as the loss, cause open; not a recipe across 26 variants (better 5, worse 10) |
 | E190 | Where does the imputation default stand on a wide table (`gas-drift`, 128 columns, 13,895 rows) against the baselines the runs score? | 2026-11-25 – 2026-11-26 | supported | the default's output is better than the bar's best baseline on 4 of 4 levels of `gas-drift`, by more as the gaps grow (−0.024 at 20nan, −0.050, −0.081, −0.189 at 80nan; induced `impute_score`); against the logged strong tier no difference at 20nan, better from 40nan (thin at 40nan); by absolute error missForest is ahead at 20–60nan; TabPFN v2 not in it; one table, MCAR |
+| E191 | Does the imputation default's standing on a wide table repeat on `nomao` (118 columns, 34,465 rows), the confirmation table? | 2026-11-27 | in progress | |
 
 ## Entries
 
@@ -5312,3 +5313,23 @@ fails when an entry has no row or a row no entry.
   claim about wide tables, which needs `nomao` under its own pre-registration. No default change, no ADR.
 - **Sources:** [imputation-protocol/79](tickets/imputation-protocol/79-wide-table-standing.md); `wide_table_run.py`,
   `wide_table_report.py`.
+
+### E191 · Does the imputation default's standing on a wide table repeat on `nomao` (118 columns, 34,465 rows), the confirmation table? (pre-registered 2026-11-27 00:25 GMT-3)
+
+- **Status:** in progress; pre-registered 2026-11-27 00:25 GMT-3 on the user's go of 2026-11-26 ("vamos no 1"). T68.
+  Ticket [imputation-protocol/80](tickets/imputation-protocol/80-wide-table-nomao.md).
+- **Hypothesis:** E190's reading repeats on the second wide table: on `nomao` (89 numerical and 29 categorical
+  features) the default decoder's fills are better than the bar's best baseline at every level of gaps.
+- **Scenarios:** the default (arm K, no other flag) on `nomao_20nan`, `_40nan`, `_60nan`, `_80nan` (MCAR), seeds
+  42/7/13, five folds: 12 runs, about 55 h. gorgona8 one cell at a time (a cell reaches 20 GB of its card), seed by
+  seed; medusa1 one cell at a time on its GPU 1 until 2026-11-27 10:00 GMT-3 on the user's instruction, seed 13 from
+  20nan upward, finished cells copied to gorgona8's state.
+- **Measures and decision rule:** E190's. Per variant, the default output's induced `impute_score` minus the bar's
+  best baseline's on the same cells, 15 fold pairs, by `report_common.verdict` with a 1% equivalence margin;
+  supported with "better" on all four variants, refuted with "better" on none, mixed otherwise. Secondary, same
+  rule, no study-level call: the decoder's `mae_num_z` minus missForest's (on `gas-drift` missForest was ahead at
+  20 to 60nan, untested; the same pattern is expected). Beside, the decoder against the logged strong tier. Prior
+  look disclosed in the ticket: one cell at 40nan on seed 3131 (decoder 0.155, best baseline 0.241). TabPFN v2 not
+  in the study. Read once, with all 12 runs done. No default change and no ADR either way.
+- **Results:** pending.
+- **Conclusion:** pending.

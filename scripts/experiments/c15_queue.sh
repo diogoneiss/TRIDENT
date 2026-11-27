@@ -6,7 +6,8 @@
 # Another study reuses it with QUEUE_STATE=<its state dir> QUEUE_RUNNER=<its runner> (C1: c1_run.py, with C1_CUT).
 set -u
 N=$1; Q=$2
-export TZ=America/Sao_Paulo OMP_NUM_THREADS=2 MKL_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2
+T=${QUEUE_THREADS:-2}  # threads per cell; raise it for a queue that runs alone
+export TZ=America/Sao_Paulo OMP_NUM_THREADS=$T MKL_NUM_THREADS=$T OPENBLAS_NUM_THREADS=$T
 if [ "$(hostname)" = gorgona8 ]; then S=/scratch2/diogoneiss/trident-2026-11-04-c15-stage1; else S=/scratch/diogoneiss/trident-2026-11-04-c15-stage1; fi
 S=${QUEUE_STATE:-$S}
 P=$S/progress.log
